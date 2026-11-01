@@ -18,6 +18,7 @@ import SuperAceGame from './components/games/SuperAceGame';
 import Crazy777Game from './components/games/Crazy777Game';
 import SevenUpDownGame from './components/games/SevenUpDownGame';
 import FortuneOxGame from './components/games/FortuneOxGame';
+import BoxingKingGame from './components/games/BoxingKingGame';
 import WinGoGame from './components/WinGoGame';
 import LuckyWheelModal from './components/LuckyWheelModal';
 import AttendanceModal from './components/AttendanceModal';
@@ -185,6 +186,7 @@ function AppContent() {
         {activeGame === 'superace' && <SuperAceGame onClose={() => setActiveGame(null)} />}
         {activeGame === 'crazy777' && <Crazy777Game onClose={() => setActiveGame(null)} />}
         {activeGame === 'sevenupdown' && <SevenUpDownGame onClose={() => setActiveGame(null)} />}
+        {activeGame === 'boxingking' && <BoxingKingGame onClose={() => setActiveGame(null)} />}
         {(activeGame === 'fortuneox' || activeGame === 'wildbounty' || activeGame === 'buffalowin') && <FortuneOxGame onClose={() => setActiveGame(null)} />}
 
         {/* Activity & Utility Modals */}

@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
 import { soundManager } from '../lib/audio';
 import confetti from 'canvas-confetti';
@@ -16,7 +16,7 @@ const SECTORS = [
 export default function LuckyWheelModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
-  const { user, adjustUserBalance } = useGame();
+  const { user, adjustUserBalance, recordGameHistory } = useGame();
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [winReward, setWinReward] = useState(null);
@@ -27,7 +27,7 @@ export default function LuckyWheelModal({ isOpen, onClose }) {
     setWinReward(null);
     soundManager.playBet();
 
-    // Pick prize index (weighted towards 50, 100, 200)
+    // Pick prize index (weighted towards 50, 100, 200, 500, 1000)
     const winIdx = [1, 3, 2, 5, 4, 0][Math.floor(Math.random() * 6)];
     const prize = SECTORS[winIdx];
 
@@ -40,6 +40,14 @@ export default function LuckyWheelModal({ isOpen, onClose }) {
       setIsSpinning(false);
       setWinReward(prize.value);
       adjustUserBalance(user.uid, prize.value);
+      if (recordGameHistory) {
+        recordGameHistory({
+          game: 'Lucky Wheel',
+          bet: 0,
+          win: prize.value,
+          mult: 'BONUS'
+        });
+      }
       soundManager.playWin();
       confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
     }, 4000);

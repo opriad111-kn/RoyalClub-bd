@@ -22,16 +22,19 @@ import {
 import VipModal from '../components/VipModal';
 
 export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth }) {
-  const { user, logout } = useGame();
+  const { user, logout, gameHistory, transactions } = useGame();
   const [copied, setCopied] = useState(false);
   const [showVipModal, setShowVipModal] = useState(false);
   const [activeHistoryModal, setActiveHistoryModal] = useState(null); // 'game', 'transaction', 'deposit', 'withdraw'
 
   function handleCopyUid() {
-    navigator.clipboard.writeText(user.uid ? user.uid.toString() : '1048591');
+    navigator.clipboard.writeText(user.uid ? user.uid.toString() : '198808');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
+
+  const depositList = (transactions || []).filter(t => t.type === 'deposit');
+  const withdrawList = (transactions || []).filter(t => t.type === 'withdrawal');
 
   return (
     <div className="space-y-3.5 pb-8 text-xs select-none">
@@ -62,7 +65,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth }) {
           <div className="flex-1">
             <div className="flex items-center space-x-2">
               <h3 className="font-black text-base tracking-tight text-white drop-shadow-sm">
-                {user.username || 'RoyalPlayer_99'}
+                {user.username || 'MEMBERNNGAAF85'}
               </h3>
               
               {/* VIP1 Badge */}
@@ -82,7 +85,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth }) {
                 className="inline-flex items-center space-x-1.5 bg-black/20 hover:bg-black/30 backdrop-blur-md border border-white/20 px-2.5 py-0.5 rounded-full cursor-pointer transition active:scale-95"
               >
                 <span className="text-emerald-100 font-mono text-[11px] font-bold">
-                  UID: #{user.uid || '1048591'}
+                  UID: #{user.uid || '198808'}
                 </span>
                 {copied ? (
                   <Check className="w-3 h-3 text-yellow-300" />
@@ -310,12 +313,120 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth }) {
               </button>
             </div>
 
-            <div className="py-6 text-center space-y-2">
-              <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto text-xl">
-                📂
-              </div>
-              <p className="text-slate-500 text-xs font-medium">কোনো রেকর্ড পাওয়া যায়নি (No records found)</p>
-              <span className="text-[10px] text-slate-400 block">আপনার সাম্প্রতিক সমস্ত লেনদেন ও বেটিং এখানে প্রদর্শিত হবে।</span>
+            {/* Dynamic Content List */}
+            <div className="py-3 max-h-72 overflow-y-auto space-y-2 no-scrollbar">
+              {activeHistoryModal === 'game' && (
+                gameHistory && gameHistory.length > 0 ? (
+                  gameHistory.map((item, idx) => (
+                    <div key={idx} className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex items-center justify-between text-left">
+                      <div>
+                        <div className="flex items-center space-x-1.5">
+                          <span className="font-black text-slate-800 text-xs">{item.game}</span>
+                          <span className="bg-slate-200 text-slate-700 text-[9px] font-mono px-1 rounded font-bold">
+                            {item.mult}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
+                          বেট: ৳{item.bet} • {item.time}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className={`text-xs font-black font-mono block ${
+                          item.win > 0 ? 'text-emerald-600' : 'text-red-500'
+                        }`}>
+                          {item.win > 0 ? `+৳${item.win.toFixed(2)}` : `-৳${item.bet}`}
+                        </span>
+                        <span className={`text-[9px] font-bold uppercase ${
+                          item.win > 0 ? 'text-emerald-500' : 'text-slate-400'
+                        }`}>
+                          {item.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-6 text-center text-slate-400 text-xs">কোনো গেম হিস্ট্রি পাওয়া যায়নি</div>
+                )
+              )}
+
+              {activeHistoryModal === 'deposit' && (
+                depositList && depositList.length > 0 ? (
+                  depositList.map((item, idx) => (
+                    <div key={idx} className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex items-center justify-between text-left">
+                      <div>
+                        <span className="font-black text-slate-800 text-xs">{item.method} Deposit</span>
+                        <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
+                          TrxID: {item.txHash || 'PENDING'}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xs font-black font-mono text-emerald-600 block">
+                          +৳{item.amount.toFixed(2)}
+                        </span>
+                        <span className={`text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase ${
+                          item.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                        }`}>
+                          {item.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-6 text-center text-slate-400 text-xs">কোনো ডিপোজিট রেকর্ড নেই</div>
+                )
+              )}
+
+              {activeHistoryModal === 'withdraw' && (
+                withdrawList && withdrawList.length > 0 ? (
+                  withdrawList.map((item, idx) => (
+                    <div key={idx} className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex items-center justify-between text-left">
+                      <div>
+                        <span className="font-black text-slate-800 text-xs">{item.method} Payout</span>
+                        <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
+                          A/C: {item.senderPhone || item.accountNo || '***'}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xs font-black font-mono text-red-500 block">
+                          -৳{item.amount.toFixed(2)}
+                        </span>
+                        <span className={`text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase ${
+                          item.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                        }`}>
+                          {item.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-6 text-center text-slate-400 text-xs">কোনো উইথড্র রেকর্ড নেই</div>
+                )
+              )}
+
+              {activeHistoryModal === 'transaction' && (
+                transactions && transactions.length > 0 ? (
+                  transactions.map((item, idx) => (
+                    <div key={idx} className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex items-center justify-between text-left">
+                      <div>
+                        <span className="font-black text-slate-800 text-xs capitalize">{item.type} ({item.method})</span>
+                        <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
+                          {new Date(item.timestamp || Date.now()).toLocaleTimeString()}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className={`text-xs font-black font-mono block ${
+                          item.type === 'deposit' ? 'text-emerald-600' : 'text-red-500'
+                        }`}>
+                          {item.type === 'deposit' ? '+' : '-'}৳{item.amount.toFixed(2)}
+                        </span>
+                        <span className="text-[9px] text-slate-500 font-bold uppercase">{item.status}</span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-6 text-center text-slate-400 text-xs">কোনো ট্রানজেকশন নেই</div>
+                )
+              )}
             </div>
 
             <button

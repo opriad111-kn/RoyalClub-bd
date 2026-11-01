@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '../../context/GameContext';
 import { soundManager } from '../../lib/audio';
 import confetti from 'canvas-confetti';
@@ -15,18 +15,18 @@ const FAKE_PLAYERS = [
 ];
 
 export default function AviatorGame({ onClose }) {
-  const { user, adjustUserBalance } = useGame();
+  const { user, adjustUserBalance, recordGameHistory, gameControl } = useGame();
   const [gameState, setGameState] = useState('ready'); // 'ready', 'flying', 'crashed'
   const [multiplier, setMultiplier] = useState(1.00);
   const [crashPoint, setCrashPoint] = useState(1.00);
   const [history, setHistory] = useState([2.14, 1.45, 8.20, 1.15, 3.80, 1.95, 14.50]);
 
-  // Panel 1 Bet
+  // Panel 1 Bet (Presets: 10, 50, 100 TK)
   const [bet1, setBet1] = useState(50);
   const [hasBet1, setHasBet1] = useState(false);
   const [cashed1, setCashed1] = useState(false);
   const [win1, setWin1] = useState(0);
-  const [autoCash1, setAutoCash1] = useState(true);
+  const [autoCash1, setAutoCash1] = useState(false);
   const [targetMult1, setTargetMult1] = useState(2.00);
 
   // Panel 2 Bet
@@ -43,10 +43,6 @@ export default function AviatorGame({ onClose }) {
 
   function startRound() {
     const totalWager = (hasBet1 ? bet1 : 0) + (hasBet2 ? bet2 : 0);
-    if (totalWager === 0) {
-      // Auto enable bet 1
-      setHasBet1(true);
-    }
     const required = (hasBet1 ? bet1 : 50) + (hasBet2 ? bet2 : 0);
     if (user.balance < required) {
       alert("পর্যাপ্ত ব্যালেন্স নেই! দয়া করে ডিপোজিট করুন।");
@@ -61,13 +57,19 @@ export default function AviatorGame({ onClose }) {
     setCashed2(false);
     setWin2(0);
 
-    // Random crash point (Weighted Provably Fair curve)
-    const r = Math.random();
+    // Random crash point (Respecting Admin Rigging Controls)
     let point = 1.00;
-    if (r < 0.08) point = 1.00 + Math.random() * 0.12; // Instant/early crash
-    else if (r < 0.55) point = 1.15 + Math.random() * 2.0; // 1.15x - 3.15x
-    else if (r < 0.85) point = 3.00 + Math.random() * 4.5; // 3x - 7.5x
-    else point = 7.50 + Math.random() * 25.0; // 7.5x - 32.5x Mega Win
+    if (gameControl?.aviatorMode === 'always_high') {
+      point = 4.50 + Math.random() * 15.0; // Guaranteed Big Win
+    } else if (gameControl?.aviatorMode === 'early_crash') {
+      point = 1.05 + Math.random() * 0.15; // Early Crash Rigged
+    } else {
+      const r = Math.random();
+      if (r < 0.08) point = 1.00 + Math.random() * 0.12; // Instant/early crash
+      else if (r < 0.55) point = 1.15 + Math.random() * 2.0; // 1.15x - 3.15x
+      else if (r < 0.85) point = 3.00 + Math.random() * 4.5; // 3x - 7.5x
+      else point = 7.50 + Math.random() * 25.0; // 7.5x - 32.5x Mega Win
+    }
     point = parseFloat(point.toFixed(2));
     setCrashPoint(point);
 
@@ -103,6 +105,9 @@ export default function AviatorGame({ onClose }) {
       if (current >= point) {
         setMultiplier(point);
         setGameState('crashed');
+        if (!cashed1 && recordGameHistory) {
+          recordGameHistory({ game: 'Aviator', bet: bet1, win: 0, mult: point.toFixed(2) + 'x' });
+        }
         setHasBet1(false);
         setHasBet2(false);
         soundManager.playLoss();
@@ -124,6 +129,9 @@ export default function AviatorGame({ onClose }) {
     const payout = parseFloat((bet1 * m).toFixed(2));
     setWin1(payout);
     adjustUserBalance(user.uid, payout);
+    if (recordGameHistory) {
+      recordGameHistory({ game: 'Aviator', bet: bet1, win: payout, mult: m.toFixed(2) + 'x' });
+    }
     soundManager.playWin();
     confetti({ particleCount: 75, spread: 60, origin: { y: 0.6 } });
   }
@@ -272,7 +280,7 @@ export default function AviatorGame({ onClose }) {
               <div className="flex items-center space-x-2">
                 <span className="text-[10px] text-slate-400 font-bold">BET 1:</span>
                 <div className="flex space-x-1">
-                  {[20, 50, 100, 200, 500].map(amt => (
+                  {[10, 50, 100, 200, 500].map(amt => (
                     <button
                       key={amt}
                       disabled={gameState === 'flying'}

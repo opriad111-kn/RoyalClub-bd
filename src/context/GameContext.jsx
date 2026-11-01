@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { soundManager } from '../lib/audio';
 import { sha256, calculateRoundResult, evaluateBet } from '../lib/provablyFair';
@@ -64,20 +64,87 @@ export function GameProvider({ children }) {
     ];
   });
 
-  // 3. Current User State
+  // 3. Current User State (MEMBERNNGAAF85, UID: 198808, 500 TK Balance)
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('royalclub_current_user');
-    return saved ? JSON.parse(saved) : {
-      uid: "100888",
-      username: "Player777",
-      balance: 100.00, // Starts with 100 Taka signup bonus
-      total_won: 0.00,
-      total_wagered: 0.00,
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.username === 'Guest' || parsed.username === 'Player777') {
+          return {
+            uid: "198808",
+            username: "MEMBERNNGAAF85",
+            balance: 500.00,
+            total_won: 1250.00,
+            total_wagered: 1800.00,
+            vip_level: 1,
+            is_admin: true,
+            is_banned: false,
+            last_faucet_claim: null
+          };
+        }
+        return parsed;
+      } catch (e) {}
+    }
+    return {
+      uid: "198808",
+      username: "MEMBERNNGAAF85",
+      balance: 500.00,
+      total_won: 1250.00,
+      total_wagered: 1800.00,
+      vip_level: 1,
       is_admin: true,
       is_banned: false,
       last_faucet_claim: null
     };
   });
+
+  // 3B. Unified Game History (Aviator, Slots, Wheel)
+  const [gameHistory, setGameHistory] = useState(() => {
+    const saved = localStorage.getItem('royalclub_game_history');
+    return saved ? JSON.parse(saved) : [
+      { id: 'GH-1092', game: 'Aviator', bet: 50, win: 112.50, status: 'WIN', mult: '2.25x', time: '10:45 PM' },
+      { id: 'GH-1091', game: 'Fortune Gems 2', bet: 20, win: 80.00, status: 'WIN', mult: '4.00x', time: '10:40 PM' },
+      { id: 'GH-1090', game: 'Boxing King', bet: 50, win: 150.00, status: 'WIN', mult: '3.00x', time: '10:32 PM' },
+      { id: 'GH-1089', game: 'Aviator', bet: 100, win: 0.00, status: 'LOSS', mult: '1.12x', time: '10:25 PM' },
+      { id: 'GH-1088', game: 'Super Ace', bet: 30, win: 90.00, status: 'WIN', mult: '3.00x', time: '10:15 PM' }
+    ];
+  });
+
+  function recordGameHistory({ game, bet, win, mult }) {
+    const newEntry = {
+      id: 'GH-' + Math.floor(1000 + Math.random() * 9000),
+      game,
+      bet: parseFloat(bet),
+      win: parseFloat(win),
+      status: win > 0 ? 'WIN' : 'LOSS',
+      mult: mult ? mult.toString() : (win > 0 ? (win / bet).toFixed(2) + 'x' : '0.00x'),
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    setGameHistory(prev => {
+      const updated = [newEntry, ...prev.slice(0, 49)];
+      localStorage.setItem('royalclub_game_history', JSON.stringify(updated));
+      return updated;
+    });
+  }
+
+  // 3C. Admin Game Rigging & Har-Jit Controls
+  const [gameControl, setGameControl] = useState(() => {
+    const saved = localStorage.getItem('royalclub_game_control');
+    return saved ? JSON.parse(saved) : {
+      aviatorMode: 'normal', // 'normal' | 'always_high' | 'early_crash'
+      slotMode: 'normal',    // 'normal' | 'always_win' | 'always_loss'
+      rtpRate: 96
+    };
+  });
+
+  function updateGameControl(newControl) {
+    setGameControl(prev => {
+      const updated = { ...prev, ...newControl };
+      localStorage.setItem('royalclub_game_control', JSON.stringify(updated));
+      return updated;
+    });
+  }
 
   // 4. Timer & Rounds
   const [currentPeriod, setCurrentPeriod] = useState("");
@@ -584,6 +651,10 @@ export function GameProvider({ children }) {
       requestWithdrawal,
       approveTransaction,
       rejectTransaction,
+      gameHistory,
+      recordGameHistory,
+      gameControl,
+      updateGameControl,
       login,
       logout
     }}>

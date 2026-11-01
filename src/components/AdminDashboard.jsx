@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
 import { 
   ShieldAlert, 
@@ -37,10 +37,12 @@ export default function AdminDashboard() {
     rejectTransaction, 
     allUsers, 
     adjustUserBalance, 
-    toggleBanUser 
+    toggleBanUser,
+    gameControl,
+    updateGameControl 
   } = useGame();
 
-  const [adminTab, setAdminTab] = useState('banners'); // 'banners', 'bonus', 'queue', 'payments', 'users'
+  const [adminTab, setAdminTab] = useState('queue'); // 'queue', 'game_control', 'banners', 'bonus', 'payments', 'users'
   const [adminNotes, setAdminNotes] = useState({});
   const [userSearch, setUserSearch] = useState('');
 
@@ -131,11 +133,12 @@ export default function AdminDashboard() {
       </div>
 
       {/* 2. Admin Sub-tabs */}
-      <div className="grid grid-cols-5 gap-1 bg-slate-900/90 p-1.5 rounded-xl border border-slate-800 text-[11px]">
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-1 bg-slate-900/90 p-1.5 rounded-xl border border-slate-800 text-[11px]">
         {[
+          { id: 'queue', label: `অ্যাপ্রুভাল (${pendingTransactions.length})`, icon: Clock },
+          { id: 'game_control', label: 'গেম হার-জিত', icon: ShieldAlert },
           { id: 'banners', label: 'ব্যানার যুক্ত', icon: Image },
           { id: 'bonus', label: 'বোনাস কন্ট্রোল', icon: Gift },
-          { id: 'queue', label: `অ্যাপ্রুভাল (${pendingTransactions.length})`, icon: Clock },
           { id: 'payments', label: 'পেমেন্ট নম্বর', icon: CreditCard },
           { id: 'users', label: 'প্লেয়ার লিস্ট', icon: Users },
         ].map(t => (
@@ -153,6 +156,127 @@ export default function AdminDashboard() {
           </button>
         ))}
       </div>
+
+      {/* 2B. TAB: GAME RIGGING & HAR-JIT CONTROLS */}
+      {adminTab === 'game_control' && (
+        <div className="space-y-4 text-xs">
+          {/* Aviator Har-Jit Box */}
+          <div className="bg-slate-900/90 p-4 rounded-2xl border border-red-500/40 shadow-xl space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <div className="flex items-center space-x-2">
+                <span className="text-xl">✈️</span>
+                <div>
+                  <h3 className="font-black text-white text-sm">Aviator হার-জিত কন্ট্রোল</h3>
+                  <span className="text-[10px] text-slate-400">বিমান ক্র্যাশ পয়েন্ট ও জেতা-হারা নিয়ন্ত্রণ</span>
+                </div>
+              </div>
+              <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase ${
+                gameControl?.aviatorMode === 'always_high' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' :
+                gameControl?.aviatorMode === 'early_crash' ? 'bg-red-500/20 text-red-400 border border-red-500/40' :
+                'bg-blue-500/20 text-blue-400 border border-blue-500/40'
+              }`}>
+                {gameControl?.aviatorMode || 'normal'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 pt-1">
+              <button
+                onClick={() => updateGameControl({ aviatorMode: 'normal' })}
+                className={`p-2.5 rounded-xl border text-center transition ${
+                  gameControl?.aviatorMode === 'normal' 
+                    ? 'bg-blue-600 text-white border-blue-400 font-black shadow-md' 
+                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
+                }`}
+              >
+                <span className="block font-bold">স্বাভাবিক</span>
+                <span className="text-[9px] opacity-75">Provably Fair</span>
+              </button>
+
+              <button
+                onClick={() => updateGameControl({ aviatorMode: 'always_high' })}
+                className={`p-2.5 rounded-xl border text-center transition ${
+                  gameControl?.aviatorMode === 'always_high' 
+                    ? 'bg-emerald-600 text-white border-emerald-400 font-black shadow-md' 
+                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
+                }`}
+              >
+                <span className="block font-bold">প্লেয়ার জিতবে</span>
+                <span className="text-[9px] opacity-75">5x - 20x পর্যন্ত উঠবে</span>
+              </button>
+
+              <button
+                onClick={() => updateGameControl({ aviatorMode: 'early_crash' })}
+                className={`p-2.5 rounded-xl border text-center transition ${
+                  gameControl?.aviatorMode === 'early_crash' 
+                    ? 'bg-red-600 text-white border-red-400 font-black shadow-md' 
+                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
+                }`}
+              >
+                <span className="block font-bold">প্লেয়ার হারবে</span>
+                <span className="text-[9px] opacity-75">1.05x এ ক্র্যাশ</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Slot Har-Jit Box (Fortune Gems, Super Ace, Boxing King) */}
+          <div className="bg-slate-900/90 p-4 rounded-2xl border border-yellow-500/40 shadow-xl space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <div className="flex items-center space-x-2">
+                <span className="text-xl">🎰</span>
+                <div>
+                  <h3 className="font-black text-white text-sm">Slot গেম হার-জিত কন্ট্রোল</h3>
+                  <span className="text-[10px] text-slate-400">Fortune Gems 2, Super Ace, Boxing King</span>
+                </div>
+              </div>
+              <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase ${
+                gameControl?.slotMode === 'always_win' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' :
+                gameControl?.slotMode === 'always_loss' ? 'bg-red-500/20 text-red-400 border border-red-500/40' :
+                'bg-blue-500/20 text-blue-400 border border-blue-500/40'
+              }`}>
+                {gameControl?.slotMode || 'normal'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 pt-1">
+              <button
+                onClick={() => updateGameControl({ slotMode: 'normal' })}
+                className={`p-2.5 rounded-xl border text-center transition ${
+                  gameControl?.slotMode === 'normal' 
+                    ? 'bg-blue-600 text-white border-blue-400 font-black shadow-md' 
+                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
+                }`}
+              >
+                <span className="block font-bold">স্বাভাবিক</span>
+                <span className="text-[9px] opacity-75">র‍্যান্ডম পেলাইন</span>
+              </button>
+
+              <button
+                onClick={() => updateGameControl({ slotMode: 'always_win' })}
+                className={`p-2.5 rounded-xl border text-center transition ${
+                  gameControl?.slotMode === 'always_win' 
+                    ? 'bg-emerald-600 text-white border-emerald-400 font-black shadow-md' 
+                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
+                }`}
+              >
+                <span className="block font-bold">প্লেয়ার জিতবে</span>
+                <span className="text-[9px] opacity-75">2x - 10x ম্যাচ</span>
+              </button>
+
+              <button
+                onClick={() => updateGameControl({ slotMode: 'always_loss' })}
+                className={`p-2.5 rounded-xl border text-center transition ${
+                  gameControl?.slotMode === 'always_loss' 
+                    ? 'bg-red-600 text-white border-red-400 font-black shadow-md' 
+                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
+                }`}
+              >
+                <span className="block font-bold">প্লেয়ার হারবে</span>
+                <span className="text-[9px] opacity-75">লাইন মিলবে না</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 3. TAB: BANNER MANAGEMENT */}
       {adminTab === 'banners' && (

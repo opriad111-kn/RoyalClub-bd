@@ -22,11 +22,20 @@ export default function HomePage({
   onOpenUsdtBonus 
 }) {
   const { user, settings } = useGame();
-  const [selectedCategory, setSelectedCategory] = useState('slots');
+  const [selectedCategory, setSelectedCategory] = useState('hot');
   const [selectedProvider, setSelectedProvider] = useState('JILI');
   const [showNotice, setShowNotice] = useState(false);
   const [showVip, setShowVip] = useState(false);
   const [activeBanner, setActiveBanner] = useState(0);
+  const [jackpot, setJackpot] = useState(5650560.27);
+
+  // Live Ticking Jackpot Counter
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setJackpot(prev => prev + (Math.random() * 0.45 + 0.15));
+    }, 1200);
+    return () => clearInterval(timer);
+  }, []);
 
   const banners = [
     {
@@ -77,12 +86,21 @@ export default function HomePage({
 
   const providers = ['JILI', 'PG', 'JDB', 'CQ9', 'MG'];
 
-  // Real Games from extracted AmarClub with accurate RTP percentages
-  const jiliGames = [
-    { id: 'fortunegems', title: 'FORTUNE GEMS 2', rtp: '96.27%', image: '/assets/amarclub/game_fortunegems.png', provider: 'JILI' },
+  // Real Games matching user specification with accurate artwork and RTP percentages
+  const featuredGames = [
+    { id: 'aviator', title: 'AVIATOR', rtp: '96.27%', image: '/assets/amarclub/game_aviator.png', provider: 'SPRIBE' },
+    { id: 'fortunegems', title: 'FORTUNE GEMS 2', rtp: '97.46%', image: '/assets/amarclub/game_fortunegems.png', provider: 'JILI' },
     { id: 'moneycoming', title: 'MONEY COMING', rtp: '96.23%', image: '/assets/amarclub/game_moneycoming.png', provider: 'JILI' },
     { id: 'superace', title: 'SUPER ACE', rtp: '96.50%', image: '/assets/games/superace.svg', provider: 'JILI' },
-    { id: 'sevenupdown', title: '7UP 7DOWN', rtp: '96.00%', image: '/assets/games/7up7down.svg', provider: 'JILI' },
+    { id: 'boxingking', title: 'BOXING KING', rtp: '97.10%', image: '/assets/games/boxingking.svg', provider: 'JILI' },
+    { id: 'wingo', title: 'WIN GO 30SEC', rtp: '97.50%', image: '/assets/amarclub/game_wingo.png', provider: 'ROYAL' }
+  ];
+
+  const jiliGames = [
+    { id: 'fortunegems', title: 'FORTUNE GEMS 2', rtp: '97.46%', image: '/assets/amarclub/game_fortunegems.png', provider: 'JILI' },
+    { id: 'moneycoming', title: 'MONEY COMING', rtp: '96.23%', image: '/assets/amarclub/game_moneycoming.png', provider: 'JILI' },
+    { id: 'superace', title: 'SUPER ACE', rtp: '96.50%', image: '/assets/games/superace.svg', provider: 'JILI' },
+    { id: 'boxingking', title: 'BOXING KING', rtp: '97.10%', image: '/assets/games/boxingking.svg', provider: 'JILI' },
     { id: 'crazy777', title: 'CRAZY 777', rtp: '96.20%', image: '/assets/games/crazy777.svg', provider: 'JILI' }
   ];
 
@@ -93,7 +111,7 @@ export default function HomePage({
   ];
 
   const originalGames = [
-    { id: 'aviator', title: 'AVIATOR', rtp: '96.42%', image: '/assets/amarclub/game_aviator.png', provider: 'SPRIBE' },
+    { id: 'aviator', title: 'AVIATOR', rtp: '96.27%', image: '/assets/amarclub/game_aviator.png', provider: 'SPRIBE' },
     { id: 'wingo', title: 'WIN GO 30SEC', rtp: '97.50%', image: '/assets/amarclub/game_wingo.png', provider: 'ROYAL' },
     { id: 'mines', title: 'MINES', rtp: '98.00%', image: '/assets/games/mines.svg', provider: 'ORIGINAL' }
   ];
@@ -153,6 +171,34 @@ export default function HomePage({
               }`} 
             />
           ))}
+        </div>
+      </div>
+
+      {/* 2. Live Choloman Jackpot Counter (৳5,650,560.27) */}
+      <div className="bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 p-[1.5px] rounded-2xl shadow-md">
+        <div className="bg-gradient-to-b from-[#1a0700] via-[#240e02] to-[#120500] p-3 rounded-[15px] flex items-center justify-between">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-yellow-400 to-amber-500 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg animate-pulse">
+              👑
+            </div>
+            <div>
+              <span className="text-[10px] font-black uppercase text-amber-400 tracking-wider block font-sans">
+                ROYAL MEGA JACKPOT
+              </span>
+              <div className="flex items-baseline space-x-1">
+                <span className="text-xl sm:text-2xl font-black font-mono text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-200 to-yellow-400 drop-shadow">
+                  ৳{jackpot.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+                <span className="text-[10px] text-yellow-500 font-black">BDT</span>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col items-end">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping inline-block mb-1" />
+            <span className="text-[9px] text-amber-300 font-bold bg-amber-950/80 px-2 py-0.5 rounded-full border border-amber-600/50">
+              LIVE
+            </span>
+          </div>
         </div>
       </div>
 
@@ -343,7 +389,7 @@ export default function HomePage({
       {/* 7. Main Game Grid (Using Real AmarClub Game Posters) */}
       <div>
         <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
-          {(selectedProvider === 'PG' ? pgGames : selectedCategory === 'original' ? originalGames : jiliGames).map(game => (
+          {(selectedCategory === 'hot' ? featuredGames : selectedProvider === 'PG' ? pgGames : selectedCategory === 'original' ? originalGames : jiliGames).map(game => (
             <div
               key={game.id}
               onClick={() => onOpenGame(game.id)}

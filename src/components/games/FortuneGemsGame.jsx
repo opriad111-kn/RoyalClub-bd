@@ -33,7 +33,7 @@ const SPECIAL_WHEEL = [
 ];
 
 export default function FortuneGemsGame({ onClose }) {
-  const { user, adjustUserBalance } = useGame();
+  const { user, adjustUserBalance, recordGameHistory, gameControl } = useGame();
   
   // 3x3 Grid of symbols matching Image 5
   const [grid, setGrid] = useState([
@@ -118,7 +118,15 @@ export default function FortuneGemsGame({ onClose }) {
     setIsSpinning(false);
     soundManager.playReelStop();
 
-    const isWin = Math.random() > 0.35;
+    let isWin = false;
+    if (gameControl?.slotMode === 'always_win') {
+      isWin = true;
+    } else if (gameControl?.slotMode === 'always_loss') {
+      isWin = false;
+    } else {
+      isWin = Math.random() > 0.38; // High hit rate
+    }
+
     const chosenFeature = SPECIAL_WHEEL[Math.floor(Math.random() * SPECIAL_WHEEL.length)];
     setSpecialReel([
       SPECIAL_WHEEL[0],
@@ -135,6 +143,9 @@ export default function FortuneGemsGame({ onClose }) {
         adjustUserBalance(user.uid, bonus);
         setWinAmount(bonus);
         setBigWinText('LUCKY WHEEL SUPER WIN! ৳' + bonus);
+        if (recordGameHistory) {
+          recordGameHistory({ game: 'Fortune Gems 2', bet: betAmount, win: bonus, mult: '50.0x' });
+        }
         soundManager.playWin();
         confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 } });
         setWheelPopup(false);
@@ -154,6 +165,9 @@ export default function FortuneGemsGame({ onClose }) {
       const payout = parseFloat((betAmount * (luckySym.mult / 2) * mult).toFixed(2));
       adjustUserBalance(user.uid, payout);
       setWinAmount(payout);
+      if (recordGameHistory) {
+        recordGameHistory({ game: 'Fortune Gems 2', bet: betAmount, win: payout, mult: (payout / betAmount).toFixed(1) + 'x' });
+      }
       soundManager.playWin();
 
       if (payout / betAmount >= 15) {
@@ -168,6 +182,9 @@ export default function FortuneGemsGame({ onClose }) {
         ['ruby', 'wild', 'sapphire'],
         [getRandomSym(), getRandomSym(), getRandomSym()]
       ]);
+      if (recordGameHistory) {
+        recordGameHistory({ game: 'Fortune Gems 2', bet: betAmount, win: 0, mult: '0.00x' });
+      }
       soundManager.playLoss();
     }
   }
