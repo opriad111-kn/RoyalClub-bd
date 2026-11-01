@@ -247,7 +247,7 @@ export function GameProvider({ children }) {
     localStorage.setItem('royalclub_all_users', JSON.stringify(allUsers));
   }, [allUsers]);
 
-  // Master Synchronized 1-minute Clock
+  // Master Synchronized 1-minute Clock (WinGo background simulation without noisy auto-sounds)
   useEffect(() => {
     const timerInterval = setInterval(async () => {
       const now = Date.now();
@@ -258,10 +258,6 @@ export function GameProvider({ children }) {
 
       setCountdown(remaining);
       setIsLocked(remaining <= 5);
-
-      if (remaining <= 5 && remaining > 0) {
-        soundManager.playTick();
-      }
 
       const periodId = formatPeriodString(now);
       setCurrentPeriod(periodId);
@@ -276,7 +272,7 @@ export function GameProvider({ children }) {
   }, [settings.ROUND_DURATION_SECONDS, currentPeriod, rounds, bets, user]);
 
   async function resolveRound(period) {
-    soundManager.playRoll();
+    // Only play sound if user actively placed a bet in this round
     const hash = await sha256(`${DEFAULT_SERVER_SEED}:${period}`);
     const result = calculateRoundResult(hash);
 
@@ -296,6 +292,11 @@ export function GameProvider({ children }) {
     }, 6000);
 
     let totalWinAmount = 0;
+    const userHasBets = bets.some(b => b.period === period && b.status === 'pending');
+    if (userHasBets) {
+      soundManager.playRoll();
+    }
+
     const updatedBets = bets.map(b => {
       if (b.period === period && b.status === 'pending') {
         const { won, payout, finalMultiplier } = evaluateBet(b, newRound);
@@ -337,7 +338,7 @@ export function GameProvider({ children }) {
         created_at: new Date().toISOString()
       };
       setTransactions(prev => [winTx, ...prev]);
-    } else if (bets.some(b => b.period === period && b.status === 'pending')) {
+    } else if (userHasBets) {
       soundManager.playLoss();
     }
   }
