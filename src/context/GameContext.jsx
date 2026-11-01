@@ -64,20 +64,20 @@ export function GameProvider({ children }) {
     ];
   });
 
-  // 3. Current User State (MEMBERNNGAAF85, UID: 198808, 500 TK Balance)
+  // 3. Current User State (Matching Screenshot 4: RIYAD, UID: 120356, VIP3)
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('royalclub_current_user');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed.username === 'Guest' || parsed.username === 'Player777') {
+        if (parsed.username === 'Guest' || parsed.username === 'Player777' || parsed.username === 'MEMBERNNGAAF85') {
           return {
-            uid: "198808",
-            username: "MEMBERNNGAAF85",
-            balance: 500.00,
-            total_won: 1250.00,
-            total_wagered: 1800.00,
-            vip_level: 1,
+            uid: "120356",
+            username: "RIYAD",
+            balance: 1000.00,
+            total_won: 3250.00,
+            total_wagered: 4500.00,
+            vip_level: 3,
             is_admin: true,
             is_banned: false,
             last_faucet_claim: null
@@ -87,12 +87,12 @@ export function GameProvider({ children }) {
       } catch (e) {}
     }
     return {
-      uid: "198808",
-      username: "MEMBERNNGAAF85",
-      balance: 500.00,
-      total_won: 1250.00,
-      total_wagered: 1800.00,
-      vip_level: 1,
+      uid: "120356",
+      username: "RIYAD",
+      balance: 1000.00,
+      total_won: 3250.00,
+      total_wagered: 4500.00,
+      vip_level: 3,
       is_admin: true,
       is_banned: false,
       last_faucet_claim: null

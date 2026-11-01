@@ -230,3 +230,4 @@ export default function BoxingKingGame({ onClose }) {
     </div>
   );
 }
+

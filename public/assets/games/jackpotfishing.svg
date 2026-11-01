@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="oceanBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0369a1" />
+      <stop offset="60%" stop-color="#075985" />
+      <stop offset="100%" stop-color="#082f49" />
+    </linearGradient>
+    <radialGradient id="waterRays" cx="50%" cy="0%" r="80%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="sharkBlue" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="60%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="400" height="300" fill="url(#oceanBg)" />
+  <rect width="400" height="300" fill="url(#waterRays)" />
+
+  <!-- Underwater Bubbles -->
+  <circle cx="80" cy="180" r="10" fill="#bae6fd" opacity="0.6" />
+  <circle cx="95" cy="140" r="6" fill="#bae6fd" opacity="0.6" />
+  <circle cx="320" cy="170" r="8" fill="#bae6fd" opacity="0.6" />
+  <circle cx="340" cy="120" r="12" fill="#bae6fd" opacity="0.6" />
+
+  <!-- Gold Coins Floating -->
+  <circle cx="100" cy="70" r="14" fill="#fbbf24" stroke="#fef08a" stroke-width="2" />
+  <circle cx="310" cy="80" r="16" fill="#fbbf24" stroke="#fef08a" stroke-width="2" />
+
+  <!-- Big Shark Body -->
+  <ellipse cx="200" cy="130" rx="95" ry="60" fill="url(#sharkBlue)" stroke="#0284c7" stroke-width="3" />
+  <!-- Shark Belly (White) -->
+  <path d="M120,135 Q200,185 280,135 Q200,165 120,135 Z" fill="#ffffff" />
+  <!-- Shark Dorsal Fin -->
+  <polygon points="190,75 220,15 235,75" fill="#0284c7" />
+  <!-- Shark Tail -->
+  <polygon points="110,130 50,85 70,130 50,175" fill="#0284c7" />
+  <!-- Shark Pectoral Fin with Torpedo Cannon -->
+  <polygon points="180,155 230,195 245,175" fill="#0369a1" />
+  <!-- Torpedo Cannon -->
+  <rect x="220" y="155" width="60" height="20" rx="6" fill="#f59e0b" stroke="#78350f" stroke-width="2" />
+  <polygon points="280,150 305,165 280,180" fill="#dc2626" />
+
+  <!-- Shark Cool Sunglasses -->
+  <polygon points="215,105 285,115 275,135 225,130" fill="#0f172a" stroke="#fbbf24" stroke-width="2" />
+  <circle cx="235" cy="120" r="12" fill="#0284c7" opacity="0.8" />
+  <circle cx="265" cy="122" r="12" fill="#0284c7" opacity="0.8" />
+
+  <!-- Big Shark Grin with Sharp Teeth -->
+  <path d="M220,140 Q250,165 285,142" stroke="#0f172a" stroke-width="3" fill="#dc2626" />
+  <polygon points="230,140 235,147 240,140" fill="#fff" />
+  <polygon points="242,142 248,150 254,142" fill="#fff" />
+  <polygon points="256,144 262,152 268,144" fill="#fff" />
+  <polygon points="270,143 275,149 280,143" fill="#fff" />
+
+  <!-- Title Ribbon -->
+  <rect x="30" y="240" width="340" height="48" rx="8" fill="#0369a1" stroke="#38bdf8" stroke-width="2" />
+  <text x="200" y="272" font-family="Arial, sans-serif" font-weight="900" font-size="20" fill="#fef08a" text-anchor="middle" letter-spacing="2">JACKPOT FISHING</text>
+</svg>

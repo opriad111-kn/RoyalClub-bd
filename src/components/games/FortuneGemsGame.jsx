@@ -325,88 +325,114 @@ export default function FortuneGemsGame({ onClose }) {
         </div>
       )}
 
-      {/* 1. Top Scrolling Marquee Bar (Matching Image 5) */}
+      {/* 1. Top Scrolling Marquee & Live Balance Bar (Matching Screenshot 1) */}
       <div className="bg-[#1c0a00] border-b border-amber-900/60 px-3 py-1.5 flex justify-between items-center text-xs text-amber-300">
-        <div className="flex items-center space-x-2 flex-1 overflow-hidden">
-          <span className="bg-red-600 text-white font-black text-[9px] px-1.5 py-0.2 rounded uppercase">
-            JILI
-          </span>
-          <marquee behavior="scroll" direction="left" scrollamount="4" className="text-amber-200 font-mono text-[11px]">
-            3X, 5X, 10X, 15X multiplier effect • Join Super Event JILI Tournament Every Day!
-          </marquee>
+        <div className="flex items-center space-x-2">
+          <button onClick={onClose} className="w-7 h-7 rounded-full bg-black/50 text-amber-200 hover:text-white flex items-center justify-center border border-amber-800">
+            <span className="font-bold text-sm">‹</span>
+          </button>
+          {/* Live User Balance Pill matching Screenshot 1 */}
+          <div className="bg-slate-900/90 border border-amber-500/50 px-2.5 py-0.5 rounded-full flex items-center space-x-1.5 shadow-inner">
+            <div className="w-3.5 h-3.5 rounded-full bg-yellow-400 text-slate-950 flex items-center justify-center text-[9px] font-black">
+              🪙
+            </div>
+            <span className="text-xs font-mono font-black text-amber-300">
+              ৳{user.balance.toFixed(2)}
+            </span>
+            <span className="text-cyan-400 font-black text-xs">+</span>
+          </div>
         </div>
-        <button onClick={onClose} className="w-6 h-6 rounded-full bg-black/40 text-slate-400 hover:text-white flex items-center justify-center ml-2">
-          <X className="w-4 h-4" />
-        </button>
+
+        <div className="flex items-center space-x-2">
+          <div className="text-[10px] font-black text-amber-400/90 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-700/50">
+            JILI RNG
+          </div>
+          <button onClick={onClose} className="w-6 h-6 rounded-full bg-black/40 text-slate-400 hover:text-white flex items-center justify-center">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
-      {/* 2. Main Game Arena (Ancient Stone Temple Cabinet matching Image 5) */}
-      <div className="relative flex-1 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#451a03] via-[#1c0a00] to-[#080200] flex items-center justify-center p-2">
+      {/* 2. Main Game Arena (Ancient Stone Temple Cabinet matching Screenshot 1) */}
+      <div className="relative flex-1 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#451a03] via-[#1c0a00] to-[#080200] flex flex-col items-center justify-between p-2 overflow-y-auto no-scrollbar">
         
-        {/* Left Vertical JILI Sidebar (Matching Image 5) */}
-        <div className="absolute left-2 top-4 bottom-4 w-12 flex flex-col justify-between items-center z-20 text-[9px] font-bold text-amber-200/80">
-          <div className="flex flex-col items-center space-y-2">
-            <span className="text-lg font-black font-serif text-yellow-400">JILI</span>
-            <button className="flex flex-col items-center hover:scale-105 transition">
-              <span className="text-base">🎒</span>
-              <span>Backpack</span>
-            </button>
-            <button className="flex flex-col items-center hover:scale-105 transition">
-              <span className="text-base">📋</span>
-              <span>Mission</span>
-            </button>
-            <button className="flex flex-col items-center hover:scale-105 transition">
-              <span className="text-base">🎁</span>
-              <span>WIN MORE</span>
-            </button>
-            <button className="flex flex-col items-center hover:scale-105 transition">
-              <span className="text-base">🏆</span>
-              <span>Tournament</span>
-            </button>
+        {/* Top Fortune Gems 2 Grand Lucky Wheel Showcase (Matching Screenshot 1) */}
+        <div className="w-full max-w-sm flex flex-col items-center relative pt-1">
+          {/* Fortune Gems 2 Logo */}
+          <div className="text-center mb-1">
+            <h1 className="text-base sm:text-lg font-black font-serif tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-300 to-yellow-500 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+              FORTUNE GEMS 2
+            </h1>
           </div>
-          <button className="flex flex-col items-center text-yellow-400">
-            <Bell className="w-4 h-4 animate-bounce" />
-            <span>JILI Bell</span>
-          </button>
+
+          {/* Golden Wheel Arc with Multipliers & Pointer (Matching Screenshot 1) */}
+          <div className="relative w-48 h-24 overflow-hidden flex justify-center">
+            <div 
+              className="w-48 h-48 rounded-full border-4 border-yellow-400 shadow-[0_0_30px_rgba(245,158,11,0.6)] bg-gradient-to-tr from-amber-700 via-yellow-500 to-amber-800 flex items-center justify-center transition-transform duration-1000"
+              style={{ transform: `rotate(${wheelAngle}deg)` }}
+            >
+              <div className="w-full h-full rounded-full border-2 border-dashed border-amber-950 flex items-center justify-center relative">
+                {/* Slices representation matching Screenshot 1: 100, 3, 20, 15, 1000 */}
+                <span className="absolute top-3 font-black text-[11px] text-yellow-200 font-mono">1,000X</span>
+                <span className="absolute bottom-3 font-black text-[11px] text-yellow-200 font-mono">100X</span>
+                <span className="absolute left-3 font-black text-[11px] text-yellow-200 font-mono">20X</span>
+                <span className="absolute right-3 font-black text-[11px] text-yellow-200 font-mono">15X</span>
+                <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-yellow-400 to-amber-600 border border-white flex items-center justify-center shadow-md text-slate-950 font-black text-xs font-serif">
+                  👑
+                </div>
+              </div>
+            </div>
+            {/* Top Golden Arrow Pointer */}
+            <div className="absolute top-0 w-6 h-6 flex items-center justify-center z-10 filter drop-shadow">
+              <span className="text-amber-300 text-sm">▼</span>
+            </div>
+          </div>
+
+          {/* Ribbon text below wheel matching Screenshot 1 */}
+          <div className="w-full bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 border-y border-yellow-500/60 py-0.5 px-2 text-center shadow-md">
+            <span className="text-[10px] font-black text-yellow-300 tracking-wide font-mono">
+              Top 15X Points for each win line!
+            </span>
+          </div>
         </div>
 
         {/* Big Win Banner Overlay */}
         {bigWinText && (
-          <div className="absolute top-6 z-30 bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-600 text-slate-950 px-6 py-2 rounded-full font-black text-sm tracking-wider shadow-2xl animate-bounce border-2 border-white">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-600 text-slate-950 px-6 py-3 rounded-2xl font-black text-sm tracking-wider shadow-2xl animate-bounce border-2 border-white text-center">
             {bigWinText}
           </div>
         )}
 
-        {/* Center Stone Temple Frame (Matching Image 5) */}
-        <div className="ml-10 w-full max-w-sm bg-[#2b1204] border-4 border-[#b45309] rounded-2xl p-2.5 shadow-[0_0_35px_rgba(245,158,11,0.25)] flex space-x-2">
+        {/* Center Stone Temple Slot Cabinet (Matching Screenshot 1) */}
+        <div className="w-full max-w-sm bg-[#2b1204] border-4 border-[#b45309] rounded-2xl p-2 shadow-[0_0_35px_rgba(245,158,11,0.25)] flex space-x-1.5 my-auto">
           
           {/* 3 Slot Reels Grid (3x3 Matrix) */}
-          <div className="flex-1 grid grid-cols-3 gap-1.5 bg-[#140600] p-1.5 rounded-xl border-2 border-[#78350f]">
+          <div className="flex-1 grid grid-cols-3 gap-1 bg-[#140600] p-1 rounded-xl border-2 border-[#78350f]">
             {/* Reel 1 */}
-            <div className="flex flex-col space-y-1.5">
+            <div className="flex flex-col space-y-1">
               <div className="h-16">{renderSymbol(grid[0][0])}</div>
               <div className="h-16">{renderSymbol(grid[1][0])}</div>
               <div className="h-16">{renderSymbol(grid[2][0])}</div>
             </div>
 
             {/* Reel 2 */}
-            <div className="flex flex-col space-y-1.5">
+            <div className="flex flex-col space-y-1">
               <div className="h-16">{renderSymbol(grid[0][1])}</div>
               <div className="h-16">{renderSymbol(grid[1][1])}</div>
               <div className="h-16">{renderSymbol(grid[2][1])}</div>
             </div>
 
             {/* Reel 3 */}
-            <div className="flex flex-col space-y-1.5">
+            <div className="flex flex-col space-y-1">
               <div className="h-16">{renderSymbol(grid[0][2])}</div>
               <div className="h-16">{renderSymbol(grid[1][2])}</div>
               <div className="h-16">{renderSymbol(grid[2][2])}</div>
             </div>
           </div>
 
-          {/* 4th Reel: SPECIAL WHEEL (Matching Image 5) */}
+          {/* 4th Reel: SPECIAL WHEEL (Matching Screenshot 1) */}
           <div className="w-20 bg-[#1c0a00] border-2 border-amber-500 rounded-xl p-1 flex flex-col justify-between items-center relative">
-            <span className="text-[8px] font-black uppercase text-yellow-300 tracking-wider">
+            <span className="text-[7px] font-black uppercase text-yellow-300 tracking-wider">
               SPECIAL WHEEL
             </span>
 
@@ -428,52 +454,73 @@ export default function FortuneGemsGame({ onClose }) {
 
         </div>
 
-      </div>
-
-      {/* 3. Bottom Wooden Control Bar (Exact Match to Image 5) */}
-      <div className="bg-[#1f0b00] border-t-2 border-[#78350f] p-2.5 px-3 flex justify-between items-center z-20">
-        
-        {/* Left Controls: Settings & Level */}
-        <div className="flex items-center space-x-2">
-          <button className="w-8 h-8 rounded-full bg-black/40 text-amber-200 hover:text-white flex items-center justify-center border border-amber-900">
-            <Settings className="w-4 h-4" />
-          </button>
-          <span className="bg-emerald-600 text-white font-black text-[10px] px-2 py-0.5 rounded-full font-mono">
-            LV 1
-          </span>
-          <div className="text-left">
-            <span className="text-[9px] text-amber-400 block font-bold leading-tight">Balance</span>
-            <span className="text-xs font-black font-mono text-yellow-300">Tk {user.balance.toFixed(2)}</span>
+        {/* WIN Amount Box Above Controls (Matching Screenshot 1) */}
+        <div className="w-full max-w-sm flex justify-center py-1">
+          <div className="flex items-center space-x-2">
+            <span className="text-xs font-black font-serif text-yellow-400 uppercase tracking-widest">
+              WIN
+            </span>
+            <span className="text-base font-black font-mono text-yellow-300 drop-shadow">
+              Tk {winAmount.toFixed(2)}
+            </span>
           </div>
         </div>
 
-        {/* Center: Bet Amount & WIN Display */}
-        <div className="flex items-center space-x-3 text-center">
-          <div>
-            <span className="text-[9px] text-amber-400 block font-bold leading-tight">Bet Tk</span>
-            <div className="flex items-center space-x-1">
+      </div>
+
+      {/* 3. Bottom Wooden Control Bar (Exact Match to Screenshot 1) */}
+      <div className="bg-[#1f0b00] border-t-2 border-[#78350f] p-2.5 px-3 flex justify-between items-center z-20">
+        
+        {/* Left Controls: Settings & Coin Bet */}
+        <div className="flex items-center space-x-2">
+          <button className="w-9 h-9 rounded-full bg-gradient-to-b from-[#451a03] to-[#1c0a00] border border-amber-500/60 text-amber-200 hover:text-white flex items-center justify-center shadow-inner">
+            <Settings className="w-4 h-4" />
+          </button>
+          
+          <div className="flex flex-col items-center">
+            <div className="flex items-center space-x-1 bg-black/40 border border-amber-900 rounded-lg p-0.5">
               {[1, 5, 20, 100].map(amt => (
                 <button
                   key={amt}
                   onClick={() => setBetAmount(amt)}
-                  className={`px-1.5 py-0.2 rounded text-[10px] font-mono font-bold ${
-                    betAmount === amt ? 'bg-yellow-400 text-slate-950 font-black' : 'bg-black/40 text-amber-200'
+                  className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${
+                    betAmount === amt ? 'bg-yellow-400 text-slate-950 font-black shadow-sm' : 'text-amber-200/80 hover:text-white'
                   }`}
                 >
                   {amt}
                 </button>
               ))}
             </div>
-          </div>
-
-          <div className="bg-black/60 px-3 py-1 rounded-xl border border-yellow-500/40">
-            <span className="text-[9px] text-yellow-400 block font-bold uppercase leading-tight">WIN</span>
-            <span className="text-sm font-black font-mono text-yellow-300">Tk {winAmount.toFixed(2)}</span>
+            <span className="text-[8px] text-amber-400/90 font-bold mt-0.5">Bet Tk {betAmount}</span>
           </div>
         </div>
 
-        {/* Right: Turbo, Auto & GIANT JILI SPIN BUTTON */}
+        {/* Center: GIANT JILI SPIN BUTTON */}
+        <div className="flex flex-col items-center">
+          <button
+            disabled={isSpinning}
+            onClick={handleSpin}
+            className={`w-15 h-15 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-amber-600 via-yellow-400 to-yellow-200 border-4 border-yellow-500 text-slate-950 flex flex-col items-center justify-center shadow-[0_0_25px_rgba(245,158,11,0.7)] active:scale-90 transition ${
+              isSpinning ? 'animate-spin opacity-70' : 'hover:scale-105'
+            }`}
+          >
+            <span className="text-[10px] font-serif font-black tracking-tighter leading-none">JILI</span>
+            <RotateCw className="w-4 h-4 text-slate-950 mt-0.5" />
+          </button>
+        </div>
+
+        {/* Right: Autoplay & Lightning Turbo */}
         <div className="flex items-center space-x-2">
+          <button 
+            onClick={() => handleSpin()}
+            className="flex flex-col items-center text-amber-200 hover:text-white"
+          >
+            <div className="w-8 h-8 rounded-full bg-gradient-to-b from-[#451a03] to-[#1c0a00] border border-amber-500/60 flex items-center justify-center">
+              <RotateCw className="w-3.5 h-3.5" />
+            </div>
+            <span className="text-[7px] text-amber-300 font-bold mt-0.5">Auto</span>
+          </button>
+
           <button 
             onClick={() => setTurbo(!turbo)} 
             className={`w-8 h-8 rounded-full flex items-center justify-center border ${
@@ -482,20 +529,23 @@ export default function FortuneGemsGame({ onClose }) {
           >
             <Zap className="w-4 h-4" />
           </button>
-
-          {/* Giant Gold Circular JILI Spin Button (Matching Image 5) */}
-          <button
-            disabled={isSpinning}
-            onClick={handleSpin}
-            className={`w-14 h-14 rounded-full bg-gradient-to-tr from-amber-600 via-yellow-400 to-yellow-200 border-4 border-yellow-500 text-slate-950 flex flex-col items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.6)] active:scale-90 transition ${
-              isSpinning ? 'animate-spin opacity-70' : 'hover:scale-105'
-            }`}
-          >
-            <span className="text-[9px] font-serif font-black tracking-tighter leading-none">JILI</span>
-            <RotateCw className="w-4 h-4 text-slate-950 mt-0.5" />
-          </button>
         </div>
 
+      </div>
+
+      {/* 4. Bottom Status Bar (Matching Screenshot 1: LV0 Balance Tk ... WiFi v_198_144) */}
+      <div className="bg-[#100500] px-3 py-1 flex justify-between items-center text-[10px] text-amber-200/70 border-t border-amber-950">
+        <div className="flex items-center space-x-2">
+          <span className="bg-slate-800 text-slate-300 px-1 rounded text-[8px] font-bold">LV0</span>
+          <span>Balance: <strong className="text-yellow-300 font-mono">Tk {user.balance.toFixed(2)}</strong></span>
+        </div>
+        <div className="flex items-center space-x-2 text-[9px]">
+          <span className="text-emerald-400 font-bold flex items-center space-x-0.5">
+            <Wifi className="w-3 h-3 inline" />
+            <span>Good</span>
+          </span>
+          <span className="font-mono opacity-60">v_198_144</span>
+        </div>
       </div>
 
     </div>

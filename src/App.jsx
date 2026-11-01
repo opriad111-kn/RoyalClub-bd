@@ -51,9 +51,9 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#7e8b9b] text-slate-800 flex justify-center items-center selection:bg-emerald-500 selection:text-white relative overflow-x-hidden font-sans">
+    <div className="min-h-screen bg-[#181d26] text-slate-800 flex justify-center items-center selection:bg-amber-400 selection:text-slate-900 relative overflow-x-hidden font-sans">
       
-      {/* Floating Right Action Widgets - Exactly matching AmarClub Screenshots 1, 2, 3, 5 */}
+      {/* Floating Right Action Widgets (Desktop & Mobile Shortcuts) */}
       <aside aria-label="Quick Actions" className="fixed right-2 sm:right-6 top-1/2 -translate-y-1/2 z-50 flex flex-col space-y-3 pointer-events-auto">
         {/* 1. Activity Gift Box */}
         <button
@@ -61,7 +61,7 @@ function AppContent() {
           title="Gift Rewards"
           className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-600 shadow-lg border-2 border-white flex items-center justify-center p-2 hover:scale-110 active:scale-95 transition transform animate-pulse"
         >
-          <img src="/assets/amarclub/cat_original.png" alt="Rewards" className="w-full h-full object-contain drop-shadow" />
+          <span className="text-xl">🧧</span>
         </button>
 
         {/* 2. Lucky Spin Wheel */}
@@ -70,33 +70,24 @@ function AppContent() {
           title="Lucky Wheel"
           className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-tr from-red-500 via-yellow-400 to-orange-500 shadow-lg border-2 border-white flex items-center justify-center p-2 hover:scale-110 active:scale-95 transition transform hover:rotate-45"
         >
-          <img src="/assets/amarclub/lotterycategory_2025060317031148t4.png" alt="Lucky Wheel" className="w-full h-full object-contain drop-shadow" />
+          <span className="text-xl">🎡</span>
         </button>
 
-        {/* 3. VIP / Dragon Club */}
+        {/* 3. Customer Service */}
         <button
-          onClick={() => setIsPartnerRewardOpen(true)}
-          title="VIP Club"
-          className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-800 shadow-lg border-2 border-white flex items-center justify-center p-2 hover:scale-110 active:scale-95 transition transform"
-        >
-          <img src="/assets/amarclub/logo.png" alt="VIP" className="w-full h-full object-contain filter brightness-125" />
-        </button>
-
-        {/* 4. Customer Service (AmarClub Headset) */}
-        <button
-          onClick={() => alert("অফিশিয়াল কাস্টমার সার্ভিসের জন্য টেলিগ্রাম বা হোয়াটসঅ্যাপে যোগাযোগ করুন: @AmarClubHelp")}
+          onClick={() => alert("অফিশিয়াল কাস্টমার সার্ভিসের জন্য টেলিগ্রামে যোগাযোগ করুন: @DKWIN11_Help")}
           title="Customer Service"
-          className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-emerald-500 shadow-xl border-2 border-white flex items-center justify-center p-1.5 hover:scale-110 active:scale-95 transition transform"
+          className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#F5BE00] shadow-xl border-2 border-white flex items-center justify-center p-1.5 hover:scale-110 active:scale-95 transition transform text-slate-950 font-bold"
         >
-          <img src="/assets/amarclub/service.png" alt="Support" className="w-full h-full object-contain" />
+          <span className="text-lg">🎧</span>
         </button>
       </aside>
 
       {/* Mobile Max-Width Container */}
-      <div className="w-full max-w-[420px] min-h-screen bg-[#f8f9fa] border-x border-slate-300 flex flex-col justify-between relative shadow-2xl">
+      <div className="w-full max-w-[420px] min-h-screen bg-[#F4F5F8] border-x border-slate-200/60 flex flex-col justify-between relative shadow-2xl">
         
-        {/* Authentic AmarClub Header (Hidden when inside WinGo) */}
-        {activeTab !== 'wingo' && (
+        {/* DKWIN11 Sticky Top Header (Shown on Home, Wallet, Promotion, Admin) */}
+        {activeTab !== 'wingo' && activeTab !== 'account' && activeTab !== 'activity' && (
           <AmarHeader
             onOpenAuth={() => setIsAuthOpen(true)}
             onOpenWallet={() => setActiveTab('wallet')}
@@ -105,7 +96,13 @@ function AppContent() {
         )}
 
         {/* Dynamic Pages */}
-        <main className={`flex-1 ${activeTab === 'wingo' ? 'p-0 pb-16' : 'p-3.5 pb-24'}`}>
+        <main className={`flex-1 ${
+          activeTab === 'wingo' 
+            ? 'p-0 pb-16' 
+            : activeTab === 'account' || activeTab === 'activity' 
+            ? 'p-3.5 pt-0 pb-20' 
+            : 'p-3.5 pb-20'
+        }`}>
           {activeTab === 'home' && (
             <HomePage 
               onOpenGame={handleOpenGame}

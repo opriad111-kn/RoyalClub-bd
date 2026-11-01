@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="aceBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#064e3b" />
+      <stop offset="50%" stop-color="#047857" />
+      <stop offset="100%" stop-color="#022c22" />
+    </linearGradient>
+    <linearGradient id="goldCrown" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="50%" stop-color="#eab308" />
+      <stop offset="100%" stop-color="#854d0e" />
+    </linearGradient>
+    <linearGradient id="rubyRed" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f87171" />
+      <stop offset="50%" stop-color="#dc2626" />
+      <stop offset="100%" stop-color="#7f1d1d" />
+    </linearGradient>
+  </defs>
+
+  <rect width="400" height="300" fill="url(#aceBg)" />
+
+  <!-- Radiating Starburst -->
+  <circle cx="200" cy="120" r="120" fill="#059669" opacity="0.4" />
+
+  <!-- Golden Ace of Spades / Playing Card on Left -->
+  <g transform="translate(110, 60) rotate(-12)">
+    <rect x="0" y="0" width="65" height="95" rx="6" fill="#fef08a" stroke="#d97706" stroke-width="2" />
+    <text x="12" y="22" font-family="Arial, sans-serif" font-weight="900" font-size="16" fill="#b45309">A</text>
+    <polygon points="32,35 45,55 20,55" fill="#dc2626" />
+  </g>
+
+  <!-- Golden Ace of Hearts on Right -->
+  <g transform="translate(225, 50) rotate(14)">
+    <rect x="0" y="0" width="65" height="95" rx="6" fill="#fef08a" stroke="#d97706" stroke-width="2" />
+    <text x="12" y="22" font-family="Arial, sans-serif" font-weight="900" font-size="16" fill="#b45309">A</text>
+    <polygon points="32,60 45,40 20,40" fill="#dc2626" />
+  </g>
+
+  <!-- Jester Crown in Center -->
+  <path d="M120,165 Q110,80 145,95 Q170,140 200,90 Q230,140 255,95 Q290,80 280,165 Z" fill="url(#rubyRed)" stroke="#fef08a" stroke-width="3" />
+  
+  <!-- Crown Golden Bells & Points -->
+  <circle cx="145" cy="95" r="9" fill="url(#goldCrown)" stroke="#fff" stroke-width="1.5" />
+  <circle cx="200" cy="90" r="11" fill="url(#goldCrown)" stroke="#fff" stroke-width="2" />
+  <circle cx="255" cy="95" r="9" fill="url(#goldCrown)" stroke="#fff" stroke-width="1.5" />
+
+  <!-- Crown Base Band -->
+  <rect x="125" y="150" width="150" height="25" rx="5" fill="url(#goldCrown)" stroke="#fff" stroke-width="2" />
+  <circle cx="160" cy="162" r="5" fill="#0284c7" />
+  <circle cx="200" cy="162" r="6" fill="#dc2626" />
+  <circle cx="240" cy="162" r="5" fill="#0284c7" />
+
+  <!-- Deluxe Gold Ribbon Ribbon -->
+  <rect x="25" y="240" width="350" height="48" rx="8" fill="#065f46" stroke="#fbbf24" stroke-width="2" />
+  <text x="200" y="272" font-family="Arial, sans-serif" font-weight="900" font-size="18" fill="#fef08a" text-anchor="middle" letter-spacing="1.5">SUPER ACE DELUXE</text>
+</svg>

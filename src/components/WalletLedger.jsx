@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
 import { 
   Wallet, 
@@ -120,79 +120,102 @@ export default function WalletLedger() {
 
   return (
     <div className="space-y-4">
-      {/* 1. Real Casino Style Balance Card */}
-      <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 p-5 rounded-2xl border border-emerald-500/40 shadow-2xl relative overflow-hidden">
+      {/* 0. Virtual Demo Coin Disclaimer Badge */}
+      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 flex items-center justify-between text-amber-900 text-xs">
+        <div className="flex items-center space-x-2">
+          <span className="text-xl">🎮</span>
+          <div>
+            <span className="font-black block">100% Free Virtual Coin Demo Mode</span>
+            <span className="text-[10px] text-amber-700">All coins are simulated tokens for entertainment only.</span>
+          </div>
+        </div>
+
+        {user.balance < 50 && (
+          <button
+            onClick={() => {
+              adjustUserBalance(user.uid, 500);
+              alert("অভিনন্দন! আপনার অ্যাকাউন্টে ৫০০ ফ্রি ডেমো কয়েন যোগ করা হয়েছে।");
+            }}
+            className="bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black text-[11px] px-3 py-1.5 rounded-full shadow-sm active:scale-95 transition"
+          >
+            Claim 500 Coins
+          </button>
+        )}
+      </div>
+
+      {/* 1. DKWIN11 Style Balance Card */}
+      <div className="bg-[#F5BE00] text-slate-900 p-5 rounded-2xl shadow-sm relative overflow-hidden">
         <div className="flex justify-between items-start mb-2">
           <div>
-            <span className="text-[11px] font-bold text-emerald-400 tracking-wider uppercase block">
-              টোটাল ওয়ালেট ব্যালেন্স
+            <span className="text-[11px] font-bold text-slate-800 tracking-wider uppercase block">
+              Total Balance
             </span>
             <div className="flex items-baseline space-x-1 mt-1">
-              <span className="text-3xl font-black font-mono text-yellow-400">
+              <span className="text-3xl font-black font-mono text-slate-900">
                 ৳{user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
-              <span className="text-xs text-slate-300 font-bold">BDT</span>
+              <span className="text-xs text-slate-800 font-bold">BDT</span>
             </div>
           </div>
 
           <div className="text-right text-xs">
-            <span className="bg-slate-800 text-slate-300 font-mono px-2 py-0.5 rounded border border-slate-700">
+            <span className="bg-white/40 text-slate-900 font-mono px-2 py-0.5 rounded-full border border-white/60 font-bold">
               UID: #{user.uid}
             </span>
-            <span className="block text-emerald-400 font-semibold mt-1">
+            <span className="block text-slate-900 font-black mt-1">
               {user.username}
             </span>
           </div>
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-800 text-xs mt-3">
-          <div className="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-            <span className="text-[10px] text-slate-400 block">মোট বেট বাজি:</span>
-            <span className="font-bold text-slate-200 font-mono">৳{user.total_wagered.toFixed(2)}</span>
+        <div className="grid grid-cols-2 gap-3 pt-3 border-t border-yellow-400 text-xs mt-3">
+          <div className="bg-white/30 p-2 rounded-xl">
+            <span className="text-[10px] text-slate-800 block font-bold">Total Wagered:</span>
+            <span className="font-black text-slate-900 font-mono">৳{user.total_wagered.toFixed(2)}</span>
           </div>
-          <div className="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-            <span className="text-[10px] text-slate-400 block">মোট জয়ী পুরস্কার:</span>
-            <span className="font-bold text-emerald-400 font-mono">৳{user.total_won.toFixed(2)}</span>
+          <div className="bg-white/30 p-2 rounded-xl">
+            <span className="text-[10px] text-slate-800 block font-bold">Total Won:</span>
+            <span className="font-black text-slate-900 font-mono">৳{user.total_won.toFixed(2)}</span>
           </div>
         </div>
       </div>
 
       {/* 2. Sub Tabs: Deposit / Withdraw / Ledger */}
-      <div className="grid grid-cols-3 gap-2 bg-slate-900/90 p-1.5 rounded-xl border border-slate-800 text-xs">
+      <div className="grid grid-cols-3 gap-2 bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm text-xs">
         <button
           onClick={() => setActiveTab('deposit')}
-          className={`py-2.5 rounded-xl font-bold flex items-center justify-center space-x-1.5 transition ${
+          className={`py-2 rounded-xl font-black flex items-center justify-center space-x-1.5 transition ${
             activeTab === 'deposit' 
-              ? 'bg-emerald-600 text-white shadow-lg' 
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-[#F5BE00] text-slate-900 shadow-sm' 
+              : 'text-slate-500 hover:text-slate-800'
           }`}
         >
-          <ArrowDownLeft className="w-4 h-4 text-emerald-300" />
+          <ArrowDownLeft className="w-4 h-4" />
           <span>ডিপোজিট</span>
         </button>
 
         <button
           onClick={() => setActiveTab('withdraw')}
-          className={`py-2.5 rounded-xl font-bold flex items-center justify-center space-x-1.5 transition ${
+          className={`py-2 rounded-xl font-black flex items-center justify-center space-x-1.5 transition ${
             activeTab === 'withdraw' 
-              ? 'bg-emerald-600 text-white shadow-lg' 
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-[#F5BE00] text-slate-900 shadow-sm' 
+              : 'text-slate-500 hover:text-slate-800'
           }`}
         >
-          <ArrowUpRight className="w-4 h-4 text-yellow-300" />
+          <ArrowUpRight className="w-4 h-4" />
           <span>উইথড্র</span>
         </button>
 
         <button
           onClick={() => setActiveTab('ledger')}
-          className={`py-2.5 rounded-xl font-bold flex items-center justify-center space-x-1.5 transition ${
+          className={`py-2 rounded-xl font-black flex items-center justify-center space-x-1.5 transition ${
             activeTab === 'ledger' 
-              ? 'bg-emerald-600 text-white shadow-lg' 
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-[#F5BE00] text-slate-900 shadow-sm' 
+              : 'text-slate-500 hover:text-slate-800'
           }`}
         >
-          <History className="w-4 h-4 text-slate-300" />
+          <History className="w-4 h-4" />
           <span>হিস্ট্রি</span>
         </button>
       </div>

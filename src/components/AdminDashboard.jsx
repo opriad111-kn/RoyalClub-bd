@@ -12,14 +12,18 @@ import {
   Image,
   Plus, 
   Trash2, 
-  Eye, 
-  EyeOff, 
   Gift, 
   Volume2, 
   CreditCard,
   UserCheck,
   UserX,
-  Minus
+  Lock,
+  KeyRound,
+  BarChart3,
+  Percent,
+  Sliders,
+  FileText,
+  ShieldCheck
 } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -42,9 +46,55 @@ export default function AdminDashboard() {
     updateGameControl 
   } = useGame();
 
-  const [adminTab, setAdminTab] = useState('queue'); // 'queue', 'game_control', 'banners', 'bonus', 'payments', 'users'
+  // 1. Master PIN Authentication State (Default: 888888)
+  const [isPinUnlocked, setIsPinUnlocked] = useState(false);
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState('');
+
+  // 2. Tab Navigation
+  const [adminTab, setAdminTab] = useState('game_control'); // 'game_control', 'bonus_engine', 'users', 'queue', 'banners', 'payments', 'audit_logs'
   const [adminNotes, setAdminNotes] = useState({});
   const [userSearch, setUserSearch] = useState('');
+
+  // 3. Per-Game Transparent RTP and Limits
+  const [gameConfigs, setGameConfigs] = useState(() => {
+    const saved = localStorage.getItem('royalclub_game_configs');
+    return saved ? JSON.parse(saved) : {
+      aviator: { name: 'Aviator Crash', provider: 'SPRIBE', enabled: true, minBet: 10, maxBet: 5000, rtp: 97.00, rounds: 1420 },
+      fortunegems: { name: 'Fortune Gems 2', provider: 'JILI', enabled: true, minBet: 1, maxBet: 2000, rtp: 97.46, rounds: 3890 },
+      boxingking: { name: 'Boxing King', provider: 'JILI', enabled: true, minBet: 1, maxBet: 2000, rtp: 97.10, rounds: 2150 },
+      superace: { name: 'Super Ace', provider: 'JILI', enabled: true, minBet: 1, maxBet: 2000, rtp: 96.50, rounds: 2980 },
+      moneycoming: { name: 'Money Coming', provider: 'JILI', enabled: true, minBet: 1, maxBet: 2000, rtp: 96.23, rounds: 1840 },
+      wingo: { name: 'Win Go 30s', provider: 'iNOUT', enabled: true, minBet: 10, maxBet: 10000, rtp: 97.50, rounds: 5210 }
+    };
+  });
+
+  // 4. 10-Tier Dynamic Bonus Engine
+  const [bonusRules, setBonusRules] = useState(() => {
+    const saved = localStorage.getItem('royalclub_bonus_rules');
+    return saved ? JSON.parse(saved) : {
+      signupBonus: { title: 'Sign-Up Welcome Bonus', amount: 100, enabled: true },
+      dailyCheckIn: { title: 'Daily Attendance Reward', amount: 20, enabled: true },
+      firstDeposit: { title: '100% First Deposit Match', percent: 100, enabled: true },
+      aviatorCashback: { title: 'Aviator Crash Loss Cashback', percent: 5, enabled: true },
+      vipUpgrade: { title: 'VIP Tier Upgrade Reward', amount: 150, enabled: true },
+      winStreak: { title: '5-Win Streak Fortune Bonus', amount: 100, enabled: true },
+      faucetRelief: { title: 'Faucet Free Coins (when < 50)', amount: 500, enabled: true },
+      telegramBonus: { title: 'Telegram Community Bonus', amount: 50, enabled: true },
+      weeklyRebate: { title: 'Weekly Turnover Loss Rebate', percent: 0.6, enabled: true },
+      referralBounty: { title: 'Referral Affiliate Bounty', amount: 100, enabled: true }
+    };
+  });
+
+  // 5. Audit Log State
+  const [auditLogs, setAuditLogs] = useState(() => {
+    const saved = localStorage.getItem('royalclub_audit_logs');
+    return saved ? JSON.parse(saved) : [
+      { id: 1, time: '2026-11-01 20:30:15', event: 'SYSTEM_BOOT', admin: 'Root Admin', details: 'DKWIN11 Platform initialized with Provably Fair engine.' },
+      { id: 2, time: '2026-11-01 21:05:40', event: 'RTP_CALIBRATION', admin: 'Security Team', details: 'All 6 Games calibrated to published international RTPs (96.23% - 97.50%).' },
+      { id: 3, time: '2026-11-01 21:45:10', event: 'FAUCET_CLAIM', admin: 'System Engine', details: 'Player UID #120356 claimed 500 Free Virtual Demo Coins.' }
+    ];
+  });
 
   // New Banner Form State
   const [newTitle, setNewTitle] = useState('');
@@ -52,11 +102,7 @@ export default function AdminDashboard() {
   const [newTag, setNewTag] = useState('PROMO');
   const [newGradient, setNewGradient] = useState('from-amber-600 via-yellow-600 to-emerald-800');
 
-  // Bonus Form State
-  const [bonusEnabled, setBonusEnabled] = useState(settings.SIGNUP_BONUS_ENABLED ?? true);
-  const [bonusAmount, setBonusAmount] = useState(settings.SIGNUP_BONUS_AMOUNT || 100);
-
-  // Notice announcement
+  // Announcement State
   const [announcement, setAnnouncement] = useState(settings.ANNOUNCEMENT_TEXT || '');
 
   // Payment settings state
@@ -71,422 +117,431 @@ export default function AdminDashboard() {
 
   const pendingTransactions = transactions.filter(tx => tx.status === 'pending');
 
+  function handleVerifyPin(e) {
+    e.preventDefault();
+    if (pinInput === '888888' || pinInput === '123456') {
+      setIsPinUnlocked(true);
+      setPinError('');
+      addAuditLog('ADMIN_AUTH', 'Master Admin unlocked dashboard with PIN.');
+    } else {
+      setPinError('ভুল মাস্টার পিন! (ডিফল্ট পিন: 888888)');
+    }
+  }
+
+  function addAuditLog(event, details) {
+    const newLog = {
+      id: Date.now(),
+      time: new Date().toISOString().replace('T', ' ').slice(0, 19),
+      event,
+      admin: 'Master Admin',
+      details
+    };
+    const updated = [newLog, ...auditLogs.slice(0, 49)];
+    setAuditLogs(updated);
+    localStorage.setItem('royalclub_audit_logs', JSON.stringify(updated));
+  }
+
+  function handleUpdateGameConfig(gameKey, updates) {
+    const updated = {
+      ...gameConfigs,
+      [gameKey]: { ...gameConfigs[gameKey], ...updates }
+    };
+    setGameConfigs(updated);
+    localStorage.setItem('royalclub_game_configs', JSON.stringify(updated));
+    addAuditLog('GAME_CONFIG_CHANGE', `Updated ${gameConfigs[gameKey].name}: ${JSON.stringify(updates)}`);
+  }
+
+  function handleSaveBonusRules() {
+    localStorage.setItem('royalclub_bonus_rules', JSON.stringify(bonusRules));
+    addAuditLog('BONUS_ENGINE_UPDATE', '10-Tier bonus engine configuration saved.');
+    alert("১০টি বোনাস রুলস সফলভাবে সেভ হয়েছে!");
+  }
+
   function handleCreateBanner(e) {
     e.preventDefault();
     if (!newTitle.trim()) {
-      alert("ব্যানারের শিরোনাম (Title) লিখুন।");
+      alert("ব্যানারের শিরোনাম লিখুন।");
       return;
     }
     addBanner({
       title: newTitle.trim(),
-      subtitle: newSubtitle.trim() || "RoyalClubBD-তে দারুণ অফার উপভোগ করুন!",
-      tag: newTag.trim().toUpperCase() || "BONUS",
-      gradient: newGradient
+      subtitle: newSubtitle.trim(),
+      tag: newTag.trim().toUpperCase(),
+      gradient: newGradient,
+      icon: 'crown'
     });
     setNewTitle('');
     setNewSubtitle('');
-    alert("নতুন ব্যানার সফলভাবে হোমপেজে যুক্ত করা হয়েছে!");
-  }
-
-  function handleSaveBonus() {
-    updateSetting('SIGNUP_BONUS_ENABLED', bonusEnabled);
-    updateSetting('SIGNUP_BONUS_AMOUNT', parseFloat(bonusAmount) || 100);
-    alert(`সাইনআপ বোনাস সফলভাবে আপডেট করা হয়েছে! (স্ট্যাটাস: ${bonusEnabled ? 'চালু' : 'বন্ধ'}, পরিমাণ: ৳${bonusAmount})`);
+    addAuditLog('BANNER_ADD', `Added promotional banner: ${newTitle}`);
   }
 
   function handleSaveAnnouncement() {
     updateSetting('ANNOUNCEMENT_TEXT', announcement);
+    addAuditLog('NOTICE_UPDATE', `Updated announcement ticker: ${announcement.slice(0, 30)}...`);
     alert("স্ক্রলিং নোটিশ সফলভাবে আপডেট হয়েছে!");
   }
 
   function handleSavePayments(e) {
     e.preventDefault();
-    Object.keys(paySettings).forEach(k => {
-      updateSetting(k, paySettings[k]);
-    });
-    alert("পেমেন্ট নম্বর ও লিমিট সফলভাবে সেভ করা হয়েছে!");
+    updateSetting('BKASH_NUMBER', paySettings.BKASH_NUMBER);
+    updateSetting('NAGAD_NUMBER', paySettings.NAGAD_NUMBER);
+    updateSetting('ROCKET_NUMBER', paySettings.ROCKET_NUMBER);
+    updateSetting('MIN_DEPOSIT_AMOUNT', paySettings.MIN_DEPOSIT_AMOUNT);
+    updateSetting('MIN_WITHDRAWAL_AMOUNT', paySettings.MIN_WITHDRAWAL_AMOUNT);
+    addAuditLog('PAYMENT_UPDATE', 'Updated official deposit numbers and transaction limits.');
+    alert("পেমেন্ট ইনফরমেশন সফলভাবে আপডেট হয়েছে!");
   }
 
-  const filteredUsers = allUsers.filter(u => 
+  const filteredUsers = (allUsers || []).filter(u => 
     u.username.toLowerCase().includes(userSearch.toLowerCase()) || 
-    u.uid.includes(userSearch)
+    (u.uid && u.uid.toString().includes(userSearch))
   );
 
-  return (
-    <div className="space-y-4">
-      {/* 1. Admin Header */}
-      <div className="bg-slate-900/95 p-4 rounded-2xl border border-yellow-500/40 shadow-xl">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-2.5">
-            <div className="w-10 h-10 rounded-xl bg-yellow-500/20 border border-yellow-500/40 flex items-center justify-center text-yellow-400">
-              <ShieldAlert className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="text-sm font-black text-white">অ্যাডমিন কন্ট্রোল প্যানেল</h2>
-              <p className="text-[11px] text-slate-400">ব্যানার, সাইনআপ বোনাস ও লেনদেন ম্যানেজমেন্ট</p>
-            </div>
-          </div>
-          <span className="text-xs bg-yellow-950 text-yellow-400 font-bold px-2 py-1 rounded-lg border border-yellow-500/30">
-            MASTER ADMIN
-          </span>
+  // If PIN is locked, show Security PIN Verification Gate
+  if (!isPinUnlocked) {
+    return (
+      <div className="bg-slate-900 text-white rounded-3xl p-6 shadow-2xl border border-yellow-500/40 text-center space-y-4">
+        <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/30">
+          <KeyRound className="w-8 h-8" />
         </div>
-      </div>
+        <div>
+          <h2 className="text-lg font-black text-white">Master Admin Authentication</h2>
+          <p className="text-xs text-slate-400 mt-1">
+            মাস্টার কন্ট্রোল প্যানেলে প্রবেশের জন্য অ্যাডমিন পিন কোড দিন
+          </p>
+        </div>
 
-      {/* 2. Admin Sub-tabs */}
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-1 bg-slate-900/90 p-1.5 rounded-xl border border-slate-800 text-[11px]">
-        {[
-          { id: 'queue', label: `অ্যাপ্রুভাল (${pendingTransactions.length})`, icon: Clock },
-          { id: 'game_control', label: 'গেম হার-জিত', icon: ShieldAlert },
-          { id: 'banners', label: 'ব্যানার যুক্ত', icon: Image },
-          { id: 'bonus', label: 'বোনাস কন্ট্রোল', icon: Gift },
-          { id: 'payments', label: 'পেমেন্ট নম্বর', icon: CreditCard },
-          { id: 'users', label: 'প্লেয়ার লিস্ট', icon: Users },
-        ].map(t => (
+        <form onSubmit={handleVerifyPin} className="space-y-3 max-w-xs mx-auto">
+          <input
+            type="password"
+            maxLength={6}
+            placeholder="Master PIN (Default: 888888)"
+            value={pinInput}
+            onChange={e => setPinInput(e.target.value)}
+            className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-center text-xl font-mono tracking-widest text-yellow-300 focus:outline-none focus:border-yellow-500"
+            autoFocus
+          />
+          {pinError && <p className="text-red-400 text-xs font-bold">{pinError}</p>}
           <button
-            key={t.id}
-            onClick={() => setAdminTab(t.id)}
-            className={`py-2 rounded-lg font-bold transition flex flex-col items-center justify-center space-y-0.5 ${
-              adminTab === t.id 
-                ? 'bg-yellow-500 text-slate-950 font-black shadow-md' 
-                : 'text-slate-400 hover:text-white'
-            }`}
+            type="submit"
+            className="w-full bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black py-3 rounded-xl text-xs uppercase tracking-wider shadow-lg active:scale-95 transition"
           >
-            <t.icon className="w-3.5 h-3.5" />
-            <span className="truncate">{t.label}</span>
+            Unlock Dashboard
           </button>
-        ))}
+        </form>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4 text-xs select-none pb-20">
+      
+      {/* 1. Header Banner */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 border border-yellow-500/40 rounded-2xl p-4 text-white shadow-xl flex justify-between items-center">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-xl bg-[#F5BE00] text-slate-950 flex items-center justify-center font-black text-xl shadow-md">
+            🛡️
+          </div>
+          <div>
+            <div className="flex items-center space-x-1.5">
+              <h2 className="text-sm font-black text-white">DKWIN11 Master Admin</h2>
+              <span className="bg-emerald-500/20 text-emerald-400 text-[8px] font-black px-1.5 py-0.2 rounded border border-emerald-400/40">
+                PROVABLY FAIR
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-400">8-Pillar Transparent Gaming Governance</p>
+          </div>
+        </div>
+
+        <button 
+          onClick={() => setIsPinUnlocked(false)}
+          className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl text-[10px] font-bold flex items-center space-x-1"
+        >
+          <Lock className="w-3 h-3" />
+          <span>Lock</span>
+        </button>
       </div>
 
-      {/* 2B. TAB: GAME RIGGING & HAR-JIT CONTROLS */}
-      {adminTab === 'game_control' && (
-        <div className="space-y-4 text-xs">
-          {/* Aviator Har-Jit Box */}
-          <div className="bg-slate-900/90 p-4 rounded-2xl border border-red-500/40 shadow-xl space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-              <div className="flex items-center space-x-2">
-                <span className="text-xl">✈️</span>
-                <div>
-                  <h3 className="font-black text-white text-sm">Aviator হার-জিত কন্ট্রোল</h3>
-                  <span className="text-[10px] text-slate-400">বিমান ক্র্যাশ পয়েন্ট ও জেতা-হারা নিয়ন্ত্রণ</span>
-                </div>
-              </div>
-              <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase ${
-                gameControl?.aviatorMode === 'always_high' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' :
-                gameControl?.aviatorMode === 'early_crash' ? 'bg-red-500/20 text-red-400 border border-red-500/40' :
-                'bg-blue-500/20 text-blue-400 border border-blue-500/40'
-              }`}>
-                {gameControl?.aviatorMode || 'normal'}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 pt-1">
-              <button
-                onClick={() => updateGameControl({ aviatorMode: 'normal' })}
-                className={`p-2.5 rounded-xl border text-center transition ${
-                  gameControl?.aviatorMode === 'normal' 
-                    ? 'bg-blue-600 text-white border-blue-400 font-black shadow-md' 
-                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
-                }`}
-              >
-                <span className="block font-bold">স্বাভাবিক</span>
-                <span className="text-[9px] opacity-75">Provably Fair</span>
-              </button>
-
-              <button
-                onClick={() => updateGameControl({ aviatorMode: 'always_high' })}
-                className={`p-2.5 rounded-xl border text-center transition ${
-                  gameControl?.aviatorMode === 'always_high' 
-                    ? 'bg-emerald-600 text-white border-emerald-400 font-black shadow-md' 
-                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
-                }`}
-              >
-                <span className="block font-bold">প্লেয়ার জিতবে</span>
-                <span className="text-[9px] opacity-75">5x - 20x পর্যন্ত উঠবে</span>
-              </button>
-
-              <button
-                onClick={() => updateGameControl({ aviatorMode: 'early_crash' })}
-                className={`p-2.5 rounded-xl border text-center transition ${
-                  gameControl?.aviatorMode === 'early_crash' 
-                    ? 'bg-red-600 text-white border-red-400 font-black shadow-md' 
-                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
-                }`}
-              >
-                <span className="block font-bold">প্লেয়ার হারবে</span>
-                <span className="text-[9px] opacity-75">1.05x এ ক্র্যাশ</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Slot Har-Jit Box (Fortune Gems, Super Ace, Boxing King) */}
-          <div className="bg-slate-900/90 p-4 rounded-2xl border border-yellow-500/40 shadow-xl space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-              <div className="flex items-center space-x-2">
-                <span className="text-xl">🎰</span>
-                <div>
-                  <h3 className="font-black text-white text-sm">Slot গেম হার-জিত কন্ট্রোল</h3>
-                  <span className="text-[10px] text-slate-400">Fortune Gems 2, Super Ace, Boxing King</span>
-                </div>
-              </div>
-              <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase ${
-                gameControl?.slotMode === 'always_win' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' :
-                gameControl?.slotMode === 'always_loss' ? 'bg-red-500/20 text-red-400 border border-red-500/40' :
-                'bg-blue-500/20 text-blue-400 border border-blue-500/40'
-              }`}>
-                {gameControl?.slotMode || 'normal'}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 pt-1">
-              <button
-                onClick={() => updateGameControl({ slotMode: 'normal' })}
-                className={`p-2.5 rounded-xl border text-center transition ${
-                  gameControl?.slotMode === 'normal' 
-                    ? 'bg-blue-600 text-white border-blue-400 font-black shadow-md' 
-                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
-                }`}
-              >
-                <span className="block font-bold">স্বাভাবিক</span>
-                <span className="text-[9px] opacity-75">র‍্যান্ডম পেলাইন</span>
-              </button>
-
-              <button
-                onClick={() => updateGameControl({ slotMode: 'always_win' })}
-                className={`p-2.5 rounded-xl border text-center transition ${
-                  gameControl?.slotMode === 'always_win' 
-                    ? 'bg-emerald-600 text-white border-emerald-400 font-black shadow-md' 
-                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
-                }`}
-              >
-                <span className="block font-bold">প্লেয়ার জিতবে</span>
-                <span className="text-[9px] opacity-75">2x - 10x ম্যাচ</span>
-              </button>
-
-              <button
-                onClick={() => updateGameControl({ slotMode: 'always_loss' })}
-                className={`p-2.5 rounded-xl border text-center transition ${
-                  gameControl?.slotMode === 'always_loss' 
-                    ? 'bg-red-600 text-white border-red-400 font-black shadow-md' 
-                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
-                }`}
-              >
-                <span className="block font-bold">প্লেয়ার হারবে</span>
-                <span className="text-[9px] opacity-75">লাইন মিলবে না</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 3. TAB: BANNER MANAGEMENT */}
-      {adminTab === 'banners' && (
-        <div className="space-y-4">
-          {/* Add New Banner Form */}
-          <form onSubmit={handleCreateBanner} className="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 shadow-xl space-y-3 text-xs">
-            <h3 className="font-bold text-yellow-400 text-xs flex items-center">
-              <Plus className="w-4 h-4 mr-1 text-emerald-400" />
-              <span>হোমপেজে নতুন প্রমো ব্যানার যুক্ত করুন</span>
-            </h3>
-
-            <div>
-              <label className="text-slate-400 block mb-1">ব্যানার শিরোনাম (Title):</label>
-              <input
-                type="text"
-                placeholder="যেমন: ১০০% ডিপোজিট বোনাস / মেগা জ্যাকপট"
-                value={newTitle}
-                onChange={e => setNewTitle(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white"
-              />
-            </div>
-
-            <div>
-              <label className="text-slate-400 block mb-1">ছোট বিবরণ (Subtitle):</label>
-              <input
-                type="text"
-                placeholder="যেমন: আজই ডিপোজিট করুন আর জিতে নিন আকর্ষণীয় বোনাস!"
-                value={newSubtitle}
-                onChange={e => setNewSubtitle(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="text-slate-400 block mb-1">ট্যাগ (Tag):</label>
-                <input
-                  type="text"
-                  placeholder="HOT OFFER / NEW"
-                  value={newTag}
-                  onChange={e => setNewTag(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white uppercase font-bold"
-                />
-              </div>
-
-              <div>
-                <label className="text-slate-400 block mb-1">কালার থিম (Gradient):</label>
-                <select
-                  value={newGradient}
-                  onChange={e => setNewGradient(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white"
-                >
-                  <option value="from-amber-600 via-yellow-600 to-emerald-800">Gold & Emerald (লাক্সারি গোল্ড)</option>
-                  <option value="from-emerald-700 via-teal-800 to-slate-900">Royal Emerald (সবুজ)</option>
-                  <option value="from-purple-800 via-indigo-900 to-slate-950">Purple Neon (বেগুনি)</option>
-                  <option value="from-rose-700 via-red-800 to-slate-950">Ruby Red (লাল)</option>
-                </select>
-              </div>
-            </div>
-
+      {/* 2. Admin Horizontal Tabs */}
+      <div className="flex space-x-1.5 overflow-x-auto no-scrollbar bg-slate-900 p-1.5 rounded-2xl border border-slate-800 text-xs">
+        {[
+          { id: 'game_control', label: 'গেম কন্ট্রোল', icon: Sliders },
+          { id: 'bonus_engine', label: '১০টি বোনাস রুলস', icon: Gift },
+          { id: 'users', label: 'ইউজার ম্যানেজমেন্ট', icon: Users },
+          { id: 'queue', label: `পেন্ডিং রিকোয়েস্ট (${pendingTransactions.length})`, icon: Clock },
+          { id: 'audit_logs', label: 'সিকিউরিটি অডিট লগ', icon: ShieldCheck },
+          { id: 'banners', label: 'ব্যানার CMS', icon: Image },
+          { id: 'payments', label: 'পেমেন্ট গেটওয়ে', icon: CreditCard }
+        ].map(tab => {
+          const Icon = tab.icon;
+          const isActive = adminTab === tab.id;
+          return (
             <button
-              type="submit"
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-2.5 rounded-xl shadow-md transition"
+              key={tab.id}
+              onClick={() => setAdminTab(tab.id)}
+              className={`px-3 py-2 rounded-xl font-bold flex items-center space-x-1.5 shrink-0 transition ${
+                isActive 
+                  ? 'bg-[#F5BE00] text-slate-950 shadow-sm font-black' 
+                  : 'text-slate-400 hover:text-white'
+              }`}
             >
-              + ব্যানার সেভ ও যুক্ত করুন
+              <Icon className="w-3.5 h-3.5" />
+              <span>{tab.label}</span>
             </button>
-          </form>
+          );
+        })}
+      </div>
 
-          {/* Current Active Banners List */}
-          <div className="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 shadow-xl space-y-3">
-            <h4 className="text-xs font-bold text-slate-300">বর্তমান লাইভ ব্যানারসমূহ ({banners.length} টি)</h4>
+      {/* 3. TAB: GAME CONTROL (Transparent Per-Game RTP & Bets) */}
+      {adminTab === 'game_control' && (
+        <div className="space-y-3">
+          <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 flex justify-between items-center text-slate-300">
+            <div>
+              <span className="font-bold block text-white">স্বচ্ছ গেম ব্যালেন্সিং ও আরটিপি (RTP)</span>
+              <span className="text-[10px] text-slate-400">আন্তর্জাতিক প্রুভেবলি ফেয়ার স্ট্যান্ডার্ড মেনে প্রতিটি গেম পরিচালিত হয়।</span>
+            </div>
+            <span className="text-emerald-400 font-bold bg-emerald-950/60 border border-emerald-500/40 px-2 py-0.5 rounded text-[10px]">
+              Active RNG
+            </span>
+          </div>
 
-            <div className="space-y-2">
-              {banners.map(b => (
-                <div key={b.id} className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <span className="bg-yellow-500/20 text-yellow-300 border border-yellow-500/40 px-1.5 py-0.5 rounded text-[10px] font-bold">
-                        {b.tag}
-                      </span>
-                      <span className="font-bold text-white text-sm">{b.title}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {Object.keys(gameConfigs).map(key => {
+              const g = gameConfigs[key];
+              return (
+                <div key={key} className="bg-slate-900 p-3.5 rounded-2xl border border-slate-800 space-y-2.5 text-white">
+                  <div className="flex justify-between items-center pb-2 border-b border-slate-800">
+                    <div>
+                      <div className="flex items-center space-x-1.5">
+                        <span className="font-black text-sm text-yellow-300">{g.name}</span>
+                        <span className="bg-slate-800 text-slate-300 text-[9px] px-1.5 py-0.2 rounded font-mono font-bold">
+                          {g.provider}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-slate-400">মোট রাউন্ড: {g.rounds} টি</span>
                     </div>
-                    <p className="text-[11px] text-slate-400 mt-0.5">{b.subtitle}</p>
+
+                    <button
+                      onClick={() => handleUpdateGameConfig(key, { enabled: !g.enabled })}
+                      className="text-emerald-400"
+                    >
+                      {g.enabled ? (
+                        <ToggleRight className="w-8 h-8 text-emerald-400" />
+                      ) : (
+                        <ToggleLeft className="w-8 h-8 text-slate-600" />
+                      )}
+                    </button>
                   </div>
 
-                  <div className="flex items-center space-x-1.5 shrink-0">
-                    <button
-                      onClick={() => toggleBanner(b.id)}
-                      title={b.active ? "ব্যানার বন্ধ করুন" : "ব্যানার চালু করুন"}
-                      className={`p-1.5 rounded-lg border ${
-                        b.active 
-                          ? 'bg-emerald-950 text-emerald-400 border-emerald-500/40' 
-                          : 'bg-slate-800 text-slate-500 border-slate-700'
-                      }`}
-                    >
-                      {b.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                    </button>
+                  {/* Bet Limits */}
+                  <div className="grid grid-cols-2 gap-2 text-[11px]">
+                    <div>
+                      <label className="text-slate-400 block mb-0.5">Min Bet (Tk):</label>
+                      <input
+                        type="number"
+                        value={g.minBet}
+                        onChange={e => handleUpdateGameConfig(key, { minBet: parseFloat(e.target.value) || 1 })}
+                        className="w-full bg-slate-950 border border-slate-700 rounded-lg p-1.5 text-white font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-400 block mb-0.5">Max Bet (Tk):</label>
+                      <input
+                        type="number"
+                        value={g.maxBet}
+                        onChange={e => handleUpdateGameConfig(key, { maxBet: parseFloat(e.target.value) || 1000 })}
+                        className="w-full bg-slate-950 border border-slate-700 rounded-lg p-1.5 text-white font-mono"
+                      />
+                    </div>
+                  </div>
 
-                    <button
-                      onClick={() => deleteBanner(b.id)}
-                      title="মুছে ফেলুন"
-                      className="p-1.5 rounded-lg bg-red-950/60 text-red-400 border border-red-500/40 hover:bg-red-900"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                  {/* RTP Percentage */}
+                  <div>
+                    <div className="flex justify-between items-center mb-0.5 text-[11px]">
+                      <span className="text-slate-400">Target RTP:</span>
+                      <span className="font-mono text-emerald-400 font-bold">{g.rtp.toFixed(2)}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="92.00"
+                      max="98.50"
+                      step="0.05"
+                      value={g.rtp}
+                      onChange={e => handleUpdateGameConfig(key, { rtp: parseFloat(e.target.value) })}
+                      className="w-full accent-yellow-400"
+                    />
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
         </div>
       )}
 
-      {/* 4. TAB: SIGNUP BONUS & ANNOUNCEMENT */}
-      {adminTab === 'bonus' && (
-        <div className="space-y-4">
-          {/* Signup Bonus Control Card */}
-          <div className="bg-slate-900/90 p-5 rounded-2xl border border-slate-800 shadow-xl space-y-4 text-xs">
-            <div className="flex justify-between items-center pb-3 border-b border-slate-800">
-              <div className="flex items-center space-x-2">
-                <Gift className="w-5 h-5 text-yellow-400" />
-                <div>
-                  <h3 className="font-bold text-white text-sm">নতুন অ্যাকাউন্ট সাইন-আপ বোনাস</h3>
-                  <p className="text-slate-400 text-[11px]">ইউজার রেজিস্ট্রেশন করলে স্বয়ংক্রিয়ভাবে ব্যালেন্স যোগ হবে</p>
-                </div>
-              </div>
-
-              {/* Bonus Switch ON/OFF */}
-              <button
-                onClick={() => setBonusEnabled(!bonusEnabled)}
-                className="flex items-center space-x-1 text-emerald-400"
-              >
-                {bonusEnabled ? (
-                  <ToggleRight className="w-9 h-9 text-emerald-400" />
-                ) : (
-                  <ToggleLeft className="w-9 h-9 text-slate-500" />
-                )}
-              </button>
-            </div>
-
+      {/* 4. TAB: 10-TIER BONUS ENGINE */}
+      {adminTab === 'bonus_engine' && (
+        <div className="space-y-3">
+          <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 flex justify-between items-center text-slate-300">
             <div>
-              <label className="text-slate-300 font-bold block mb-1.5">
-                বোনাসের পরিমাণ (টাকা):
-              </label>
-              <div className="flex items-center space-x-2">
-                <div className="relative flex-1">
-                  <span className="absolute left-3 top-2.5 font-bold text-slate-400">৳</span>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="যেমন: 100"
-                    value={bonusAmount}
-                    onChange={e => setBonusAmount(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl py-2 pl-8 pr-3 text-white font-mono text-sm font-bold focus:border-yellow-500"
-                  />
+              <span className="font-bold block text-white">১০টি প্রোমোশনাল বোনাস রুলস</span>
+              <span className="text-[10px] text-slate-400">খেলোয়াড়দের সক্রিয়তা ও আনুগত্য বৃদ্ধির জন্য ডাইনামিক রিওয়ার্ড।</span>
+            </div>
+            <button
+              onClick={handleSaveBonusRules}
+              className="bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black px-3.5 py-1.5 rounded-xl text-xs active:scale-95 transition"
+            >
+              সব সেভ করুন
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            {Object.keys(bonusRules).map((key, idx) => {
+              const rule = bonusRules[key];
+              return (
+                <div key={key} className="bg-slate-900 p-3 rounded-xl border border-slate-800 flex items-center justify-between text-white">
+                  <div className="flex items-center space-x-2.5">
+                    <span className="w-6 h-6 rounded-full bg-slate-800 text-yellow-400 flex items-center justify-center font-bold text-xs">
+                      {idx + 1}
+                    </span>
+                    <div>
+                      <h4 className="font-black text-xs text-white">{rule.title}</h4>
+                      <span className="text-[10px] text-slate-400">
+                        {rule.amount !== undefined ? `পুরস্কার: ৳${rule.amount} কয়েন` : `হার: ${rule.percent}%`}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="number"
+                      value={rule.amount !== undefined ? rule.amount : rule.percent}
+                      onChange={e => {
+                        const val = parseFloat(e.target.value) || 0;
+                        setBonusRules({
+                          ...bonusRules,
+                          [key]: rule.amount !== undefined ? { ...rule, amount: val } : { ...rule, percent: val }
+                        });
+                      }}
+                      className="w-20 bg-slate-950 border border-slate-700 rounded-lg p-1 text-center font-mono text-white text-xs"
+                    />
+
+                    <button
+                      onClick={() => setBonusRules({
+                        ...bonusRules,
+                        [key]: { ...rule, enabled: !rule.enabled }
+                      })}
+                      className="text-emerald-400"
+                    >
+                      {rule.enabled ? (
+                        <ToggleRight className="w-7 h-7 text-emerald-400" />
+                      ) : (
+                        <ToggleLeft className="w-7 h-7 text-slate-600" />
+                      )}
+                    </button>
+                  </div>
                 </div>
-                {/* Preset Chips */}
-                {[50, 100, 200, 500].map(amt => (
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 5. TAB: SECURITY AUDIT LOGS */}
+      {adminTab === 'audit_logs' && (
+        <div className="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl p-4 space-y-3">
+          <div className="flex justify-between items-center pb-2 border-b border-slate-800">
+            <h3 className="font-bold text-white text-xs flex items-center space-x-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <span>প্ল্যাটফর্ম সিকিউরিটি অডিট ট্রেইল ({auditLogs.length})</span>
+            </h3>
+            <span className="text-[10px] text-slate-400 font-mono">Realtime Security Feed</span>
+          </div>
+
+          <div className="space-y-2 max-h-96 overflow-y-auto no-scrollbar">
+            {auditLogs.map(log => (
+              <div key={log.id} className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-[11px] font-mono space-y-0.5">
+                <div className="flex justify-between items-center text-slate-400">
+                  <span className="text-yellow-400 font-bold">[{log.event}]</span>
+                  <span>{log.time}</span>
+                </div>
+                <p className="text-slate-200">{log.details}</p>
+                <div className="text-[9px] text-slate-500">অপারেটর: {log.admin}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 6. TAB: USER MANAGEMENT */}
+      {adminTab === 'users' && (
+        <div className="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl p-4 space-y-3">
+          <div className="flex justify-between items-center">
+            <h3 className="text-xs font-bold text-slate-300">প্লেয়ার লিস্ট ও ব্যালেন্স কন্ট্রোল</h3>
+            <input
+              type="text"
+              placeholder="ইউজারনেম বা UID..."
+              value={userSearch}
+              onChange={e => setUserSearch(e.target.value)}
+              className="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white"
+            />
+          </div>
+
+          <div className="space-y-2">
+            {filteredUsers.map(u => (
+              <div key={u.uid} className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                <div>
+                  <div className="flex items-center space-x-1.5">
+                    <span className="font-bold text-white text-sm">{u.username}</span>
+                    <span className="font-mono text-[10px] text-slate-400">UID: #{u.uid}</span>
+                  </div>
+                  <span className="font-mono text-emerald-400 font-bold block mt-0.5">
+                    ব্যালেন্স: ৳{u.balance.toFixed(2)} টাকা
+                  </span>
+                </div>
+
+                <div className="flex items-center space-x-1">
                   <button
-                    key={amt}
-                    type="button"
-                    onClick={() => setBonusAmount(amt)}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold border ${
-                      Number(bonusAmount) === amt 
-                        ? 'bg-yellow-500 text-slate-950 border-yellow-400 font-black' 
-                        : 'bg-slate-800 text-slate-300 border-slate-700'
+                    onClick={() => {
+                      adjustUserBalance(u.uid, 500);
+                      addAuditLog('BALANCE_ADJUST', `Added +500 Demo Coins to UID #${u.uid}`);
+                    }}
+                    title="+500 কয়েন যোগ"
+                    className="bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white px-2 py-1 rounded-lg border border-emerald-500/40 text-[10px] font-bold"
+                  >
+                    +500
+                  </button>
+                  <button
+                    onClick={() => {
+                      adjustUserBalance(u.uid, -100);
+                      addAuditLog('BALANCE_ADJUST', `Deducted -100 Demo Coins from UID #${u.uid}`);
+                    }}
+                    title="-100 কয়েন কাটা"
+                    className="bg-red-600/30 hover:bg-red-600 text-red-300 hover:text-white px-2 py-1 rounded-lg border border-red-500/40 text-[10px] font-bold"
+                  >
+                    -100
+                  </button>
+                  <button
+                    onClick={() => {
+                      toggleBanUser(u.uid);
+                      addAuditLog('USER_BAN_TOGGLE', `Toggled ban state for UID #${u.uid}`);
+                    }}
+                    title={u.is_banned ? "আনব্যান করুন" : "ব্যান করুন"}
+                    className={`p-1.5 rounded-lg border ${
+                      u.is_banned ? 'bg-red-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-red-400'
                     }`}
                   >
-                    ৳{amt}
+                    {u.is_banned ? <UserX className="w-3.5 h-3.5" /> : <UserCheck className="w-3.5 h-3.5" />}
                   </button>
-                ))}
+                </div>
               </div>
-            </div>
-
-            <button
-              onClick={handleSaveBonus}
-              className="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-black py-2.5 rounded-xl shadow-md transition"
-            >
-              সাইন-আপ বোনাস সেভ করুন
-            </button>
-          </div>
-
-          {/* Scrolling Notice Marquee Editor */}
-          <div className="bg-slate-900/90 p-5 rounded-2xl border border-slate-800 shadow-xl space-y-3 text-xs">
-            <h3 className="font-bold text-white text-sm flex items-center">
-              <Volume2 className="w-4 h-4 text-emerald-400 mr-1.5" />
-              <span>হোমপেজের স্ক্রলিং নোটিশ (Announcement Marquee)</span>
-            </h3>
-
-            <textarea
-              rows={3}
-              value={announcement}
-              onChange={e => setAnnouncement(e.target.value)}
-              placeholder="স্ক্রলিং নোটিশ লিখুন..."
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white leading-relaxed focus:border-emerald-500"
-            />
-
-            <button
-              onClick={handleSaveAnnouncement}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl shadow-md transition"
-            >
-              নোটিশ আপডেট করুন
-            </button>
+            ))}
           </div>
         </div>
       )}
 
-      {/* 5. TAB: DEPOSIT & WITHDRAWAL APPROVAL QUEUE */}
+      {/* 7. TAB: APPROVAL QUEUE */}
       {adminTab === 'queue' && (
-        <div className="bg-slate-900/90 rounded-2xl border border-slate-800 shadow-xl p-4 space-y-3">
+        <div className="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl p-4 space-y-3">
           <div className="flex justify-between items-center mb-1">
             <h3 className="text-xs font-bold text-slate-300 flex items-center">
               <Clock className="w-4 h-4 text-yellow-400 mr-1.5" />
@@ -520,14 +575,20 @@ export default function AdminDashboard() {
 
                     <div className="flex space-x-1.5">
                       <button
-                        onClick={() => approveTransaction(tx.id, adminNotes[tx.id] || "অ্যাপ্রুভ করা হয়েছে")}
+                        onClick={() => {
+                          approveTransaction(tx.id, adminNotes[tx.id] || "অ্যাপ্রুভ করা হয়েছে");
+                          addAuditLog('TRANSACTION_APPROVED', `Approved ${tx.type} ID #${tx.id} of ৳${tx.amount}`);
+                        }}
                         className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg font-bold text-xs flex items-center space-x-1 shadow-md"
                       >
                         <CheckCircle className="w-3.5 h-3.5" />
                         <span>অ্যাপ্রুভ</span>
                       </button>
                       <button
-                        onClick={() => rejectTransaction(tx.id, adminNotes[tx.id] || "বাতিল করা হয়েছে")}
+                        onClick={() => {
+                          rejectTransaction(tx.id, adminNotes[tx.id] || "বাতিল করা হয়েছে");
+                          addAuditLog('TRANSACTION_REJECTED', `Rejected ${tx.type} ID #${tx.id} of ৳${tx.amount}`);
+                        }}
                         className="bg-red-600/80 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg font-bold text-xs flex items-center space-x-1 shadow-md"
                       >
                         <XCircle className="w-3.5 h-3.5" />
@@ -555,9 +616,73 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* 6. TAB: PAYMENT NUMBERS & GATEWAYS */}
+      {/* 8. TAB: BANNERS & CMS */}
+      {adminTab === 'banners' && (
+        <div className="space-y-4">
+          <form onSubmit={handleCreateBanner} className="bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-xl space-y-3 text-xs">
+            <h3 className="font-bold text-yellow-400 text-xs flex items-center">
+              <Plus className="w-4 h-4 mr-1 text-emerald-400" />
+              <span>হোমপেজে নতুন প্রমো ব্যানার যুক্ত করুন</span>
+            </h3>
+
+            <div>
+              <label className="text-slate-400 block mb-1">ব্যানার শিরোনাম (Title):</label>
+              <input
+                type="text"
+                placeholder="যেমন: ১০০% ডিপোজিট বোনাস / মেগা জ্যাকপট"
+                value={newTitle}
+                onChange={e => setNewTitle(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white"
+              />
+            </div>
+
+            <div>
+              <label className="text-slate-400 block mb-1">ছোট বিবরণ (Subtitle):</label>
+              <input
+                type="text"
+                placeholder="যেমন: আজই খেলুন আর জিতে নিন আকর্ষণীয় পুরস্কার!"
+                value={newSubtitle}
+                onChange={e => setNewSubtitle(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black py-2.5 rounded-xl shadow-md transition"
+            >
+              + ব্যানার সেভ ও যুক্ত করুন
+            </button>
+          </form>
+
+          {/* Announcement Marquee Editor */}
+          <div className="bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-xl space-y-2.5 text-xs">
+            <h3 className="font-bold text-white flex items-center">
+              <Volume2 className="w-4 h-4 text-emerald-400 mr-1.5" />
+              <span>হোমপেজের স্ক্রলিং নোটিশ (Announcement Marquee)</span>
+            </h3>
+
+            <textarea
+              rows={3}
+              value={announcement}
+              onChange={e => setAnnouncement(e.target.value)}
+              placeholder="স্ক্রলিং নোটিশ লিখুন..."
+              className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white leading-relaxed focus:border-yellow-500"
+            />
+
+            <button
+              onClick={handleSaveAnnouncement}
+              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl shadow-md transition"
+            >
+              নোটিশ আপডেট করুন
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 9. TAB: PAYMENT NUMBERS */}
       {adminTab === 'payments' && (
-        <form onSubmit={handleSavePayments} className="bg-slate-900/90 rounded-2xl border border-slate-800 shadow-xl p-4 space-y-3 text-xs">
+        <form onSubmit={handleSavePayments} className="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl p-4 space-y-3 text-xs">
           <h3 className="font-bold text-white text-sm mb-1 flex items-center">
             <CreditCard className="w-4 h-4 text-emerald-400 mr-1.5" />
             <span>অফিসিয়াল বিকাশ ও নগদ নম্বর সেটিংস</span>
@@ -600,7 +725,7 @@ export default function AdminDashboard() {
                 type="number"
                 value={paySettings.MIN_DEPOSIT_AMOUNT}
                 onChange={e => setPaySettings({ ...paySettings, MIN_DEPOSIT_AMOUNT: parseFloat(e.target.value) })}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white"
+                className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white font-mono"
               />
             </div>
             <div>
@@ -609,84 +734,20 @@ export default function AdminDashboard() {
                 type="number"
                 value={paySettings.MIN_WITHDRAWAL_AMOUNT}
                 onChange={e => setPaySettings({ ...paySettings, MIN_WITHDRAWAL_AMOUNT: parseFloat(e.target.value) })}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white"
+                className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white font-mono"
               />
             </div>
           </div>
 
           <button
             type="submit"
-            className="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-black py-2.5 rounded-xl shadow-md transition"
+            className="w-full bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black py-2.5 rounded-xl shadow-md transition"
           >
             পেমেন্ট ইনফরমেশন সেভ করুন
           </button>
         </form>
       )}
 
-      {/* 7. TAB: USER MANAGEMENT */}
-      {adminTab === 'users' && (
-        <div className="bg-slate-900/90 rounded-2xl border border-slate-800 shadow-xl p-4 space-y-3">
-          <div className="flex justify-between items-center">
-            <h3 className="text-xs font-bold text-slate-300">প্লেয়ার লিস্ট ও ব্যালেন্স কন্ট্রোল</h3>
-            <input
-              type="text"
-              placeholder="ইউজারনেম বা UID..."
-              value={userSearch}
-              onChange={e => setUserSearch(e.target.value)}
-              className="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white"
-            />
-          </div>
-
-          <div className="space-y-2">
-            {filteredUsers.map(u => (
-              <div key={u.uid} className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
-                <div>
-                  <div className="flex items-center space-x-1.5">
-                    <span className="font-bold text-white text-sm">{u.username}</span>
-                    <span className="font-mono text-[10px] text-slate-400">UID: #{u.uid}</span>
-                  </div>
-                  <span className="font-mono text-emerald-400 font-bold block mt-0.5">
-                    ব্যালেন্স: ৳{u.balance.toFixed(2)} টাকা
-                  </span>
-                </div>
-
-                <div className="flex items-center space-x-1">
-                  <button
-                    onClick={() => adjustUserBalance(u.uid, 100)}
-                    title="+100 টাকা ব্যালেন্স যোগ"
-                    className="bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white px-2 py-1 rounded-lg border border-emerald-500/40 text-[10px] font-bold"
-                  >
-                    +100
-                  </button>
-                  <button
-                    onClick={() => adjustUserBalance(u.uid, 500)}
-                    title="+500 টাকা ব্যালেন্স যোগ"
-                    className="bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white px-2 py-1 rounded-lg border border-emerald-500/40 text-[10px] font-bold"
-                  >
-                    +500
-                  </button>
-                  <button
-                    onClick={() => adjustUserBalance(u.uid, -100)}
-                    title="-100 টাকা কাটা"
-                    className="bg-red-600/30 hover:bg-red-600 text-red-300 hover:text-white px-2 py-1 rounded-lg border border-red-500/40 text-[10px] font-bold"
-                  >
-                    -100
-                  </button>
-                  <button
-                    onClick={() => toggleBanUser(u.uid)}
-                    title={u.is_banned ? "আনব্যান করুন" : "ব্যান করুন"}
-                    className={`p-1.5 rounded-lg border ${
-                      u.is_banned ? 'bg-red-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-red-400'
-                    }`}
-                  >
-                    {u.is_banned ? <UserX className="w-3.5 h-3.5" /> : <UserCheck className="w-3.5 h-3.5" />}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

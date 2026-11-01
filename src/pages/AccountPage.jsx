@@ -9,15 +9,17 @@ import {
   ShieldAlert, 
   Copy, 
   Check, 
-  Crown, 
+  RotateCw,
   Lock, 
-  TrendingUp, 
   CreditCard, 
   Gamepad2, 
   FileText, 
   ChevronRight,
   LogOut,
-  Sparkles
+  Sparkles,
+  Bell,
+  Mail,
+  Diamond
 } from 'lucide-react';
 import VipModal from '../components/VipModal';
 
@@ -26,270 +28,291 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth }) {
   const [copied, setCopied] = useState(false);
   const [showVipModal, setShowVipModal] = useState(false);
   const [activeHistoryModal, setActiveHistoryModal] = useState(null); // 'game', 'transaction', 'deposit', 'withdraw'
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   function handleCopyUid() {
-    navigator.clipboard.writeText(user.uid ? user.uid.toString() : '198808');
+    navigator.clipboard.writeText(user.uid ? user.uid.toString() : '120356');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  function handleRefreshBalance() {
+    setIsRefreshing(true);
+    setTimeout(() => setIsRefreshing(false), 600);
   }
 
   const depositList = (transactions || []).filter(t => t.type === 'deposit');
   const withdrawList = (transactions || []).filter(t => t.type === 'withdrawal');
 
   return (
-    <div className="space-y-3.5 pb-8 text-xs select-none">
+    <div className="space-y-3.5 pb-20 text-xs select-none -mx-3.5 -mt-3.5">
       
-      {/* 1. Green Gradient Header with User Avatar, Username, UID Badge, VIP1 Badge */}
-      <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 rounded-3xl p-5 text-white shadow-xl relative overflow-hidden">
-        {/* Subtle decorative circles */}
-        <div className="absolute -right-6 -bottom-6 w-28 h-28 rounded-full bg-white/10 blur-xl pointer-events-none" />
-        <div className="absolute top-2 right-12 w-16 h-16 rounded-full bg-yellow-300/10 blur-lg pointer-events-none" />
-
+      {/* 1. Curved Yellow Header (Matching Screenshot 4) */}
+      <div className="bg-[#F5BE00] text-slate-900 px-5 pt-6 pb-12 rounded-b-[32px] relative shadow-sm">
         <div className="flex items-center space-x-3.5 relative z-10">
-          {/* User Avatar */}
+          
+          {/* 3D Cartoon Avatar */}
           <div className="relative">
-            <div className="w-16 h-16 rounded-full bg-white/20 border-2 border-yellow-300/80 p-0.5 shadow-lg flex items-center justify-center">
-              <img 
-                src="/assets/amarclub/cat_original.png" 
-                alt="Avatar" 
-                className="w-full h-full rounded-full object-cover bg-emerald-700" 
-              />
+            <div className="w-16 h-16 rounded-full bg-white/40 border-2 border-white p-0.5 shadow-md flex items-center justify-center overflow-hidden">
+              <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-200 to-yellow-100 flex items-center justify-center text-3xl">
+                👦
+              </div>
             </div>
-            <span className="absolute -bottom-1 -right-1 bg-yellow-400 text-slate-950 font-black text-[9px] px-1.5 py-0.2 rounded-full border border-white shadow-sm flex items-center space-x-0.5">
-              <Crown className="w-2.5 h-2.5 inline fill-current" />
-              <span>Lv.1</span>
-            </span>
           </div>
 
           {/* User Info & Badges */}
-          <div className="flex-1">
+          <div className="flex-1 space-y-1">
             <div className="flex items-center space-x-2">
-              <h3 className="font-black text-base tracking-tight text-white drop-shadow-sm">
-                {user.username || 'MEMBERNNGAAF85'}
+              <h3 className="font-black text-lg tracking-tight text-slate-900 font-sans">
+                {user.username === 'MEMBERNNGAAF85' ? 'RIYAD' : (user.username || 'RIYAD')}
               </h3>
               
-              {/* VIP1 Badge */}
+              {/* Pink Star VIP3 Badge matching Screenshot 4 */}
               <button 
                 onClick={() => setShowVipModal(true)}
-                className="bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-[10px] px-2 py-0.5 rounded-full shadow-md flex items-center space-x-1 border border-white/60 active:scale-95 transition"
+                className="bg-gradient-to-r from-rose-400 via-pink-500 to-rose-500 text-white font-black text-[10px] px-2 py-0.5 rounded-full shadow-sm flex items-center space-x-1 border border-white/60 active:scale-95 transition"
               >
-                <Crown className="w-3 h-3 fill-current" />
-                <span>VIP 1</span>
+                <span>⭐</span>
+                <span>VIP{user.vip_level || 3}</span>
               </button>
             </div>
 
             {/* UID Badge with Copy Button */}
-            <div className="flex items-center space-x-2 mt-1.5">
+            <div className="flex items-center space-x-2">
               <div 
                 onClick={handleCopyUid}
-                className="inline-flex items-center space-x-1.5 bg-black/20 hover:bg-black/30 backdrop-blur-md border border-white/20 px-2.5 py-0.5 rounded-full cursor-pointer transition active:scale-95"
+                className="inline-flex items-center space-x-1.5 bg-white/30 hover:bg-white/40 border border-white/40 px-2.5 py-0.5 rounded-full cursor-pointer transition active:scale-95"
               >
-                <span className="text-emerald-100 font-mono text-[11px] font-bold">
-                  UID: #{user.uid || '198808'}
+                <span className="text-slate-800 font-mono text-[11px] font-bold">
+                  UID | {user.uid === '198808' ? '120356' : (user.uid || '120356')}
                 </span>
                 {copied ? (
-                  <Check className="w-3 h-3 text-yellow-300" />
+                  <Check className="w-3 h-3 text-slate-900 font-bold" />
                 ) : (
-                  <Copy className="w-3 h-3 text-white/70 hover:text-white" />
+                  <Copy className="w-3 h-3 text-slate-800" />
                 )}
               </div>
             </div>
+
+            {/* Last Login Timestamp */}
+            <div className="text-[10px] text-slate-800/80 font-medium">
+              Last login: 2026-11-01 20:37:06
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 2. Total Balance Card with Wallet, Deposit, Withdraw, and VIP Buttons */}
-      <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 space-y-3.5">
-        <div className="flex justify-between items-center px-1">
-          <div>
-            <span className="text-[11px] font-bold text-slate-400 block uppercase tracking-wider">
-              Total Balance
-            </span>
-            <div className="flex items-baseline space-x-1 mt-0.5">
-              <span className="text-2xl font-black font-mono text-emerald-600">
-                ৳{user.balance.toFixed(2)}
+      {/* Floating Body Container (Padding) */}
+      <div className="px-3.5 space-y-3.5 -mt-9 relative z-20">
+
+        {/* 2. Floating Total Balance Card with 4 Pastel Buttons (Matching Screenshot 4) */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-3">
+          <div className="flex justify-between items-center">
+            <div>
+              <span className="text-[11px] font-bold text-slate-400 block">
+                Total balance
               </span>
-              <span className="text-[10px] text-slate-400 font-bold">BDT</span>
+              <div className="flex items-center space-x-2 mt-0.5">
+                <span className="text-2xl font-black font-mono text-slate-900 tracking-tight">
+                  ৳{user.balance.toFixed(2)}
+                </span>
+                <button 
+                  onClick={handleRefreshBalance}
+                  className={`text-slate-400 hover:text-slate-600 p-1 active:scale-95 transition ${
+                    isRefreshing ? 'animate-spin text-amber-500' : ''
+                  }`}
+                  title="রিফ্রেশ ব্যালেন্স"
+                >
+                  <RotateCw className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
-          <button 
-            onClick={onOpenWallet}
-            className="text-[11px] font-bold text-emerald-600 flex items-center space-x-0.5 hover:underline"
-          >
-            <span>Balance details</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
 
-        {/* 4 Action Buttons Row: Wallet, Deposit, Withdraw, VIP */}
-        <div className="grid grid-cols-4 gap-2 pt-1">
-          {/* 1. Wallet */}
-          <button
-            onClick={onOpenWallet}
-            className="flex flex-col items-center p-2 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-100 transition active:scale-95"
-          >
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-1 shadow-sm">
-              <Wallet className="w-5 h-5" />
-            </div>
-            <span className="font-bold text-[11px] text-slate-700">Wallet</span>
-          </button>
+          {/* 4 Pastel Action Buttons Row: Wallet, Deposit, Withdraw, VIP */}
+          <div className="grid grid-cols-4 gap-2 pt-1">
+            {/* 1. Wallet (Pastel Pink) */}
+            <button
+              onClick={onOpenWallet}
+              className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 transition active:scale-95"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 text-rose-500 flex items-center justify-center mb-1 shadow-sm">
+                <Wallet className="w-6 h-6 stroke-[2]" />
+              </div>
+              <span className="font-bold text-[11px] text-slate-700">Wallet</span>
+            </button>
 
-          {/* 2. Deposit */}
-          <button
-            onClick={onOpenWallet}
-            className="flex flex-col items-center p-2 rounded-2xl bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-100 transition active:scale-95"
-          >
-            <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center mb-1 shadow-md shadow-emerald-500/20">
-              <ArrowDownLeft className="w-5 h-5" />
-            </div>
-            <span className="font-bold text-[11px] text-emerald-700">Deposit</span>
-          </button>
+            {/* 2. Deposit (Pastel Orange) */}
+            <button
+              onClick={onOpenWallet}
+              className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 transition active:scale-95"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 text-amber-500 flex items-center justify-center mb-1 shadow-sm">
+                <ArrowDownLeft className="w-6 h-6 stroke-[2.2]" />
+              </div>
+              <span className="font-bold text-[11px] text-slate-700">Deposit</span>
+            </button>
 
-          {/* 3. Withdraw */}
-          <button
-            onClick={onOpenWallet}
-            className="flex flex-col items-center p-2 rounded-2xl bg-amber-50 hover:bg-amber-100/80 border border-amber-100 transition active:scale-95"
-          >
-            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center mb-1 shadow-md shadow-amber-500/20">
-              <ArrowUpRight className="w-5 h-5" />
-            </div>
-            <span className="font-bold text-[11px] text-amber-700">Withdraw</span>
-          </button>
+            {/* 3. Withdraw (Pastel Blue) */}
+            <button
+              onClick={onOpenWallet}
+              className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 transition active:scale-95"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-sky-50 border border-sky-100 text-sky-500 flex items-center justify-center mb-1 shadow-sm">
+                <CreditCard className="w-6 h-6 stroke-[2]" />
+              </div>
+              <span className="font-bold text-[11px] text-slate-700">Withdraw</span>
+            </button>
 
-          {/* 4. VIP */}
-          <button
-            onClick={() => setShowVipModal(true)}
-            className="flex flex-col items-center p-2 rounded-2xl bg-yellow-50 hover:bg-yellow-100/80 border border-yellow-100 transition active:scale-95"
-          >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-400 to-yellow-500 text-slate-950 flex items-center justify-center mb-1 shadow-md shadow-yellow-500/20">
-              <Crown className="w-5 h-5 fill-current" />
-            </div>
-            <span className="font-bold text-[11px] text-yellow-800">VIP</span>
-          </button>
-        </div>
-      </div>
-
-      {/* 3. "Safe" Daily Interest Box */}
-      <div className="bg-gradient-to-r from-slate-900 via-[#101e19] to-slate-900 rounded-3xl p-4 text-white shadow-md border border-emerald-500/30 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 shadow-lg shadow-emerald-500/30">
-            <Lock className="w-6 h-6 stroke-[2.5]" />
-          </div>
-          <div>
-            <div className="flex items-center space-x-1.5">
-              <h4 className="font-black text-sm text-yellow-300 tracking-wide">Safe Vault</h4>
-              <span className="bg-emerald-500/20 text-emerald-400 text-[9px] font-black px-1.5 py-0.2 rounded border border-emerald-400/40">
-                +0.1% DAILY
-              </span>
-            </div>
-            <p className="text-[10px] text-slate-300 mt-0.5">
-              Daily interest rate 0.1%, transfer into safe to earn daily interest!
-            </p>
+            {/* 4. VIP (Pastel Teal) */}
+            <button
+              onClick={() => setShowVipModal(true)}
+              className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 transition active:scale-95"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-100 text-teal-600 flex items-center justify-center mb-1 shadow-sm font-black text-base">
+                V
+              </div>
+              <span className="font-bold text-[11px] text-slate-700">VIP</span>
+            </button>
           </div>
         </div>
 
-        <button 
-          onClick={() => alert("Safe Vault-এ ট্রান্সফার করার জন্য নূন্যতম ৳১০০ প্রয়োজন। প্রতিদিন রাত ১২টায় ইন্টারেস্ট যোগ হবে।")}
-          className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-black px-3.5 py-2 rounded-xl text-xs shadow-md transition active:scale-95 shrink-0"
+        {/* 3. "Safe" Daily Interest Box (Matching Screenshot 4) */}
+        <div 
+          onClick={() => alert("Safe Vault: আপনার ব্যালেন্স Safe-এ জমা রাখলে দৈনিক ০.১% হারে লভ্যাংশ পাওয়া যাবে। লভ্যাংশ প্রতি ১ মিনিট পর পর হিসেব করা হয়।")}
+          className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md transition active:scale-95"
         >
-          Transfer
-        </button>
-      </div>
+          <div className="flex items-center space-x-3">
+            <div className="w-11 h-11 rounded-xl bg-amber-100 border border-amber-200 text-amber-600 flex items-center justify-center text-xl shadow-sm shrink-0">
+              🪙
+            </div>
+            <div>
+              <h4 className="font-black text-slate-900 text-sm">Safe</h4>
+              <p className="text-[10px] text-slate-400 mt-0.5 leading-snug max-w-[220px]">
+                The daily interest rate is 0.1%, and the income is calculated once every 1 minutes.
+              </p>
+            </div>
+          </div>
 
-      {/* 4. 2x2 Grid for Game History, Transaction, Deposit History, and Withdraw History */}
-      <div>
-        <h4 className="font-black text-slate-900 text-xs px-1 mb-2">History & Records</h4>
+          <div className="bg-amber-500 text-white font-black text-[11px] px-2.5 py-1 rounded-full flex items-center space-x-0.5 shadow-sm shrink-0">
+            <span>৳0.00</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </div>
+        </div>
+
+        {/* 4. 2x2 Grid for Game History, Transaction, Deposit History, and Withdraw History (Matching Screenshot 4) */}
         <div className="grid grid-cols-2 gap-2.5">
-          {/* Game History */}
+          {/* 1. Game History (Pastel Blue) */}
           <div 
             onClick={() => setActiveHistoryModal('game')}
-            className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
+            className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-blue-500 text-white flex items-center justify-center shrink-0 shadow-sm shadow-blue-500/20">
               <Gamepad2 className="w-5 h-5" />
             </div>
             <div className="flex-1 overflow-hidden">
-              <h5 className="font-bold text-slate-800 text-xs truncate">Game History</h5>
-              <span className="text-[10px] text-slate-400 block truncate">Bets & Win records</span>
+              <h5 className="font-black text-slate-900 text-xs truncate">Game History</h5>
+              <span className="text-[10px] text-slate-400 block truncate">My game history</span>
             </div>
           </div>
 
-          {/* Transaction History */}
+          {/* 2. Transaction (Pastel Green) */}
           <div 
             onClick={() => setActiveHistoryModal('transaction')}
-            className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
+            className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm shadow-emerald-500/20">
               <FileText className="w-5 h-5" />
             </div>
             <div className="flex-1 overflow-hidden">
-              <h5 className="font-bold text-slate-800 text-xs truncate">Transaction</h5>
-              <span className="text-[10px] text-slate-400 block truncate">Account statements</span>
+              <h5 className="font-black text-slate-900 text-xs truncate">Transaction</h5>
+              <span className="text-[10px] text-slate-400 block truncate">My transaction history</span>
             </div>
           </div>
 
-          {/* Deposit History */}
+          {/* 3. Deposit (Pastel Pink) */}
           <div 
             onClick={() => setActiveHistoryModal('deposit')}
-            className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
+            className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-rose-400 text-white flex items-center justify-center shrink-0 shadow-sm shadow-rose-400/20">
               <ArrowDownLeft className="w-5 h-5" />
             </div>
             <div className="flex-1 overflow-hidden">
-              <h5 className="font-bold text-slate-800 text-xs truncate">Deposit History</h5>
-              <span className="text-[10px] text-slate-400 block truncate">Top-up logs</span>
+              <h5 className="font-black text-slate-900 text-xs truncate">Deposit</h5>
+              <span className="text-[10px] text-slate-400 block truncate">My deposit history</span>
             </div>
           </div>
 
-          {/* Withdraw History */}
+          {/* 4. Withdraw (Pastel Orange) */}
           <div 
             onClick={() => setActiveHistoryModal('withdraw')}
-            className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
+            className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
-            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm shadow-amber-500/20">
               <ArrowUpRight className="w-5 h-5" />
             </div>
             <div className="flex-1 overflow-hidden">
-              <h5 className="font-bold text-slate-800 text-xs truncate">Withdraw History</h5>
-              <span className="text-[10px] text-slate-400 block truncate">Payout status</span>
+              <h5 className="font-black text-slate-900 text-xs truncate">Withdraw</h5>
+              <span className="text-[10px] text-slate-400 block truncate">My withdraw history</span>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* 5. Admin & Logout Actions */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-100 overflow-hidden mt-3">
-        {user.is_admin && (
-          <button
-            onClick={onOpenAdmin}
-            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-50 transition"
-          >
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-yellow-500/10 text-yellow-600 flex items-center justify-center">
-                <ShieldAlert className="w-4 h-4" />
-              </div>
-              <div>
-                <h5 className="font-bold text-slate-800">অ্যাডমিন প্যানেল</h5>
-                <span className="text-[10px] text-slate-400">ম্যানেজ গেম, ইউজার ও উইথড্র</span>
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-slate-400" />
-          </button>
-        )}
-
-        <button
-          onClick={logout}
-          className="w-full p-3.5 flex justify-between items-center text-left hover:bg-red-50 text-red-600 transition"
+        {/* 5. Notification Bar (Matching Screenshot 4) */}
+        <div 
+          onClick={() => alert("অফিশিয়াল নোটিফিকেশন: আপনার অ্যাকাউন্টে কোনো অমীমাংসিত সিকিউরিটি অ্যালার্ট নেই।")}
+          className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md transition active:scale-95"
         >
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
-              <LogOut className="w-4 h-4" />
+            <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+              <Mail className="w-5 h-5" />
             </div>
-            <span className="font-bold">Log out</span>
+            <span className="font-bold text-slate-800 text-xs">Notification</span>
           </div>
-          <ChevronRight className="w-4 h-4 text-red-400" />
-        </button>
+
+          <div className="flex items-center space-x-1.5">
+            <span className="w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] font-black shadow-sm">
+              6
+            </span>
+            <ChevronRight className="w-4 h-4 text-slate-400" />
+          </div>
+        </div>
+
+        {/* 6. Admin Panel Link & Logout */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-100 overflow-hidden">
+          {user.is_admin && (
+            <button
+              onClick={onOpenAdmin}
+              className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-50 transition"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded-lg bg-yellow-500/10 text-yellow-600 flex items-center justify-center">
+                  <ShieldAlert className="w-4 h-4" />
+                </div>
+                <div>
+                  <h5 className="font-bold text-slate-800">Admin Control Panel</h5>
+                  <span className="text-[10px] text-slate-400">Game RTP, User moderation & Payments</span>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+            </button>
+          )}
+
+          <button
+            onClick={logout}
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-red-50 text-red-600 transition"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
+                <LogOut className="w-4 h-4" />
+              </div>
+              <span className="font-bold">Log out</span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-red-400" />
+          </button>
+        </div>
+
       </div>
 
       {/* VIP Modal */}
@@ -431,9 +454,9 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth }) {
 
             <button
               onClick={() => setActiveHistoryModal(null)}
-              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-xs transition"
+              className="w-full bg-[#F5BE00] hover:bg-yellow-500 text-slate-900 font-black py-2.5 rounded-xl text-xs transition"
             >
-              বন্ধ করুন
+              Close
             </button>
           </div>
         </div>
