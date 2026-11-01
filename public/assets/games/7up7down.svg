@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320">
+  <defs>
+    <radialGradient id="bowlBg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="60%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </radialGradient>
+    <radialGradient id="glassSphere" cx="35%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.8" />
+      <stop offset="30%" stop-color="#38bdf8" stop-opacity="0.3" />
+      <stop offset="70%" stop-color="#0284c7" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.8" />
+    </radialGradient>
+    <filter id="diceGlow">
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#38bdf8" flood-opacity="0.8" />
+    </filter>
+  </defs>
+
+  <rect width="400" height="320" rx="24" fill="url(#bowlBg)" />
+
+  <!-- JILI Badge -->
+  <rect x="320" y="14" width="64" height="26" rx="8" fill="#e11d48" />
+  <text x="352" y="32" fill="#ffffff" font-family="'Arial Black', sans-serif" font-weight="900" font-size="13" text-anchor="middle">JILI</text>
+
+  <!-- Big Glass Bowl Cloche -->
+  <circle cx="200" cy="125" r="95" fill="url(#glassSphere)" stroke="#7dd3fc" stroke-width="2.5" opacity="0.9" />
+  <ellipse cx="200" cy="195" rx="85" ry="25" fill="#0369a1" opacity="0.4" />
+
+  <!-- Two 3D White Rolling Casino Dice (Matching Image 1) -->
+  <!-- Left Die -->
+  <g transform="translate(160, 115) rotate(-18)" filter="url(#diceGlow)">
+    <rect x="-28" y="-28" width="56" height="56" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" />
+    <circle cx="-14" cy="-14" r="5" fill="#dc2626" />
+    <circle cx="14" cy="14" r="5" fill="#dc2626" />
+    <circle cx="0" cy="0" r="6" fill="#dc2626" />
+  </g>
+
+  <!-- Right Die -->
+  <g transform="translate(235, 125) rotate(22)" filter="url(#diceGlow)">
+    <rect x="-28" y="-28" width="56" height="56" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" />
+    <circle cx="-14" cy="-14" r="5" fill="#1e293b" />
+    <circle cx="14" cy="14" r="5" fill="#1e293b" />
+    <circle cx="-14" cy="14" r="5" fill="#1e293b" />
+    <circle cx="14" cy="-14" r="5" fill="#1e293b" />
+  </g>
+
+  <!-- 3D 7up 7down Typography -->
+  <g filter="url(#diceGlow)">
+    <text x="200" y="260" text-anchor="middle" font-family="'Arial Black', Impact, sans-serif" font-size="34" font-weight="900" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5">7up 7down</text>
+    <rect x="140" y="275" width="120" height="24" rx="12" fill="#0284c7" />
+    <text x="200" y="291" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="900" fill="#ffffff">DICE ARENA</text>
+  </g>
+</svg>

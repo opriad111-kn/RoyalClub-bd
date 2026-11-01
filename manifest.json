@@ -1,0 +1,20 @@
+{
+  "name": "RoyalClubBD - Official Gaming App",
+  "short_name": "RoyalClubBD",
+  "description": "RoyalClubBD (রয়েল ক্লাব বিডি) - Official Online Gaming and Club App in Bangladesh",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#022c22",
+  "theme_color": "#064e3b",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "entertainment"]
+}
+

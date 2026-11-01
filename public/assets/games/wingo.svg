@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320">
+  <defs>
+    <radialGradient id="wingoBg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#064e3b" />
+      <stop offset="60%" stop-color="#022c22" />
+      <stop offset="100%" stop-color="#00140e" />
+    </radialGradient>
+    <radialGradient id="ballGreen" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#a7f3d0" />
+      <stop offset="40%" stop-color="#10b981" />
+      <stop offset="85%" stop-color="#047857" />
+      <stop offset="100%" stop-color="#064e3b" />
+    </radialGradient>
+    <radialGradient id="ballRed" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#fecdd3" />
+      <stop offset="40%" stop-color="#ef4444" />
+      <stop offset="85%" stop-color="#b91c1c" />
+      <stop offset="100%" stop-color="#7f1d1d" />
+    </radialGradient>
+    <radialGradient id="ballViolet" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#e9d5ff" />
+      <stop offset="40%" stop-color="#a855f7" />
+      <stop offset="85%" stop-color="#7e22ce" />
+      <stop offset="100%" stop-color="#581c87" />
+    </radialGradient>
+    <filter id="ballGlow">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000" flood-opacity="0.6" />
+    </filter>
+  </defs>
+
+  <rect width="400" height="320" rx="24" fill="url(#wingoBg)" />
+
+  <!-- Synchronized 1-Min Countdown Ring in Center -->
+  <circle cx="200" cy="115" r="85" fill="none" stroke="#10b981" stroke-width="4" stroke-dasharray="14 10" opacity="0.6" />
+
+  <!-- Pair of Casino Rolling Dice -->
+  <g transform="translate(110, 65) rotate(15)" filter="url(#ballGlow)">
+    <rect x="-22" y="-22" width="44" height="44" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
+    <circle cx="-10" cy="-10" r="4" fill="#ef4444" />
+    <circle cx="10" cy="10" r="4" fill="#ef4444" />
+    <circle cx="0" cy="0" r="4.5" fill="#ef4444" />
+  </g>
+
+  <!-- 3D Lottery Balls -->
+  <!-- Red Ball 8 -->
+  <g transform="translate(130, 135)" filter="url(#ballGlow)">
+    <circle cx="0" cy="0" r="34" fill="url(#ballRed)" />
+    <circle cx="0" cy="0" r="16" fill="#ffffff" />
+    <text x="0" y="7" font-family="'Arial Black'" font-size="20" font-weight="900" fill="#000" text-anchor="middle">8</text>
+  </g>
+
+  <!-- Violet Ball 5 Center -->
+  <g transform="translate(200, 105)" filter="url(#ballGlow)">
+    <circle cx="0" cy="0" r="42" fill="url(#ballViolet)" stroke="#fff" stroke-width="2" />
+    <circle cx="0" cy="0" r="20" fill="#ffffff" />
+    <text x="0" y="8" font-family="'Arial Black'" font-size="24" font-weight="900" fill="#000" text-anchor="middle">5</text>
+  </g>
+
+  <!-- Green Ball 1 -->
+  <g transform="translate(270, 135)" filter="url(#ballGlow)">
+    <circle cx="0" cy="0" r="34" fill="url(#ballGreen)" />
+    <circle cx="0" cy="0" r="16" fill="#ffffff" />
+    <text x="0" y="7" font-family="'Arial Black'" font-size="20" font-weight="900" fill="#000" text-anchor="middle">1</text>
+  </g>
+
+  <!-- 3D WIN GO Title & Timer Badge -->
+  <g filter="url(#ballGlow)">
+    <text x="200" y="255" text-anchor="middle" font-family="'Arial Black', Impact, sans-serif" font-size="34" font-weight="900" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5">WIN GO</text>
+    <rect x="135" y="270" width="130" height="28" rx="14" fill="#10b981" />
+    <text x="200" y="289" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="900" fill="#ffffff" letter-spacing="1">⏱ 1-MIN LIVE</text>
+  </g>
+</svg>

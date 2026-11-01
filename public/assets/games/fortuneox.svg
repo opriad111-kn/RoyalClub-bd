@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320">
+  <defs>
+    <radialGradient id="oxBg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#7f1d1d" />
+      <stop offset="60%" stop-color="#450a0a" />
+      <stop offset="100%" stop-color="#1c0505" />
+    </radialGradient>
+    <linearGradient id="goldHorns" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff" />
+      <stop offset="30%" stop-color="#fef08a" />
+      <stop offset="70%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#b45309" />
+    </linearGradient>
+    <filter id="oxGlow">
+      <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#f59e0b" flood-opacity="0.8" />
+    </filter>
+  </defs>
+
+  <rect width="400" height="320" rx="24" fill="url(#oxBg)" />
+
+  <!-- PG Soft Badge -->
+  <rect x="320" y="14" width="64" height="26" rx="8" fill="#1e293b" />
+  <text x="352" y="32" fill="#38bdf8" font-family="'Arial Black', sans-serif" font-weight="900" font-size="13" text-anchor="middle">PG</text>
+
+  <!-- 3D Red Ox Warrior (Matching Image 2) -->
+  <g transform="translate(200, 115)" filter="url(#oxGlow)">
+    <!-- Golden Horns -->
+    <path d="M -50 -15 C -80 -45 -60 -75 -40 -85 C -45 -65 -30 -45 -15 -35 Z" fill="url(#goldHorns)" stroke="#78350f" stroke-width="2" />
+    <path d="M 50 -15 C 80 -45 60 -75 40 -85 C 45 -65 30 -45 15 -35 Z" fill="url(#goldHorns)" stroke="#78350f" stroke-width="2" />
+    
+    <!-- Red Robe Body -->
+    <path d="M -50 55 L -40 -5 L 40 -5 L 50 55 Z" fill="#dc2626" stroke="#991b1b" stroke-width="2" />
+    <line x1="0" y1="-5" x2="0" y2="55" stroke="#fef08a" stroke-width="4" />
+
+    <!-- Ox Head -->
+    <ellipse cx="0" cy="-10" rx="42" ry="34" fill="#b91c1c" stroke="#7f1d1d" stroke-width="2" />
+    
+    <!-- Snout & Golden Ring -->
+    <ellipse cx="0" cy="5" rx="26" ry="16" fill="#fca5a5" />
+    <circle cx="-8" cy="4" r="3.5" fill="#450a0a" />
+    <circle cx="8" cy="4" r="3.5" fill="#450a0a" />
+    <circle cx="0" cy="18" r="8" fill="none" stroke="url(#goldHorns)" stroke-width="3" />
+
+    <!-- Cute Fierce Eyes -->
+    <polygon points="-24,-18 -12,-14 -16,-8" fill="#ffffff" />
+    <circle cx="-18" cy="-13" r="2.5" fill="#000" />
+    <polygon points="24,-18 12,-14 16,-8" fill="#ffffff" />
+    <circle cx="18" cy="-13" r="2.5" fill="#000" />
+  </g>
+
+  <!-- Golden Sycee / Ingot -->
+  <g transform="translate(200, 205)" filter="url(#oxGlow)">
+    <path d="M -35 0 C -45 15 -25 25 0 25 C 25 25 45 15 35 0 C 20 8 -20 8 -35 0 Z" fill="url(#goldHorns)" stroke="#78350f" stroke-width="2" />
+    <ellipse cx="0" cy="0" rx="25" ry="10" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5" />
+  </g>
+
+  <!-- Typography -->
+  <g filter="url(#oxGlow)">
+    <text x="200" y="270" text-anchor="middle" font-family="'Arial Black', Impact, sans-serif" font-size="30" font-weight="900" fill="#fef08a" stroke="#b45309" stroke-width="1.5">FORTUNE OX</text>
+    <text x="200" y="295" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="900" fill="#38bdf8">10X RESPIN SLOTS</text>
+  </g>
+</svg>

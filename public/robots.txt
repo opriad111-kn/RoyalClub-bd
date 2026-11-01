@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Googlebot & Search Engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+Sitemap: https://royalclubbd.vercel.app/sitemap.xml
+

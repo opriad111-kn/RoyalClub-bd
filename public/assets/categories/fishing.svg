@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+  <defs>
+    <radialGradient id="ringGold" cx="50%" cy="50%" r="50%">
+      <stop offset="70%" stop-color="#ca8a04" />
+      <stop offset="85%" stop-color="#fef08a" />
+      <stop offset="95%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#78350f" />
+    </radialGradient>
+    <radialGradient id="oceanBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="60%" stop-color="#0369a1" />
+      <stop offset="100%" stop-color="#0c4a6e" />
+    </radialGradient>
+    <linearGradient id="fishGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fed7aa" />
+      <stop offset="30%" stop-color="#f97316" />
+      <stop offset="70%" stop-color="#ea580c" />
+      <stop offset="100%" stop-color="#c2410c" />
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.6" />
+    </filter>
+  </defs>
+
+  <circle cx="80" cy="80" r="76" fill="url(#ringGold)" />
+  <circle cx="80" cy="80" r="66" fill="url(#oceanBg)" />
+
+  <!-- Water Splash Waves -->
+  <path d="M 30 110 Q 55 90 80 110 T 130 110" fill="none" stroke="#bae6fd" stroke-width="3" opacity="0.6" />
+  <path d="M 40 120 Q 65 105 90 120 T 120 120" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.8" />
+
+  <!-- 3D Leaping Clownfish / Golden Koi Fish -->
+  <g transform="translate(78, 76) rotate(-22)" filter="url(#shadow)">
+    <!-- Tail Fin -->
+    <path d="M -30 0 L -50 -16 Q -42 0 -50 16 Z" fill="url(#fishGrad)" stroke="#c2410c" stroke-width="1.5" />
+    
+    <!-- Body -->
+    <ellipse cx="0" cy="0" rx="36" ry="20" fill="url(#fishGrad)" stroke="#9a3412" stroke-width="2" />
+    
+    <!-- White Clownfish Stripes -->
+    <path d="M -8 -19 Q 0 0 -8 19 L -16 17 Q -8 0 -16 -17 Z" fill="#ffffff" stroke="#000" stroke-width="1" />
+    <path d="M 12 -18 Q 18 0 12 18 L 6 17 Q 12 0 6 -17 Z" fill="#ffffff" stroke="#000" stroke-width="1" />
+
+    <!-- Eye -->
+    <circle cx="24" cy="-5" r="4.5" fill="#ffffff" stroke="#000" stroke-width="1" />
+    <circle cx="25" cy="-5" r="2.5" fill="#000000" />
+
+    <!-- Dorsal Fin -->
+    <path d="M -10 -19 Q 5 -32 20 -18 Z" fill="#ea580c" stroke="#9a3412" stroke-width="1.5" />
+  </g>
+
+  <!-- Air Bubbles -->
+  <circle cx="50" cy="50" r="5" fill="#ffffff" opacity="0.6" />
+  <circle cx="115" cy="55" r="4" fill="#ffffff" opacity="0.6" />
+  <circle cx="110" cy="40" r="6" fill="#ffffff" opacity="0.7" />
+</svg>

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320">
+  <defs>
+    <radialGradient id="crazyBg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#4c0519" />
+      <stop offset="60%" stop-color="#1f0208" />
+      <stop offset="100%" stop-color="#090002" />
+    </radialGradient>
+    <linearGradient id="neonRed7" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fff" />
+      <stop offset="25%" stop-color="#fca5a5" />
+      <stop offset="60%" stop-color="#ef4444" />
+      <stop offset="100%" stop-color="#991b1b" />
+    </linearGradient>
+    <linearGradient id="gold7" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="50%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#b45309" />
+    </linearGradient>
+    <filter id="neonRedGlow">
+      <feDropShadow dx="0" dy="0" stdDeviation="12" flood-color="#ef4444" flood-opacity="0.9" />
+    </filter>
+  </defs>
+
+  <rect width="400" height="320" rx="24" fill="url(#crazyBg)" />
+
+  <!-- JILI Badge -->
+  <rect x="320" y="14" width="64" height="26" rx="8" fill="#e11d48" />
+  <text x="352" y="32" fill="#ffffff" font-family="'Arial Black', sans-serif" font-weight="900" font-size="13" text-anchor="middle">JILI</text>
+
+  <!-- Slot Machine Frame in Background -->
+  <rect x="50" y="55" width="300" height="150" rx="16" fill="#18181b" stroke="url(#gold7)" stroke-width="4" />
+  <line x1="150" y1="55" x2="150" y2="205" stroke="#3f3f46" stroke-width="3" />
+  <line x1="250" y1="55" x2="250" y2="205" stroke="#3f3f46" stroke-width="3" />
+
+  <!-- Flaming Triple Lucky 7s -->
+  <g filter="url(#neonRedGlow)">
+    <text x="100" y="165" font-family="'Arial Black', Impact" font-size="96" font-weight="900" fill="url(#neonRed7)" stroke="#ffffff" stroke-width="2" text-anchor="middle">7</text>
+    <text x="200" y="165" font-family="'Arial Black', Impact" font-size="96" font-weight="900" fill="url(#neonRed7)" stroke="#ffffff" stroke-width="2" text-anchor="middle">7</text>
+    <text x="300" y="165" font-family="'Arial Black', Impact" font-size="96" font-weight="900" fill="url(#neonRed7)" stroke="#ffffff" stroke-width="2" text-anchor="middle">7</text>
+  </g>
+
+  <!-- Payline Golden Bar -->
+  <line x1="45" y1="130" x2="355" y2="130" stroke="#f59e0b" stroke-width="4" stroke-dasharray="8 6" opacity="0.8" />
+
+  <!-- 3D CRAZY 777 Title -->
+  <g filter="url(#neonRedGlow)">
+    <text x="200" y="260" text-anchor="middle" font-family="'Arial Black', Impact, sans-serif" font-size="30" font-weight="900" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5">CRAZY</text>
+    <text x="200" y="296" text-anchor="middle" font-family="'Arial Black', Impact, sans-serif" font-size="36" font-weight="900" fill="#ffffff" stroke="#ef4444" stroke-width="2.5">7 7 7</text>
+  </g>
+</svg>

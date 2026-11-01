@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320">
+  <defs>
+    <radialGradient id="minesBg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="60%" stop-color="#020617" />
+      <stop offset="100%" stop-color="#000000" />
+    </radialGradient>
+    <radialGradient id="mineSphere" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#64748b" />
+      <stop offset="40%" stop-color="#334155" />
+      <stop offset="85%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </radialGradient>
+    <linearGradient id="gemEmerald" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a7f3d0" />
+      <stop offset="50%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+    <filter id="cyanGlow">
+      <feDropShadow dx="0" dy="0" stdDeviation="12" flood-color="#06b6d4" flood-opacity="0.8" />
+    </filter>
+  </defs>
+
+  <rect width="400" height="320" rx="24" fill="url(#minesBg)" />
+
+  <!-- 3D Explosive Naval Mine Center -->
+  <g transform="translate(200, 120)" filter="url(#cyanGlow)">
+    <!-- Mine Spikes (8 radial spikes) -->
+    <line x1="0" y1="-50" x2="0" y2="-75" stroke="#f59e0b" stroke-width="7" stroke-linecap="round" />
+    <circle cx="0" cy="-75" r="6" fill="#ef4444" />
+    
+    <line x1="0" y1="50" x2="0" y2="75" stroke="#f59e0b" stroke-width="7" stroke-linecap="round" />
+    <circle cx="0" cy="75" r="6" fill="#ef4444" />
+
+    <line x1="-50" y1="0" x2="-75" y2="0" stroke="#f59e0b" stroke-width="7" stroke-linecap="round" />
+    <circle cx="-75" cy="0" r="6" fill="#ef4444" />
+
+    <line x1="50" y1="0" x2="75" y2="0" stroke="#f59e0b" stroke-width="7" stroke-linecap="round" />
+    <circle cx="75" cy="0" r="6" fill="#ef4444" />
+
+    <line x1="-35" y1="-35" x2="-55" y2="-55" stroke="#f59e0b" stroke-width="6" stroke-linecap="round" />
+    <circle cx="-55" cy="-55" r="5" fill="#ef4444" />
+
+    <line x1="35" y1="-35" x2="55" y2="-55" stroke="#f59e0b" stroke-width="6" stroke-linecap="round" />
+    <circle cx="55" cy="-55" r="5" fill="#ef4444" />
+
+    <line x1="-35" y1="35" x2="-55" y2="55" stroke="#f59e0b" stroke-width="6" stroke-linecap="round" />
+    <circle cx="-55" cy="55" r="5" fill="#ef4444" />
+
+    <line x1="35" y1="35" x2="55" y2="55" stroke="#f59e0b" stroke-width="6" stroke-linecap="round" />
+    <circle cx="55" cy="55" r="5" fill="#ef4444" />
+
+    <!-- Mine Core Sphere -->
+    <circle cx="0" cy="0" r="52" fill="url(#mineSphere)" stroke="#475569" stroke-width="3" />
+    <circle cx="0" cy="0" r="14" fill="#ef4444" stroke="#ffffff" stroke-width="2" />
+  </g>
+
+  <!-- Glowing Emerald Gems -->
+  <polygon points="65,95 85,80 105,95 95,120 75,120" fill="url(#gemEmerald)" stroke="#fff" stroke-width="1.5" />
+  <polygon points="305,95 325,80 345,95 335,120 315,120" fill="url(#gemEmerald)" stroke="#fff" stroke-width="1.5" />
+  <polygon points="75,185 95,170 115,185 105,210 85,210" fill="url(#gemEmerald)" stroke="#fff" stroke-width="1.5" />
+  <polygon points="295,185 315,170 335,185 325,210 305,210" fill="url(#gemEmerald)" stroke="#fff" stroke-width="1.5" />
+
+  <!-- 3D MINES Title -->
+  <g filter="url(#cyanGlow)">
+    <text x="200" y="280" text-anchor="middle" font-family="'Arial Black', Impact, sans-serif" font-size="44" font-weight="900" fill="#38bdf8" stroke="#0369a1" stroke-width="2" letter-spacing="3">MINES</text>
+  </g>
+</svg>

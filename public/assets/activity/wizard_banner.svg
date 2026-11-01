@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#022c22" />
+      <stop offset="40%" stop-color="#064e3b" />
+      <stop offset="80%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+    <radialGradient id="magicGlow" cx="75%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.6" />
+      <stop offset="50%" stop-color="#a855f7" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#064e3b" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="goldPlate" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fffbeb" />
+      <stop offset="40%" stop-color="#fef08a" />
+      <stop offset="70%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#b45309" />
+    </linearGradient>
+    <radialGradient id="ballRed" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#fecdd3" />
+      <stop offset="40%" stop-color="#ef4444" />
+      <stop offset="100%" stop-color="#7f1d1d" />
+    </radialGradient>
+    <radialGradient id="ballGreen" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#a7f3d0" />
+      <stop offset="40%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#064e3b" />
+    </radialGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000" flood-opacity="0.6" />
+    </filter>
+  </defs>
+
+  <rect width="600" height="240" rx="20" fill="url(#bgGrad)" />
+  <rect width="600" height="240" rx="20" fill="url(#magicGlow)" />
+
+  <!-- Magic Sparkles & Stars -->
+  <g fill="#fef08a" opacity="0.8">
+    <circle cx="360" cy="40" r="3" />
+    <circle cx="410" cy="25" r="4" />
+    <circle cx="560" cy="50" r="3" />
+    <circle cx="580" cy="110" r="4" />
+    <circle cx="330" cy="180" r="3" />
+  </g>
+
+  <!-- Left Text Section -->
+  <g transform="translate(30, 40)">
+    <!-- Club Badge -->
+    <rect x="0" y="0" width="130" height="26" rx="6" fill="#10b981" fill-opacity="0.25" stroke="#10b981" stroke-width="1.5" />
+    <text x="65" y="17" fill="#6ee7b7" font-family="'Arial Black'" font-size="11" font-weight="900" text-anchor="middle" letter-spacing="1">👑 ROYAL CLUB</text>
+
+    <!-- Glowing Wingo Prediction Title -->
+    <text x="0" y="60" fill="#38bdf8" font-family="'Arial Black', Impact" font-size="34" font-weight="900" letter-spacing="1">WINGO PREDICTION</text>
+    <text x="0" y="88" fill="#fef08a" font-family="Arial, sans-serif" font-size="16" font-weight="bold">Free VIP Signals Every Round (99% Accurate!)</text>
+
+    <!-- Join Telegram Button -->
+    <g transform="translate(0, 110)">
+      <rect x="0" y="0" width="220" height="44" rx="22" fill="#0284c7" />
+      <text x="110" y="27" fill="#ffffff" font-family="'Arial Black'" font-size="14" font-weight="900" text-anchor="middle">Join Telegram &amp; Win Faster 🚀</text>
+    </g>
+  </g>
+
+  <!-- Right 3D Scene: Cute Bearded Wizard, Treasure Chest, Lottery Balls -->
+  <g transform="translate(470, 130)" filter="url(#shadow)">
+    <!-- Treasure Chest on Left of Wizard -->
+    <g transform="translate(-75, 20)">
+      <rect x="-35" y="-20" width="70" height="45" rx="6" fill="#78350f" stroke="url(#goldPlate)" stroke-width="2.5" />
+      <path d="M -35 -20 Q 0 -38 35 -20 Z" fill="#b45309" stroke="url(#goldPlate)" stroke-width="2" />
+      <!-- Gold Lock & Trim -->
+      <circle cx="0" cy="-8" r="7" fill="url(#goldPlate)" />
+      <!-- Overflowing Coins -->
+      <circle cx="-15" cy="-22" r="8" fill="url(#goldPlate)" />
+      <circle cx="10" cy="-24" r="9" fill="url(#goldPlate)" />
+      <circle cx="0" cy="-26" r="8" fill="url(#goldPlate)" />
+    </g>
+
+    <!-- 3D Wizard Character -->
+    <g transform="translate(30, -5)">
+      <!-- Wizard Blue Robe -->
+      <path d="M -28 65 L -18 0 L 18 0 L 28 65 Z" fill="#1e3a8a" stroke="#1d4ed8" stroke-width="2" />
+      
+      <!-- Belt & Gold Buckle -->
+      <line x1="-22" y1="30" x2="22" y2="30" stroke="#f59e0b" stroke-width="4" />
+      <rect x="-6" y="26" width="12" height="8" rx="2" fill="url(#goldPlate)" />
+
+      <!-- Wizard Head & Face -->
+      <circle cx="0" cy="-12" r="18" fill="#fed7aa" />
+      <!-- Cute Eyes -->
+      <circle cx="-6" cy="-14" r="2.5" fill="#1e293b" />
+      <circle cx="6" cy="-14" r="2.5" fill="#1e293b" />
+      
+      <!-- Big White Fluffy Beard -->
+      <path d="M -16 -6 Q 0 35 16 -6 Q 10 20 0 25 Q -10 20 -16 -6 Z" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
+
+      <!-- Pointy Wizard Hat with Stars -->
+      <path d="M -30 -16 Q 0 -22 30 -16 L 8 -75 Q 0 -78 -8 -75 Z" fill="#1d4ed8" stroke="#f59e0b" stroke-width="2" />
+      <ellipse cx="0" cy="-16" rx="32" ry="7" fill="#1e40af" stroke="#f59e0b" stroke-width="1.5" />
+      <circle cx="2" cy="-45" r="4" fill="#fef08a" />
+
+      <!-- Holding Magic Parchment Scroll -->
+      <g transform="translate(-32, 10) rotate(-15)">
+        <rect x="-12" y="-20" width="24" height="40" rx="4" fill="#fef3c7" stroke="#ca8a04" stroke-width="1.5" />
+        <line x1="-8" y1="-12" x2="8" y2="-12" stroke="#b45309" stroke-width="1.5" />
+        <line x1="-8" y1="-4" x2="8" y2="-4" stroke="#b45309" stroke-width="1.5" />
+        <line x1="-8" y1="4" x2="4" y2="4" stroke="#b45309" stroke-width="1.5" />
+      </g>
+    </g>
+
+    <!-- Floating 3D Lottery Balls & Dice -->
+    <!-- Ball 5 (Red) -->
+    <g transform="translate(-115, -15)">
+      <circle cx="0" cy="0" r="20" fill="url(#ballRed)" stroke="#fff" stroke-width="1" />
+      <circle cx="0" cy="0" r="9" fill="#ffffff" />
+      <text x="0" y="4" font-family="'Arial Black'" font-size="12" font-weight="900" fill="#000" text-anchor="middle">5</text>
+    </g>
+    <!-- Ball 8 (Green) -->
+    <g transform="translate(-90, -45)">
+      <circle cx="0" cy="0" r="18" fill="url(#ballGreen)" stroke="#fff" stroke-width="1" />
+      <circle cx="0" cy="0" r="8" fill="#ffffff" />
+      <text x="0" y="4" font-family="'Arial Black'" font-size="10" font-weight="900" fill="#000" text-anchor="middle">8</text>
+    </g>
+  </g>
+</svg>

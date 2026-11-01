@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+  <defs>
+    <radialGradient id="ringGold" cx="50%" cy="50%" r="50%">
+      <stop offset="70%" stop-color="#ca8a04" />
+      <stop offset="85%" stop-color="#fef08a" />
+      <stop offset="95%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#78350f" />
+    </radialGradient>
+    <radialGradient id="lotteryBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="60%" stop-color="#0369a1" />
+      <stop offset="100%" stop-color="#082f49" />
+    </radialGradient>
+    <radialGradient id="ballRed" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#fecdd3" />
+      <stop offset="40%" stop-color="#ef4444" />
+      <stop offset="85%" stop-color="#b91c1c" />
+      <stop offset="100%" stop-color="#7f1d1d" />
+    </radialGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.5" />
+    </filter>
+  </defs>
+
+  <circle cx="80" cy="80" r="76" fill="url(#ringGold)" />
+  <circle cx="80" cy="80" r="66" fill="url(#lotteryBg)" />
+
+  <!-- Pair of Rolling Casino Dice -->
+  <g transform="translate(60, 60) rotate(-15)" filter="url(#shadow)">
+    <rect x="-16" y="-16" width="32" height="32" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+    <circle cx="-7" cy="-7" r="3" fill="#dc2626" />
+    <circle cx="7" cy="7" r="3" fill="#dc2626" />
+    <circle cx="0" cy="0" r="3.5" fill="#dc2626" />
+  </g>
+
+  <!-- Big 3D Red Lottery Ball '5' -->
+  <g transform="translate(95, 90)" filter="url(#shadow)">
+    <circle cx="0" cy="0" r="32" fill="url(#ballRed)" stroke="#fff" stroke-width="1.5" />
+    <circle cx="0" cy="0" r="16" fill="#ffffff" />
+    <text x="0" y="8" font-family="'Arial Black'" font-size="20" font-weight="900" fill="#000" text-anchor="middle">5</text>
+  </g>
+
+  <!-- Lucky Gold Coins -->
+  <circle cx="45" cy="115" r="10" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5" />
+  <circle cx="120" cy="48" r="8" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5" />
+</svg>

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320">
+  <defs>
+    <radialGradient id="wbBg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#451a03" />
+      <stop offset="60%" stop-color="#1c0a00" />
+      <stop offset="100%" stop-color="#0c0400" />
+    </radialGradient>
+    <filter id="goldGlow">
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#f59e0b" flood-opacity="0.8" />
+    </filter>
+  </defs>
+
+  <rect width="400" height="320" rx="24" fill="url(#wbBg)" />
+
+  <!-- PG Soft Badge -->
+  <rect x="320" y="14" width="64" height="26" rx="8" fill="#1e293b" />
+  <text x="352" y="32" fill="#38bdf8" font-family="'Arial Black', sans-serif" font-weight="900" font-size="13" text-anchor="middle">PG</text>
+
+  <!-- Western Cowgirl Silhouette & Golden Revolvers -->
+  <g transform="translate(200, 115)" filter="url(#goldGlow)">
+    <!-- Cowboy Hat -->
+    <ellipse cx="0" cy="-35" rx="55" ry="14" fill="#78350f" stroke="#ca8a04" stroke-width="2" />
+    <path d="M -30 -35 Q 0 -65 30 -35 Z" fill="#92400e" stroke="#ca8a04" stroke-width="2" />
+
+    <!-- Sheriff Star Badge -->
+    <polygon points="0,-18 5,-8 16,-8 7,0 10,12 0,5 -10,12 -7,0 -16,-8 -5,-8" fill="#fef08a" stroke="#b45309" stroke-width="1.5" />
+
+    <!-- Cross Revolvers -->
+    <g transform="translate(-30, 25) rotate(-35)">
+      <rect x="-6" y="-18" width="12" height="36" rx="2" fill="#94a3b8" />
+      <rect x="-8" y="10" width="16" height="18" rx="3" fill="#78350f" />
+    </g>
+    <g transform="translate(30, 25) rotate(35)">
+      <rect x="-6" y="-18" width="12" height="36" rx="2" fill="#94a3b8" />
+      <rect x="-8" y="10" width="16" height="18" rx="3" fill="#78350f" />
+    </g>
+  </g>
+
+  <!-- Typography -->
+  <g filter="url(#goldGlow)">
+    <text x="200" y="260" text-anchor="middle" font-family="'Arial Black', Impact, sans-serif" font-size="24" font-weight="900" fill="#fef08a" stroke="#78350f" stroke-width="1.5">WILD BOUNTY</text>
+    <text x="200" y="290" text-anchor="middle" font-family="'Arial Black', Impact, sans-serif" font-size="28" font-weight="900" fill="#ef4444" stroke="#ffffff" stroke-width="1.5">SHOWDOWN</text>
+  </g>
+</svg>

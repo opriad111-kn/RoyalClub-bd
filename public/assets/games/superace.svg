@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320">
+  <defs>
+    <radialGradient id="aceBg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="60%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </radialGradient>
+    <linearGradient id="goldAce" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff" />
+      <stop offset="30%" stop-color="#fef08a" />
+      <stop offset="70%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#b45309" />
+    </linearGradient>
+    <filter id="purpleGlow">
+      <feDropShadow dx="0" dy="0" stdDeviation="12" flood-color="#8b5cf6" flood-opacity="0.8" />
+    </filter>
+    <filter id="cardShadow">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#000" flood-opacity="0.6" />
+    </filter>
+  </defs>
+
+  <rect width="400" height="320" rx="24" fill="url(#aceBg)" />
+
+  <!-- JILI Badge -->
+  <rect x="320" y="14" width="64" height="26" rx="8" fill="#e11d48" />
+  <text x="352" y="32" fill="#ffffff" font-family="'Arial Black', sans-serif" font-weight="900" font-size="13" text-anchor="middle">JILI</text>
+
+  <!-- Left Card (King) -->
+  <g transform="translate(130, 120) rotate(-18)" filter="url(#cardShadow)">
+    <rect x="-45" y="-65" width="90" height="130" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="2" />
+    <rect x="-40" y="-60" width="80" height="120" rx="8" fill="#f8fafc" stroke="#f59e0b" stroke-width="1.5" />
+    <text x="-25" y="-38" fill="#dc2626" font-family="'Arial Black'" font-size="18">K</text>
+    <text x="-25" y="-20" fill="#dc2626" font-size="18">♦</text>
+    <circle cx="0" cy="5" r="22" fill="#fef2f2" />
+    <text x="0" y="15" fill="#dc2626" font-family="'Arial Black'" font-size="28" text-anchor="middle">👑</text>
+  </g>
+
+  <!-- Right Card (Queen) -->
+  <g transform="translate(270, 120) rotate(18)" filter="url(#cardShadow)">
+    <rect x="-45" y="-65" width="90" height="130" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="2" />
+    <rect x="-40" y="-60" width="80" height="120" rx="8" fill="#f8fafc" stroke="#f59e0b" stroke-width="1.5" />
+    <text x="15" y="-38" fill="#1e293b" font-family="'Arial Black'" font-size="18">Q</text>
+    <text x="15" y="-20" fill="#1e293b" font-size="18">♠</text>
+    <circle cx="0" cy="5" r="22" fill="#f1f5f9" />
+    <text x="0" y="15" fill="#1e293b" font-family="'Arial Black'" font-size="28" text-anchor="middle">👸</text>
+  </g>
+
+  <!-- Center Big Golden Ace of Spades Card -->
+  <g transform="translate(200, 115)" filter="url(#purpleGlow)">
+    <rect x="-55" y="-80" width="110" height="160" rx="12" fill="#0f172a" stroke="url(#goldAce)" stroke-width="3" />
+    <rect x="-48" y="-73" width="96" height="146" rx="8" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="1.5" />
+    
+    <text x="-32" y="-45" fill="url(#goldAce)" font-family="'Arial Black'" font-size="24">A</text>
+    <text x="20" y="60" fill="url(#goldAce)" font-family="'Arial Black'" font-size="24">A</text>
+
+    <!-- Giant 3D Golden Spade -->
+    <path d="M 0 -35 C -25 -10 -40 15 -18 35 C -5 45 0 25 0 25 C 0 25 5 45 18 35 C 40 15 25 -10 0 -35 Z" fill="url(#goldAce)" stroke="#fff" stroke-width="1.5" />
+    <path d="M -8 30 L -14 48 L 14 48 L 8 30 Z" fill="url(#goldAce)" stroke="#fff" stroke-width="1" />
+  </g>
+
+  <!-- 3D SUPER ACE Typography -->
+  <g filter="url(#purpleGlow)">
+    <text x="200" y="260" text-anchor="middle" font-family="'Arial Black', Impact, sans-serif" font-size="30" font-weight="900" fill="#ffffff" stroke="#8b5cf6" stroke-width="2">SUPER</text>
+    <text x="200" y="295" text-anchor="middle" font-family="'Arial Black', Impact, sans-serif" font-size="36" font-weight="900" fill="url(#goldAce)" stroke="#000" stroke-width="2">ACE</text>
+  </g>
+</svg>

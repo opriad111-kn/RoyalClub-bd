@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320">
+  <defs>
+    <radialGradient id="fgBg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#451a03" />
+      <stop offset="50%" stop-color="#1c0a00" />
+      <stop offset="100%" stop-color="#080200" />
+    </radialGradient>
+    <linearGradient id="goldPlate" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fffbeb" />
+      <stop offset="25%" stop-color="#fef08a" />
+      <stop offset="50%" stop-color="#f59e0b" />
+      <stop offset="85%" stop-color="#b45309" />
+      <stop offset="100%" stop-color="#78350f" />
+    </linearGradient>
+    <linearGradient id="rubyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fecdd3" />
+      <stop offset="40%" stop-color="#ef4444" />
+      <stop offset="80%" stop-color="#b91c1c" />
+      <stop offset="100%" stop-color="#7f1d1d" />
+    </linearGradient>
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a7f3d0" />
+      <stop offset="50%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#064e3b" />
+    </linearGradient>
+    <linearGradient id="sapphireGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#bae6fd" />
+      <stop offset="50%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#082f49" />
+    </linearGradient>
+    <filter id="goldGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#f59e0b" flood-opacity="0.8" />
+    </filter>
+  </defs>
+
+  <rect width="400" height="320" rx="24" fill="url(#fgBg)" />
+
+  <!-- JILI Badge -->
+  <rect x="320" y="14" width="64" height="26" rx="8" fill="#e11d48" />
+  <text x="352" y="32" fill="#ffffff" font-family="'Arial Black', sans-serif" font-weight="900" font-size="13" text-anchor="middle">JILI</text>
+
+  <!-- Aztec Sun Multiplier Wheel in Background -->
+  <g transform="translate(200, 125)">
+    <circle cx="0" cy="0" r="105" fill="none" stroke="#f59e0b" stroke-width="8" stroke-dasharray="16 12" opacity="0.6" />
+    <circle cx="0" cy="0" r="85" fill="none" stroke="#ca8a04" stroke-width="4" opacity="0.7" />
+    <circle cx="0" cy="0" r="120" fill="none" stroke="#ef4444" stroke-width="3" stroke-dasharray="24 16" opacity="0.5" />
+  </g>
+
+  <!-- Floating 3D Gemstones -->
+  <polygon points="55,50 75,35 95,50 85,75 65,75" fill="url(#rubyGrad)" stroke="#fff" stroke-width="1.5" filter="url(#goldGlow)" />
+  <polygon points="310,65 330,50 350,65 340,90 320,90" fill="url(#sapphireGrad)" stroke="#fff" stroke-width="1.5" filter="url(#goldGlow)" />
+  <polygon points="50,190 70,175 90,190 80,215 60,215" fill="url(#emeraldGrad)" stroke="#fff" stroke-width="1.5" filter="url(#goldGlow)" />
+  <polygon points="315,185 335,170 355,185 345,210 325,210" fill="url(#rubyGrad)" stroke="#fff" stroke-width="1.5" filter="url(#goldGlow)" />
+
+  <!-- Central Aztec Golden Sun Deity Mask -->
+  <g transform="translate(200, 115)" filter="url(#goldGlow)">
+    <!-- Sun Ray Crown -->
+    <path d="M -80 -25 L -100 -70 L -60 -55 L -45 -90 L 0 -75 L 45 -90 L 60 -55 L 100 -70 L 80 -25 Z" fill="url(#goldPlate)" stroke="#78350f" stroke-width="3" />
+    
+    <!-- Crown Jewels -->
+    <circle cx="-50" cy="-60" r="8" fill="url(#rubyGrad)" stroke="#fff" stroke-width="1.5" />
+    <circle cx="0" cy="-75" r="11" fill="url(#emeraldGrad)" stroke="#fff" stroke-width="2" />
+    <circle cx="50" cy="-60" r="8" fill="url(#sapphireGrad)" stroke="#fff" stroke-width="1.5" />
+
+    <!-- Face Base Frame -->
+    <polygon points="-60,-20 60,-20 50,55 0,80 -50,55" fill="url(#goldPlate)" stroke="#78350f" stroke-width="3.5" />
+    
+    <!-- Glowing Fiery Eyes -->
+    <polygon points="-40,-5 -15,-5 -22,12 -38,7" fill="url(#rubyGrad)" stroke="#fff" stroke-width="1.5" />
+    <polygon points="40,-5 15,-5 22,12 38,7" fill="url(#rubyGrad)" stroke="#fff" stroke-width="1.5" />
+    
+    <!-- Fangs & Mouth -->
+    <polygon points="-25,35 -15,35 -20,55" fill="#ffffff" stroke="#78350f" stroke-width="1.5" />
+    <polygon points="25,35 15,35 20,55" fill="#ffffff" stroke="#78350f" stroke-width="1.5" />
+    <path d="M -25 35 Q 0 45 25 35" fill="none" stroke="#78350f" stroke-width="3" />
+
+    <!-- Golden Ear Ornaments -->
+    <circle cx="-68" cy="15" r="14" fill="url(#goldPlate)" stroke="#78350f" stroke-width="2" />
+    <circle cx="-68" cy="15" r="6" fill="url(#emeraldGrad)" />
+    <circle cx="68" cy="15" r="14" fill="url(#goldPlate)" stroke="#78350f" stroke-width="2" />
+    <circle cx="68" cy="15" r="6" fill="url(#emeraldGrad)" />
+  </g>
+
+  <!-- 3D FORTUNE GEMS 2 Title -->
+  <g filter="url(#goldGlow)">
+    <text x="200" y="260" text-anchor="middle" font-family="'Arial Black', Impact, sans-serif" font-size="28" font-weight="900" fill="#fef08a" stroke="#b45309" stroke-width="1.5">FORTUNE GEMS</text>
+    <text x="200" y="295" text-anchor="middle" font-family="'Arial Black', Impact, sans-serif" font-size="34" font-weight="900" fill="#ef4444" stroke="#ffffff" stroke-width="2">DELUXE 2</text>
+  </g>
+</svg>
