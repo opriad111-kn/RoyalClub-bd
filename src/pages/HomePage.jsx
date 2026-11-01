@@ -235,7 +235,49 @@ export default function HomePage({
     }
   ];
 
-  const allGames = [...jiliGames, ...spribeGames, ...inoutGames, ...pgGames];
+  const bgamingGames = [
+    { 
+      id: 'crazy777', 
+      title: 'CRAZY 777', 
+      display: 'Crazy 777 Slots', 
+      rtp: '96.20%', 
+      image: '/assets/games/crazy777.svg', 
+      provider: 'BGAMING',
+      bannerColor: 'bg-purple-600'
+    },
+    { 
+      id: 'sevenupdown', 
+      title: 'DICE ROLLER', 
+      display: 'Lucky 7 Dice', 
+      rtp: '97.20%', 
+      image: '/assets/games/7up7down.svg', 
+      provider: 'BGAMING',
+      bannerColor: 'bg-indigo-600'
+    }
+  ];
+
+  const turboGames = [
+    { 
+      id: 'aviator', 
+      title: 'TURBO JET', 
+      display: 'Crash Rocket', 
+      rtp: '97.00%', 
+      image: '/assets/amarclub/game_aviator.png', 
+      provider: 'TURBO',
+      bannerColor: 'bg-rose-600'
+    },
+    { 
+      id: 'mines', 
+      title: 'MINES TURBO', 
+      display: 'Gold Mines 5x5', 
+      rtp: '98.00%', 
+      image: '/assets/games/mines.svg', 
+      provider: 'TURBO',
+      bannerColor: 'bg-amber-600'
+    }
+  ];
+
+  const allGames = [...jiliGames, ...spribeGames, ...inoutGames, ...pgGames, ...bgamingGames, ...turboGames];
 
   const filteredGames = (
     searchQuery.trim() !== ''
@@ -248,6 +290,10 @@ export default function HomePage({
       ? inoutGames
       : selectedProvider === 'PG'
       ? pgGames
+      : selectedProvider === 'BGAMING'
+      ? bgamingGames
+      : selectedProvider === 'TURBO'
+      ? turboGames
       : jiliGames
   );
 

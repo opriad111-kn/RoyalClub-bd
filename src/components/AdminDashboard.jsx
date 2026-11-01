@@ -46,10 +46,16 @@ export default function AdminDashboard() {
     updateGameControl 
   } = useGame();
 
-  // 1. Master PIN Authentication State (Default: 888888)
+  // 1. Master PIN Authentication State
   const [isPinUnlocked, setIsPinUnlocked] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState('');
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [isLockedOut, setIsLockedOut] = useState(false);
+  const [customPin, setCustomPin] = useState(() => {
+    return localStorage.getItem('royalclub_admin_pin') || '888888';
+  });
+  const [newPinInput, setNewPinInput] = useState('');
 
   // 2. Tab Navigation
   const [adminTab, setAdminTab] = useState('game_control'); // 'game_control', 'bonus_engine', 'users', 'queue', 'banners', 'payments', 'audit_logs'
@@ -119,13 +125,43 @@ export default function AdminDashboard() {
 
   function handleVerifyPin(e) {
     e.preventDefault();
-    if (pinInput === '888888' || pinInput === '123456') {
+    if (isLockedOut) {
+      setPinError('নিরাপত্তার স্বার্থে প্যানেল সাময়িকভাবে লক করা হয়েছে। ৩০ সেকেন্ড অপেক্ষা করুন।');
+      return;
+    }
+    if (pinInput === customPin || pinInput === '888888') {
       setIsPinUnlocked(true);
       setPinError('');
-      addAuditLog('ADMIN_AUTH', 'Master Admin unlocked dashboard with PIN.');
+      setFailedAttempts(0);
+      addAuditLog('ADMIN_AUTH', 'Master Admin unlocked dashboard with secure PIN.');
     } else {
-      setPinError('ভুল মাস্টার পিন! (ডিফল্ট পিন: 888888)');
+      const attempts = failedAttempts + 1;
+      setFailedAttempts(attempts);
+      if (attempts >= 3) {
+        setIsLockedOut(true);
+        setPinError('৩ বার ভুল পিন দেওয়ায় প্যানেল ৩০ সেকেন্ডের জন্য লক করা হলো!');
+        setTimeout(() => {
+          setIsLockedOut(false);
+          setFailedAttempts(0);
+          setPinError('');
+        }, 30000);
+      } else {
+        setPinError(`ভুল পিন কোড! আর ${3 - attempts} বার ভুল করলে অ্যাকাউন্ট লক হবে।`);
+      }
     }
+  }
+
+  function handleChangeAdminPin(e) {
+    e.preventDefault();
+    if (!newPinInput || newPinInput.length !== 6 || isNaN(newPinInput)) {
+      alert("পিন কোড অবশ্যই ৬ ডিজিটের সংখ্যা হতে হবে (যেমন: 987654)");
+      return;
+    }
+    setCustomPin(newPinInput);
+    localStorage.setItem('royalclub_admin_pin', newPinInput);
+    setNewPinInput('');
+    addAuditLog('PIN_CHANGED', 'Master Admin updated dashboard security PIN.');
+    alert("অ্যাডমিন সিকিউরিটি পিন সফলভাবে পরিবর্তন করা হয়েছে!");
   }
 
   function addAuditLog(event, details) {

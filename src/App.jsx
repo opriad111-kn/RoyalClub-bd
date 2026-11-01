@@ -12,9 +12,13 @@ import AdminDashboard from './components/AdminDashboard';
 // Games & Modals
 import AviatorGame from './components/games/AviatorGame';
 import FortuneGemsGame from './components/games/FortuneGemsGame';
+import FortuneGems3Game from './components/games/FortuneGems3Game';
+import GoldenEmpireGame from './components/games/GoldenEmpireGame';
+import SuperAceGame from './components/games/SuperAceGame';
+import SuperAceDeluxeGame from './components/games/SuperAceDeluxeGame';
+import JackpotFishingGame from './components/games/JackpotFishingGame';
 import MoneyComingGame from './components/games/MoneyComingGame';
 import MinesGame from './components/games/MinesGame';
-import SuperAceGame from './components/games/SuperAceGame';
 import Crazy777Game from './components/games/Crazy777Game';
 import SevenUpDownGame from './components/games/SevenUpDownGame';
 import FortuneOxGame from './components/games/FortuneOxGame';
@@ -178,9 +182,13 @@ function AppContent() {
         {/* Interactive Games Overlays */}
         {activeGame === 'aviator' && <AviatorGame onClose={() => setActiveGame(null)} />}
         {activeGame === 'fortunegems' && <FortuneGemsGame onClose={() => setActiveGame(null)} />}
+        {activeGame === 'fortunegems3' && <FortuneGems3Game onClose={() => setActiveGame(null)} />}
+        {activeGame === 'goldenempire' && <GoldenEmpireGame onClose={() => setActiveGame(null)} />}
+        {activeGame === 'superace' && <SuperAceGame onClose={() => setActiveGame(null)} />}
+        {activeGame === 'superacedeluxe' && <SuperAceDeluxeGame onClose={() => setActiveGame(null)} />}
+        {activeGame === 'jackpotfishing' && <JackpotFishingGame onClose={() => setActiveGame(null)} />}
         {activeGame === 'moneycoming' && <MoneyComingGame onClose={() => setActiveGame(null)} />}
         {activeGame === 'mines' && <MinesGame onClose={() => setActiveGame(null)} />}
-        {activeGame === 'superace' && <SuperAceGame onClose={() => setActiveGame(null)} />}
         {activeGame === 'crazy777' && <Crazy777Game onClose={() => setActiveGame(null)} />}
         {activeGame === 'sevenupdown' && <SevenUpDownGame onClose={() => setActiveGame(null)} />}
         {activeGame === 'boxingking' && <BoxingKingGame onClose={() => setActiveGame(null)} />}

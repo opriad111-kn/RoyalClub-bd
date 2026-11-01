@@ -1,109 +1,169 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
-import { Share2, Copy, Check, Users, Trophy, Award, DollarSign } from 'lucide-react';
+import { 
+  Share2, 
+  Copy, 
+  Check, 
+  Users, 
+  Trophy, 
+  Award, 
+  DollarSign,
+  Gift,
+  ChevronRight,
+  Sparkles,
+  ShieldCheck,
+  TrendingUp
+} from 'lucide-react';
 
 export default function PromotionPage() {
   const { user } = useGame();
   const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState('data'); // 'data', 'commission', 'invitation'
 
-  const inviteLink = `https://royalclubbd.vercel.app/#/register?ref=${user.uid}`;
+  const inviteCode = user.uid ? user.uid.toString() : '120356';
+  const inviteLink = `https://dkwin11.com/#/register?ref=${inviteCode}`;
 
-  function handleCopy() {
-    navigator.clipboard.writeText(inviteLink);
+  function handleCopy(text) {
+    navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
 
+  const commissionTiers = [
+    { tier: 'Tier 1 (Direct)', rate: '0.6%', rebate: 'Direct player turnover', bonus: '৳100 per user' },
+    { tier: 'Tier 2 (Sub-agent)', rate: '0.3%', rebate: 'Second-tier turnover', bonus: '৳50 per user' },
+    { tier: 'Tier 3 (Affiliate)', rate: '0.1%', rebate: 'Third-tier network', bonus: '৳20 per user' },
+  ];
+
   return (
-    <div className="space-y-4 pb-8 text-xs">
-      {/* Commission Overview Card */}
-      <div className="bg-gradient-to-r from-emerald-600 via-teal-700 to-emerald-800 rounded-2xl p-5 text-white shadow-xl">
-        <span className="text-[11px] font-bold text-emerald-100 uppercase tracking-wider block">
-          টোটাল রেফার কমিশন (Total Rebate)
-        </span>
-        <div className="flex items-baseline space-x-1 mt-1">
-          <span className="text-3xl font-black font-mono">৳০.০০</span>
-          <span className="text-xs text-emerald-200">BDT</span>
+    <div className="space-y-3.5 pb-20 text-xs select-none -mx-3.5 -mt-3.5">
+      
+      {/* 1. Curved Yellow Header (DKWIN11 Style) */}
+      <div className="bg-[#F5BE00] text-slate-900 px-5 pt-6 pb-6 rounded-b-[32px] shadow-sm relative">
+        <div className="flex justify-center mb-2">
+          <span className="bg-white/20 border border-white/40 px-3 py-0.5 rounded-full text-[10px] font-black tracking-wider uppercase">
+            Agency Promotion Center
+          </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-emerald-500/40">
-          <div>
-            <span className="text-[10px] text-emerald-200 block">সরাসরি রেফার প্লেয়ার:</span>
-            <span className="text-sm font-bold font-mono">০ জন</span>
-          </div>
-          <div>
-            <span className="text-[10px] text-emerald-200 block">মোট টিম বেট পরিমাণ:</span>
-            <span className="text-sm font-bold font-mono">৳০.০০</span>
-          </div>
+        <div className="text-center space-y-0.5">
+          <span className="text-[11px] font-bold text-slate-800/80 block">
+            Total Rebate Bonus (Agent Commission)
+          </span>
+          <span className="text-3xl font-black font-mono text-slate-900 tracking-tight block">
+            ৳0.00
+          </span>
+          <span className="text-[10px] text-amber-900 font-bold block">
+            Upgrade your level to unlock unlimited daily commissions!
+          </span>
         </div>
-      </div>
 
-      {/* Referral Link Copy Card */}
-      <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-2">
-        <h4 className="font-black text-slate-800 text-xs flex items-center">
-          <Share2 className="w-4 h-4 text-emerald-500 mr-1.5" />
-          <span>আপনার রেফারেল লিংক</span>
-        </h4>
-        <p className="text-[11px] text-slate-400">
-          বন্ধুদের আপনার লিংকে ইনভাইট করুন এবং তাদের প্রতিটি ডিপোজিট ও গেমিং বেট থেকে আজীবন কমিশন পান!
-        </p>
-
-        <div className="flex items-center space-x-2 pt-1">
-          <input
-            type="text"
-            readOnly
-            value={inviteLink}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-[11px] font-mono text-slate-700 truncate"
-          />
-          <button
-            onClick={handleCopy}
-            className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-3 py-2.5 rounded-xl shrink-0 flex items-center space-x-1 shadow-sm transition"
-          >
-            {copied ? <Check className="w-4 h-4 text-white" /> : <Copy className="w-4 h-4" />}
-            <span>{copied ? 'কপি হয়েছে' : 'কপি'}</span>
-          </button>
+        {/* 2 Stats Chips in Header */}
+        <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-yellow-400 text-center">
+          <div className="bg-white/30 rounded-xl p-2">
+            <span className="text-[10px] text-slate-800 block font-bold">Direct Referrals:</span>
+            <span className="text-sm font-black font-mono text-slate-900">0 Players</span>
+          </div>
+          <div className="bg-white/30 rounded-xl p-2">
+            <span className="text-[10px] text-slate-800 block font-bold">Total Team Turnover:</span>
+            <span className="text-sm font-black font-mono text-slate-900">৳0.00</span>
+          </div>
         </div>
       </div>
 
-      {/* 3 Commission Tiers */}
-      <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-3">
-        <h4 className="font-black text-slate-800 text-xs">রেফারেল কমিশন টিয়ারস</h4>
+      {/* Floating Content Body */}
+      <div className="px-3.5 space-y-3.5 pt-1">
 
-        <div className="space-y-2">
-          <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex justify-between items-center">
-            <div className="flex items-center space-x-2">
-              <span className="w-6 h-6 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center text-[10px]">1</span>
-              <div>
-                <span className="font-bold text-slate-800 block">টিয়ার ১ (সরাসরি প্লেয়ার)</span>
-                <span className="text-[10px] text-slate-400">আপনার ডাইরেক্ট ইনভাইট</span>
-              </div>
-            </div>
-            <span className="font-black text-emerald-600 font-mono text-sm">০.৬% কমিশন</span>
+        {/* 2. Invitation Link & Code Card */}
+        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-3">
+          <div className="flex items-center justify-between">
+            <h4 className="font-black text-slate-900 text-xs flex items-center">
+              <Share2 className="w-4 h-4 text-amber-500 mr-1.5" />
+              <span>Your Exclusive Invitation</span>
+            </h4>
+            <span className="bg-amber-100 text-amber-900 text-[10px] font-bold px-2 py-0.2 rounded-full">
+              Lifetime 0.6% Rebate
+            </span>
           </div>
 
-          <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex justify-between items-center">
-            <div className="flex items-center space-x-2">
-              <span className="w-6 h-6 rounded-full bg-blue-500 text-white font-bold flex items-center justify-center text-[10px]">2</span>
-              <div>
-                <span className="font-bold text-slate-800 block">টিয়ার ২ (লেভেল ২ টিম)</span>
-                <span className="text-[10px] text-slate-400">প্লেয়ারদের রেফারেল</span>
-              </div>
+          {/* Invitation Code */}
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 flex justify-between items-center">
+            <div>
+              <span className="text-[10px] text-slate-400 block font-bold">Invitation Code:</span>
+              <span className="font-mono text-base font-black text-slate-900 tracking-wider">
+                {inviteCode}
+              </span>
             </div>
-            <span className="font-black text-blue-600 font-mono text-sm">০.৩% কমিশন</span>
+            <button
+              onClick={() => handleCopy(inviteCode)}
+              className="bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black px-3.5 py-1.5 rounded-lg text-xs flex items-center space-x-1 shadow-sm active:scale-95 transition"
+            >
+              {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+              <span>{copied ? 'Copied' : 'Copy Code'}</span>
+            </button>
           </div>
 
-          <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex justify-between items-center">
+          {/* Invitation Link */}
+          <div className="space-y-1">
+            <span className="text-[10px] text-slate-400 block font-bold">Invite Link:</span>
             <div className="flex items-center space-x-2">
-              <span className="w-6 h-6 rounded-full bg-purple-500 text-white font-bold flex items-center justify-center text-[10px]">3</span>
-              <div>
-                <span className="font-bold text-slate-800 block">টিয়ার ৩ (লেভেল ৩ টিম)</span>
-                <span className="text-[10px] text-slate-400">সাব-প্লেয়ার নেটওয়ার্ক</span>
-              </div>
+              <input
+                type="text"
+                readOnly
+                value={inviteLink}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[11px] font-mono text-slate-700 truncate"
+              />
+              <button
+                onClick={() => handleCopy(inviteLink)}
+                className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-3 py-2 rounded-xl shrink-0 text-xs shadow-sm active:scale-95 transition"
+              >
+                Copy Link
+              </button>
             </div>
-            <span className="font-black text-purple-600 font-mono text-sm">০.১% কমিশন</span>
           </div>
         </div>
+
+        {/* 3. Agency Commission Tier Breakdown */}
+        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            <h4 className="font-black text-slate-900 text-xs flex items-center">
+              <TrendingUp className="w-4 h-4 text-emerald-500 mr-1.5" />
+              <span>Multi-Tier Commission Structure</span>
+            </h4>
+            <span className="text-[10px] text-slate-400">Daily 00:00 Settlement</span>
+          </div>
+
+          <div className="space-y-2">
+            {commissionTiers.map((t, idx) => (
+              <div key={idx} className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex items-center justify-between">
+                <div>
+                  <h5 className="font-black text-slate-800 text-xs">{t.tier}</h5>
+                  <span className="text-[10px] text-slate-400 block">{t.rebate}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs font-black font-mono text-amber-600 block">{t.rate}</span>
+                  <span className="text-[9px] font-bold text-emerald-600">{t.bonus}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 4. Agent Rules & Benefits */}
+        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-2">
+          <h4 className="font-black text-slate-900 text-xs flex items-center">
+            <ShieldCheck className="w-4 h-4 text-amber-500 mr-1.5" />
+            <span>Agent Guidelines</span>
+          </h4>
+          <ul className="list-disc pl-4 space-y-1.5 text-[11px] text-slate-600 leading-snug">
+            <li>Rebates are calculated every minute and automatically credited to your agency account.</li>
+            <li>There is no upper limit on referral bonuses — the more active friends you invite, the higher your daily returns.</li>
+            <li>Promote via WhatsApp, Telegram, Facebook, and TikTok to earn recurring payouts.</li>
+          </ul>
+        </div>
+
       </div>
+
     </div>
   );
 }
