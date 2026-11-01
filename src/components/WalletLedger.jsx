@@ -12,7 +12,8 @@ import {
   HelpCircle,
   Clock,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Sparkles
 } from 'lucide-react';
 
 export default function WalletLedger() {
@@ -21,7 +22,9 @@ export default function WalletLedger() {
     settings, 
     transactions, 
     requestDeposit, 
-    requestWithdrawal 
+    requestWithdrawal,
+    adjustUserBalance,
+    claimFaucet
   } = useGame();
 
   const [activeTab, setActiveTab] = useState('deposit'); // 'deposit', 'withdraw', 'ledger'
@@ -40,7 +43,7 @@ export default function WalletLedger() {
   const [witAmount, setWitAmount] = useState('500');
   const [witAccount, setWitAccount] = useState('');
 
-  const depositPresets = [100, 300, 500, 1000, 2000, 5000, 10000];
+  const depositPresets = [100, 300, 500, 1000, 2000, 5000];
   const withdrawPresets = [200, 500, 1000, 2000, 5000];
 
   function handleCopy(text) {
@@ -98,9 +101,9 @@ export default function WalletLedger() {
 
     const success = requestWithdrawal({
       method: witMethod,
-      accountType: witAccountType,
       amount: amt,
-      accountNumber: witAccount.trim()
+      accountNumber: witAccount.trim(),
+      accountType: witAccountType
     });
 
     if (success) {
@@ -111,84 +114,84 @@ export default function WalletLedger() {
 
   const currentPayNumber = depMethod === 'bKash' 
     ? settings.BKASH_NUMBER 
-    : (depMethod === 'Nagad' ? settings.NAGAD_NUMBER : (depMethod === 'Rocket' ? settings.ROCKET_NUMBER : settings.USDT_DEPOSIT_ADDRESS));
+    : depMethod === 'Nagad' 
+    ? settings.NAGAD_NUMBER 
+    : settings.ROCKET_NUMBER;
 
-  const filteredTransactions = transactions.filter(tx => {
+  const filteredTxs = transactions.filter(tx => {
     if (filterType === 'all') return true;
     return tx.type === filterType;
   });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3.5 select-none text-slate-800">
+      
       {/* 0. Virtual Demo Coin Disclaimer Badge */}
-      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 flex items-center justify-between text-amber-900 text-xs">
+      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 flex items-center justify-between text-amber-900 text-xs shadow-sm">
         <div className="flex items-center space-x-2">
           <span className="text-xl">🎮</span>
           <div>
-            <span className="font-black block">100% Free Virtual Coin Demo Mode</span>
-            <span className="text-[10px] text-amber-700">All coins are simulated tokens for entertainment only.</span>
+            <span className="font-black block text-amber-950">১০০% ফ্রি ভার্চুয়াল ডেমো ওয়ালেট</span>
+            <span className="text-[10px] text-amber-800">সকল কয়েন ভার্চুয়াল এবং বিনোদনের উদ্দেশ্যে ব্যবহৃত।</span>
           </div>
         </div>
 
         {user.balance < 50 && (
           <button
-            onClick={() => {
-              adjustUserBalance(user.uid, 500);
-              alert("অভিনন্দন! আপনার অ্যাকাউন্টে ৫০০ ফ্রি ডেমো কয়েন যোগ করা হয়েছে।");
-            }}
+            onClick={() => claimFaucet()}
             className="bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black text-[11px] px-3 py-1.5 rounded-full shadow-sm active:scale-95 transition"
           >
-            Claim 500 Coins
+            ফ্রি ৫০০ কয়েন
           </button>
         )}
       </div>
 
       {/* 1. DKWIN11 Style Balance Card */}
-      <div className="bg-[#F5BE00] text-slate-900 p-5 rounded-2xl shadow-sm relative overflow-hidden">
+      <div className="bg-[#F5BE00] text-slate-950 p-4.5 rounded-3xl shadow-sm relative overflow-hidden">
         <div className="flex justify-between items-start mb-2">
           <div>
             <span className="text-[11px] font-bold text-slate-800 tracking-wider uppercase block">
-              Total Balance
+              মোট ব্যালেন্স (TOTAL BALANCE)
             </span>
             <div className="flex items-baseline space-x-1 mt-1">
-              <span className="text-3xl font-black font-mono text-slate-900">
+              <span className="text-3xl font-black font-mono text-slate-950">
                 ৳{user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
-              <span className="text-xs text-slate-800 font-bold">BDT</span>
+              <span className="text-xs text-slate-800 font-bold">COINS</span>
             </div>
           </div>
 
           <div className="text-right text-xs">
-            <span className="bg-white/40 text-slate-900 font-mono px-2 py-0.5 rounded-full border border-white/60 font-bold">
+            <span className="bg-white/60 text-slate-900 font-mono px-2 py-0.5 rounded-full font-bold">
               UID: #{user.uid}
             </span>
-            <span className="block text-slate-900 font-black mt-1">
+            <span className="block text-slate-950 font-black mt-1">
               {user.username}
             </span>
           </div>
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-2 gap-3 pt-3 border-t border-yellow-400 text-xs mt-3">
-          <div className="bg-white/30 p-2 rounded-xl">
-            <span className="text-[10px] text-slate-800 block font-bold">Total Wagered:</span>
-            <span className="font-black text-slate-900 font-mono">৳{user.total_wagered.toFixed(2)}</span>
+        <div className="grid grid-cols-2 gap-2 pt-2.5 border-t border-yellow-500 text-xs mt-2.5">
+          <div className="bg-white/40 p-2 rounded-xl">
+            <span className="text-[10px] text-slate-800 block font-bold">মোট বাজি (Wagered):</span>
+            <span className="font-black text-slate-950 font-mono">৳{user.total_wagered.toFixed(2)}</span>
           </div>
-          <div className="bg-white/30 p-2 rounded-xl">
-            <span className="text-[10px] text-slate-800 block font-bold">Total Won:</span>
-            <span className="font-black text-slate-900 font-mono">৳{user.total_won.toFixed(2)}</span>
+          <div className="bg-white/40 p-2 rounded-xl">
+            <span className="text-[10px] text-slate-800 block font-bold">মোট জয় (Won):</span>
+            <span className="font-black text-slate-950 font-mono">৳{user.total_won.toFixed(2)}</span>
           </div>
         </div>
       </div>
 
       {/* 2. Sub Tabs: Deposit / Withdraw / Ledger */}
-      <div className="grid grid-cols-3 gap-2 bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm text-xs">
+      <div className="grid grid-cols-3 gap-1.5 bg-white p-1 rounded-2xl border border-slate-200 shadow-sm text-xs">
         <button
           onClick={() => setActiveTab('deposit')}
-          className={`py-2 rounded-xl font-black flex items-center justify-center space-x-1.5 transition ${
+          className={`py-2 rounded-xl font-black flex items-center justify-center space-x-1 transition ${
             activeTab === 'deposit' 
-              ? 'bg-[#F5BE00] text-slate-900 shadow-sm' 
-              : 'text-slate-500 hover:text-slate-800'
+              ? 'bg-[#F5BE00] text-slate-950 shadow-sm' 
+              : 'text-slate-600 hover:text-slate-900'
           }`}
         >
           <ArrowDownLeft className="w-4 h-4" />
@@ -197,10 +200,10 @@ export default function WalletLedger() {
 
         <button
           onClick={() => setActiveTab('withdraw')}
-          className={`py-2 rounded-xl font-black flex items-center justify-center space-x-1.5 transition ${
+          className={`py-2 rounded-xl font-black flex items-center justify-center space-x-1 transition ${
             activeTab === 'withdraw' 
-              ? 'bg-[#F5BE00] text-slate-900 shadow-sm' 
-              : 'text-slate-500 hover:text-slate-800'
+              ? 'bg-[#F5BE00] text-slate-950 shadow-sm' 
+              : 'text-slate-600 hover:text-slate-900'
           }`}
         >
           <ArrowUpRight className="w-4 h-4" />
@@ -209,10 +212,10 @@ export default function WalletLedger() {
 
         <button
           onClick={() => setActiveTab('ledger')}
-          className={`py-2 rounded-xl font-black flex items-center justify-center space-x-1.5 transition ${
+          className={`py-2 rounded-xl font-black flex items-center justify-center space-x-1 transition ${
             activeTab === 'ledger' 
-              ? 'bg-[#F5BE00] text-slate-900 shadow-sm' 
-              : 'text-slate-500 hover:text-slate-800'
+              ? 'bg-[#F5BE00] text-slate-950 shadow-sm' 
+              : 'text-slate-600 hover:text-slate-900'
           }`}
         >
           <History className="w-4 h-4" />
@@ -220,91 +223,90 @@ export default function WalletLedger() {
         </button>
       </div>
 
-      {/* 3. DEPOSIT TAB */}
+      {/* 3. DEPOSIT TAB (DKWIN11 Yellow/White Card) */}
       {activeTab === 'deposit' && (
-        <form onSubmit={handleDepositSubmit} className="bg-slate-900/90 p-5 rounded-2xl border border-slate-800 shadow-xl space-y-4 text-xs">
+        <form onSubmit={handleDepositSubmit} className="bg-white p-4.5 rounded-3xl border border-slate-200 shadow-sm space-y-3.5 text-xs">
           <div>
-            <label className="text-slate-300 font-bold block mb-2">১. পেমেন্ট মেথড নির্বাচন করুন:</label>
+            <label className="text-slate-800 font-bold block mb-1.5">১. পেমেন্ট মেথড নির্বাচন করুন:</label>
             <div className="grid grid-cols-3 gap-2">
               {/* bKash */}
               <button
                 type="button"
                 onClick={() => setDepMethod('bKash')}
-                className={`py-2.5 px-2 rounded-xl font-black text-xs border transition flex flex-col items-center space-y-0.5 ${
+                className={`py-2 px-1 rounded-xl font-black text-xs border transition flex flex-col items-center ${
                   depMethod === 'bKash'
-                    ? 'bg-pink-950/70 border-pink-500 text-pink-300 shadow-lg'
-                    : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+                    ? 'bg-rose-50 border-rose-400 text-rose-700 shadow-sm'
+                    : 'bg-slate-50 text-slate-600 border-slate-200'
                 }`}
               >
-                <span className="text-sm font-black">bKash</span>
-                <span className="text-[9px] opacity-80">বিকাশ</span>
+                <span className="font-black">bKash</span>
+                <span className="text-[9px] opacity-75">বিকাশ</span>
               </button>
 
               {/* Nagad */}
               <button
                 type="button"
                 onClick={() => setDepMethod('Nagad')}
-                className={`py-2.5 px-2 rounded-xl font-black text-xs border transition flex flex-col items-center space-y-0.5 ${
+                className={`py-2 px-1 rounded-xl font-black text-xs border transition flex flex-col items-center ${
                   depMethod === 'Nagad'
-                    ? 'bg-orange-950/70 border-orange-500 text-orange-300 shadow-lg'
-                    : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+                    ? 'bg-orange-50 border-orange-400 text-orange-700 shadow-sm'
+                    : 'bg-slate-50 text-slate-600 border-slate-200'
                 }`}
               >
-                <span className="text-sm font-black">Nagad</span>
-                <span className="text-[9px] opacity-80">নগদ</span>
+                <span className="font-black">Nagad</span>
+                <span className="text-[9px] opacity-75">নগদ</span>
               </button>
 
               {/* Rocket */}
               <button
                 type="button"
                 onClick={() => setDepMethod('Rocket')}
-                className={`py-2.5 px-2 rounded-xl font-black text-xs border transition flex flex-col items-center space-y-0.5 ${
+                className={`py-2 px-1 rounded-xl font-black text-xs border transition flex flex-col items-center ${
                   depMethod === 'Rocket'
-                    ? 'bg-purple-950/70 border-purple-500 text-purple-300 shadow-lg'
-                    : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+                    ? 'bg-purple-50 border-purple-400 text-purple-700 shadow-sm'
+                    : 'bg-slate-50 text-slate-600 border-slate-200'
                 }`}
               >
-                <span className="text-sm font-black">Rocket</span>
-                <span className="text-[9px] opacity-80">রকেট</span>
+                <span className="font-black">Rocket</span>
+                <span className="text-[9px] opacity-75">রকেট</span>
               </button>
             </div>
           </div>
 
-          {/* Admin Payment Number Card with 1-Click Copy */}
-          <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
-            <div className="flex justify-between items-center text-[11px] text-slate-400">
-              <span>নিচের নম্বরে টাকা পাঠান (Send Money):</span>
-              <span className="text-yellow-400 font-bold">{depMethod}</span>
+          {/* Payment Number Box */}
+          <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-1">
+            <div className="flex justify-between items-center text-[11px] text-slate-600">
+              <span>ডেমো সেন্ড মানি নম্বর ({depMethod}):</span>
             </div>
 
-            <div className="flex justify-between items-center bg-slate-900/90 p-2.5 rounded-lg border border-slate-700">
-              <span className="font-mono text-sm font-black text-white tracking-wider">
+            <div className="flex justify-between items-center bg-white p-2 rounded-xl border border-slate-200">
+              <span className="font-mono text-sm font-black text-slate-900 tracking-wider">
                 {currentPayNumber}
               </span>
               <button
                 type="button"
                 onClick={() => handleCopy(currentPayNumber)}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1 shadow-md transition"
+                className="bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 px-2.5 py-1 rounded-lg text-xs font-bold flex items-center space-x-1 transition"
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-white" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copied ? 'কপি হয়েছে' : 'কপি করুন'}</span>
+                {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copied ? 'কপি' : 'কপি'}</span>
               </button>
             </div>
           </div>
 
           {/* Preset Deposit Amounts */}
           <div>
-            <label className="text-slate-300 font-bold block mb-1.5">২. ডিপোজিট পরিমাণ নির্বাচন করুন (টাকা):</label>
-            <div className="grid grid-cols-4 gap-1.5 mb-2">
+            <label className="text-slate-800 font-bold block mb-1.5">২. ডিপোজিট পরিমাণ নির্বাচন করুন (কয়েন):</label>
+            <div className="grid grid-cols-3 gap-1.5 mb-2">
               {depositPresets.map(amt => (
                 <button
                   type="button"
                   key={amt}
                   onClick={() => setDepAmount(amt.toString())}
-                  className={`py-2 rounded-xl text-xs font-bold border transition ${
+                  className={`py-1.5 rounded-xl text-xs font-bold border transition ${
                     depAmount === amt.toString()
-                      ? 'bg-yellow-500 text-slate-950 border-yellow-400 font-black shadow-md'
-                      : 'bg-slate-950 text-slate-300 border-slate-800 hover:bg-slate-800'
+                      ? 'bg-[#F5BE00] text-slate-950 border-yellow-500 font-black shadow-sm'
+                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                   }`}
                 >
                   ৳{amt}
@@ -315,61 +317,76 @@ export default function WalletLedger() {
             <input
               type="number"
               min={settings.MIN_DEPOSIT_AMOUNT || 100}
-              placeholder="অথবা সরাসরি পরিমাণ লিখুন (যেমন: ৫০০)"
+              placeholder="সরাসরি পরিমাণ লিখুন"
               value={depAmount}
               onChange={e => setDepAmount(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white font-mono text-sm focus:border-emerald-500"
+              className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 font-mono text-xs focus:border-[#F5BE00] focus:bg-white transition"
             />
           </div>
 
-          {/* Sender Phone Number */}
-          <div>
-            <label className="text-slate-300 font-bold block mb-1">৩. যে নম্বর থেকে টাকা পাঠিয়েছেন:</label>
-            <input
-              type="text"
-              placeholder="01XXXXXXXXX"
-              value={senderPhone}
-              onChange={e => setSenderPhone(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white font-mono text-sm focus:border-emerald-500"
-            />
+          {/* Sender Phone & TrxID */}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-slate-700 font-bold block mb-1">প্রেরক নম্বর:</label>
+              <input
+                type="text"
+                placeholder="01XXXXXXXXX"
+                value={senderPhone}
+                onChange={e => setSenderPhone(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 text-slate-900 font-mono text-xs focus:border-[#F5BE00] focus:bg-white transition"
+              />
+            </div>
+            <div>
+              <label className="text-slate-700 font-bold block mb-1">TrxID:</label>
+              <input
+                type="text"
+                placeholder="BL789KA32"
+                value={depTxHash}
+                onChange={e => setDepTxHash(e.target.value.toUpperCase())}
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 text-slate-900 font-mono text-xs uppercase focus:border-[#F5BE00] focus:bg-white transition"
+              />
+            </div>
           </div>
 
-          {/* Transaction ID */}
-          <div>
-            <label className="text-slate-300 font-bold block mb-1">৪. ট্রানজেকশন আইডি (TrxID):</label>
-            <input
-              type="text"
-              placeholder="যেমন: BL789KA32"
-              value={depTxHash}
-              onChange={e => setDepTxHash(e.target.value.toUpperCase())}
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white font-mono text-sm uppercase focus:border-emerald-500"
-            />
+          {/* Quick Demo Instant Deposit simulation button */}
+          <div className="pt-1 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => {
+                adjustUserBalance(user.uid, parseFloat(depAmount) || 500);
+                alert(`সফল! ৳${depAmount || 500} ডেমো কয়েন ইনস্ট্যান্ট আপনার ব্যালেন্সে যোগ হয়েছে।`);
+              }}
+              className="text-[11px] text-amber-700 hover:underline font-bold flex items-center space-x-1"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>১-ক্লিকে ইনস্ট্যান্ট ডেমো টপ-আপ</span>
+            </button>
           </div>
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black py-3 rounded-xl text-sm shadow-xl transition"
+            className="w-full bg-gradient-to-r from-amber-500 via-[#F5BE00] to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-black py-2.5 rounded-xl text-xs shadow-md transition"
           >
-            ডিপোজিট রিকোয়েস্ট সাবমিট করুন
+            ডিপোজিট রিকোয়েস্ট জমা দিন
           </button>
         </form>
       )}
 
-      {/* 4. WITHDRAW TAB */}
+      {/* 4. WITHDRAW TAB (DKWIN11 Yellow/White Card) */}
       {activeTab === 'withdraw' && (
-        <form onSubmit={handleWithdrawSubmit} className="bg-slate-900/90 p-5 rounded-2xl border border-slate-800 shadow-xl space-y-4 text-xs">
+        <form onSubmit={handleWithdrawSubmit} className="bg-white p-4.5 rounded-3xl border border-slate-200 shadow-sm space-y-3.5 text-xs">
           <div>
-            <label className="text-slate-300 font-bold block mb-2">১. উইথড্র মেথড বেছে নিন:</label>
+            <label className="text-slate-800 font-bold block mb-1.5">১. উইথড্র মেথড বেছে নিন:</label>
             <div className="grid grid-cols-3 gap-2">
               {['bKash', 'Nagad', 'Rocket'].map(m => (
                 <button
                   type="button"
                   key={m}
                   onClick={() => setWitMethod(m)}
-                  className={`py-2.5 rounded-xl font-bold text-xs border transition ${
+                  className={`py-2 rounded-xl font-bold text-xs border transition ${
                     witMethod === m 
-                      ? 'bg-emerald-600 text-white border-emerald-500 shadow-md' 
-                      : 'bg-slate-950 text-slate-400 border-slate-800'
+                      ? 'bg-[#F5BE00] text-slate-950 border-yellow-500 shadow-sm' 
+                      : 'bg-slate-50 text-slate-600 border-slate-200'
                   }`}
                 >
                   {m}
@@ -378,14 +395,15 @@ export default function WalletLedger() {
             </div>
           </div>
 
+          {/* Account Type */}
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => setWitAccountType('Personal')}
-              className={`py-2 rounded-xl text-xs font-bold border transition ${
+              className={`py-1.5 rounded-xl text-xs font-bold border transition ${
                 witAccountType === 'Personal'
-                  ? 'bg-slate-800 text-yellow-400 border-yellow-500/50'
-                  : 'bg-slate-950 text-slate-400 border-slate-800'
+                  ? 'bg-amber-100 text-amber-900 border-amber-300'
+                  : 'bg-slate-50 text-slate-600 border-slate-200'
               }`}
             >
               পার্সোনাল (Personal)
@@ -393,29 +411,32 @@ export default function WalletLedger() {
             <button
               type="button"
               onClick={() => setWitAccountType('Agent')}
-              className={`py-2 rounded-xl text-xs font-bold border transition ${
+              className={`py-1.5 rounded-xl text-xs font-bold border transition ${
                 witAccountType === 'Agent'
-                  ? 'bg-slate-800 text-yellow-400 border-yellow-500/50'
-                  : 'bg-slate-950 text-slate-400 border-slate-800'
+                  ? 'bg-amber-100 text-amber-900 border-amber-300'
+                  : 'bg-slate-50 text-slate-600 border-slate-200'
               }`}
             >
               এজেন্ট (Agent)
             </button>
           </div>
 
-          {/* Quick Amounts */}
+          {/* Preset Amounts */}
           <div>
-            <label className="text-slate-300 font-bold block mb-1.5">২. উত্তোলনের পরিমাণ (টাকা):</label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-slate-800 font-bold">২. উত্তোলনের পরিমাণ (টাকা):</label>
+              <span className="text-[10px] text-slate-500 font-mono">দৈনিক লিমিট: ৳৫,০০০</span>
+            </div>
             <div className="grid grid-cols-3 gap-1.5 mb-2">
               {withdrawPresets.map(amt => (
                 <button
                   type="button"
                   key={amt}
                   onClick={() => setWitAmount(amt.toString())}
-                  className={`py-2 rounded-xl text-xs font-bold border transition ${
+                  className={`py-1.5 rounded-xl text-xs font-bold border transition ${
                     witAmount === amt.toString()
-                      ? 'bg-yellow-500 text-slate-950 border-yellow-400 font-black shadow-md'
-                      : 'bg-slate-950 text-slate-300 border-slate-800'
+                      ? 'bg-[#F5BE00] text-slate-950 border-yellow-500 font-black shadow-sm'
+                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                   }`}
                 >
                   ৳{amt}
@@ -423,10 +444,10 @@ export default function WalletLedger() {
               ))}
               <button
                 type="button"
-                onClick={() => setWitAmount(Math.floor(user.balance).toString())}
-                className="py-2 rounded-xl text-xs font-bold bg-slate-950 text-emerald-400 border border-slate-800 hover:bg-slate-800"
+                onClick={() => setWitAmount(Math.min(5000, Math.floor(user.balance)).toString())}
+                className="py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100"
               >
-                সব ব্যালেন্স
+                সর্বোচ্চ (Max)
               </button>
             </div>
 
@@ -436,108 +457,96 @@ export default function WalletLedger() {
               placeholder="পরিমাণ লিখুন"
               value={witAmount}
               onChange={e => setWitAmount(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white font-mono text-sm focus:border-emerald-500"
+              className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 font-mono text-xs focus:border-[#F5BE00] focus:bg-white transition"
             />
           </div>
 
-          {/* Receiver Phone Number */}
+          {/* Receiver Phone */}
           <div>
-            <label className="text-slate-300 font-bold block mb-1">৩. যে নম্বরে টাকা নেবেন ({witMethod}):</label>
+            <label className="text-slate-800 font-bold block mb-1">৩. যে নম্বরে কয়েন উত্তোলন করবেন ({witMethod}):</label>
             <input
               type="text"
               placeholder="01XXXXXXXXX"
               value={witAccount}
               onChange={e => setWitAccount(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white font-mono text-sm focus:border-emerald-500"
+              className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 font-mono text-xs focus:border-[#F5BE00] focus:bg-white transition"
             />
-          </div>
-
-          <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs flex justify-between items-center">
-            <span className="text-slate-400">আপনি পাবেন:</span>
-            <span className="text-base font-black font-mono text-emerald-400">৳{witAmount || 0} BDT</span>
           </div>
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black py-3 rounded-xl text-sm shadow-xl transition"
+            className="w-full bg-gradient-to-r from-amber-500 via-[#F5BE00] to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-black py-2.5 rounded-xl text-xs shadow-md transition"
           >
-            উইথড্র রিকোয়েস্ট পাঠান
+            উইথড্র রিকোয়েস্ট জমা দিন
           </button>
         </form>
       )}
 
-      {/* 5. TRANSACTION HISTORY TAB */}
+      {/* 5. LEDGER TAB (Transaction History) */}
       {activeTab === 'ledger' && (
-        <div className="bg-slate-900/90 rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
-          <div className="p-3.5 border-b border-slate-800 flex justify-between items-center">
-            <h3 className="text-xs font-bold text-slate-300 flex items-center">
-              <History className="w-4 h-4 text-emerald-400 mr-1.5" />
-              <span>আমার লেনদেন হিস্ট্রি</span>
-            </h3>
-
-            <select
-              value={filterType}
-              onChange={e => setFilterType(e.target.value)}
-              className="bg-slate-950 border border-slate-700 text-xs rounded-lg px-2 py-1 text-slate-300"
-            >
-              <option value="all">সব লেনদেন</option>
-              <option value="deposit">ডিপোজিট</option>
-              <option value="withdrawal">উইথড্র</option>
-              <option value="bonus">বোনাস</option>
-              <option value="bet_won">জয়ী টাকা</option>
-            </select>
+        <div className="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm space-y-3 text-xs">
+          {/* Filters */}
+          <div className="flex space-x-1.5 overflow-x-auto no-scrollbar pb-1">
+            {[
+              { id: 'all', label: 'সকল' },
+              { id: 'deposit', label: 'ডিপোজিট' },
+              { id: 'withdrawal', label: 'উইথড্র' },
+              { id: 'bonus', label: 'বোনাস' },
+              { id: 'faucet', label: 'ফসেট' }
+            ].map(f => (
+              <button
+                key={f.id}
+                onClick={() => setFilterType(f.id)}
+                className={`px-3 py-1 rounded-full text-xs font-bold border transition ${
+                  filterType === f.id
+                    ? 'bg-[#F5BE00] text-slate-950 border-yellow-500'
+                    : 'bg-slate-50 text-slate-600 border-slate-200'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
           </div>
 
-          {filteredTransactions.length === 0 ? (
-            <p className="text-xs text-slate-500 text-center py-6">কোনো লেনদেন রেকর্ড পাওয়া যায়নি।</p>
-          ) : (
-            <div className="divide-y divide-slate-800/80">
-              {filteredTransactions.map(tx => (
-                <div key={tx.id} className="p-3 flex justify-between items-center text-xs hover:bg-slate-800/30 transition">
+          {/* List */}
+          <div className="space-y-2 max-h-80 overflow-y-auto no-scrollbar">
+            {filteredTxs.length === 0 ? (
+              <div className="text-center text-slate-400 py-8">কোনো লেনদেনের রেকর্ড নেই।</div>
+            ) : (
+              filteredTxs.map(tx => (
+                <div key={tx.id} className="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex justify-between items-center">
                   <div>
-                    <div className="flex items-center space-x-1.5 mb-0.5">
-                      <span className={`font-black uppercase text-[10px] px-1.5 py-0.5 rounded ${
-                        tx.type === 'deposit' || tx.type === 'bet_won' || tx.type === 'bonus'
-                          ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-red-950 text-red-400 border border-red-500/30'
-                      }`}>
-                        {tx.type === 'deposit' ? 'ডিপোজিট' : (tx.type === 'withdrawal' ? 'উইথড্র' : tx.type)}
-                      </span>
-                      <span className="font-mono text-slate-400 text-[10px]">
-                        {new Date(tx.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                    <span className="text-slate-300 font-medium">{tx.method || tx.type}</span>
-                    {tx.tx_hash && (
-                      <span className="block font-mono text-[9px] text-slate-500">
-                        TrxID: {tx.tx_hash}
-                      </span>
-                    )}
+                    <span className="font-bold text-slate-900 block">{tx.method || tx.type}</span>
+                    <span className="text-[10px] text-slate-500 font-mono">
+                      {new Date(tx.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {tx.tx_hash || tx.account_number || 'TRX'}
+                    </span>
                   </div>
 
                   <div className="text-right">
-                    <span className={`font-black font-mono text-sm block ${
-                      tx.type === 'deposit' || tx.type === 'bet_won' || tx.type === 'bonus'
-                        ? 'text-emerald-400'
-                        : 'text-red-400'
+                    <span className={`font-mono font-black text-sm block ${
+                      tx.type === 'deposit' || tx.type === 'bonus' || tx.type === 'faucet' 
+                        ? 'text-emerald-600' 
+                        : 'text-rose-600'
                     }`}>
-                      {tx.type === 'withdrawal' || tx.type === 'bet_placed' ? '-' : '+'}
-                      ৳{tx.amount.toFixed(2)}
+                      {tx.type === 'deposit' || tx.type === 'bonus' || tx.type === 'faucet' ? '+' : '-'}৳{tx.amount.toFixed(2)}
                     </span>
-                    <span className={`text-[10px] font-bold uppercase ${
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase ${
                       tx.status === 'completed' || tx.status === 'approved'
-                        ? 'text-emerald-400'
-                        : (tx.status === 'rejected' ? 'text-red-400' : 'text-yellow-400')
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : tx.status === 'pending'
+                        ? 'bg-amber-100 text-amber-800'
+                        : 'bg-rose-100 text-rose-800'
                     }`}>
-                      {tx.status === 'approved' ? 'সফল' : (tx.status === 'rejected' ? 'বাতিল' : 'অপেক্ষমান')}
+                      {tx.status}
                     </span>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </div>
       )}
+
     </div>
   );
 }

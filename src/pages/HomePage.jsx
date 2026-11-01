@@ -99,7 +99,7 @@ export default function HomePage({
       bannerColor: 'bg-amber-600'
     },
     { 
-      id: 'fortunegems', 
+      id: 'fortunegems2', 
       title: 'FORTUNE GEMS 2', 
       display: 'Fortune Gems 2', 
       rtp: '97.46%', 

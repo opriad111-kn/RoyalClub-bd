@@ -181,7 +181,7 @@ function AppContent() {
 
         {/* Interactive Games Overlays */}
         {activeGame === 'aviator' && <AviatorGame onClose={() => setActiveGame(null)} />}
-        {activeGame === 'fortunegems' && <FortuneGemsGame onClose={() => setActiveGame(null)} />}
+        {(activeGame === 'fortunegems' || activeGame === 'fortunegems2') && <FortuneGemsGame onClose={() => setActiveGame(null)} />}
         {activeGame === 'fortunegems3' && <FortuneGems3Game onClose={() => setActiveGame(null)} />}
         {activeGame === 'goldenempire' && <GoldenEmpireGame onClose={() => setActiveGame(null)} />}
         {activeGame === 'superace' && <SuperAceGame onClose={() => setActiveGame(null)} />}

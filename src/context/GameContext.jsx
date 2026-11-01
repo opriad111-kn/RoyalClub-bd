@@ -13,20 +13,21 @@ export function GameProvider({ children }) {
   const [settings, setSettings] = useState(() => {
     const saved = localStorage.getItem('royalclub_settings');
     return saved ? JSON.parse(saved) : {
-      ENABLE_PAID_MODE: true, // Real Casino / Deposit & Withdraw mode enabled
+      ENABLE_PAID_MODE: false, // 100% Free Demo Virtual Coins Mode
       SIGNUP_BONUS_ENABLED: true, // Bonus ON/OFF toggle
-      SIGNUP_BONUS_AMOUNT: 100, // Customizable: 100 Taka / Coins bonus
+      SIGNUP_BONUS_AMOUNT: 1000, // Phase 5 Requirement: 1,000 Free Virtual Coins
       ROUND_DURATION_SECONDS: 60,
-      FAUCET_AMOUNT: 50,
+      FAUCET_AMOUNT: 500, // Phase 5 Requirement: 500 Free Coins when balance < 50
       FAUCET_COOLDOWN_HOURS: 4,
       MIN_DEPOSIT_AMOUNT: 100,
       MIN_WITHDRAWAL_AMOUNT: 200,
+      DAILY_WITHDRAWAL_LIMIT: 5000, // Phase 5 Requirement: 5,000 daily limit simulation
       WITHDRAWAL_FEE_PERCENT: 0,
-      BKASH_NUMBER: "01855-987654 (Personal)",
-      NAGAD_NUMBER: "01755-123456 (Personal)",
-      ROCKET_NUMBER: "01955-456789 (Personal)",
+      BKASH_NUMBER: "01855-987654 (Personal Demo)",
+      NAGAD_NUMBER: "01755-123456 (Personal Demo)",
+      ROCKET_NUMBER: "01955-456789 (Personal Demo)",
       USDT_DEPOSIT_ADDRESS: "TQu8sB7xNkL2mP89qZtV1yWz4AeR6cX4Kd",
-      ANNOUNCEMENT_TEXT: "🎉 RoyalClubBD-তে স্বাগতম! bKash ও Nagad-এ ইনস্ট্যান্ট ডিপোজিট ও উইথড্র সুবিধা। নতুন ইউজারদের জন্য স্পেশাল সাইনআপ বোনাস! প্রতিদিন রাত ৯টায় মেগা ড্র!"
+      ANNOUNCEMENT_TEXT: "🎉 DK WIN-এ স্বাগতম! রেজিস্ট্রেশন করলেই ১,০০০ ফ্রি ভার্চুয়াল কয়েন! ব্যালেন্স ৫০-এর নিচে নামলে পাবেন ফ্রি ৫০০ কয়েন রিচার্জ!"
     };
   });
 
@@ -399,20 +400,22 @@ export function GameProvider({ children }) {
     return true;
   }
 
-  // Faucet
+  // Faucet & Low-Balance Rescue (500 Free Coins when balance < 50)
   function claimFaucet() {
+    const isLowBalance = user.balance < 50;
     const now = Date.now();
     const cooldownMs = (settings.FAUCET_COOLDOWN_HOURS || 4) * 3600 * 1000;
-    if (user.last_faucet_claim) {
+
+    if (!isLowBalance && user.last_faucet_claim) {
       const elapsed = now - new Date(user.last_faucet_claim).getTime();
       if (elapsed < cooldownMs) {
         const remainingMinutes = Math.ceil((cooldownMs - elapsed) / 60000);
-        alert(`ফসেটটি অপেক্ষমান! অনুগ্রহ করে ${remainingMinutes} মিনিট পর আবার ট্রাই করুন।`);
+        alert(`ফ্রি ফসেট অপেক্ষমান! অনুগ্রহ করে ${remainingMinutes} মিনিট পর আবার ট্রাই করুন। অথবা ব্যালেন্স ৫০-এর নিচে নামলে তৎক্ষণাৎ ক্লেইম করতে পারবেন।`);
         return false;
       }
     }
 
-    const faucetAmount = settings.FAUCET_AMOUNT || 50;
+    const faucetAmount = isLowBalance ? 500 : (settings.FAUCET_AMOUNT || 500);
     soundManager.playWin();
     confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
 
@@ -428,7 +431,7 @@ export function GameProvider({ children }) {
       type: "faucet",
       amount: faucetAmount,
       fee: 0,
-      method: "Daily Free Faucet",
+      method: isLowBalance ? "Emergency Low-Balance Faucet (500 Coins)" : "Daily Free Faucet",
       tx_hash: `FAUCET-${Date.now().toString().slice(-6)}`,
       status: "completed",
       created_at: new Date().toISOString()
@@ -461,7 +464,7 @@ export function GameProvider({ children }) {
     return true;
   }
 
-  // Withdrawal Request
+  // Withdrawal Request with Daily 5,000 Coins Limit Enforcement
   function requestWithdrawal({ method, amount, accountNumber, accountType }) {
     if (amount < (settings.MIN_WITHDRAWAL_AMOUNT || 200)) {
       alert(`সর্বনিম্ন উইথড্র ৳${settings.MIN_WITHDRAWAL_AMOUNT || 200} টাকা।`);
@@ -473,6 +476,19 @@ export function GameProvider({ children }) {
     }
     if (!accountNumber) {
       alert("টাকা তোলার নম্বর লিখুন।");
+      return false;
+    }
+
+    // Daily 5,000 Coins limit check
+    const today = new Date().toDateString();
+    const todayWithdrawals = transactions
+      .filter(tx => tx.uid === user.uid && tx.type === 'withdrawal' && new Date(tx.created_at).toDateString() === today)
+      .reduce((sum, tx) => sum + tx.amount, 0);
+
+    const dailyLimit = settings.DAILY_WITHDRAWAL_LIMIT || 5000;
+    if (todayWithdrawals + amount > dailyLimit) {
+      const remainingLimit = Math.max(0, dailyLimit - todayWithdrawals);
+      alert(`দৈনিক সিমুলেশন উইথড্র লিমিট ৫,০০০ কয়েন অতিক্রম করেছে! আজকের অবশিষ্ট লিমিট: ৳${remainingLimit} টাকা।`);
       return false;
     }
 
@@ -496,7 +512,7 @@ export function GameProvider({ children }) {
       created_at: new Date().toISOString()
     };
     setTransactions(prev => [newTx, ...prev]);
-    alert(`উইথড্র রিকোয়েস্ট জমা হয়েছে! পাবেন: ৳${netAmount} টাকা। খুব শীঘ্রই টাকা পাঠিয়ে দেওয়া হবে।`);
+    alert(`উইথড্র রিকোয়েস্ট জমা হয়েছে! পাবেন: ৳${netAmount} টাকা (ভার্চুয়াল)। অ্যাডমিন অনুমোদনের পর ব্যালেন্সে প্রতিফলিত হবে।`);
     return true;
   }
 
@@ -573,54 +589,99 @@ export function GameProvider({ children }) {
     }));
   }
 
-  // Auth: Login / Register with custom Signup Bonus
-  function login(username, password) {
-    const existing = allUsers.find(u => u.username.toLowerCase() === username.toLowerCase());
+  // Auth: Login / Register with 1,000 Virtual Coins Signup Bonus
+  function login(identifier, password, rememberMe = true) {
+    const cleanId = (identifier || '').trim().toLowerCase();
+    if (!cleanId) return { success: false, message: 'ইউজারনেম, মোবাইল বা ইমেইল লিখুন।' };
+
+    const existing = allUsers.find(u => 
+      u.username.toLowerCase() === cleanId || 
+      (u.phone && u.phone.toLowerCase() === cleanId) || 
+      (u.email && u.email.toLowerCase() === cleanId)
+    );
+
     if (existing) {
+      if (existing.is_banned) {
+        return { success: false, message: 'এই অ্যাকাউন্টটি স্থগিত (Banned) করা হয়েছে।' };
+      }
       setUser(existing);
-      return { success: true };
+      if (rememberMe) {
+        localStorage.setItem('royalclub_remember_user', cleanId);
+      }
+      return { success: true, user: existing };
     }
 
-    // New Registration with dynamic Signup Bonus
-    const bonusToGive = settings.SIGNUP_BONUS_ENABLED ? (settings.SIGNUP_BONUS_AMOUNT || 100) : 0;
+    return { success: false, message: 'অ্যাকাউন্ট পাওয়া যায়নি! দয়া করে সঠিক তথ্য দিন অথবা রেজিস্ট্রেশন করুন।' };
+  }
+
+  function registerUser({ username, phone, email, password, referralCode }) {
+    const cleanUser = (username || '').trim();
+    const cleanPhone = (phone || '').trim();
+    const cleanEmail = (email || '').trim().toLowerCase();
+
+    if (!cleanUser || cleanUser.length < 3) {
+      return { success: false, message: 'ইউজারনেম কমপক্ষে ৩ অক্ষরের হতে হবে।' };
+    }
+    if (!password || password.length < 6) {
+      return { success: false, message: 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।' };
+    }
+
+    // Duplicate account validation
+    const duplicate = allUsers.find(u => 
+      u.username.toLowerCase() === cleanUser.toLowerCase() ||
+      (cleanPhone && u.phone === cleanPhone) ||
+      (cleanEmail && u.email && u.email.toLowerCase() === cleanEmail)
+    );
+
+    if (duplicate) {
+      return { success: false, message: 'এই ইউজারনেম, মোবাইল বা ইমেইল দিয়ে ইতোমধ্যে একটি অ্যাকাউন্ট রয়েছে!' };
+    }
+
+    // Phase 5: Registration: 1,000 Virtual Coins
+    const welcomeCoins = settings.SIGNUP_BONUS_AMOUNT || 1000;
     const newUser = {
       uid: Math.floor(100000 + Math.random() * 900000).toString(),
-      username: username,
-      balance: bonusToGive,
+      username: cleanUser,
+      phone: cleanPhone || null,
+      email: cleanEmail || null,
+      referral_code: referralCode || null,
+      balance: welcomeCoins,
       total_won: 0,
       total_wagered: 0,
-      is_admin: username.toLowerCase() === 'admin',
+      vip_level: 1,
+      is_admin: cleanUser.toLowerCase() === 'admin',
       is_banned: false,
+      created_at: new Date().toISOString(),
       last_faucet_claim: null
     };
 
     setAllUsers(prev => [...prev, newUser]);
     setUser(newUser);
 
-    if (bonusToGive > 0) {
-      const bonusTx = {
-        id: Date.now(),
-        uid: newUser.uid,
-        type: "bonus",
-        amount: bonusToGive,
-        fee: 0,
-        method: "Signup Welcome Bonus",
-        status: "completed",
-        created_at: new Date().toISOString()
-      };
-      setTransactions(prev => [bonusTx, ...prev]);
-    }
+    const bonusTx = {
+      id: Date.now(),
+      uid: newUser.uid,
+      type: "bonus",
+      amount: welcomeCoins,
+      fee: 0,
+      method: "Registration Welcome Gift (1,000 Free Coins)",
+      status: "completed",
+      created_at: new Date().toISOString()
+    };
+    setTransactions(prev => [bonusTx, ...prev]);
 
-    return { success: true };
+    return { success: true, user: newUser, bonus: welcomeCoins };
   }
 
   function logout() {
+    localStorage.removeItem('royalclub_remember_user');
     setUser({
       uid: "100000",
       username: "Guest",
       balance: 0.00,
       total_won: 0,
       total_wagered: 0,
+      vip_level: 0,
       is_admin: false,
       is_banned: false,
       last_faucet_claim: null
@@ -657,6 +718,7 @@ export function GameProvider({ children }) {
       gameControl,
       updateGameControl,
       login,
+      registerUser,
       logout
     }}>
       {children}
