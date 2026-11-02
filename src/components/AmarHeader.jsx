@@ -6,8 +6,8 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenAdmin }) {
   const { user } = useGame();
 
   return (
-    <header className="sticky top-0 z-40 bg-[#F5BE00] text-slate-900 px-3.5 py-2.5 flex items-center justify-between shadow-sm select-none">
-      {/* Brand Logo with RoyalClubBD branding */}
+    <header className="sticky top-0 z-40 bg-gradient-to-r from-amber-500 via-[#F5BE00] to-yellow-400 text-slate-900 px-3.5 py-2.5 flex items-center justify-between shadow-md select-none border-b border-yellow-400/60">
+      {/* Brand Logo with RoyalClubBD / DKWin / 91 Club branding */}
       <div className="flex items-center space-x-2 cursor-pointer">
         <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center p-1 border border-yellow-200">
           <span className="text-base font-black leading-none">👑</span>
@@ -18,7 +18,7 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenAdmin }) {
               ROYAL<span className="text-white drop-shadow-sm">CLUB</span> BD
             </span>
             <span className="bg-amber-950 text-[8px] font-black px-1.5 py-0.2 rounded-full text-yellow-300">
-              VIP
+              VIP{user.vip_level || 1}
             </span>
           </div>
           <span className="text-[8px] text-slate-800 font-bold uppercase tracking-widest leading-none mt-0.5 opacity-80">
@@ -29,7 +29,7 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenAdmin }) {
 
       {/* Right Controls: Live User Balance Pill + Admin/Auth */}
       <div className="flex items-center space-x-2">
-        {/* Live User Balance Pill matching Screenshot 1 & 4 */}
+        {/* Live User Balance Pill */}
         <div
           onClick={onOpenWallet}
           className="cursor-pointer bg-white/95 hover:bg-white text-slate-900 px-2.5 py-1 rounded-full flex items-center space-x-1.5 shadow-sm border border-yellow-300 transition active:scale-95"

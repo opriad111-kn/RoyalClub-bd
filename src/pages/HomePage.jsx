@@ -23,7 +23,7 @@ export default function HomePage({
   onOpenUsdtBonus 
 }) {
   const { user, settings } = useGame();
-  const [selectedProvider, setSelectedProvider] = useState('ALL'); // 'ALL' by default!
+  const [selectedProvider, setSelectedProvider] = useState('HOT_SLOTS'); // 'HOT_SLOTS' by default!
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [showNotice, setShowNotice] = useState(false);
@@ -68,16 +68,6 @@ export default function HomePage({
     }, 4500);
     return () => clearInterval(interval);
   }, []);
-
-  const categories = [
-    { id: 'ALL', label: 'ALL GAMES', count: 26, icon: '🔥' },
-    { id: 'JILI', label: 'JILI', count: 8, icon: '👑' },
-    { id: 'PRAGMATIC', label: 'PRAGMATIC PLAY', count: 5, icon: '⚡' },
-    { id: 'PGSOFT', label: 'PG SOFT', count: 5, icon: '🀄' },
-    { id: 'SPRIBE', label: 'SPRIBE', count: 5, icon: '🚀' },
-    { id: 'EVOLUTION', label: 'EVOLUTION', count: 4, icon: '🎡' },
-    { id: 'LOTTERY', label: 'LOTTERY', count: 5, icon: '🎲' }
-  ];
 
   // 1. JILI Studio Games
   const jiliGames = [
@@ -455,6 +445,37 @@ export default function HomePage({
     }
   ];
 
+  // Category Collections (Hot Slots, JILI, Pragmatic Play, PG Soft, Live Casino, Original, All Games)
+  const hotSlotsGames = [
+    jiliGames[0],       // Fortune Gems 2
+    jiliGames[1],       // Super Ace
+    pragmaticGames[0],  // Gates of Olympus
+    pragmaticGames[1],  // Sweet Bonanza
+    pgsoftGames[0],     // Mahjong Ways 2
+    jiliGames[2],       // Money Coming
+    jiliGames[5],       // Crazy 777
+    jiliGames[3],       // Boxing King
+    jiliGames[4],       // Golden Empire
+    pragmaticGames[2],  // Sugar Rush
+    pgsoftGames[1],     // Fortune Tiger
+    jiliGames[7]        // Fortune Ox
+  ];
+
+  const originalGames = [
+    { ...spribeGames[0], provider: 'ORIGINAL' },    // Aviator
+    { ...spribeGames[1], provider: 'ORIGINAL' },    // Mines
+    { ...lotteryGames[0], provider: 'ORIGINAL' },   // WinGo
+    { ...lotteryGames[2], provider: 'ORIGINAL' },   // K3 Lottery
+    { ...lotteryGames[1], provider: 'ORIGINAL' },   // TRX WinGo
+    { ...spribeGames[2], provider: 'ORIGINAL' },    // Plinko
+    { ...spribeGames[3], provider: 'ORIGINAL' },    // Limbo
+    { ...lotteryGames[3], provider: 'ORIGINAL' },   // 5D Lottery
+    { ...lotteryGames[4], provider: 'ORIGINAL' },   // Moto Racing
+    { ...spribeGames[4], provider: 'ORIGINAL' }     // Dice
+  ];
+
+  const liveCasinoGames = evolutionGames;
+
   // Prioritize flagship target games at the top of ALL
   const allGames = [
     lotteryGames[0],    // WinGo
@@ -486,6 +507,17 @@ export default function HomePage({
     pgsoftGames[4]      // Wild Bandito
   ];
 
+  // Professional Game Categories (Hot Slots, JILI, Pragmatic Play, PG Soft, Live Casino, Original)
+  const categories = [
+    { id: 'HOT_SLOTS', label: 'Hot Slots', count: hotSlotsGames.length, icon: '🔥' },
+    { id: 'JILI', label: 'JILI', count: jiliGames.length, icon: '👑' },
+    { id: 'PRAGMATIC', label: 'Pragmatic Play', count: pragmaticGames.length, icon: '⚡' },
+    { id: 'PGSOFT', label: 'PG Soft', count: pgsoftGames.length, icon: '🀄' },
+    { id: 'LIVECASINO', label: 'Live Casino', count: liveCasinoGames.length, icon: '🎡' },
+    { id: 'ORIGINAL', label: 'Original', count: originalGames.length, icon: '🚀' },
+    { id: 'ALL', label: 'All Games', count: allGames.length, icon: '💎' }
+  ];
+
   const filteredGames = (
     searchQuery.trim() !== ''
       ? allGames.filter(g => 
@@ -493,20 +525,18 @@ export default function HomePage({
           g.display.toLowerCase().includes(searchQuery.toLowerCase()) ||
           g.provider.toLowerCase().includes(searchQuery.toLowerCase())
         )
-      : selectedProvider === 'ALL'
-      ? allGames
+      : selectedProvider === 'HOT_SLOTS'
+      ? hotSlotsGames
       : selectedProvider === 'JILI'
       ? jiliGames
       : selectedProvider === 'PRAGMATIC'
       ? pragmaticGames
       : selectedProvider === 'PGSOFT'
       ? pgsoftGames
-      : selectedProvider === 'SPRIBE'
-      ? spribeGames
-      : selectedProvider === 'EVOLUTION'
-      ? evolutionGames
-      : selectedProvider === 'LOTTERY'
-      ? lotteryGames
+      : selectedProvider === 'LIVECASINO'
+      ? liveCasinoGames
+      : selectedProvider === 'ORIGINAL'
+      ? originalGames
       : allGames
   );
 
