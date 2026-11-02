@@ -37,6 +37,11 @@ import SweetBonanzaGame from './components/games/SweetBonanzaGame';
 import CrazyTimeGame from './components/games/CrazyTimeGame';
 import MahjongWaysGame from './components/games/MahjongWaysGame';
 import WinGoGame from './components/WinGoGame';
+import WalletTransferModal from './components/WalletTransferModal';
+import UniversalCrashEngine from './engines/UniversalCrashEngine';
+import UniversalSlotEngine from './engines/UniversalSlotEngine';
+import UniversalArcadeEngine from './engines/UniversalArcadeEngine';
+import UniversalColorCasinoEngine from './engines/UniversalColorCasinoEngine';
 import LuckyWheelModal from './components/LuckyWheelModal';
 import AttendanceModal from './components/AttendanceModal';
 import GiftCodeModal from './components/GiftCodeModal';
@@ -114,12 +119,88 @@ function AppContent() {
     window.location.hash = `#/${tab}`;
   }
 
+  // Auto Balance Transfer States
+  const [transferModal, setTransferModal] = useState({
+    isOpen: false,
+    mode: 'transfer_in',
+    gameTitle: '',
+    serverName: '',
+    pendingGameId: null,
+    initialBalance: 0,
+    amount: 0,
+    netProfit: 0
+  });
+
+  function getGameInfo(gameId) {
+    const map = {
+      aviator: { title: 'Aviator', server: 'SPRIBE CLUSTER' },
+      spaceman: { title: 'Spaceman', server: 'PRAGMATIC SERVER' },
+      jetx: { title: 'JetX', server: 'SMART SOFT SERVER' },
+      limbo: { title: 'Limbo Rocket', server: 'SPRIBE CLUSTER' },
+      fortunegems: { title: 'Fortune Gems 2', server: 'JILI CLOUD SERVER' },
+      fortunegems2: { title: 'Fortune Gems 2', server: 'JILI CLOUD SERVER' },
+      superace: { title: 'Super Ace', server: 'JILI CLOUD SERVER' },
+      superacedeluxe: { title: 'Super Ace Deluxe', server: 'JILI CLOUD SERVER' },
+      moneycoming: { title: 'Money Coming', server: 'JILI CLOUD SERVER' },
+      boxingking: { title: 'Boxing King', server: 'JILI CLOUD SERVER' },
+      goldenempire: { title: 'Golden Empire', server: 'JILI CLOUD SERVER' },
+      crazy777: { title: 'Crazy 777', server: 'JILI CLOUD SERVER' },
+      fortuneox: { title: 'Fortune Ox', server: 'JILI CLOUD SERVER' },
+      gatesofolympus: { title: 'Gates of Olympus', server: 'PRAGMATIC PLAY SERVER' },
+      sweetbonanza: { title: 'Sweet Bonanza', server: 'PRAGMATIC PLAY SERVER' },
+      sugarrush: { title: 'Sugar Rush', server: 'PRAGMATIC PLAY SERVER' },
+      crazytime: { title: 'Crazy Time', server: 'EVOLUTION LIVE STUDIO' },
+      lightningroulette: { title: 'Lightning Roulette', server: 'EVOLUTION LIVE STUDIO' },
+      mahjongways2: { title: 'Mahjong Ways 2', server: 'PG SOFT CLOUD SERVER' },
+      fortunetiger: { title: 'Fortune Tiger', server: 'PG SOFT CLOUD SERVER' },
+      mines: { title: 'Mines Gold', server: 'SPRIBE CLUSTER' },
+      plinko: { title: 'Plinko', server: 'SPRIBE CLUSTER' },
+      dice: { title: 'Dice Slider', server: 'SPRIBE CLUSTER' },
+      wingo: { title: 'WinGo 30s/1m', server: '91 CLUB LOTTERY VAULT' },
+      trxwingo: { title: 'TRX WinGo', server: 'TRON BLOCKCHAIN SERVER' },
+      k3: { title: 'K3 3-Dice Lottery', server: 'CASINO LOTTERY ENGINE' }
+    };
+    return map[gameId] || { title: (gameId || '').toUpperCase(), server: 'ROYAL CLUSTER' };
+  }
+
   function handleOpenGame(gameId) {
-    setActiveGame(gameId);
-    window.location.hash = `#game/${gameId}`;
+    const info = getGameInfo(gameId);
+    setTransferModal({
+      isOpen: true,
+      mode: 'transfer_in',
+      gameTitle: info.title,
+      serverName: info.server,
+      pendingGameId: gameId,
+      initialBalance: user.balance,
+      amount: user.balance,
+      netProfit: 0
+    });
+  }
+
+  function onTransferInComplete() {
+    const gId = transferModal.pendingGameId;
+    setTransferModal(prev => ({ ...prev, isOpen: false }));
+    setActiveGame(gId);
+    window.location.hash = `#game/${gId}`;
   }
 
   function handleCloseGame() {
+    const info = getGameInfo(activeGame || 'game');
+    const net = user.balance - (transferModal.initialBalance || user.balance);
+    setTransferModal({
+      isOpen: true,
+      mode: 'transfer_out',
+      gameTitle: info.title,
+      serverName: info.server,
+      pendingGameId: null,
+      initialBalance: transferModal.initialBalance,
+      amount: user.balance,
+      netProfit: net
+    });
+  }
+
+  function onTransferOutComplete() {
+    setTransferModal(prev => ({ ...prev, isOpen: false }));
     setActiveGame(null);
     window.location.hash = `#/${activeTab}`;
   }
@@ -251,35 +332,55 @@ function AppContent() {
           />
         )}
 
-        {/* Interactive Games Overlays */}
-        {activeGame === 'wingo' && <WinGoGame initialMode="30s" onBack={handleCloseGame} />}
-        {activeGame === 'trxwingo' && <WinGoGame initialMode="trx" onBack={handleCloseGame} />}
-        {activeGame === 'aviator' && <AviatorGame onClose={handleCloseGame} />}
-        {(activeGame === 'fortunegems' || activeGame === 'fortunegems2') && <FortuneGemsGame onClose={handleCloseGame} />}
-        {activeGame === 'fortunegems3' && <FortuneGems3Game onClose={handleCloseGame} />}
-        {activeGame === 'goldenempire' && <GoldenEmpireGame onClose={handleCloseGame} />}
-        {activeGame === 'superace' && <SuperAceGame onClose={handleCloseGame} />}
-        {activeGame === 'superacedeluxe' && <SuperAceDeluxeGame onClose={handleCloseGame} />}
-        {activeGame === 'jackpotfishing' && <JackpotFishingGame onClose={handleCloseGame} />}
-        {activeGame === 'moneycoming' && <MoneyComingGame onClose={handleCloseGame} />}
-        {activeGame === 'mines' && <MinesGame onClose={handleCloseGame} />}
-        {activeGame === 'crazy777' && <Crazy777Game onClose={handleCloseGame} />}
-        {(activeGame === 'sevenupdown' || activeGame === 'dice') && <SevenUpDownGame onClose={handleCloseGame} />}
-        {activeGame === 'boxingking' && <BoxingKingGame onClose={handleCloseGame} />}
-        {activeGame === 'fortuneox' && <FortuneOxGame onClose={handleCloseGame} />}
-        {(activeGame === 'k3' || activeGame === 'k3lottery') && <K3LotteryGame onClose={handleCloseGame} />}
+        {/* Universal Master Game Engines (100% Real Balance, NO External Demo IFrames) */}
+        {/* 1. Crash Master Engine (Aviator, Spaceman, JetX, Limbo) */}
+        {(activeGame === 'aviator' || activeGame === 'spaceman' || activeGame === 'jetx' || activeGame === 'limbo') && (
+          <UniversalCrashEngine gameId={activeGame} onClose={handleCloseGame} />
+        )}
+
+        {/* 2. Slot Master Engine (Fortune Gems 2, Super Ace, Money Coming, Gates of Olympus, Sweet Bonanza, Boxing King, Golden Empire, Crazy 777) */}
+        {(activeGame === 'fortunegems' || activeGame === 'fortunegems2' || activeGame === 'superace' || activeGame === 'superacedeluxe' || activeGame === 'moneycoming' || activeGame === 'boxingking' || activeGame === 'goldenempire' || activeGame === 'crazy777' || activeGame === 'gatesofolympus' || activeGame === 'sweetbonanza' || activeGame === 'sugarrush') && (
+          <UniversalSlotEngine gameId={activeGame} onClose={handleCloseGame} />
+        )}
+
+        {/* 3. Arcade Master Engine (Mines, Dice) */}
+        {(activeGame === 'mines' || activeGame === 'dice') && (
+          <UniversalArcadeEngine gameId={activeGame} onClose={handleCloseGame} />
+        )}
+
+        {/* 4. Color & Casino Master Engine (WinGo 30s/1m/3m, TRX WinGo) */}
+        {(activeGame === 'wingo' || activeGame === 'trxwingo') && (
+          <UniversalColorCasinoEngine gameId={activeGame} onClose={handleCloseGame} />
+        )}
+
+        {/* Dedicated Live Table & Lottery Engines */}
+        {(activeGame === 'k3' || activeGame === 'k3lottery') && (
+          <K3LotteryGame 
+            onClose={handleCloseGame} 
+            onOpenDeposit={() => { handleCloseGame(); setActiveTab('wallet'); }}
+            onOpenWithdraw={() => { handleCloseGame(); setActiveTab('wallet'); }}
+          />
+        )}
         {(activeGame === '5d' || activeGame === '5dlottery') && <FiveDLotteryGame onClose={handleCloseGame} />}
         {activeGame === 'plinko' && <PlinkoGame onClose={handleCloseGame} />}
-        {activeGame === 'limbo' && <LimboGame onClose={handleCloseGame} />}
         {activeGame === 'chickenroad' && <ChickenRoadGame onClose={handleCloseGame} />}
         {activeGame === 'moneywheel' && <MoneyWheelGame onClose={handleCloseGame} />}
         {activeGame === 'tierx' && <TierXGame onClose={handleCloseGame} />}
         {activeGame === 'motoracing' && <MotoRacingGame onClose={handleCloseGame} />}
         {activeGame === 'jelly' && <JellyGame onClose={handleCloseGame} />}
-        {(activeGame === 'gatesofolympus' || activeGame === 'starlightprincess' || activeGame === 'wolfgold') && <GatesOfOlympusGame onClose={handleCloseGame} />}
-        {(activeGame === 'sweetbonanza' || activeGame === 'sugarrush') && <SweetBonanzaGame onClose={handleCloseGame} />}
         {(activeGame === 'crazytime' || activeGame === 'lightningroulette' || activeGame === 'megaball' || activeGame === 'monopoly') && <CrazyTimeGame onClose={handleCloseGame} />}
         {(activeGame === 'mahjongways2' || activeGame === 'fortunetiger' || activeGame === 'fortunerabbit' || activeGame === 'luckyneko' || activeGame === 'wildbandito') && <MahjongWaysGame onClose={handleCloseGame} />}
+
+        {/* Auto Balance Transfer In & Out Modal */}
+        <WalletTransferModal 
+          isOpen={transferModal.isOpen}
+          mode={transferModal.mode}
+          gameTitle={transferModal.gameTitle}
+          serverName={transferModal.serverName}
+          amount={transferModal.amount}
+          netProfit={transferModal.netProfit}
+          onComplete={transferModal.mode === 'transfer_in' ? onTransferInComplete : onTransferOutComplete}
+        />
 
         {/* Activity & Utility Modals */}
         <LuckyWheelModal 

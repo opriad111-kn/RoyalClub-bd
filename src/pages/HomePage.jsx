@@ -75,7 +75,7 @@ export default function HomePage({
     { id: 'PGSOFT', label: 'PG SOFT', count: 5, icon: '🀄' },
     { id: 'SPRIBE', label: 'SPRIBE', count: 5, icon: '🚀' },
     { id: 'EVOLUTION', label: 'EVOLUTION', count: 4, icon: '🎡' },
-    { id: 'LOTTERY', label: 'LOTTERY', count: 4, icon: '🎲' }
+    { id: 'LOTTERY', label: 'LOTTERY', count: 5, icon: '🎲' }
   ];
 
   // 1. JILI Studio Games
@@ -403,7 +403,7 @@ export default function HomePage({
       display: 'Win Go 30s/1m/3m/5m', 
       category: 'LOTTERY',
       rtp: '98.00%', 
-      image: '/assets/amarclub/game_wingo.png', 
+      image: '/assets/games/lottery_wingo.svg', 
       provider: 'LOTTERY',
       bannerColor: 'bg-emerald-600',
       badge: 'HOT'
@@ -414,7 +414,7 @@ export default function HomePage({
       display: 'TRX Blockchain Live Hash', 
       category: 'LOTTERY',
       rtp: '98.50%', 
-      image: '/assets/games/trxwingo.svg', 
+      image: '/assets/games/lottery_trx.svg', 
       provider: 'LOTTERY',
       bannerColor: 'bg-red-600',
       badge: 'LIVE'
@@ -425,7 +425,7 @@ export default function HomePage({
       display: 'K3 3-Dice Casino Draw', 
       category: 'LOTTERY',
       rtp: '97.80%', 
-      image: '/assets/games/k3lottery.svg', 
+      image: '/assets/games/lottery_k3.svg', 
       provider: 'LOTTERY',
       bannerColor: 'bg-purple-600',
       badge: '3D DICE'
@@ -436,10 +436,21 @@ export default function HomePage({
       display: '5D Fast Draw 9000X', 
       category: 'LOTTERY',
       rtp: '97.50%', 
-      image: '/assets/categories/lottery.svg', 
+      image: '/assets/games/lottery_5d.svg', 
       provider: 'LOTTERY',
       bannerColor: 'bg-blue-600',
       badge: '5D'
+    },
+    { 
+      id: 'motoracing', 
+      title: 'MOTO RACING', 
+      display: 'Moto Racing Speed Championship', 
+      category: 'LOTTERY',
+      rtp: '98.20%', 
+      image: '/assets/games/lottery_moto.svg', 
+      provider: 'LOTTERY',
+      bannerColor: 'bg-orange-600',
+      badge: 'SPEED'
     }
   ];
 
@@ -461,6 +472,7 @@ export default function HomePage({
     pgsoftGames[1],     // Fortune Tiger
     evolutionGames[1],  // Lightning Roulette
     lotteryGames[3],    // 5D Lottery
+    lotteryGames[4],    // Moto Racing
     jiliGames[3],       // Boxing King
     jiliGames[4],       // Golden Empire
     jiliGames[5],       // Crazy 777
@@ -665,28 +677,56 @@ export default function HomePage({
             </span>
           </div>
           <div className="flex space-x-1">
-            <button className="w-6 h-6 rounded-md bg-emerald-600 text-white flex items-center justify-center text-[10px] active:scale-95">◀</button>
-            <button className="w-6 h-6 rounded-md bg-emerald-600 text-white flex items-center justify-center text-[10px] active:scale-95">▶</button>
+            <button 
+              onClick={() => {
+                const el = document.getElementById('lottery-carousel-container');
+                if (el) el.scrollBy({ left: -140, behavior: 'smooth' });
+              }}
+              className="w-6 h-6 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center text-[10px] active:scale-95 cursor-pointer shadow-xs"
+            >
+              ◀
+            </button>
+            <button 
+              onClick={() => {
+                const el = document.getElementById('lottery-carousel-container');
+                if (el) el.scrollBy({ left: 140, behavior: 'smooth' });
+              }}
+              className="w-6 h-6 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center text-[10px] active:scale-95 cursor-pointer shadow-xs"
+            >
+              ▶
+            </button>
           </div>
         </div>
         <p className="text-[10px] text-slate-400 font-medium">Fair and diverse lottery gameplay</p>
 
-        <div className="grid grid-cols-3 gap-2 pt-1">
+        {/* 5 Flagship Lottery Cards (WinGo, K3, 5D, TrxWingo, Moto Racing) */}
+        <div 
+          id="lottery-carousel-container"
+          className="flex space-x-2.5 overflow-x-auto no-scrollbar pt-1 pb-1 scroll-smooth"
+        >
           {[
-            { id: 'wingo', title: 'WinGo', img: '/assets/amarclub/game_wingo.png' },
-            { id: 'k3', title: 'K3', img: '/assets/games/k3lottery.svg' },
-            { id: '5d', title: '5D', img: '/assets/categories/lottery.svg' }
+            { id: 'wingo', title: 'WinGo', img: '/assets/games/lottery_wingo.svg', sub: 'Color Prediction' },
+            { id: 'k3', title: 'K3', img: '/assets/games/lottery_k3.svg', sub: '3D Dice Draw' },
+            { id: '5d', title: '5D', img: '/assets/games/lottery_5d.svg', sub: 'Planet Multiplier' },
+            { id: 'trxwingo', title: 'TrxWingo', img: '/assets/games/lottery_trx.svg', sub: 'TRON Blockchain' },
+            { id: 'motoracing', title: 'Moto Racing', img: '/assets/games/lottery_moto.svg', sub: 'High-Speed Race' }
           ].map(lot => (
             <div
               key={lot.id}
               onClick={() => onOpenGame(lot.id)}
-              className="bg-gradient-to-b from-emerald-50/70 to-white rounded-2xl p-2.5 border border-emerald-100/80 flex flex-col items-center justify-between cursor-pointer hover:shadow-md hover:border-emerald-300 transition active:scale-95 group"
+              className="w-[110px] sm:w-[125px] shrink-0 bg-gradient-to-b from-[#e8f8f0] to-[#f4fcf7] rounded-2xl p-2.5 border border-emerald-100 flex flex-col items-center justify-between cursor-pointer hover:shadow-md hover:border-emerald-300 transition active:scale-95 group shadow-xs"
             >
-              <span className="text-xs font-black text-emerald-800 self-start">{lot.title}</span>
-              <div className="w-full aspect-square flex items-center justify-center overflow-hidden p-1 my-1">
-                <img src={lot.img} alt={lot.title} className="w-full h-full object-contain group-hover:scale-105 transition" />
+              <span className="text-xs font-black text-[#065f46] self-start tracking-tight">
+                {lot.title}
+              </span>
+              <div className="w-full aspect-square flex items-center justify-center overflow-hidden my-1">
+                <img 
+                  src={lot.img} 
+                  alt={lot.title} 
+                  className="w-full h-full object-contain group-hover:scale-108 transition duration-200" 
+                />
               </div>
-              <div className="w-full bg-[#10b981] text-white text-[8px] font-black py-0.5 rounded-md text-center shadow-xs">
+              <div className="w-full bg-[#10b981] group-hover:bg-emerald-600 text-white text-[9px] font-black py-1 rounded-lg text-center shadow-xs transition">
                 খেলুন
               </div>
             </div>

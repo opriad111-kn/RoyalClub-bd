@@ -38,7 +38,7 @@ const SUM_BALLS = [
   { num: 18, mult: '207.36X', color: 'green' }
 ];
 
-export default function K3LotteryGame({ onClose }) {
+export default function K3LotteryGame({ onClose, onOpenDeposit, onOpenWithdraw }) {
   const { user, adjustUserBalance } = useGame();
 
   // Mode Selection: '1m', '3m', '5m', '10m'
@@ -333,13 +333,13 @@ export default function K3LotteryGame({ onClose }) {
             {/* Withdraw & Deposit Pill Buttons */}
             <div className="grid grid-cols-2 gap-3 pt-1">
               <button 
-                onClick={() => alert("উইথড্র পেইজ খুলুন")}
+                onClick={() => onOpenWithdraw ? onOpenWithdraw() : alert("উইথড্র পেইজ খুলুন")}
                 className="bg-[#f87171] hover:bg-rose-500 text-white font-black py-2.5 rounded-full text-xs shadow-md transition active:scale-95 text-center cursor-pointer"
               >
                 Withdraw
               </button>
               <button 
-                onClick={() => alert("ডিপোজিট পেইজ খুলুন")}
+                onClick={() => onOpenDeposit ? onOpenDeposit() : alert("ডিপোজিট পেইজ খুলুন")}
                 className="bg-[#10b981] hover:bg-emerald-600 text-white font-black py-2.5 rounded-full text-xs shadow-md transition active:scale-95 text-center cursor-pointer"
               >
                 Deposit

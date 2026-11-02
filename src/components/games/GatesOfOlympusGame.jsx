@@ -319,3 +319,4 @@ export default function GatesOfOlympusGame({ onClose }) {
     </div>
   );
 }
+
