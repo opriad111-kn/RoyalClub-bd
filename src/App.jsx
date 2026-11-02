@@ -6,6 +6,8 @@ import HomePage from './pages/HomePage';
 import ActivityPage from './pages/ActivityPage';
 import PromotionPage from './pages/PromotionPage';
 import AccountPage from './pages/AccountPage';
+import DepositPage from './pages/DepositPage';
+import WithdrawPage from './pages/WithdrawPage';
 import WalletLedger from './components/WalletLedger';
 import AdminDashboard from './components/AdminDashboard';
 
@@ -50,6 +52,8 @@ import FairnessModal from './components/FairnessModal';
 import PartnerRewardsModal from './components/PartnerRewardsModal';
 import UsdtBonusModal from './components/UsdtBonusModal';
 
+const VALID_TABS = ['home', 'activity', 'promotion', 'account', 'deposit', 'withdraw', 'wallet', 'admin', 'wingo'];
+
 function AppContent() {
   const { user } = useGame();
   const [activeTab, setActiveTab] = useState(() => {
@@ -59,12 +63,13 @@ function AppContent() {
     }
     const params = new URLSearchParams(window.location.search);
     const tabParam = params.get('tab');
-    if (tabParam && ['home', 'activity', 'promotion', 'account', 'wallet', 'admin', 'wingo'].includes(tabParam)) {
+    if (tabParam && VALID_TABS.includes(tabParam)) {
       return tabParam;
     }
-    const hash = window.location.hash.replace('#/', '').replace('#', '');
-    if (['home', 'activity', 'promotion', 'account', 'wallet', 'admin', 'wingo'].includes(hash)) {
-      return hash;
+    const rawHash = (window.location.hash || '').replace('#/', '').replace('#', '');
+    const cleanTab = rawHash.split('?')[0].toLowerCase();
+    if (VALID_TABS.includes(cleanTab)) {
+      return cleanTab;
     }
     return 'home';
   });
@@ -80,7 +85,18 @@ function AppContent() {
   const [isWheelOpen, setIsWheelOpen] = useState(false);
   const [isAttendanceOpen, setIsAttendanceOpen] = useState(false);
   const [isGiftOpen, setIsGiftOpen] = useState(false);
-  const [isAuthOpen, setIsAuthOpen] = useState(() => params.get('auth') === 'true' || window.location.hash.includes('auth'));
+  
+  const [authTab, setAuthTab] = useState(() => {
+    const h = window.location.hash || '';
+    const s = window.location.search || '';
+    if (h.includes('register') || s.includes('register')) return 'register';
+    return 'login';
+  });
+  const [isAuthOpen, setIsAuthOpen] = useState(() => {
+    const h = window.location.hash || '';
+    const s = window.location.search || '';
+    return h.includes('register') || h.includes('login') || h.includes('auth') || s.includes('auth=true');
+  });
   const [isFairnessOpen, setIsFairnessOpen] = useState(false);
   const [isPartnerRewardOpen, setIsPartnerRewardOpen] = useState(false);
   const [isUsdtBonusOpen, setIsUsdtBonusOpen] = useState(false);
@@ -95,23 +111,33 @@ function AppContent() {
       }
       const q = new URLSearchParams(window.location.search);
       const tabParam = q.get('tab');
-      if (tabParam && ['home', 'activity', 'promotion', 'account', 'wallet', 'admin', 'wingo'].includes(tabParam)) {
+      if (tabParam && VALID_TABS.includes(tabParam)) {
         setActiveTab(tabParam);
       }
       if (q.get('auth') === 'true') {
+        setAuthTab('login');
         setIsAuthOpen(true);
       }
       if (q.get('game')) {
         setActiveGame(q.get('game'));
       }
 
-      const hash = window.location.hash.replace('#/', '').replace('#', '');
-      if (['home', 'activity', 'promotion', 'account', 'wallet', 'admin', 'wingo'].includes(hash)) {
-        setActiveTab(hash);
-      } else if (hash === 'auth') {
+      const rawHash = (window.location.hash || '').replace('#/', '').replace('#', '');
+      const cleanTab = rawHash.split('?')[0].toLowerCase();
+
+      // Support referral register links like #/register?ref=722200
+      if (cleanTab === 'register' || rawHash.startsWith('register')) {
+        setAuthTab('register');
         setIsAuthOpen(true);
-      } else if (hash.startsWith('game/')) {
-        const gId = hash.replace('game/', '');
+      } else if (cleanTab === 'login' || cleanTab === 'auth' || rawHash.startsWith('login')) {
+        setAuthTab('login');
+        setIsAuthOpen(true);
+      }
+
+      if (VALID_TABS.includes(cleanTab)) {
+        setActiveTab(cleanTab);
+      } else if (rawHash.startsWith('game/')) {
+        const gId = rawHash.replace('game/', '');
         setActiveGame(gId);
       }
     };
@@ -122,6 +148,14 @@ function AppContent() {
       window.removeEventListener('popstate', handleUrl);
     };
   }, []);
+
+  function handleCloseAuth() {
+    setIsAuthOpen(false);
+    const hash = window.location.hash || '';
+    if (hash.includes('register') || hash.includes('login') || hash.includes('auth')) {
+      window.location.hash = `#/${activeTab || 'home'}`;
+    }
+  }
 
   function handleSelectTab(tab) {
     setActiveTab(tab);
@@ -173,6 +207,11 @@ function AppContent() {
   }
 
   function handleOpenGame(gameId) {
+    if (user?.username === 'Guest' || user?.is_guest) {
+      setAuthTab('login');
+      setIsAuthOpen(true);
+      return;
+    }
     setActiveGame(gameId);
     window.location.hash = `#game/${gameId}`;
   }
@@ -218,13 +257,17 @@ function AppContent() {
       )}
 
       {/* Mobile Max-Width Container */}
-      <div className="w-full max-w-[420px] min-h-screen bg-[#F4F5F8] border-x border-slate-200/60 flex flex-col justify-between relative shadow-2xl">
+      <div className="w-full max-w-[480px] sm:max-w-[500px] min-h-screen bg-[#F4F5F8] border-x border-slate-200/60 flex flex-col justify-between relative shadow-2xl">
         
-        {/* Sticky Top Header (Hidden in Game or WinGo/Account/Activity) */}
-        {!activeGame && activeTab !== 'wingo' && activeTab !== 'account' && activeTab !== 'activity' && (
+        {/* Sticky Top Header (Hidden in Game, WinGo, Account, Activity, Deposit, Withdraw) */}
+        {!activeGame && activeTab !== 'wingo' && activeTab !== 'account' && activeTab !== 'activity' && activeTab !== 'deposit' && activeTab !== 'withdraw' && (
           <AmarHeader
-            onOpenAuth={() => setIsAuthOpen(true)}
+            onOpenAuth={(tab = 'login') => {
+              setAuthTab(tab);
+              setIsAuthOpen(true);
+            }}
             onOpenWallet={() => setActiveTab('wallet')}
+            onOpenDeposit={() => setActiveTab('deposit')}
             onOpenAdmin={() => setActiveTab('admin')}
           />
         )}
@@ -233,7 +276,7 @@ function AppContent() {
         <main className={`flex-1 ${
           activeTab === 'wingo' 
             ? 'p-0 pb-16' 
-            : activeTab === 'account' || activeTab === 'activity' 
+            : activeTab === 'account' || activeTab === 'activity' || activeTab === 'deposit' || activeTab === 'withdraw'
             ? 'p-3.5 pt-0 pb-20' 
             : 'p-3.5 pb-20'
         }`}>
@@ -242,7 +285,10 @@ function AppContent() {
               onOpenGame={handleOpenGame}
               onOpenWheel={() => setIsWheelOpen(true)}
               onOpenGift={() => setIsGiftOpen(true)}
-              onOpenAuth={() => setIsAuthOpen(true)}
+              onOpenAuth={(tab = 'login') => {
+                setAuthTab(tab);
+                setIsAuthOpen(true);
+              }}
               onOpenAdmin={() => setActiveTab('admin')}
               onOpenPartnerReward={() => setIsPartnerRewardOpen(true)}
               onOpenUsdtBonus={() => setIsUsdtBonusOpen(true)}
@@ -264,8 +310,33 @@ function AppContent() {
           {activeTab === 'account' && (
             <AccountPage 
               onOpenWallet={() => setActiveTab('wallet')}
+              onOpenDeposit={() => setActiveTab('deposit')}
+              onOpenWithdraw={() => setActiveTab('withdraw')}
               onOpenAdmin={() => setActiveTab('admin')}
-              onOpenAuth={() => setIsAuthOpen(true)}
+              onOpenAuth={() => {
+                setAuthTab('login');
+                setIsAuthOpen(true);
+              }}
+            />
+          )}
+
+          {activeTab === 'deposit' && (
+            <DepositPage 
+              onBack={() => setActiveTab('home')}
+              onOpenAuth={() => {
+                setAuthTab('login');
+                setIsAuthOpen(true);
+              }}
+            />
+          )}
+
+          {activeTab === 'withdraw' && (
+            <WithdrawPage 
+              onBack={() => setActiveTab('home')}
+              onOpenAuth={() => {
+                setAuthTab('login');
+                setIsAuthOpen(true);
+              }}
             />
           )}
 
@@ -295,14 +366,14 @@ function AppContent() {
 
           {activeTab === 'wingo' && (
             <WinGoGame 
-              onOpenDeposit={() => setActiveTab('wallet')} 
+              onOpenDeposit={() => setActiveTab('deposit')} 
               onBack={() => setActiveTab('home')}
             />
           )}
         </main>
 
-        {/* 5-Tab AmarClub Style Bottom Navigation (Hidden in Game or WinGo) */}
-        {!activeGame && activeTab !== 'wingo' && (
+        {/* 5-Tab AmarClub Style Bottom Navigation (Hidden in Game, WinGo, Deposit, Withdraw) */}
+        {!activeGame && activeTab !== 'wingo' && activeTab !== 'deposit' && activeTab !== 'withdraw' && (
           <AmarBottomNav
             activeTab={activeTab}
             onSelectTab={handleSelectTab}
@@ -364,7 +435,8 @@ function AppContent() {
         />
         <AuthModal 
           isOpen={isAuthOpen} 
-          onClose={() => setIsAuthOpen(false)} 
+          initialTab={authTab}
+          onClose={handleCloseAuth} 
         />
         <FairnessModal 
           isOpen={isFairnessOpen} 

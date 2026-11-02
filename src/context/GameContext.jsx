@@ -80,11 +80,26 @@ export function GameProvider({ children }) {
 
   // 3. Current User State (Synced with Supabase users table)
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('royalclub_current_user');
+    if (typeof window !== 'undefined' && localStorage.getItem('royalclub_logged_out') === 'true') {
+      return {
+        uid: "100000",
+        username: "Guest",
+        phone: "",
+        balance: 0.00,
+        total_won: 0,
+        total_wagered: 0,
+        vip_level: 0,
+        is_admin: false,
+        is_banned: false,
+        is_online: false,
+        is_guest: true
+      };
+    }
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('royalclub_current_user') : null;
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed && parsed.username && parsed.username !== 'Guest') {
+        if (parsed && parsed.username && parsed.username !== 'Guest' && !parsed.is_guest) {
           return parsed;
         }
       } catch (e) {}
@@ -400,21 +415,31 @@ export function GameProvider({ children }) {
           setSupabaseStatus('connected');
           setAllUsers(supaUsers);
 
+          // If user explicitly logged out, keep Guest and do NOT auto-assign iueri
+          if (localStorage.getItem('royalclub_logged_out') === 'true') {
+            return;
+          }
+
           // Sync current user balance live from Supabase
           const savedCurrent = localStorage.getItem('royalclub_current_user');
           let liveMatch = null;
           if (savedCurrent) {
             try {
               const parsed = JSON.parse(savedCurrent);
-              liveMatch = supaUsers.find(u => 
-                (u.username && parsed.username && u.username.toLowerCase() === parsed.username.toLowerCase()) ||
-                (u.phone && parsed.phone && u.phone === parsed.phone) ||
-                (u.uid && parsed.uid && u.uid === parsed.uid)
-              );
+              if (parsed.username && parsed.username !== 'Guest' && !parsed.is_guest) {
+                liveMatch = supaUsers.find(u => 
+                  (u.username && parsed.username && u.username.toLowerCase() === parsed.username.toLowerCase()) ||
+                  (u.phone && parsed.phone && u.phone === parsed.phone) ||
+                  (u.uid && parsed.uid && u.uid === parsed.uid)
+                );
+              }
             } catch (e) {}
           }
-          if (!liveMatch) {
-            liveMatch = supaUsers.find(u => u.username?.toLowerCase() === 'iueri') || supaUsers[0];
+          if (!liveMatch && localStorage.getItem('royalclub_logged_out') !== 'true') {
+            const rawUser = localStorage.getItem('royalclub_current_user');
+            if (!rawUser || (!rawUser.includes('"Guest"') && !rawUser.includes('"is_guest":true'))) {
+              liveMatch = supaUsers.find(u => u.username?.toLowerCase() === 'iueri') || supaUsers[0];
+            }
           }
 
           if (liveMatch) {
@@ -477,6 +502,9 @@ export function GameProvider({ children }) {
 
   async function refreshSupabaseData() {
     try {
+      if (user?.username === 'Guest' || user?.is_guest || (typeof window !== 'undefined' && localStorage.getItem('royalclub_logged_out') === 'true')) {
+        return true;
+      }
       const { data: supaUsers } = await supabase.from('users').select('*');
       if (supaUsers && supaUsers.length > 0) {
         setAllUsers(supaUsers);
@@ -1103,6 +1131,7 @@ export function GameProvider({ children }) {
         is_online: true
       };
 
+      localStorage.removeItem('royalclub_logged_out');
       setUser(activeUser);
       localStorage.setItem('royalclub_current_user', JSON.stringify(activeUser));
       if (rememberMe) {
@@ -1177,6 +1206,7 @@ export function GameProvider({ children }) {
     }
 
     // 2. Update React State & Local Storage
+    localStorage.removeItem('royalclub_logged_out');
     setAllUsers(prev => [newUser, ...prev]);
     setUser(newUser);
     localStorage.setItem('royalclub_current_user', JSON.stringify(newUser));
@@ -1211,18 +1241,23 @@ export function GameProvider({ children }) {
   }
 
   function logout() {
+    localStorage.setItem('royalclub_logged_out', 'true');
     localStorage.removeItem('royalclub_remember_user');
-    setUser({
+    const guestUser = {
       uid: "100000",
       username: "Guest",
+      phone: "",
       balance: 0.00,
       total_won: 0,
       total_wagered: 0,
       vip_level: 0,
       is_admin: false,
       is_banned: false,
-      last_faucet_claim: null
-    });
+      is_online: false,
+      is_guest: true
+    };
+    localStorage.setItem('royalclub_current_user', JSON.stringify(guestUser));
+    setUser(guestUser);
   }
 
   return (

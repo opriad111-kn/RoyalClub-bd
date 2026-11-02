@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import VipModal from '../components/VipModal';
 
-export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth }) {
+export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onOpenDeposit, onOpenWithdraw }) {
   const { user, logout, gameHistory, transactions, refreshSupabaseData } = useGame();
   const [copied, setCopied] = useState(false);
   const [showVipModal, setShowVipModal] = useState(false);
@@ -67,16 +67,24 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth }) {
           <div className="flex-1 space-y-1">
             <div className="flex items-center space-x-2">
               <h3 className="font-black text-lg tracking-tight text-slate-900 font-sans">
-                {user.username || 'iueri'}
+                {user.username === 'Guest' || user.is_guest ? 'Guest Player' : (user.username || 'iueri')}
               </h3>
               
-              {/* Pink Star VIP1 Badge matching DK WIN */}
-              <button 
-                onClick={() => setShowVipModal(true)}
-                className="bg-gradient-to-r from-rose-400 via-pink-500 to-rose-500 text-white font-black text-[10px] px-2.5 py-0.5 rounded-full shadow-sm flex items-center space-x-1 border border-white/60 active:scale-95 transition cursor-pointer"
-              >
-                <span>VIP{user.vip_level || 1}</span>
-              </button>
+              {user.username === 'Guest' || user.is_guest ? (
+                <button 
+                  onClick={onOpenAuth}
+                  className="bg-slate-950 text-[#FFC107] font-black text-[10px] px-2.5 py-0.5 rounded-full shadow-sm active:scale-95 transition cursor-pointer"
+                >
+                  Log in
+                </button>
+              ) : (
+                <button 
+                  onClick={() => setShowVipModal(true)}
+                  className="bg-gradient-to-r from-rose-400 via-pink-500 to-rose-500 text-white font-black text-[10px] px-2.5 py-0.5 rounded-full shadow-sm flex items-center space-x-1 border border-white/60 active:scale-95 transition cursor-pointer"
+                >
+                  <span>VIP{user.vip_level || 1}</span>
+                </button>
+              )}
             </div>
 
             {/* UID Badge with Copy Button */}
@@ -146,7 +154,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth }) {
 
             {/* 2. Deposit (Pastel Orange) */}
             <button
-              onClick={onOpenWallet}
+              onClick={onOpenDeposit || onOpenWallet}
               className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 transition active:scale-95"
             >
               <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 text-amber-500 flex items-center justify-center mb-1 shadow-sm">
@@ -157,7 +165,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth }) {
 
             {/* 3. Withdraw (Pastel Blue) */}
             <button
-              onClick={onOpenWallet}
+              onClick={onOpenWithdraw || onOpenWallet}
               className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 transition active:scale-95"
             >
               <div className="w-12 h-12 rounded-2xl bg-sky-50 border border-sky-100 text-sky-500 flex items-center justify-center mb-1 shadow-sm">
@@ -318,14 +326,17 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth }) {
           </button>
 
           <button
-            onClick={logout}
+            onClick={() => {
+              logout();
+              if (onOpenAuth) onOpenAuth();
+            }}
             className="w-full p-3.5 flex justify-between items-center text-left hover:bg-red-50 text-red-600 transition cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
                 <LogOut className="w-4 h-4" />
               </div>
-              <span className="font-bold text-xs">Log out</span>
+              <span className="font-bold text-xs">{user.username === 'Guest' || user.is_guest ? 'Log in to Account' : 'Log out'}</span>
             </div>
             <ChevronRight className="w-4 h-4 text-red-400" />
           </button>

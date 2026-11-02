@@ -16,14 +16,28 @@ import {
   Headphones
 } from 'lucide-react';
 
-export default function AuthModal({ isOpen, onClose }) {
+export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
   if (!isOpen) return null;
 
   const { login, registerUser, settings } = useGame();
   
   // Tab: 'login' | 'register'
-  const [activeTab, setActiveTab] = useState('login');
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== 'undefined' && window.location.hash.includes('register')) {
+      return 'register';
+    }
+    return initialTab;
+  });
   const [loginMethod, setLoginMethod] = useState('phone'); // 'phone' | 'email'
+
+  // Sync tab on prop change or hash change
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    } else if (typeof window !== 'undefined' && window.location.hash.includes('register')) {
+      setActiveTab('register');
+    }
+  }, [initialTab, isOpen]);
 
   // Login form state
   const [loginPhone, setLoginPhone] = useState('');
@@ -47,6 +61,22 @@ export default function AuthModal({ isOpen, onClose }) {
     }
     return '722200';
   });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get('ref');
+      if (ref) {
+        setRegInviteCode(ref);
+        return;
+      }
+      const hash = window.location.hash;
+      if (hash.includes('?')) {
+        const hashRef = new URLSearchParams(hash.split('?')[1] || '').get('ref');
+        if (hashRef) setRegInviteCode(hashRef);
+      }
+    }
+  }, [isOpen]);
   const [agreedTerms, setAgreedTerms] = useState(true);
   const [showRegPassword, setShowRegPassword] = useState(false);
   const [showRegConfirmPassword, setShowRegConfirmPassword] = useState(false);

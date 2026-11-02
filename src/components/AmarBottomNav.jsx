@@ -9,7 +9,7 @@ import {
 
 export default function AmarBottomNav({ activeTab, onSelectTab, onOpenWheel }) {
   return (
-    <nav className="fixed bottom-0 max-w-[420px] w-full bg-white border-t border-slate-100 flex justify-around items-end py-1.5 px-1 z-40 shadow-lg text-[10px] select-none">
+    <nav className="fixed bottom-0 max-w-[480px] sm:max-w-[500px] w-full bg-white border-t border-slate-100 flex justify-around items-end py-1.5 px-1 z-40 shadow-lg text-[10px] select-none">
       
       {/* 1. Home */}
       <button
