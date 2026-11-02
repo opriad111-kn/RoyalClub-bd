@@ -4,22 +4,51 @@
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
   <url>
-    <loc>https://royalclubbd.vercel.app/</loc>
-    <lastmod>2026-11-01T00:00:00+06:00</lastmod>
+    <loc>https://royalclub-bd.vercel.app/</loc>
+    <lastmod>2026-11-02T12:00:00+06:00</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.00</priority>
   </url>
   <url>
-    <loc>https://royalclubbd.vercel.app/#games</loc>
-    <lastmod>2026-11-01T00:00:00+06:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.80</priority>
+    <loc>https://royalclub-bd.vercel.app/#home</loc>
+    <lastmod>2026-11-02T12:00:00+06:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
   </url>
   <url>
-    <loc>https://royalclubbd.vercel.app/#wallet</loc>
-    <lastmod>2026-11-01T00:00:00+06:00</lastmod>
+    <loc>https://royalclub-bd.vercel.app/#game/wingo</loc>
+    <lastmod>2026-11-02T12:00:00+06:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://royalclub-bd.vercel.app/#game/k3</loc>
+    <lastmod>2026-11-02T12:00:00+06:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://royalclub-bd.vercel.app/#game/aviator</loc>
+    <lastmod>2026-11-02T12:00:00+06:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://royalclub-bd.vercel.app/#game/fortunegems2</loc>
+    <lastmod>2026-11-02T12:00:00+06:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://royalclub-bd.vercel.app/#activity</loc>
+    <lastmod>2026-11-02T12:00:00+06:00</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.80</priority>
+    <priority>0.70</priority>
+  </url>
+  <url>
+    <loc>https://royalclub-bd.vercel.app/#promotion</loc>
+    <lastmod>2026-11-02T12:00:00+06:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.70</priority>
   </url>
 </urlset>
-

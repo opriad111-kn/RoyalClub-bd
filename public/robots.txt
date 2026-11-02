@@ -1,12 +1,26 @@
 User-agent: *
 Allow: /
 
-# Googlebot & Search Engines
+# Googlebot & Major Search Engines
 User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Mobile
 Allow: /
 
 User-agent: Bingbot
 Allow: /
 
-Sitemap: https://royalclubbd.vercel.app/sitemap.xml
+User-agent: Slurp
+Allow: /
 
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+User-agent: Yandex
+Allow: /
+
+Sitemap: https://royalclub-bd.vercel.app/sitemap.xml
