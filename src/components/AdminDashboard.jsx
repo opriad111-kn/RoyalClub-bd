@@ -200,10 +200,12 @@ export default function AdminDashboard() {
       const curOverride = (gameControl.gameOverrides || {})[gameId] || {};
       const newWinRate = key === 'winRate' ? Number(value) : (curOverride.winRate || 96);
       const newMaxMult = key === 'maxMultiplier' ? Number(value) : (curOverride.maxMultiplier || 100);
+      const srvProvider = (gameId === 'aviator' || gameId === 'mines' || gameId === 'plinko' || gameId === 'limbo') ? 'SPRIBE' : (gameId.startsWith('fortune') || gameId.startsWith('super') || gameId === 'crazy777' || gameId === 'boxingking' || gameId === 'moneycoming' || gameId === 'goldenempire' ? 'JILI' : (gameId === 'gatesofolympus' || gameId === 'sweetbonanza' || gameId === 'spaceman' ? 'PRAGMATIC' : 'LOTTERY'));
 
       await supabase.from('game_settings').upsert({
         game_id: gameId,
         game_name: curOverride.gameName || gameId.toUpperCase(),
+        server_provider: srvProvider,
         rtp_percentage: newWinRate,
         max_multiplier: newMaxMult,
         updated_at: new Date().toISOString()
