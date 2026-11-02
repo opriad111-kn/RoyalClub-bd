@@ -101,13 +101,23 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
 
       <div className="px-3.5 space-y-3.5">
         
-        {/* Virtual Demo Platform Notice */}
-        <div className="bg-amber-50 border border-amber-300 rounded-2xl p-3 text-amber-950 flex items-start space-x-2.5">
-          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-          <div className="text-[11px] leading-relaxed">
-            <span className="font-black block text-amber-900">ভার্চুয়াল কয়েন ডেমো উইথড্র রিকোয়েস্ট (100% Demo Simulation)</span>
-            <span>এটি সম্পূর্ণ একটি ভার্চুয়াল ডেমো সিমুলেশন প্ল্যাটফর্ম। কোনো আসল টাকা উত্তোলন বা আর্থিক লেনদেন হয় না। ডেমো ক্যাশ-আউট টেস্ট করার জন্য বিকাশ ও নগদ নম্বর ব্যবহৃত হয়।</span>
+        {/* Fast Cashout Promo Banner */}
+        <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-green-500 rounded-2xl p-3.5 text-white shadow-md flex items-center justify-between relative overflow-hidden">
+          <div className="space-y-1 relative z-10">
+            <div className="flex items-center space-x-1.5">
+              <span className="bg-emerald-300 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                FAST CASHOUT
+              </span>
+              <span className="text-emerald-100 font-bold text-[11px]">⚡ ৫-১৫ মিনিটে উইথড্র</span>
+            </div>
+            <h3 className="font-black text-sm tracking-tight text-white drop-shadow-sm">
+              দ্রুত এবং নিরাপদ ক্যাশআউট সুবিধা
+            </h3>
+            <p className="text-[10px] text-emerald-100 font-medium">
+              আপনার বিকাশ, নগদ, রকেট অথবা USDT ওয়ালেটে সরাসরি টাকা গ্রহণ করুন।
+            </p>
           </div>
+          <Sparkles className="w-8 h-8 text-emerald-200 opacity-80 shrink-0 animate-pulse" />
         </div>
 
         {/* 2. Total Balance & Withdrawable Card */}

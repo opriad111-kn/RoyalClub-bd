@@ -66,8 +66,11 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
   const [faucetClaimedNotice, setFaucetClaimedNotice] = useState('');
 
   // Profile Edit Form State
-  const [editUsername, setEditUsername] = useState(user?.username || '');
-  const [editPhone, setEditPhone] = useState(user?.phone || '');
+  const safeUser = user || { username: 'Guest', is_guest: true, balance: 0, uid: '722200', vip_level: 1, phone: '' };
+  const isGuest = !user || safeUser.username === 'Guest' || safeUser.is_guest;
+
+  const [editUsername, setEditUsername] = useState(safeUser.username || '');
+  const [editPhone, setEditPhone] = useState(safeUser.phone || '');
 
   // Password Change Form State
   const [oldPassword, setOldPassword] = useState('');
@@ -86,7 +89,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
   const [respSessionMin, setRespSessionMin] = useState(responsiblePlay?.sessionMinutes || 120);
 
   function handleCopyUid() {
-    navigator.clipboard.writeText(user.uid ? user.uid.toString() : '722200');
+    navigator.clipboard.writeText(safeUser.uid ? safeUser.uid.toString() : '722200');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
@@ -111,16 +114,15 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
     }
   }
 
-  const isGuest = user.username === 'Guest' || user.is_guest;
   const depositList = (transactions || []).filter(t => t.type === 'deposit');
   const withdrawList = (transactions || []).filter(t => t.type === 'withdrawal' || t.type === 'withdraw');
 
   // Filter notifications for this user
-  const userNotifications = (notifications || []).filter(n => n.targetUid === 'all' || n.targetUid === user?.uid);
+  const userNotifications = (notifications || []).filter(n => n.targetUid === 'all' || n.targetUid === safeUser.uid);
   const unreadNotifCount = userNotifications.filter(n => !n.isRead).length;
 
   // Filter support tickets for this user
-  const userTickets = (supportTickets || []).filter(t => t.uid === user?.uid);
+  const userTickets = (supportTickets || []).filter(t => t.uid === safeUser.uid);
 
   function handleAction(callback) {
     if (isGuest) {
@@ -133,7 +135,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
   function handleSaveProfile(e) {
     e.preventDefault();
     if (!editUsername) return;
-    editUserProfile(user.uid, { username: editUsername, phone: editPhone });
+    editUserProfile(safeUser.uid, { username: editUsername, phone: editPhone });
     setShowProfileModal(false);
   }
 
@@ -220,7 +222,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             <div className="relative">
               <div className="w-16 h-16 rounded-full bg-white/40 border-2 border-white p-0.5 shadow-md flex items-center justify-center overflow-hidden">
                 <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-200 to-yellow-100 flex items-center justify-center text-slate-800 font-black text-xl">
-                  {user.username ? user.username[0].toUpperCase() : 'U'}
+                  {safeUser.username ? safeUser.username[0].toUpperCase() : 'U'}
                 </div>
               </div>
             </div>
@@ -228,18 +230,18 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             <div className="flex-1 space-y-1">
               <div className="flex items-center space-x-2">
                 <h3 className="font-black text-lg tracking-tight text-slate-900 font-sans">
-                  {user.username || 'Player'}
+                  {safeUser.username || 'Player'}
                 </h3>
                 <button 
                   onClick={() => setShowVipModal(true)}
                   className="bg-gradient-to-r from-rose-400 via-pink-500 to-rose-500 text-white font-black text-[10px] px-2.5 py-0.5 rounded-full shadow-sm flex items-center space-x-1 border border-white/60 active:scale-95 transition cursor-pointer"
                 >
-                  <span>VIP{user.vip_level || 1}</span>
+                  <span>VIP{safeUser.vip_level || 1}</span>
                 </button>
                 <button
                   onClick={() => {
-                    setEditUsername(user.username || '');
-                    setEditPhone(user.phone || '');
+                    setEditUsername(safeUser.username || '');
+                    setEditPhone(safeUser.phone || '');
                     setShowProfileModal(true);
                   }}
                   className="w-6 h-6 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center text-slate-900 transition"
@@ -256,7 +258,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                   className="inline-flex items-center space-x-1.5 bg-white/30 hover:bg-white/40 border border-white/40 px-2.5 py-0.5 rounded-full cursor-pointer transition active:scale-95"
                 >
                   <span className="text-slate-800 font-mono text-[11px] font-bold">
-                    UID | {user.uid || '722200'}
+                    UID | {safeUser.uid || '722200'}
                   </span>
                   {copied ? (
                     <Check className="w-3 h-3 text-slate-900 font-bold" />
@@ -267,7 +269,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               </div>
 
               <div className="text-[10px] text-slate-800/80 font-medium">
-                {user.phone ? `Phone: ${user.phone}` : 'Account Status: Active'}
+                {safeUser.phone ? `Phone: ${safeUser.phone}` : 'Account Status: Active'}
               </div>
             </div>
           </div>
@@ -286,7 +288,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               </span>
               <div className="flex items-center space-x-2 mt-0.5">
                 <span className="text-2xl font-black font-mono text-slate-900 tracking-tight">
-                  ৳{(user.balance !== undefined ? user.balance : 0.00).toFixed(2)}
+                  ৳{(safeUser.balance !== undefined ? safeUser.balance : 0.00).toFixed(2)}
                 </span>
                 <button 
                   onClick={handleRefreshBalance}
@@ -613,7 +615,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               <div className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
                 <LogOut className="w-4 h-4" />
               </div>
-              <span className="font-bold text-xs">{user.username === 'Guest' || user.is_guest ? 'Log in to Account' : t('logout')}</span>
+              <span className="font-bold text-xs">{isGuest ? 'Log in to Account' : t('logout')}</span>
             </div>
             <ChevronRight className="w-4 h-4 text-red-400" />
           </button>

@@ -117,13 +117,23 @@ export default function DepositPage({ onBack, onOpenAuth }) {
 
       <div className="px-3.5 space-y-3.5">
         
-        {/* Virtual Demo Platform Notice */}
-        <div className="bg-amber-50 border border-amber-300 rounded-2xl p-3 text-amber-950 flex items-start space-x-2.5">
-          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-          <div className="text-[11px] leading-relaxed">
-            <span className="font-black block text-amber-900">ভার্চুয়াল কয়েন ডেমো রিকোয়েস্ট (100% Demo Simulation)</span>
-            <span>এটি সম্পূর্ণ একটি ভার্চুয়াল ডেমো সিমুলেশন প্ল্যাটফর্ম। কোনো আসল টাকা ডিপোজিট বা জুয়া খেলা হয় না। bKash, Nagad, Rocket ও USDT কেবলমাত্র ডেমো কয়েন টেস্ট করার উদ্দেশ্যে ব্যবহৃত হয়।</span>
+        {/* High Conversion Deposit Promo Banner */}
+        <div className="bg-gradient-to-r from-red-600 via-amber-600 to-yellow-500 rounded-2xl p-3.5 text-white shadow-md flex items-center justify-between relative overflow-hidden">
+          <div className="space-y-1 relative z-10">
+            <div className="flex items-center space-x-1.5">
+              <span className="bg-yellow-400 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                MEGA BONUS
+              </span>
+              <span className="text-yellow-200 font-bold text-[11px]">⚡ তাত্ক্ষণিক ডিপোজিট</span>
+            </div>
+            <h3 className="font-black text-sm tracking-tight text-white drop-shadow-sm">
+              প্রথম ডিপোজিটে ১০০% ওয়েলকাম ক্যাশব্যাক বোনাস!
+            </h3>
+            <p className="text-[10px] text-yellow-100 font-medium">
+              bKash, Nagad, Rocket ও USDT-তে ২৪/৭ অটোমেটিক পেমেন্ট ভেরিফিকেশন ও দ্রুত ব্যালেন্স যুক্তকরণ।
+            </p>
           </div>
+          <Sparkles className="w-8 h-8 text-yellow-300 opacity-80 shrink-0 animate-pulse" />
         </div>
 
         {/* 2. Total Balance Card */}

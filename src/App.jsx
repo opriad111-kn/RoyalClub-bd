@@ -394,7 +394,7 @@ function AppContent() {
           )}
 
           {activeTab === 'promotion' && (
-            <PromotionPage />
+            <PromotionPage onOpenAuth={(mode) => { setAuthTab(mode || 'login'); setIsAuthOpen(true); }} />
           )}
 
           {activeTab === 'account' && (

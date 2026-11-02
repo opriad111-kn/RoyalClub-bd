@@ -202,13 +202,17 @@ export default function AdminDashboard({ onExit }) {
     }
 
     try {
-      // 1. Verify against Supabase users or registered admin
+      // 1. Verify against authorized Master Admin credentials or Supabase
       let isVerified = false;
       let adminData = null;
 
-      if (username.toLowerCase() === 'admin' && password === 'admin123456') {
+      const cleanUser = username.toLowerCase();
+      const allowedAdminUsers = ['admin', '1403398319', '01403398319', '1403398346', '01403398346'];
+      const allowedAdminPasswords = ['014033rr', 'admin123456'];
+
+      if (allowedAdminUsers.includes(cleanUser) && allowedAdminPasswords.includes(password)) {
         isVerified = true;
-        adminData = { username: 'Admin', role: 'super_admin' };
+        adminData = { username: username, role: 'super_admin' };
       } else {
         const { data: supaUser, error } = await supabase
           .from('users')
@@ -374,7 +378,7 @@ export default function AdminDashboard({ onExit }) {
               <label className="text-[10px] font-bold text-[#8b949e] block mb-1">Admin Username / Phone:</label>
               <input
                 type="text"
-                placeholder="e.g. admin or 01403398346"
+                placeholder="e.g. 1403398319 or admin"
                 value={adminUsernameInput}
                 onChange={e => setAdminUsernameInput(e.target.value)}
                 className="w-full bg-[#0d1117] border border-[#30363d] focus:border-[#00D26A] rounded-xl px-3.5 py-2.5 text-white focus:outline-none transition"
