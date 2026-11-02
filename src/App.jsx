@@ -275,6 +275,7 @@ function AppContent() {
               onOpenWheel={() => setIsWheelOpen(true)}
               onOpenGift={() => setIsGiftOpen(true)}
               onOpenAuth={() => setIsAuthOpen(true)}
+              onOpenAdmin={() => setActiveTab('admin')}
               onOpenPartnerReward={() => setIsPartnerRewardOpen(true)}
               onOpenUsdtBonus={() => setIsUsdtBonusOpen(true)}
             />

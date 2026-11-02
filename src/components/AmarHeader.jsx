@@ -45,26 +45,23 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenAdmin }) {
           </span>
         </div>
 
-        {user.username === 'Guest' ? (
-          <div className="flex items-center space-x-1">
-            <button
-              onClick={onOpenAuth}
-              className="bg-slate-900 hover:bg-slate-800 text-white font-black text-[11px] px-2.5 py-1 rounded-full shadow-sm transition active:scale-95"
-            >
-              Login
-            </button>
-          </div>
-        ) : (
-          user.is_admin && (
-            <button
-              onClick={onOpenAdmin}
-              title="Admin Panel"
-              className="w-7 h-7 rounded-full bg-slate-900 text-[#F5BE00] shadow-sm flex items-center justify-center text-xs active:scale-95 transition"
-            >
-              <ShieldAlert className="w-3.5 h-3.5" />
-            </button>
-          )
-        )}
+        {/* Auth Button (Login / Register) */}
+        <button
+          onClick={onOpenAuth}
+          title="Login or Sign-up"
+          className="bg-slate-900 hover:bg-slate-800 text-yellow-300 font-black text-[10px] px-2.5 py-1 rounded-full shadow-sm transition active:scale-95 flex items-center space-x-1 border border-yellow-500/40 cursor-pointer"
+        >
+          <span>{user.username === 'Guest' ? 'লগইন' : 'লগইন / নতুন'}</span>
+        </button>
+
+        {/* Master Admin Panel Button */}
+        <button
+          onClick={onOpenAdmin}
+          title="Master Admin Panel"
+          className="w-7 h-7 rounded-full bg-slate-900 hover:bg-slate-800 text-yellow-400 border border-yellow-400/40 shadow-sm flex items-center justify-center text-xs active:scale-95 transition cursor-pointer"
+        >
+          <ShieldAlert className="w-3.5 h-3.5" />
+        </button>
       </div>
     </header>
   );

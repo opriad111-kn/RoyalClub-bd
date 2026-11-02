@@ -279,35 +279,51 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth }) {
           </div>
         </div>
 
-        {/* 6. Admin Panel Link & Logout */}
+        {/* 6. Admin Panel Link, Auth & Logout */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-100 overflow-hidden">
-          {user.is_admin && (
-            <button
-              onClick={onOpenAdmin}
-              className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-50 transition"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-lg bg-yellow-500/10 text-yellow-600 flex items-center justify-center">
-                  <ShieldAlert className="w-4 h-4" />
-                </div>
-                <div>
-                  <h5 className="font-bold text-slate-800">Admin Control Panel</h5>
-                  <span className="text-[10px] text-slate-400">Game RTP, User moderation & Payments</span>
-                </div>
+          {/* Always Available Admin Panel Button */}
+          <button
+            onClick={onOpenAdmin}
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-amber-50/50 transition cursor-pointer"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                <ShieldAlert className="w-4 h-4" />
               </div>
-              <ChevronRight className="w-4 h-4 text-slate-400" />
-            </button>
-          )}
+              <div>
+                <h5 className="font-black text-slate-800 text-xs">👑 Admin Control Panel</h5>
+                <span className="text-[10px] text-slate-400">Game RTP, User Moderation & Transactions</span>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-400" />
+          </button>
+
+          {/* Switch / Login Button */}
+          <button
+            onClick={onOpenAuth}
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-blue-50/50 text-blue-600 transition cursor-pointer"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+                <User className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="font-bold text-xs">লগইন / নতুন অ্যাকাউন্ট সাইন-আপ</span>
+                <span className="text-[10px] text-slate-400 block">১০০ টাকা ফ্রি সাইন-আপ বোনাস নিন</span>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-blue-400" />
+          </button>
 
           <button
             onClick={logout}
-            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-red-50 text-red-600 transition"
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-red-50 text-red-600 transition cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
                 <LogOut className="w-4 h-4" />
               </div>
-              <span className="font-bold">Log out</span>
+              <span className="font-bold text-xs">Log out</span>
             </div>
             <ChevronRight className="w-4 h-4 text-red-400" />
           </button>

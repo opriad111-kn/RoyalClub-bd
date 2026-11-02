@@ -18,6 +18,7 @@ export default function HomePage({
   onOpenWheel, 
   onOpenGift, 
   onOpenAuth, 
+  onOpenAdmin,
   onOpenPartnerReward, 
   onOpenUsdtBonus 
 }) {
@@ -864,6 +865,25 @@ export default function HomePage({
           ))}
         </div>
 
+      </div>
+
+      {/* 6. Quick Auth & Admin Access Banner */}
+      <div className="grid grid-cols-2 gap-2 pt-1">
+        <button
+          onClick={onOpenAuth}
+          className="bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 p-2.5 rounded-2xl flex items-center justify-center space-x-1.5 shadow-sm active:scale-95 transition font-black text-xs cursor-pointer"
+        >
+          <span>🎁</span>
+          <span>লগইন / ১০০৳ বোনাস</span>
+        </button>
+
+        <button
+          onClick={onOpenAdmin}
+          className="bg-slate-900 border border-yellow-500/30 text-yellow-400 p-2.5 rounded-2xl flex items-center justify-center space-x-1.5 shadow-sm active:scale-95 transition font-black text-xs cursor-pointer hover:bg-slate-850"
+        >
+          <span>👑</span>
+          <span>অ্যাডমিন কন্ট্রোল</span>
+        </button>
       </div>
 
       {/* Notice Modal */}
