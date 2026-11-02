@@ -20,8 +20,9 @@ export default function PromotionPage() {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState('data'); // 'data', 'commission', 'invitation'
 
-  const inviteCode = user.uid ? user.uid.toString() : '120356';
-  const inviteLink = `https://dkwin11.com/#/register?ref=${inviteCode}`;
+  const inviteCode = user.uid ? user.uid.toString() : '722200';
+  const origin = typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'https://royalclub-bd.vercel.app';
+  const inviteLink = `${origin}/#/register?ref=${inviteCode}`;
 
   function handleCopy(text) {
     navigator.clipboard.writeText(text);

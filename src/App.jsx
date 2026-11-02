@@ -173,45 +173,13 @@ function AppContent() {
   }
 
   function handleOpenGame(gameId) {
-    const info = getGameInfo(gameId);
-    setTransferModal({
-      isOpen: true,
-      mode: 'transfer_in',
-      gameTitle: info.title,
-      serverName: info.server,
-      pendingGameId: gameId,
-      initialBalance: user.balance,
-      amount: user.balance,
-      netProfit: 0
-    });
-  }
-
-  function onTransferInComplete() {
-    const gId = transferModal.pendingGameId;
-    setTransferModal(prev => ({ ...prev, isOpen: false }));
-    setActiveGame(gId);
-    window.location.hash = `#game/${gId}`;
+    setActiveGame(gameId);
+    window.location.hash = `#game/${gameId}`;
   }
 
   function handleCloseGame() {
-    const info = getGameInfo(activeGame || 'game');
-    const net = user.balance - (transferModal.initialBalance || user.balance);
-    setTransferModal({
-      isOpen: true,
-      mode: 'transfer_out',
-      gameTitle: info.title,
-      serverName: info.server,
-      pendingGameId: null,
-      initialBalance: transferModal.initialBalance,
-      amount: user.balance,
-      netProfit: net
-    });
-  }
-
-  function onTransferOutComplete() {
-    setTransferModal(prev => ({ ...prev, isOpen: false }));
     setActiveGame(null);
-    window.location.hash = `#/${activeTab}`;
+    window.location.hash = `#/${activeTab || 'home'}`;
   }
 
   return (
@@ -380,17 +348,6 @@ function AppContent() {
         {activeGame === 'jelly' && <JellyGame onClose={handleCloseGame} />}
         {(activeGame === 'crazytime' || activeGame === 'lightningroulette' || activeGame === 'megaball' || activeGame === 'monopoly') && <CrazyTimeGame onClose={handleCloseGame} />}
         {(activeGame === 'mahjongways2' || activeGame === 'fortunetiger' || activeGame === 'fortunerabbit' || activeGame === 'luckyneko' || activeGame === 'wildbandito') && <MahjongWaysGame onClose={handleCloseGame} />}
-
-        {/* Auto Balance Transfer In & Out Modal */}
-        <WalletTransferModal 
-          isOpen={transferModal.isOpen}
-          mode={transferModal.mode}
-          gameTitle={transferModal.gameTitle}
-          serverName={transferModal.serverName}
-          amount={transferModal.amount}
-          netProfit={transferModal.netProfit}
-          onComplete={transferModal.mode === 'transfer_in' ? onTransferInComplete : onTransferOutComplete}
-        />
 
         {/* Activity & Utility Modals */}
         <LuckyWheelModal 

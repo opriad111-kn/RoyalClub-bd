@@ -54,11 +54,11 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth }) {
       <div className="bg-gradient-to-b from-[#F5BE00] via-[#F5BE00] to-[#E2A600] text-slate-900 px-5 pt-6 pb-12 rounded-b-[32px] relative shadow-sm">
         <div className="flex items-center space-x-3.5 relative z-10">
           
-          {/* 3D Cartoon Avatar */}
+          {/* Modern Vector Avatar */}
           <div className="relative">
             <div className="w-16 h-16 rounded-full bg-white/40 border-2 border-white p-0.5 shadow-md flex items-center justify-center overflow-hidden">
-              <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-200 to-yellow-100 flex items-center justify-center text-3xl">
-                👦
+              <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-200 to-yellow-100 flex items-center justify-center text-slate-800">
+                <User className="w-8 h-8 stroke-[2.2]" />
               </div>
             </div>
           </div>
@@ -70,12 +70,11 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth }) {
                 {user.username || 'iueri'}
               </h3>
               
-              {/* Pink Star VIP1 Badge matching AmarClub Screenshot */}
+              {/* Pink Star VIP1 Badge matching DK WIN */}
               <button 
                 onClick={() => setShowVipModal(true)}
                 className="bg-gradient-to-r from-rose-400 via-pink-500 to-rose-500 text-white font-black text-[10px] px-2.5 py-0.5 rounded-full shadow-sm flex items-center space-x-1 border border-white/60 active:scale-95 transition cursor-pointer"
               >
-                <span>⭐</span>
                 <span>VIP{user.vip_level || 1}</span>
               </button>
             </div>
@@ -294,7 +293,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth }) {
                 <ShieldAlert className="w-4 h-4" />
               </div>
               <div>
-                <h5 className="font-black text-slate-800 text-xs">👑 Admin Control Panel</h5>
+                <h5 className="font-black text-slate-800 text-xs">Admin Control Panel</h5>
                 <span className="text-[10px] text-slate-400">Game RTP, User Moderation & Transactions</span>
               </div>
             </div>
@@ -304,18 +303,18 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth }) {
           {/* Switch / Login Button */}
           <button
             onClick={onOpenAuth}
-            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-blue-50/50 text-blue-600 transition cursor-pointer"
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-amber-50/50 text-slate-800 transition cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-amber-100 text-[#FFC107] flex items-center justify-center">
                 <User className="w-4 h-4" />
               </div>
               <div>
-                <span className="font-bold text-xs">লগইন / নতুন অ্যাকাউন্ট সাইন-আপ</span>
-                <span className="text-[10px] text-slate-400 block">১০০ টাকা ফ্রি সাইন-আপ বোনাস নিন</span>
+                <span className="font-bold text-xs">Login / Register</span>
+                <span className="text-[10px] text-slate-400 block">Switch account or register</span>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-blue-400" />
+            <ChevronRight className="w-4 h-4 text-slate-400" />
           </button>
 
           <button

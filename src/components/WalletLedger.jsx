@@ -276,7 +276,7 @@ export default function WalletLedger() {
           {/* Payment Number Box */}
           <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-1">
             <div className="flex justify-between items-center text-[11px] text-slate-600">
-              <span>ডেমো সেন্ড মানি নম্বর ({depMethod}):</span>
+              <span>অফিশিয়াল ক্যাশ-ইন / সেন্ড মানি নম্বর ({depMethod}):</span>
             </div>
 
             <div className="flex justify-between items-center bg-white p-2 rounded-xl border border-slate-200">
@@ -296,7 +296,7 @@ export default function WalletLedger() {
 
           {/* Preset Deposit Amounts */}
           <div>
-            <label className="text-slate-800 font-bold block mb-1.5">২. ডিপোজিট পরিমাণ নির্বাচন করুন (কয়েন):</label>
+            <label className="text-slate-800 font-bold block mb-1.5">২. ডিপোজিট পরিমাণ নির্বাচন করুন (৳):</label>
             <div className="grid grid-cols-3 gap-1.5 mb-2">
               {depositPresets.map(amt => (
                 <button
@@ -348,24 +348,9 @@ export default function WalletLedger() {
             </div>
           </div>
 
-          {/* Quick Demo Instant Deposit simulation button */}
-          <div className="pt-1 flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => {
-                adjustUserBalance(user.uid, parseFloat(depAmount) || 500);
-                alert(`সফল! ৳${depAmount || 500} ডেমো কয়েন ইনস্ট্যান্ট আপনার ব্যালেন্সে যোগ হয়েছে।`);
-              }}
-              className="text-[11px] text-amber-700 hover:underline font-bold flex items-center space-x-1"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>১-ক্লিকে ইনস্ট্যান্ট ডেমো টপ-আপ</span>
-            </button>
-          </div>
-
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-amber-500 via-[#F5BE00] to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-black py-2.5 rounded-xl text-xs shadow-md transition"
+            className="w-full mt-2 bg-gradient-to-r from-amber-500 via-[#F5BE00] to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-black py-2.5 rounded-xl text-xs shadow-md transition"
           >
             ডিপোজিট রিকোয়েস্ট জমা দিন
           </button>

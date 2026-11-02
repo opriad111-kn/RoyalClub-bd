@@ -15,7 +15,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenWheel }) {
       <button
         onClick={() => onSelectTab('home')}
         className={`flex flex-col items-center py-1 px-3 rounded-lg transition ${
-          activeTab === 'home' ? 'text-[#F5BE00] font-black' : 'text-slate-400 hover:text-slate-600'
+          activeTab === 'home' ? 'text-[#FFC107] font-black' : 'text-slate-400 hover:text-slate-600'
         }`}
       >
         <Home className={`w-5 h-5 mb-0.5 ${activeTab === 'home' ? 'stroke-[2.5]' : 'stroke-2'}`} />
@@ -26,7 +26,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenWheel }) {
       <button
         onClick={() => onSelectTab('activity')}
         className={`flex flex-col items-center py-1 px-3 rounded-lg transition relative ${
-          activeTab === 'activity' ? 'text-[#F5BE00] font-black' : 'text-slate-400 hover:text-slate-600'
+          activeTab === 'activity' ? 'text-[#FFC107] font-black' : 'text-slate-400 hover:text-slate-600'
         }`}
       >
         <div className="relative">
@@ -41,7 +41,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenWheel }) {
       <div className="relative -top-3.5 flex flex-col items-center">
         <button
           onClick={onOpenWheel}
-          className="w-14 h-14 rounded-full bg-gradient-to-tr from-amber-500 via-yellow-400 to-orange-500 border-4 border-white shadow-xl flex flex-col items-center justify-center text-slate-950 font-black active:scale-90 transition hover:rotate-6"
+          className="w-14 h-14 rounded-full bg-gradient-to-tr from-amber-500 via-[#FFC107] to-amber-600 border-4 border-white shadow-xl flex flex-col items-center justify-center text-slate-950 font-black active:scale-90 transition hover:rotate-6 cursor-pointer"
         >
           {/* Semi-circular dial indicator */}
           <div className="w-9 h-9 rounded-full bg-gradient-to-b from-orange-400 to-amber-600 border border-yellow-200 flex items-center justify-center shadow-inner">
@@ -57,7 +57,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenWheel }) {
       <button
         onClick={() => onSelectTab('promotion')}
         className={`flex flex-col items-center py-1 px-3 rounded-lg transition ${
-          activeTab === 'promotion' ? 'text-[#F5BE00] font-black' : 'text-slate-400 hover:text-slate-600'
+          activeTab === 'promotion' ? 'text-[#FFC107] font-black' : 'text-slate-400 hover:text-slate-600'
         }`}
       >
         <Share2 className={`w-5 h-5 mb-0.5 ${activeTab === 'promotion' ? 'stroke-[2.5]' : 'stroke-2'}`} />
@@ -68,7 +68,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenWheel }) {
       <button
         onClick={() => onSelectTab('account')}
         className={`flex flex-col items-center py-1 px-3 rounded-lg transition ${
-          activeTab === 'account' ? 'text-[#F5BE00] font-black' : 'text-slate-400 hover:text-slate-600'
+          activeTab === 'account' ? 'text-[#FFC107] font-black' : 'text-slate-400 hover:text-slate-600'
         }`}
       >
         <User className={`w-5 h-5 mb-0.5 ${activeTab === 'account' ? 'stroke-[2.5]' : 'stroke-2'}`} />
