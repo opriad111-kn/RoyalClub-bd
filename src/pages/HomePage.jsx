@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
+import { useLanguage } from '../context/LanguageContext';
 import NoticeModal from '../components/NoticeModal';
 import { 
   Volume2, 
@@ -24,6 +25,7 @@ export default function HomePage({
   onOpenUsdtBonus 
 }) {
   const { user, settings } = useGame();
+  const { lang, t } = useLanguage();
   
   // 6 DK WIN Categories: 'All', 'Slots', 'Lottery', 'Sports', 'Casino', 'PVC'
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -487,11 +489,11 @@ export default function HomePage({
       <div className="bg-white rounded-2xl p-2 shadow-xs border border-slate-100">
         <div className="grid grid-cols-6 gap-1">
           {[
-            { id: 'All', label: 'All', icon: <CircleDot className="w-5 h-5 text-emerald-600" /> },
-            { id: 'Slots', label: 'Slots', icon: <Gamepad2 className="w-5 h-5 text-emerald-600" /> },
-            { id: 'Lottery', label: 'Lottery', icon: <span className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold">18</span> },
-            { id: 'Sports', label: 'Sports', icon: <span className="text-base">⚽</span> },
-            { id: 'Casino', label: 'Casino', icon: <Tv className="w-5 h-5 text-emerald-600" /> },
+            { id: 'All', label: lang === 'bn' ? 'সব' : 'All', icon: <CircleDot className="w-5 h-5 text-emerald-600" /> },
+            { id: 'Slots', label: lang === 'bn' ? 'স্লটস' : 'Slots', icon: <Gamepad2 className="w-5 h-5 text-emerald-600" /> },
+            { id: 'Lottery', label: lang === 'bn' ? 'লটারি' : 'Lottery', icon: <span className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold">18</span> },
+            { id: 'Sports', label: lang === 'bn' ? 'স্পোর্টস' : 'Sports', icon: <span className="text-base">⚽</span> },
+            { id: 'Casino', label: lang === 'bn' ? 'ক্যাসিনো' : 'Casino', icon: <Tv className="w-5 h-5 text-emerald-600" /> },
             { id: 'PVC', label: 'PVC', icon: <Dices className="w-5 h-5 text-emerald-600" /> }
           ].map(cat => {
             const isActive = selectedCategory === cat.id;

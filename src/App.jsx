@@ -224,7 +224,7 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F5F8] sm:bg-[#181d26] text-slate-800 flex justify-center items-start sm:items-center selection:bg-amber-400 selection:text-slate-900 relative overflow-x-hidden font-sans">
+    <div className="min-h-screen bg-[#F4F5F8] sm:bg-[#0f172a] text-slate-800 flex justify-center items-start selection:bg-amber-400 selection:text-slate-900 relative overflow-x-hidden font-sans">
       
       {/* Floating Right Action Widgets (Desktop Shortcuts) */}
       {!activeGame && (
@@ -258,8 +258,8 @@ function AppContent() {
         </aside>
       )}
 
-      {/* Mobile Max-Width Container */}
-      <div className="w-full max-w-[480px] sm:max-w-[500px] min-h-screen bg-[#F4F5F8] border-x border-slate-200/60 flex flex-col justify-between relative shadow-2xl">
+      {/* Mobile Max-Width Container (Expands for Admin Dashboard on Desktop) */}
+      <div className={`w-full ${activeTab === 'admin' ? 'max-w-6xl' : 'max-w-[480px] sm:max-w-[500px]'} min-h-screen bg-[#F4F5F8] border-x border-slate-200/60 flex flex-col justify-between relative shadow-2xl transition-all duration-200`}>
         
         {/* Sticky Top Header (Hidden in Game, WinGo, Account, Activity, Deposit, Withdraw) */}
         {!activeGame && activeTab !== 'wingo' && activeTab !== 'account' && activeTab !== 'activity' && activeTab !== 'deposit' && activeTab !== 'withdraw' && (
@@ -397,8 +397,8 @@ function AppContent() {
           <UniversalCrashEngine gameId={activeGame} onClose={handleCloseGame} />
         )}
 
-        {/* 2. Slot Master Engine (Fortune Gems 2, Super Ace, Money Coming, Gates of Olympus, Sweet Bonanza, Boxing King, Golden Empire, Crazy 777) */}
-        {(activeGame === 'fortunegems' || activeGame === 'fortunegems2' || activeGame === 'superace' || activeGame === 'superacedeluxe' || activeGame === 'moneycoming' || activeGame === 'boxingking' || activeGame === 'goldenempire' || activeGame === 'crazy777' || activeGame === 'gatesofolympus' || activeGame === 'sweetbonanza' || activeGame === 'sugarrush') && (
+        {/* 2. Slot Master Engine (Fortune Gems 2, Super Ace, Money Coming, Gates of Olympus, Sweet Bonanza, Boxing King, Golden Empire, Crazy 777, Fortune Ox, etc.) */}
+        {(activeGame === 'fortunegems' || activeGame === 'fortunegems2' || activeGame === 'superace' || activeGame === 'superacedeluxe' || activeGame === 'moneycoming' || activeGame === 'boxingking' || activeGame === 'goldenempire' || activeGame === 'crazy777' || activeGame === 'gatesofolympus' || activeGame === 'sweetbonanza' || activeGame === 'sugarrush' || activeGame === 'fortuneox' || activeGame === 'jackpotfishing') && (
           <UniversalSlotEngine gameId={activeGame} onClose={handleCloseGame} />
         )}
 
@@ -429,6 +429,11 @@ function AppContent() {
         {activeGame === 'jelly' && <JellyGame onClose={handleCloseGame} />}
         {(activeGame === 'crazytime' || activeGame === 'lightningroulette' || activeGame === 'megaball' || activeGame === 'monopoly') && <CrazyTimeGame onClose={handleCloseGame} />}
         {(activeGame === 'mahjongways2' || activeGame === 'fortunetiger' || activeGame === 'fortunerabbit' || activeGame === 'luckyneko' || activeGame === 'wildbandito') && <MahjongWaysGame onClose={handleCloseGame} />}
+
+        {/* Universal Slot & Catch-all Fallback so NO game is ever blank/black */}
+        {activeGame && !['aviator', 'spaceman', 'jetx', 'limbo', 'fortunegems', 'fortunegems2', 'superace', 'superacedeluxe', 'moneycoming', 'boxingking', 'goldenempire', 'crazy777', 'gatesofolympus', 'sweetbonanza', 'sugarrush', 'fortuneox', 'jackpotfishing', 'mines', 'dice', 'wingo', 'trxwingo', 'k3', 'k3lottery', '5d', '5dlottery', 'plinko', 'chickenroad', 'moneywheel', 'tierx', 'motoracing', 'jelly', 'crazytime', 'lightningroulette', 'megaball', 'monopoly', 'mahjongways2', 'fortunetiger', 'fortunerabbit', 'luckyneko', 'wildbandito'].includes(activeGame) && (
+          <UniversalSlotEngine gameId={activeGame} onClose={handleCloseGame} />
+        )}
 
         {/* Activity & Utility Modals */}
         <LuckyWheelModal 
@@ -470,10 +475,52 @@ function AppContent() {
   );
 }
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error('App ErrorBoundary caught:', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-[#F4F5F8] text-slate-900 flex flex-col items-center justify-center p-6 text-center select-none font-sans">
+          <div className="w-16 h-16 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-3xl mb-4 shadow-sm">
+            👑
+          </div>
+          <h2 className="text-lg font-black text-slate-900 mb-1">ROYAL CLUB BD</h2>
+          <p className="text-xs text-slate-600 max-w-xs mb-4">
+            Something went wrong or page was reloaded. Please return to the homepage.
+            <br />
+            (কিছু সমস্যা হয়েছে, অনুগ্রহ করে হোমপেজে ফিরে যান)
+          </p>
+          <button
+            onClick={() => {
+              window.location.hash = '#/home';
+              window.location.reload();
+            }}
+            className="bg-[#FFC107] hover:bg-yellow-400 text-slate-950 font-black px-6 py-2.5 rounded-full text-xs shadow-md active:scale-95 transition cursor-pointer"
+          >
+            Go to Homepage / হোমপেজে যান
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function App() {
   return (
-    <GameProvider>
-      <AppContent />
-    </GameProvider>
+    <ErrorBoundary>
+      <GameProvider>
+        <AppContent />
+      </GameProvider>
+    </ErrorBoundary>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
+import { useLanguage } from '../context/LanguageContext';
 import { 
   User, 
   Wallet, 
@@ -19,12 +20,14 @@ import {
   Sparkles,
   Bell,
   Mail,
-  Diamond
+  Diamond,
+  Globe
 } from 'lucide-react';
 import VipModal from '../components/VipModal';
 
 export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onOpenDeposit, onOpenWithdraw }) {
   const { user, logout, gameHistory, transactions, refreshSupabaseData } = useGame();
+  const { lang, toggleLang, t } = useLanguage();
   const [copied, setCopied] = useState(false);
   const [showVipModal, setShowVipModal] = useState(false);
   const [activeHistoryModal, setActiveHistoryModal] = useState(null); // 'game', 'transaction', 'deposit', 'withdraw'
@@ -73,10 +76,10 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             <div className="flex-1 space-y-2 text-left">
               <div>
                 <h3 className="font-black text-base tracking-tight text-slate-900 font-sans">
-                  ROYAL CLUB BD-তে স্বাগতম
+                  {t('welcomeGuest')}
                 </h3>
                 <span className="text-[10px] text-slate-800/80 block mt-0.5">
-                  লগইন বা রেজিস্টার করে ব্যালেন্স ও ভিআইপি দেখুন
+                  {t('guestSubtitle')}
                 </span>
               </div>
               <div className="flex items-center space-x-2">
@@ -84,13 +87,13 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                   onClick={() => onOpenAuth('login')}
                   className="bg-slate-950 hover:bg-slate-900 text-[#FFC107] font-black text-xs px-4 py-1.5 rounded-full shadow-sm active:scale-95 transition cursor-pointer"
                 >
-                  Log in
+                  {t('login')}
                 </button>
                 <button
                   onClick={() => onOpenAuth('register')}
                   className="bg-white hover:bg-slate-50 text-slate-900 font-bold text-xs px-4 py-1.5 rounded-full shadow-sm border border-slate-300 active:scale-95 transition cursor-pointer"
                 >
-                  Register
+                  {t('register')}
                 </button>
               </div>
             </div>
@@ -359,6 +362,28 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             <ChevronRight className="w-4 h-4 text-slate-400" />
           </button>
 
+          {/* Language Switcher Setting */}
+          <button
+            onClick={toggleLang}
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-50 transition cursor-pointer"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
+                {lang === 'en' ? '🇺🇸' : '🇧🇩'}
+              </div>
+              <div>
+                <span className="font-bold text-xs text-slate-800">{t('language')}</span>
+                <span className="text-[10px] text-slate-400 block">
+                  {lang === 'en' ? 'English (Click to change to বাংলা)' : 'বাংলা (Click to switch to English)'}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center space-x-1 bg-slate-100 px-2 py-0.5 rounded-full text-[10px] font-black text-slate-700">
+              <span>{lang === 'en' ? 'EN' : 'বাংলা'}</span>
+              <ChevronRight className="w-3 h-3 text-slate-400" />
+            </div>
+          </button>
+
           <button
             onClick={() => {
               logout();
@@ -370,7 +395,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               <div className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
                 <LogOut className="w-4 h-4" />
               </div>
-              <span className="font-bold text-xs">{user.username === 'Guest' || user.is_guest ? 'Log in to Account' : 'Log out'}</span>
+              <span className="font-bold text-xs">{user.username === 'Guest' || user.is_guest ? 'Log in to Account' : t('logout')}</span>
             </div>
             <ChevronRight className="w-4 h-4 text-red-400" />
           </button>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useGame } from '../context/GameContext';
+import { useLanguage } from '../context/LanguageContext';
 import { 
   Home, 
   Gift, 
@@ -10,6 +11,7 @@ import {
 
 export default function AmarBottomNav({ activeTab, onSelectTab, onOpenWheel, onOpenAuth }) {
   const { user } = useGame();
+  const { t } = useLanguage();
   const isGuest = user.username === 'Guest' || user.is_guest;
 
   function handleAccountClick() {
@@ -35,7 +37,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenWheel, onO
         }`}
       >
         <Home className={`w-5 h-5 mb-0.5 ${activeTab === 'home' ? 'stroke-[2.5]' : 'stroke-2'}`} />
-        <span>Home</span>
+        <span>{t('navHome')}</span>
       </button>
 
       {/* 2. Activity with Red Notification Dot */}
@@ -49,7 +51,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenWheel, onO
           <Gift className={`w-5 h-5 mb-0.5 ${activeTab === 'activity' ? 'stroke-[2.5]' : 'stroke-2'}`} />
           <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white" />
         </div>
-        <span>Activity</span>
+        <span>{t('navActivity')}</span>
       </button>
 
       {/* 3. Center Elevated Spin Wheel Button: "Get ৳1,000 / ৳500" */}
@@ -63,7 +65,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenWheel, onO
           </div>
         </button>
         <span className="text-[10px] font-black text-amber-500 mt-1 whitespace-nowrap">
-          Get ৳1,000
+          {t('navGo')}
         </span>
       </div>
 
@@ -75,7 +77,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenWheel, onO
         }`}
       >
         <Share2 className={`w-5 h-5 mb-0.5 ${activeTab === 'promotion' ? 'stroke-[2.5]' : 'stroke-2'}`} />
-        <span>Promotion</span>
+        <span>{t('navPromotion')}</span>
       </button>
 
       {/* 5. Account */}
@@ -86,7 +88,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenWheel, onO
         }`}
       >
         <User className={`w-5 h-5 mb-0.5 ${activeTab === 'account' ? 'stroke-[2.5]' : 'stroke-2'}`} />
-        <span>Account</span>
+        <span>{t('navAccount')}</span>
       </button>
 
     </nav>

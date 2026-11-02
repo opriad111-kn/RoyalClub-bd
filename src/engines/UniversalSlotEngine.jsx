@@ -125,6 +125,195 @@ const SLOT_CONFIGS = {
       { id: 'banana', name: 'Sweet Banana', mult: 2, icon: '🍌', color: 'from-amber-300 to-yellow-500' }
     ],
     specialReel: [2, 5, 10, 20, 50, 100]
+  },
+
+  fortuneox: {
+    title: 'FORTUNE OX',
+    provider: 'PG SOFT',
+    rtp: '96.75%',
+    maxWin: '2,000X',
+    theme: 'fortune_ox',
+    bg: 'from-[#2a0e04] via-[#3d1506] to-[#1a0802]',
+    accent: 'border-amber-500/50',
+    headerBg: 'from-amber-950 via-red-950 to-amber-900',
+    reelsCount: 3,
+    rowCount: 3,
+    symbols: [
+      { id: 'gold_ox', name: 'Golden Ox Wild', mult: 50, icon: '🐂', color: 'from-amber-400 to-yellow-600', isWild: true },
+      { id: 'ingot', name: 'Gold Ingot', mult: 25, icon: '🟡', color: 'from-yellow-400 to-amber-600' },
+      { id: 'red_packet', name: 'Lucky Red Packet', mult: 15, icon: '🧧', color: 'from-red-500 to-rose-700' },
+      { id: 'orange', name: 'Golden Tangerine', mult: 10, icon: '🍊', color: 'from-orange-400 to-amber-600' },
+      { id: 'firecracker', name: 'Firecracker', mult: 5, icon: '🧨', color: 'from-rose-500 to-red-700' }
+    ],
+    specialReel: [2, 5, 10, 'RESPIN']
+  },
+
+  mahjongways2: {
+    title: 'MAHJONG WAYS 2',
+    provider: 'PG SOFT',
+    rtp: '96.95%',
+    maxWin: '100,000X',
+    theme: 'mahjong',
+    bg: 'from-[#051a14] via-[#092a20] to-[#03110d]',
+    accent: 'border-emerald-500/50',
+    headerBg: 'from-emerald-950 via-teal-950 to-emerald-900',
+    reelsCount: 5,
+    rowCount: 4,
+    symbols: [
+      { id: 'green_dragon', name: 'Green Dragon', mult: 50, icon: '🀅', color: 'from-emerald-400 to-teal-600' },
+      { id: 'red_dragon', name: 'Red Dragon', mult: 30, icon: '🀄', color: 'from-red-500 to-rose-700' },
+      { id: 'white_dragon', name: 'White Tile', mult: 20, icon: '🀆', color: 'from-slate-200 to-slate-400' },
+      { id: 'gold_ingot', name: 'Gold Sycee', mult: 15, icon: '🪙', color: 'from-amber-400 to-yellow-600', isWild: true },
+      { id: 'eight_man', name: '8 Characters', mult: 10, icon: '🀇', color: 'from-blue-400 to-indigo-600' }
+    ],
+    specialReel: [2, 3, 5, 10]
+  },
+
+  fortunetiger: {
+    title: 'FORTUNE TIGER',
+    provider: 'PG SOFT',
+    rtp: '96.81%',
+    maxWin: '2,500X',
+    theme: 'tiger',
+    bg: 'from-[#220d03] via-[#331505] to-[#140802]',
+    accent: 'border-orange-500/50',
+    headerBg: 'from-orange-950 via-amber-950 to-orange-900',
+    reelsCount: 3,
+    rowCount: 3,
+    symbols: [
+      { id: 'tiger_wild', name: 'Tiger Wild', mult: 50, icon: '🐯', color: 'from-amber-400 to-orange-600', isWild: true },
+      { id: 'gold_ornament', name: 'Gold Ornament', mult: 25, icon: '👑', color: 'from-yellow-400 to-amber-600' },
+      { id: 'jade_bag', name: 'Lucky Jade Bag', mult: 15, icon: '💰', color: 'from-emerald-500 to-teal-700' },
+      { id: 'red_envelope', name: 'Red Envelope', mult: 10, icon: '🧧', color: 'from-red-500 to-rose-700' },
+      { id: 'fireworks', name: 'Golden Bell', mult: 5, icon: '🔔', color: 'from-yellow-500 to-amber-700' }
+    ],
+    specialReel: [2, 5, 10, 'TIGER RESPIN']
+  },
+
+  wildbandito: {
+    title: 'WILD BANDITO',
+    provider: 'PG SOFT',
+    rtp: '96.73%',
+    maxWin: '25,000X',
+    theme: 'bandito',
+    bg: 'from-[#1a0808] via-[#290d0d] to-[#110505]',
+    accent: 'border-red-500/50',
+    headerBg: 'from-red-950 via-rose-950 to-red-900',
+    reelsCount: 5,
+    rowCount: 4,
+    symbols: [
+      { id: 'bandit_wild', name: 'Bandito Skull', mult: 50, icon: '💀', color: 'from-amber-400 to-red-600', isWild: true },
+      { id: 'guitar', name: 'Mariachi Guitar', mult: 30, icon: '🎸', color: 'from-amber-500 to-yellow-600' },
+      { id: 'drink', name: 'Tequila Shot', mult: 20, icon: '🍸', color: 'from-emerald-400 to-teal-600' },
+      { id: 'maracas', name: 'Maracas', mult: 15, icon: '🪇', color: 'from-purple-400 to-indigo-600' },
+      { id: 'rose', name: 'Red Rose', mult: 10, icon: '🌹', color: 'from-rose-500 to-red-700' }
+    ],
+    specialReel: [2, 5, 10, 20]
+  },
+
+  jackpotfishing: {
+    title: 'JACKPOT FISHING',
+    provider: 'JILI',
+    rtp: '97.00%',
+    maxWin: '5,000X',
+    theme: 'fishing',
+    bg: 'from-[#031422] via-[#062036] to-[#020d17]',
+    accent: 'border-sky-500/50',
+    headerBg: 'from-sky-950 via-blue-950 to-sky-900',
+    reelsCount: 5,
+    rowCount: 3,
+    symbols: [
+      { id: 'mega_shark', name: 'Golden Shark', mult: 60, icon: '🦈', color: 'from-amber-400 to-yellow-600', isWild: true },
+      { id: 'dragon_fish', name: 'Dragon Carp', mult: 35, icon: '🐉', color: 'from-red-500 to-rose-700' },
+      { id: 'turtle', name: 'Emerald Turtle', mult: 20, icon: '🐢', color: 'from-emerald-400 to-teal-600' },
+      { id: 'jellyfish', name: 'Neon Jellyfish', mult: 12, icon: '🪼', color: 'from-purple-400 to-pink-600' },
+      { id: 'tropical_fish', name: 'Clownfish', mult: 6, icon: '🐠', color: 'from-orange-400 to-amber-600' }
+    ],
+    specialReel: [2, 5, 10, 'TORPEDO']
+  },
+
+  crazy777: {
+    title: 'CRAZY 777',
+    provider: 'JILI',
+    rtp: '96.22%',
+    maxWin: '3,333X',
+    theme: 'classic777',
+    bg: 'from-[#1c0808] via-[#2a0c0c] to-[#120505]',
+    accent: 'border-red-500/50',
+    headerBg: 'from-red-950 via-rose-950 to-red-900',
+    reelsCount: 3,
+    rowCount: 1,
+    symbols: [
+      { id: 'triple7', name: 'Triple 7', mult: 50, icon: '7️⃣7️⃣7️⃣', color: 'from-yellow-400 to-red-600' },
+      { id: 'double7', name: 'Double 7', mult: 25, icon: '7️⃣7️⃣', color: 'from-amber-400 to-orange-600' },
+      { id: 'single7', name: 'Single 7', mult: 15, icon: '7️⃣', color: 'from-red-500 to-rose-700' },
+      { id: 'bar', name: 'BAR', mult: 10, icon: '🍫', color: 'from-slate-400 to-slate-600' },
+      { id: 'coin', name: 'Gold Coin', mult: 5, icon: '🪙', color: 'from-yellow-400 to-amber-600' }
+    ],
+    specialReel: [2, 5, 10, 'RESPIN']
+  },
+
+  boxingking: {
+    title: 'BOXING KING',
+    provider: 'JILI',
+    rtp: '97.00%',
+    maxWin: '2,000X',
+    theme: 'boxing',
+    bg: 'from-[#1c1208] via-[#2a1b0c] to-[#120b05]',
+    accent: 'border-amber-500/50',
+    headerBg: 'from-amber-950 via-yellow-950 to-amber-900',
+    reelsCount: 5,
+    rowCount: 4,
+    symbols: [
+      { id: 'champ', name: 'Boxing Champion', mult: 40, icon: '🥊', color: 'from-red-500 to-amber-600', isWild: true },
+      { id: 'belt', name: 'Championship Belt', mult: 25, icon: '🏆', color: 'from-yellow-400 to-amber-600' },
+      { id: 'bell', name: 'Ring Bell', mult: 15, icon: '🔔', color: 'from-amber-400 to-yellow-600' },
+      { id: 'gloves', name: 'Red Gloves', mult: 10, icon: '🥊', color: 'from-rose-500 to-red-700' },
+      { id: 'shorts', name: 'Golden Shorts', mult: 5, icon: '🩳', color: 'from-blue-500 to-sky-700' }
+    ],
+    specialReel: [2, 3, 5, 'COMBO']
+  },
+
+  goldenempire: {
+    title: 'GOLDEN EMPIRE',
+    provider: 'JILI',
+    rtp: '97.06%',
+    maxWin: '2,000X',
+    theme: 'empire',
+    bg: 'from-[#191506] via-[#262009] to-[#100d04]',
+    accent: 'border-yellow-500/50',
+    headerBg: 'from-yellow-950 via-amber-950 to-yellow-900',
+    reelsCount: 6,
+    rowCount: 5,
+    symbols: [
+      { id: 'inca_king', name: 'Inca Emperor', mult: 45, icon: '👑', color: 'from-amber-400 to-yellow-600', isWild: true },
+      { id: 'sun_disk', name: 'Golden Sun Disk', mult: 25, icon: '☀️', color: 'from-yellow-400 to-amber-600' },
+      { id: 'gold_jaguar', name: 'Gold Jaguar', mult: 15, icon: '🐆', color: 'from-amber-500 to-orange-700' },
+      { id: 'pyramid', name: 'Sun Temple', mult: 12, icon: '🏛️', color: 'from-orange-400 to-amber-700' },
+      { id: 'necklace', name: 'Ruby Amulet', mult: 8, icon: '📿', color: 'from-rose-500 to-red-700' }
+    ],
+    specialReel: [2, 5, 10, 'EXTEND']
+  },
+
+  sugarrush: {
+    title: 'SUGAR RUSH',
+    provider: 'PRAGMATIC PLAY',
+    rtp: '96.50%',
+    maxWin: '5,000X',
+    theme: 'candy',
+    bg: 'from-[#260a2b] via-[#3d1145] to-[#18061c]',
+    accent: 'border-pink-500/50',
+    headerBg: 'from-pink-950 via-purple-950 to-pink-900',
+    reelsCount: 7,
+    rowCount: 7,
+    symbols: [
+      { id: 'gummy_bear_red', name: 'Red Gummy', mult: 30, icon: '🧸', color: 'from-red-500 to-rose-600' },
+      { id: 'gummy_bear_purple', name: 'Purple Gummy', mult: 20, icon: '🍇', color: 'from-purple-500 to-indigo-600' },
+      { id: 'star_candy', name: 'Golden Star', mult: 15, icon: '⭐', color: 'from-yellow-400 to-amber-500' },
+      { id: 'jelly_bean', name: 'Green Jelly', mult: 10, icon: '🟢', color: 'from-emerald-400 to-green-600' },
+      { id: 'heart_candy', name: 'Pink Heart', mult: 5, icon: '💗', color: 'from-pink-400 to-rose-500' }
+    ],
+    specialReel: [2, 4, 8, 16, 32, 64, 128]
   }
 };
 

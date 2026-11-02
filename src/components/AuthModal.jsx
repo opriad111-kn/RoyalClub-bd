@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
+import { useLanguage } from '../context/LanguageContext';
 import confetti from 'canvas-confetti';
 import { 
   Lock, 
@@ -20,6 +21,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
   if (!isOpen) return null;
 
   const { login, registerUser, settings } = useGame();
+  const { lang, toggleLang, t } = useLanguage();
   
   // Tab: 'login' | 'register'
   const [activeTab, setActiveTab] = useState(() => {
@@ -202,26 +204,29 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
               </span>
             </div>
 
-            {/* Language Pill */}
-            <div className="flex items-center space-x-1 bg-white/20 px-2 py-0.5 rounded-full text-xs font-bold text-slate-950">
-              <span className="text-xs">🇺🇸</span>
-              <span>EN</span>
-            </div>
+            {/* Language Switcher Button (Click to toggle EN/BN) */}
+            <button
+              type="button"
+              onClick={toggleLang}
+              title="Click to switch language / ভাষা পরিবর্তন"
+              className="flex items-center space-x-1 bg-white/25 hover:bg-white/40 border border-white/50 px-2.5 py-0.5 rounded-full text-xs font-black text-slate-950 transition active:scale-95 cursor-pointer shadow-xs"
+            >
+              <span className="text-xs">{lang === 'en' ? '🇺🇸' : '🇧🇩'}</span>
+              <span>{lang === 'en' ? 'EN' : 'BN'}</span>
+            </button>
           </div>
 
           {/* Subtitle block */}
           <div className="space-y-0.5">
             <h2 className="text-xl font-black text-white font-sans tracking-tight">
-              {activeTab === 'login' ? 'Log in' : 'Register'}
+              {t(activeTab === 'login' ? 'loginTitle' : 'registerTitle')}
             </h2>
             <p className="text-[11px] font-medium text-slate-900/90 leading-tight">
-              {activeTab === 'login' 
-                ? 'Please log in with your phone number or email' 
-                : 'Please register by phone number or email'}
+              {t(activeTab === 'login' ? 'loginSubtitle' : 'registerSubtitle')}
             </p>
             {activeTab === 'login' && (
               <p className="text-[10px] text-slate-800 font-medium">
-                If you forget your password, please contact customer service
+                {t('customerServicePrompt')}
               </p>
             )}
           </div>
@@ -238,7 +243,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
               }`}
             >
               <Phone className="w-4 h-4 stroke-[2]" />
-              <span>Phone Number</span>
+              <span>{t('phoneTab')}</span>
               {loginMethod === 'phone' && (
                 <div className="absolute bottom-0 left-6 right-6 h-0.5 bg-[#FFC107] rounded-full" />
               )}
@@ -251,7 +256,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
               }`}
             >
               <Mail className="w-4 h-4 stroke-[2]" />
-              <span>Email</span>
+              <span>{t('emailTab')}</span>
               {loginMethod === 'email' && (
                 <div className="absolute bottom-0 left-6 right-6 h-0.5 bg-[#FFC107] rounded-full" />
               )}
@@ -263,7 +268,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
         {activeTab === 'register' && (
           <div className="bg-white py-3 border-b border-slate-100 flex items-center justify-center space-x-1.5 text-xs font-black text-amber-500 relative">
             <Phone className="w-4 h-4" />
-            <span>Register your phone</span>
+            <span>{t('registerTitle')}</span>
             <div className="absolute bottom-0 left-12 right-12 h-0.5 bg-[#FFC107] rounded-full" />
           </div>
         )}
@@ -377,7 +382,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                   disabled={isLoading}
                   className="w-full bg-[#FFC107] hover:bg-yellow-400 active:scale-98 text-slate-950 font-black py-3 rounded-full text-xs uppercase tracking-wider shadow-sm transition cursor-pointer"
                 >
-                  {isLoading ? 'Verifying...' : 'Log in'}
+                  {isLoading ? 'Verifying...' : t('loginBtn')}
                 </button>
 
                 <button
@@ -389,7 +394,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                   }}
                   className="w-full bg-white border border-[#FFC107] text-amber-600 hover:bg-amber-50 active:scale-98 font-black py-3 rounded-full text-xs uppercase tracking-wider transition cursor-pointer"
                 >
-                  Register
+                  {t('registerBtn')}
                 </button>
               </div>
             </form>
@@ -403,7 +408,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
               <div>
                 <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-800 mb-1">
                   <span className="w-4 h-4 rounded bg-amber-100 text-amber-600 flex items-center justify-center text-[10px]">📱</span>
-                  <span>Phone number</span>
+                  <span>{t('phoneNumber')}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="bg-white border border-slate-200 rounded-xl px-2.5 py-2.5 flex items-center space-x-1 text-xs font-bold text-slate-700 shadow-xs shrink-0">
@@ -412,7 +417,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                   </div>
                   <input
                     type="tel"
-                    placeholder="Please enter the phone number"
+                    placeholder={t('phonePlaceholder')}
                     value={regPhone}
                     onChange={e => setRegPhone(e.target.value)}
                     className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-medium text-slate-800 placeholder-slate-400 shadow-xs focus:outline-none focus:border-[#FFC107]"
@@ -424,12 +429,12 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
               <div>
                 <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-800 mb-1">
                   <span className="w-4 h-4 rounded bg-amber-100 text-amber-600 flex items-center justify-center text-[10px]">🔒</span>
-                  <span>Set password</span>
+                  <span>{t('password')}</span>
                 </div>
                 <div className="relative">
                   <input
                     type={showRegPassword ? "text" : "password"}
-                    placeholder="Set password"
+                    placeholder={t('passwordPlaceholder')}
                     value={regPassword}
                     onChange={e => setRegPassword(e.target.value)}
                     className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 pr-10 text-xs font-medium text-slate-800 placeholder-slate-400 shadow-xs focus:outline-none focus:border-[#FFC107]"
@@ -448,12 +453,12 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
               <div>
                 <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-800 mb-1">
                   <span className="w-4 h-4 rounded bg-amber-100 text-amber-600 flex items-center justify-center text-[10px]">🔒</span>
-                  <span>Confirm password</span>
+                  <span>{t('confirmPassword')}</span>
                 </div>
                 <div className="relative">
                   <input
                     type={showRegConfirmPassword ? "text" : "password"}
-                    placeholder="Confirm password"
+                    placeholder={t('confirmPasswordPlaceholder')}
                     value={regConfirmPassword}
                     onChange={e => setRegConfirmPassword(e.target.value)}
                     className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 pr-10 text-xs font-medium text-slate-800 placeholder-slate-400 shadow-xs focus:outline-none focus:border-[#FFC107]"
@@ -472,7 +477,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
               <div>
                 <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-800 mb-1">
                   <span className="w-4 h-4 rounded bg-amber-100 text-amber-600 flex items-center justify-center text-[10px]">🎟️</span>
-                  <span>Invite code</span>
+                  <span>{t('inviteCode')}</span>
                 </div>
                 <input
                   type="text"
@@ -493,7 +498,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                     className="accent-[#FFC107]"
                   />
                   <span>
-                    I have read and agree <span className="text-rose-500 font-bold">【Privacy Agreement】</span>
+                    {t('agreeTerms')}
                   </span>
                 </label>
               </div>
@@ -505,7 +510,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                   disabled={isLoading}
                   className="w-full bg-[#FFC107] hover:bg-yellow-400 active:scale-98 text-slate-950 font-black py-3 rounded-full text-xs uppercase tracking-wider shadow-sm transition cursor-pointer"
                 >
-                  {isLoading ? 'Creating Account...' : 'Register'}
+                  {isLoading ? 'Creating Account...' : t('registerBtn')}
                 </button>
 
                 <button
@@ -517,7 +522,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                   }}
                   className="w-full bg-white border border-[#FFC107] text-amber-600 hover:bg-amber-50 active:scale-98 font-black py-3 rounded-full text-xs uppercase tracking-wider transition cursor-pointer"
                 >
-                  Log in
+                  {t('loginBtn')}
                 </button>
               </div>
             </form>

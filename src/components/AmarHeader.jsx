@@ -1,9 +1,11 @@
 import React from 'react';
 import { useGame } from '../context/GameContext';
-import { ShieldAlert, Download, Headphones } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import { ShieldAlert, Download, Headphones, Globe } from 'lucide-react';
 
 export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenDeposit, onOpenAdmin }) {
   const { user } = useGame();
+  const { lang, toggleLang, t } = useLanguage();
   const isGuest = user.username === 'Guest' || user.is_guest;
 
   return (
@@ -33,21 +35,30 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenDeposit, on
         </div>
       </div>
 
-      {/* Right Controls: Balance Pill, Customer Service, Download, Admin */}
+      {/* Right Controls: Language Switcher, Balance Pill, Customer Service, Download, Admin */}
       <div className="flex items-center space-x-1.5 shrink-0">
+        {/* Language Switcher Pill */}
+        <button
+          onClick={toggleLang}
+          title={lang === 'en' ? 'বাংলায় পরিবর্তন করুন' : 'Switch to English'}
+          className="flex items-center space-x-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 px-2 py-0.5 rounded-full text-[10px] font-black text-slate-800 transition active:scale-95 cursor-pointer shadow-2xs shrink-0"
+        >
+          <span>{lang === 'en' ? '🇺🇸 EN' : '🇧🇩 BN'}</span>
+        </button>
+
         {isGuest ? (
           <>
             <button
               onClick={() => onOpenAuth('login')}
               className="bg-[#FFC107] hover:bg-yellow-400 text-slate-950 font-black text-xs px-3 py-1 rounded-full shadow-xs transition active:scale-95 cursor-pointer"
             >
-              Log in
+              {t('login')}
             </button>
             <button
               onClick={() => onOpenAuth('register')}
               className="bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs px-3 py-1 rounded-full border border-slate-300 shadow-xs transition active:scale-95 cursor-pointer"
             >
-              Register
+              {t('register')}
             </button>
             <button
               onClick={onOpenAdmin}
@@ -78,8 +89,8 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenDeposit, on
 
             {/* Customer Support Icon */}
             <button
-              onClick={() => alert("Official Support Telegram: @ROYALCLUB_Support")}
-              title="Customer Service"
+              onClick={() => window.open('https://t.me/ROYALCLUB_Support', '_blank')}
+              title={t('support')}
               className="w-7 h-7 rounded-full bg-amber-50 text-amber-600 hover:bg-amber-100 flex items-center justify-center transition active:scale-95 cursor-pointer shrink-0"
             >
               <Headphones className="w-3.5 h-3.5" />
