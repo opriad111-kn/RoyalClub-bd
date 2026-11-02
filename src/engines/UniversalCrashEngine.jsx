@@ -87,7 +87,7 @@ const LIVE_PLAYERS = [
 
 export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
   const theme = CRASH_THEMES[gameId] || CRASH_THEMES.aviator;
-  const { user, adjustUserBalance, recordGameHistory } = useGame();
+  const { user, adjustUserBalance, recordGameHistory, getGameEffectiveSettings } = useGame();
 
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -185,14 +185,55 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
     }
   }, [gameState]);
 
-  // Determine crash multiplier with provably fair distribution
+  // Determine crash multiplier via Admin Server & User RNG Control
   function generateCrashPoint() {
+    const eff = getGameEffectiveSettings 
+      ? getGameEffectiveSettings(gameId, theme.provider, user)
+      : { effectiveWinRate: 97, mode: 'auto', maxMultiplier: 100 };
+
+    // 1. Force exact multiplier if specified by admin
+    if (eff.forceCrashAt && Number(eff.forceCrashAt) >= 1.00) {
+      return parseFloat(Number(eff.forceCrashAt).toFixed(2));
+    }
+
+    // 2. Force Loss Mode (User or Game level override)
+    if (eff.mode === 'force_loss' || eff.mode === 'early_crash') {
+      return parseFloat((1.00 + Math.random() * 0.12).toFixed(2)); // early crash 1.00x - 1.12x
+    }
+
+    // 3. Force Win Mode (User level override)
+    if (eff.mode === 'force_win') {
+      const minWin = 2.00;
+      const maxWin = Math.min(eff.maxMultiplier || 50, 20.00);
+      return parseFloat((minWin + Math.random() * (maxWin - minWin)).toFixed(2));
+    }
+
+    // 4. High flight guarantee mode
+    if (eff.mode === 'high_flight') {
+      const maxCap = Math.min(eff.maxMultiplier || 100, 50);
+      return parseFloat((5.00 + Math.random() * (maxCap - 5.00)).toFixed(2));
+    }
+
+    // 5. Dynamic RNG based on effectiveWinRate (0% to 100%)
+    const winRatio = (eff.effectiveWinRate || 97) / 100;
     const r = Math.random();
-    if (r < 0.04) return parseFloat((1.00 + Math.random() * 0.08).toFixed(2)); // Instant crash
-    if (r < 0.50) return parseFloat((1.10 + Math.random() * 0.90).toFixed(2)); // 1.10 - 2.00
-    if (r < 0.80) return parseFloat((2.00 + Math.random() * 3.00).toFixed(2)); // 2.00 - 5.00
-    if (r < 0.95) return parseFloat((5.00 + Math.random() * 15.00).toFixed(2)); // 5.00 - 20.00
-    return parseFloat((20.00 + Math.random() * 80.00).toFixed(2)); // Mega 20x - 100x
+
+    if (r > winRatio) {
+      // House edge crash
+      return parseFloat((1.00 + Math.random() * 0.35).toFixed(2));
+    } else {
+      // Winning flight curve
+      const maxCap = eff.maxMultiplier || 100;
+      let mult;
+      if (Math.random() < 0.60) {
+        mult = 1.25 + Math.random() * 1.75; // 1.25 - 3.00x
+      } else if (Math.random() < 0.85) {
+        mult = 3.00 + Math.random() * 4.00; // 3.00 - 7.00x
+      } else {
+        mult = 7.00 + Math.random() * (maxCap - 7.00);
+      }
+      return parseFloat(Math.min(maxCap, mult).toFixed(2));
+    }
   }
 
   function startFlight() {

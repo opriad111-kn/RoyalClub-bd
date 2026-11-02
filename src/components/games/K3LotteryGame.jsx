@@ -39,7 +39,7 @@ const SUM_BALLS = [
 ];
 
 export default function K3LotteryGame({ onClose, onOpenDeposit, onOpenWithdraw }) {
-  const { user, adjustUserBalance } = useGame();
+  const { user, adjustUserBalance, getGameEffectiveSettings } = useGame();
 
   // Mode Selection: '1m', '3m', '5m', '10m'
   const [selectedDuration, setSelectedDuration] = useState('1m');
@@ -107,9 +107,32 @@ export default function K3LotteryGame({ onClose, onOpenDeposit, onOpenWithdraw }
     if (soundEnabled) soundManager.playRoll();
 
     setTimeout(() => {
-      const d1 = Math.floor(Math.random() * 6) + 1;
-      const d2 = Math.floor(Math.random() * 6) + 1;
-      const d3 = Math.floor(Math.random() * 6) + 1;
+      const eff = getGameEffectiveSettings ? getGameEffectiveSettings('k3', 'ORIGINAL', user) : { mode: 'auto' };
+      let d1 = Math.floor(Math.random() * 6) + 1;
+      let d2 = Math.floor(Math.random() * 6) + 1;
+      let d3 = Math.floor(Math.random() * 6) + 1;
+
+      // Force Win / Loss RNG override
+      const pendingBets = myBets.filter(b => b.period === periodId && b.status === 'pending');
+      if (eff.mode === 'force_win' && pendingBets.length > 0) {
+        const b = pendingBets[0];
+        if (b.type === 'size') {
+          if (b.value === 'Big') { d1 = 4; d2 = 5; d3 = 4; }
+          else { d1 = 2; d2 = 3; d3 = 3; }
+        } else if (b.type === 'sum') {
+          const targetSum = Number(b.value);
+          d1 = Math.min(6, Math.max(1, Math.floor(targetSum / 3)));
+          d2 = Math.min(6, Math.max(1, Math.floor((targetSum - d1) / 2)));
+          d3 = Math.min(6, Math.max(1, targetSum - d1 - d2));
+        }
+      } else if (eff.mode === 'force_loss' && pendingBets.length > 0) {
+        const b = pendingBets[0];
+        if (b.type === 'size') {
+          if (b.value === 'Big') { d1 = 1; d2 = 2; d3 = 3; }
+          else { d1 = 5; d2 = 5; d3 = 4; }
+        }
+      }
+
       const sum = d1 + d2 + d3;
       const isTriple = (d1 === d2 && d2 === d3);
       const isPair = (d1 === d2 || d2 === d3 || d1 === d3) && !isTriple;

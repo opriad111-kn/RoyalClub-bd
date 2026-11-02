@@ -130,7 +130,7 @@ const SLOT_CONFIGS = {
 
 export default function UniversalSlotEngine({ gameId = 'fortunegems2', onClose }) {
   const config = SLOT_CONFIGS[gameId] || SLOT_CONFIGS.fortunegems2;
-  const { user, adjustUserBalance, recordGameHistory } = useGame();
+  const { user, adjustUserBalance, recordGameHistory, getGameEffectiveSettings } = useGame();
 
   const [betAmount, setBetAmount] = useState(20);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -236,7 +236,25 @@ export default function UniversalSlotEngine({ gameId = 'fortunegems2', onClose }
       else if (chosen === 'WHEEL') mult = 10;
     }
 
-    const totalWin = parseFloat((baseWin * mult).toFixed(2));
+    // Admin Server & User RNG Control Override
+    const eff = getGameEffectiveSettings 
+      ? getGameEffectiveSettings(gameId, config.provider, user)
+      : { effectiveWinRate: 96, mode: 'auto', maxMultiplier: 500 };
+
+    if (eff.mode === 'force_loss') {
+      baseWin = 0;
+      winningLines = [];
+    } else if (eff.mode === 'force_win' && baseWin === 0) {
+      const topSym = config.symbols[0] || { name: 'JACKPOT', mult: 15 };
+      baseWin = betAmount * (topSym.mult || 15);
+      winningLines = [`${topSym.name} MEGA COMBO`];
+    } else if (eff.effectiveWinRate < 50 && Math.random() > (eff.effectiveWinRate / 100)) {
+      baseWin = 0;
+      winningLines = [];
+    }
+
+    const maxCap = (eff.maxMultiplier || 500) * betAmount;
+    const totalWin = Math.min(maxCap, parseFloat((baseWin * mult).toFixed(2)));
 
     if (totalWin > 0) {
       adjustUserBalance(user.uid, totalWin);
@@ -462,3 +480,4 @@ export default function UniversalSlotEngine({ gameId = 'fortunegems2', onClose }
     </div>
   );
 }
+

@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 export default function UniversalColorCasinoEngine({ gameId = 'wingo', onClose }) {
-  const { user, adjustUserBalance, recordGameHistory } = useGame();
+  const { user, adjustUserBalance, recordGameHistory, getGameEffectiveSettings } = useGame();
   const [mode, setMode] = useState('30s'); // '30s' | '1m' | '3m'
   const [countdown, setCountdown] = useState(30);
   const [period, setPeriod] = useState(() => `${new Date().getFullYear()}${String(Date.now()).slice(-8)}`);
@@ -52,7 +52,25 @@ export default function UniversalColorCasinoEngine({ gameId = 'wingo', onClose }
   }, [mode, activeBets]);
 
   function evaluateRound() {
-    const winningNum = Math.floor(Math.random() * 10);
+    const eff = getGameEffectiveSettings 
+      ? getGameEffectiveSettings('wingo', 'ORIGINAL', user) 
+      : { mode: 'auto' };
+
+    let winningNum = Math.floor(Math.random() * 10);
+
+    // Force Win or Force Loss RNG override
+    if (eff.mode === 'force_win' && activeBets.length > 0) {
+      const firstBet = activeBets[0];
+      if (firstBet.type === 'color') winningNum = firstBet.val === 'green' ? 1 : firstBet.val === 'violet' ? 0 : 2;
+      else if (firstBet.type === 'size') winningNum = firstBet.val === 'Big' ? 7 : 3;
+      else if (firstBet.type === 'num') winningNum = Number(firstBet.val);
+    } else if (eff.mode === 'force_loss' && activeBets.length > 0) {
+      const firstBet = activeBets[0];
+      if (firstBet.type === 'size') winningNum = firstBet.val === 'Big' ? 2 : 7;
+      else if (firstBet.type === 'color') winningNum = firstBet.val === 'green' ? 2 : 1;
+      else if (firstBet.type === 'num') winningNum = (Number(firstBet.val) + 1) % 10;
+    }
+
     let winColor = 'green';
     if (winningNum === 0 || winningNum === 5) winColor = 'violet';
     else if ([2, 4, 6, 8].includes(winningNum)) winColor = 'red';
@@ -342,3 +360,4 @@ export default function UniversalColorCasinoEngine({ gameId = 'wingo', onClose }
     </div>
   );
 }
+

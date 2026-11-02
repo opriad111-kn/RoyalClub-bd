@@ -48,7 +48,7 @@ export default function AuthModal({ isOpen, onClose }) {
   const [isLoading, setIsLoading] = useState(false);
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
 
-  function handleLogin(e) {
+  async function handleLogin(e) {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
@@ -63,9 +63,9 @@ export default function AuthModal({ isOpen, onClose }) {
     }
 
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      const res = await login(loginIdentifier.trim(), loginPassword, rememberMe);
       setIsLoading(false);
-      const res = login(loginIdentifier.trim(), loginPassword, rememberMe);
       if (res.success) {
         setSuccessMsg(`স্বাগতম, ${res.user.username}! সফলভাবে লগইন হয়েছে।`);
         confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
@@ -75,10 +75,13 @@ export default function AuthModal({ isOpen, onClose }) {
       } else {
         setErrorMsg(res.message);
       }
-    }, 400);
+    } catch (err) {
+      setIsLoading(false);
+      setErrorMsg('লগইন করার সময় সমস্যা হয়েছে, অনুগ্রহ করে আবার চেষ্টা করুন।');
+    }
   }
 
-  function handleRegister(e) {
+  async function handleRegister(e) {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
@@ -105,9 +108,8 @@ export default function AuthModal({ isOpen, onClose }) {
     }
 
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      const res = registerUser({
+    try {
+      const res = await registerUser({
         username: regUsername.trim(),
         phone: regPhone.trim(),
         email: regEmail.trim(),
@@ -115,6 +117,7 @@ export default function AuthModal({ isOpen, onClose }) {
         referralCode: regReferral.trim()
       });
 
+      setIsLoading(false);
       if (res.success) {
         setSuccessMsg(`অভিনন্দন ${res.user.username}! রেজিস্ট্রেশন সম্পন্ন এবং ৳${res.bonus} ফ্রি ভার্চুয়াল কয়েন যোগ হয়েছে!`);
         confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 } });
@@ -124,7 +127,10 @@ export default function AuthModal({ isOpen, onClose }) {
       } else {
         setErrorMsg(res.message);
       }
-    }, 500);
+    } catch (err) {
+      setIsLoading(false);
+      setErrorMsg('রেজিস্ট্রেশন সম্পন্ন করতে সমস্যা হয়েছে, অনুগ্রহ করে আবার চেষ্টা করুন।');
+    }
   }
 
   return (

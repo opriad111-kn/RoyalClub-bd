@@ -53,6 +53,10 @@ import UsdtBonusModal from './components/UsdtBonusModal';
 function AppContent() {
   const { user } = useGame();
   const [activeTab, setActiveTab] = useState(() => {
+    const pathname = window.location.pathname.toLowerCase();
+    if (pathname.includes('admin')) {
+      return 'admin';
+    }
     const params = new URLSearchParams(window.location.search);
     const tabParam = params.get('tab');
     if (tabParam && ['home', 'activity', 'promotion', 'account', 'wallet', 'admin', 'wingo'].includes(tabParam)) {
@@ -84,6 +88,11 @@ function AppContent() {
   // Sync state with URL hash and search params
   useEffect(() => {
     const handleUrl = () => {
+      const pathname = window.location.pathname.toLowerCase();
+      if (pathname.includes('admin')) {
+        setActiveTab('admin');
+        return;
+      }
       const q = new URLSearchParams(window.location.search);
       const tabParam = q.get('tab');
       if (tabParam && ['home', 'activity', 'promotion', 'account', 'wallet', 'admin', 'wingo'].includes(tabParam)) {

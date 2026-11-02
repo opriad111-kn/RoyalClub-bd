@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 export default function UniversalArcadeEngine({ gameId = 'mines', onClose }) {
-  const { user, adjustUserBalance, recordGameHistory } = useGame();
+  const { user, adjustUserBalance, recordGameHistory, getGameEffectiveSettings } = useGame();
   const [betAmount, setBetAmount] = useState(50);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
@@ -65,12 +65,19 @@ export default function UniversalArcadeEngine({ gameId = 'mines', onClose }) {
   function handleTileClick(index) {
     if (gameState !== 'playing' || grid[index].revealed) return;
 
-    const tile = grid[index];
+    const eff = getGameEffectiveSettings 
+      ? getGameEffectiveSettings('mines', 'SPRIBE', user) 
+      : { mode: 'auto' };
+
+    let isMineHit = grid[index].isMine;
+    if (eff.mode === 'force_loss') isMineHit = true;
+    else if (eff.mode === 'force_win') isMineHit = false;
+
     const newGrid = [...grid];
-    newGrid[index] = { ...tile, revealed: true };
+    newGrid[index] = { ...grid[index], isMine: isMineHit, revealed: true };
     setGrid(newGrid);
 
-    if (tile.isMine) {
+    if (isMineHit) {
       // BUSTED
       setGameState('busted');
       newGrid.forEach(t => t.revealed = true);
@@ -388,3 +395,4 @@ export default function UniversalArcadeEngine({ gameId = 'mines', onClose }) {
     </div>
   );
 }
+

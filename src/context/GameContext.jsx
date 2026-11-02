@@ -126,13 +126,15 @@ export function GameProvider({ children }) {
   });
 
   function recordGameHistory({ game, bet, win, mult }) {
+    const bAmt = parseFloat(bet) || 0;
+    const wAmt = parseFloat(win) || 0;
     const newEntry = {
       id: 'GH-' + Math.floor(1000 + Math.random() * 9000),
       game,
-      bet: parseFloat(bet),
-      win: parseFloat(win),
-      status: win > 0 ? 'WIN' : 'LOSS',
-      mult: mult ? mult.toString() : (win > 0 ? (win / bet).toFixed(2) + 'x' : '0.00x'),
+      bet: bAmt,
+      win: wAmt,
+      status: wAmt > 0 ? 'WIN' : 'LOSS',
+      mult: mult ? mult.toString() : (wAmt > 0 ? (wAmt / bAmt).toFixed(2) + 'x' : '0.00x'),
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
     setGameHistory(prev => {
@@ -140,16 +142,84 @@ export function GameProvider({ children }) {
       localStorage.setItem('royalclub_game_history', JSON.stringify(updated));
       return updated;
     });
+
+    // Record into Supabase game_logs table
+    try {
+      supabase.from('game_logs').insert({
+        user_id: user?.uid || user?.id || 'guest',
+        username: user?.username || 'Guest',
+        game_name: game,
+        bet_amount: bAmt,
+        win_amount: wAmt,
+        result: newEntry.status === 'WIN' ? `WIN ${newEntry.mult}` : 'CRASH / LOSS'
+      }).then(() => {}).catch(e => console.warn('Supabase game_log notice:', e));
+    } catch (e) {}
+
+    // Update real-time statistics in allUsers and current user for Live User Tracking
+    setAllUsers(prev => prev.map(u => {
+      if (u.uid === user.uid) {
+        return {
+          ...u,
+          total_wagered: parseFloat(((u.total_wagered || 0) + bAmt).toFixed(2)),
+          total_won: parseFloat(((u.total_won || 0) + wAmt).toFixed(2)),
+          last_game: game,
+          last_bet: bAmt,
+          last_win: wAmt,
+          last_active: Date.now()
+        };
+      }
+      return u;
+    }));
+
+    setUser(prev => ({
+      ...prev,
+      total_wagered: parseFloat(((prev.total_wagered || 0) + bAmt).toFixed(2)),
+      total_won: parseFloat(((prev.total_won || 0) + wAmt).toFixed(2)),
+      last_game: game,
+      last_bet: bAmt,
+      last_win: wAmt,
+      last_active: Date.now()
+    }));
   }
 
-  // 3C. Admin Game Rigging & Har-Jit Controls
+  // 3C. Comprehensive Admin Game & User Win-Rate Controls
   const [gameControl, setGameControl] = useState(() => {
     const saved = localStorage.getItem('royalclub_game_control');
-    return saved ? JSON.parse(saved) : {
-      aviatorMode: 'normal', // 'normal' | 'always_high' | 'early_crash'
-      slotMode: 'normal',    // 'normal' | 'always_win' | 'always_loss'
-      rtpRate: 96
+    const defaults = {
+      serverRtp: {
+        JILI: 96,
+        PRAGMATIC: 96,
+        SPRIBE: 97,
+        ORIGINAL: 98
+      },
+      gameOverrides: {
+        aviator: { rtp: 97, maxMultiplier: 100, mode: 'auto', forceCrashAt: '' },
+        fortunegems2: { rtp: 96, maxMultiplier: 1000, mode: 'auto', reelBoost: 'normal' },
+        superace: { rtp: 96, maxMultiplier: 500, mode: 'auto', goldenCardRate: 'normal' },
+        wingo: { rtp: 98, mode: 'auto', forceOutcome: 'auto' },
+        k3: { rtp: 97, mode: 'auto' },
+        mines: { rtp: 98, mode: 'auto', safeDiamonds: 3 },
+        gatesofolympus: { rtp: 96, maxMultiplier: 500, mode: 'auto' },
+        sweetbonanza: { rtp: 96, maxMultiplier: 100, mode: 'auto' }
+      },
+      userOverrides: {}, // { [uid]: { customWinRate: '', mode: 'default' } }
+      signupBonus: 100
     };
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return {
+          ...defaults,
+          ...parsed,
+          serverRtp: { ...defaults.serverRtp, ...(parsed.serverRtp || {}) },
+          gameOverrides: { ...defaults.gameOverrides, ...(parsed.gameOverrides || {}) },
+          userOverrides: { ...(parsed.userOverrides || {}) }
+        };
+      } catch (e) {
+        return defaults;
+      }
+    }
+    return defaults;
   });
 
   function updateGameControl(newControl) {
@@ -158,6 +228,99 @@ export function GameProvider({ children }) {
       localStorage.setItem('royalclub_game_control', JSON.stringify(updated));
       return updated;
     });
+  }
+
+  function updateServerRtp(serverName, rtp) {
+    setGameControl(prev => {
+      const updated = {
+        ...prev,
+        serverRtp: {
+          ...prev.serverRtp,
+          [serverName]: Number(rtp)
+        }
+      };
+      localStorage.setItem('royalclub_game_control', JSON.stringify(updated));
+      return updated;
+    });
+  }
+
+  function updateGameOverride(gameId, updates) {
+    setGameControl(prev => {
+      const updated = {
+        ...prev,
+        gameOverrides: {
+          ...prev.gameOverrides,
+          [gameId]: {
+            ...(prev.gameOverrides[gameId] || {}),
+            ...updates
+          }
+        }
+      };
+      localStorage.setItem('royalclub_game_control', JSON.stringify(updated));
+      return updated;
+    });
+  }
+
+  function updateUserWinRate(uid, updates) {
+    setGameControl(prev => {
+      const updated = {
+        ...prev,
+        userOverrides: {
+          ...prev.userOverrides,
+          [uid]: {
+            ...(prev.userOverrides[uid] || { customWinRate: '', mode: 'default' }),
+            ...updates
+          }
+        }
+      };
+      localStorage.setItem('royalclub_game_control', JSON.stringify(updated));
+      return updated;
+    });
+  }
+
+  function updateUserDirectBalance(uid, newBalance) {
+    const bal = Math.max(0, parseFloat(parseFloat(newBalance).toFixed(2)));
+    setAllUsers(prev => prev.map(u => u.uid === uid ? { ...u, balance: bal } : u));
+    setUser(prev => prev.uid === uid ? { ...prev, balance: bal } : prev);
+  }
+
+  function updateSignupBonusAmount(amount) {
+    const val = Number(amount) || 100;
+    updateSetting('SIGNUP_BONUS_AMOUNT', val);
+    setGameControl(prev => {
+      const updated = { ...prev, signupBonus: val };
+      localStorage.setItem('royalclub_game_control', JSON.stringify(updated));
+      return updated;
+    });
+  }
+
+  function getGameEffectiveSettings(gameId, provider, activeUser) {
+    const userOverride = gameControl.userOverrides?.[activeUser?.uid];
+    const gameOverride = gameControl.gameOverrides?.[gameId];
+    const serverRtp = gameControl.serverRtp?.[provider] ?? 96;
+
+    let effectiveWinRate = serverRtp;
+    if (gameOverride?.rtp !== undefined && gameOverride.rtp !== '') {
+      effectiveWinRate = Number(gameOverride.rtp);
+    }
+    if (userOverride?.customWinRate !== undefined && userOverride.customWinRate !== '') {
+      effectiveWinRate = Number(userOverride.customWinRate);
+    }
+
+    let mode = 'auto';
+    if (userOverride?.mode && userOverride.mode !== 'default') {
+      mode = userOverride.mode; // 'force_win' or 'force_loss'
+    } else if (gameOverride?.mode && gameOverride.mode !== 'auto') {
+      mode = gameOverride.mode;
+    }
+
+    return {
+      effectiveWinRate: Math.max(0, Math.min(100, effectiveWinRate)),
+      mode,
+      maxMultiplier: gameOverride?.maxMultiplier || 500,
+      forceCrashAt: gameOverride?.forceCrashAt || null,
+      extra: gameOverride || {}
+    };
   }
 
   // 4. Timer & Rounds
@@ -216,9 +379,129 @@ export function GameProvider({ children }) {
   const [allUsers, setAllUsers] = useState(() => {
     const saved = localStorage.getItem('royalclub_all_users');
     return saved ? JSON.parse(saved) : [
-      { uid: "100888", username: "Player777", balance: 100.00, total_won: 0, total_wagered: 0, is_admin: true, is_banned: false }
+      { uid: "120356", username: "RIYAD", balance: 1000.00, total_won: 3250.00, total_wagered: 4500.00, vip_level: 3, is_admin: true, is_banned: false, is_online: true },
+      { uid: "100888", username: "Player777", balance: 100.00, total_won: 0, total_wagered: 0, vip_level: 1, is_admin: false, is_banned: false, is_online: false }
     ];
   });
+
+  const [supabaseStatus, setSupabaseStatus] = useState('checking'); // 'connected' | 'offline' | 'checking'
+
+  // Master Synchronized Supabase Sync on Mount
+  useEffect(() => {
+    async function initSupabaseData() {
+      try {
+        setSupabaseStatus('checking');
+
+        // 1. Fetch users from Supabase users table
+        const { data: supaUsers, error: uErr } = await supabase.from('users').select('*');
+        if (!uErr && supaUsers) {
+          setSupabaseStatus('connected');
+          if (supaUsers.length > 0) {
+            setAllUsers(prev => {
+              const merged = [...supaUsers];
+              prev.forEach(localU => {
+                if (!merged.find(m => m.username?.toLowerCase() === localU.username?.toLowerCase())) {
+                  merged.push(localU);
+                }
+              });
+              return merged;
+            });
+
+            // Sync current user balance live if logged in
+            const savedCurrent = localStorage.getItem('royalclub_current_user');
+            if (savedCurrent) {
+              try {
+                const parsed = JSON.parse(savedCurrent);
+                const liveMatch = supaUsers.find(u => u.username?.toLowerCase() === parsed.username?.toLowerCase());
+                if (liveMatch) {
+                  setUser(prev => ({
+                    ...prev,
+                    balance: Number(liveMatch.balance ?? prev.balance),
+                    vip_level: liveMatch.vip_level ?? prev.vip_level,
+                    custom_win_rate: liveMatch.custom_win_rate ?? prev.custom_win_rate
+                  }));
+                }
+              } catch (e) {}
+            }
+          }
+        } else {
+          setSupabaseStatus('connected');
+        }
+
+        // 2. Fetch game settings from Supabase game_settings table
+        const { data: supaSettings, error: sErr } = await supabase.from('game_settings').select('*');
+        if (!sErr && supaSettings && supaSettings.length > 0) {
+          setGameControl(prev => {
+            const nextOverrides = { ...(prev.gameOverrides || {}) };
+            supaSettings.forEach(s => {
+              if (s.game_id) {
+                nextOverrides[s.game_id] = {
+                  winRate: Number(s.rtp_percentage || 96),
+                  maxMultiplier: Number(s.max_multiplier || 100),
+                  gameName: s.game_name
+                };
+              }
+            });
+            return {
+              ...prev,
+              gameOverrides: nextOverrides
+            };
+          });
+        }
+
+        // 3. Fetch transactions from Supabase transactions table
+        const { data: supaTx, error: tErr } = await supabase.from('transactions').select('*').order('created_at', { ascending: false });
+        if (!tErr && supaTx && supaTx.length > 0) {
+          setTransactions(prev => {
+            const mergedTx = [...supaTx];
+            prev.forEach(ltx => {
+              if (!mergedTx.find(m => m.id === ltx.id || (m.trx_id && m.trx_id === ltx.trx_id))) {
+                mergedTx.push(ltx);
+              }
+            });
+            return mergedTx;
+          });
+        }
+      } catch (err) {
+        console.warn('Supabase initial fetch notice:', err);
+        setSupabaseStatus('offline');
+      }
+    }
+
+    initSupabaseData();
+  }, []);
+
+  async function refreshSupabaseData() {
+    try {
+      const { data: supaUsers } = await supabase.from('users').select('*');
+      if (supaUsers && supaUsers.length > 0) {
+        setAllUsers(supaUsers);
+      }
+      const { data: supaTx } = await supabase.from('transactions').select('*').order('created_at', { ascending: false });
+      if (supaTx && supaTx.length > 0) {
+        setTransactions(supaTx);
+      }
+      const { data: supaSettings } = await supabase.from('game_settings').select('*');
+      if (supaSettings && supaSettings.length > 0) {
+        setGameControl(prev => {
+          const nextOverrides = { ...(prev.gameOverrides || {}) };
+          supaSettings.forEach(s => {
+            if (s.game_id) {
+              nextOverrides[s.game_id] = {
+                winRate: Number(s.rtp_percentage || 96),
+                maxMultiplier: Number(s.max_multiplier || 100),
+                gameName: s.game_name
+              };
+            }
+          });
+          return { ...prev, gameOverrides: nextOverrides };
+        });
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 
   const lastProcessedPeriodRef = useRef("");
 
@@ -538,11 +821,16 @@ export function GameProvider({ children }) {
     return true;
   }
 
-  // Admin Approvals with Dual State Sync
-  function approveTransaction(txId, adminNote = "") {
+  // Admin Approvals with Dual State Sync & Supabase Persistence
+  async function approveTransaction(txId, adminNote = "") {
+    let affectedTx = null;
+    let newBal = null;
+
     setTransactions(prev => prev.map(tx => {
       if (tx.id === txId) {
+        affectedTx = tx;
         if (tx.type === 'deposit') {
+          newBal = parseFloat(((user.uid === tx.uid ? user.balance : 0) + tx.amount).toFixed(2));
           setUser(u => u.uid === tx.uid ? { ...u, balance: parseFloat((u.balance + tx.amount).toFixed(2)) } : u);
           setAllUsers(users => users.map(u => u.uid === tx.uid ? { ...u, balance: parseFloat((u.balance + tx.amount).toFixed(2)) } : u));
         }
@@ -550,12 +838,30 @@ export function GameProvider({ children }) {
       }
       return tx;
     }));
+
+    // Sync approval to Supabase
+    try {
+      await supabase.from('transactions').update({ status: 'approved' }).eq('id', txId);
+      if (affectedTx && affectedTx.type === 'deposit') {
+        const targetUsername = affectedTx.username || user.username;
+        if (targetUsername) {
+          await supabase.from('users').update({ balance: newBal }).eq('username', targetUsername);
+        }
+      }
+    } catch (e) {
+      console.warn('Supabase approve tx sync notice:', e);
+    }
   }
 
-  function rejectTransaction(txId, adminNote = "") {
+  async function rejectTransaction(txId, adminNote = "") {
+    let affectedTx = null;
+    let refundedBal = null;
+
     setTransactions(prev => prev.map(tx => {
       if (tx.id === txId) {
+        affectedTx = tx;
         if (tx.type === 'withdrawal') {
+          refundedBal = parseFloat(((user.uid === tx.uid ? user.balance : 0) + tx.amount).toFixed(2));
           setUser(u => u.uid === tx.uid ? { ...u, balance: parseFloat((u.balance + tx.amount).toFixed(2)) } : u);
           setAllUsers(users => users.map(u => u.uid === tx.uid ? { ...u, balance: parseFloat((u.balance + tx.amount).toFixed(2)) } : u));
         }
@@ -563,6 +869,19 @@ export function GameProvider({ children }) {
       }
       return tx;
     }));
+
+    // Sync rejection to Supabase
+    try {
+      await supabase.from('transactions').update({ status: 'rejected' }).eq('id', txId);
+      if (affectedTx && affectedTx.type === 'withdrawal' && refundedBal !== null) {
+        const targetUsername = affectedTx.username || user.username;
+        if (targetUsername) {
+          await supabase.from('users').update({ balance: refundedBal }).eq('username', targetUsername);
+        }
+      }
+    } catch (e) {
+      console.warn('Supabase reject tx sync notice:', e);
+    }
   }
 
   // Banner Management
@@ -593,15 +912,35 @@ export function GameProvider({ children }) {
   }
 
   function adjustUserBalance(targetUid, amount) {
-    if (user.uid === targetUid) {
-      setUser(u => ({ ...u, balance: Math.max(0, parseFloat((u.balance + amount).toFixed(2))) }));
-    }
+    let nextBal = 0;
+    let targetName = null;
+
+    setUser(u => {
+      if (u.uid === targetUid || u.id === targetUid) {
+        nextBal = Math.max(0, parseFloat((u.balance + amount).toFixed(2)));
+        targetName = u.username;
+        return { ...u, balance: nextBal };
+      }
+      return u;
+    });
+
     setAllUsers(prev => prev.map(u => {
-      if (u.uid === targetUid) {
-        return { ...u, balance: Math.max(0, parseFloat((u.balance + amount).toFixed(2))) };
+      if (u.uid === targetUid || u.id === targetUid) {
+        const b = Math.max(0, parseFloat((u.balance + amount).toFixed(2)));
+        nextBal = b;
+        targetName = u.username;
+        return { ...u, balance: b };
       }
       return u;
     }));
+
+    // Live background sync to Supabase users table
+    if (targetName) {
+      try {
+        supabase.from('users').update({ balance: nextBal }).eq('username', targetName)
+          .then(() => {}).catch(e => console.warn('Supabase balance update notice:', e));
+      } catch (e) {}
+    }
   }
 
   function toggleBanUser(targetUid) {
@@ -613,35 +952,69 @@ export function GameProvider({ children }) {
     }));
   }
 
-  // Auth: Login / Register with 1,000 Virtual Coins Signup Bonus & Password Validation
-  function login(identifier, password, rememberMe = true) {
-    const cleanId = (identifier || '').trim().toLowerCase();
+  // Auth: Real Supabase Table Sync Login & Password Validation
+  async function login(identifier, password, rememberMe = true) {
+    const cleanId = (identifier || '').trim();
     if (!cleanId) return { success: false, message: 'ইউজারনেম, মোবাইল বা ইমেইল লিখুন।' };
 
-    const existing = allUsers.find(u => 
-      u.username.toLowerCase() === cleanId || 
-      (u.phone && u.phone.toLowerCase() === cleanId) || 
-      (u.email && u.email.toLowerCase() === cleanId)
-    );
+    let foundUser = null;
 
-    if (existing) {
-      if (existing.is_banned) {
+    // 1. Direct query to Supabase users table
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .or(`username.ilike.${cleanId},phone.eq.${cleanId}`)
+        .limit(1);
+
+      if (!error && data && data.length > 0) {
+        foundUser = data[0];
+      }
+    } catch (e) {
+      console.warn('Supabase login query notice:', e);
+    }
+
+    // 2. Resilient check in local state if Supabase didn't find or errored
+    if (!foundUser) {
+      foundUser = allUsers.find(u => 
+        (u.username && u.username.toLowerCase() === cleanId.toLowerCase()) || 
+        (u.phone && u.phone === cleanId) || 
+        (u.email && u.email && u.email.toLowerCase() === cleanId.toLowerCase())
+      );
+    }
+
+    if (foundUser) {
+      if (foundUser.is_banned) {
         return { success: false, message: 'এই অ্যাকাউন্টটি স্থগিত (Banned) করা হয়েছে।' };
       }
-      if (existing.password && password && existing.password !== password) {
+      if (foundUser.password && password && foundUser.password !== password) {
         return { success: false, message: 'ভুল পাসওয়ার্ড! অনুগ্রহ করে সঠিক পাসওয়ার্ড লিখুন।' };
       }
-      setUser(existing);
+
+      // Mark user online in Supabase
+      try {
+        supabase.from('users').update({ is_online: true }).eq('username', foundUser.username)
+          .then(() => {}).catch(() => {});
+      } catch (e) {}
+
+      const activeUser = {
+        ...foundUser,
+        balance: Number(foundUser.balance ?? 100),
+        is_online: true
+      };
+
+      setUser(activeUser);
       if (rememberMe) {
         localStorage.setItem('royalclub_remember_user', cleanId);
       }
-      return { success: true, user: existing };
+      return { success: true, user: activeUser };
     }
 
     return { success: false, message: 'অ্যাকাউন্ট পাওয়া যায়নি! দয়া করে সঠিক তথ্য দিন অথবা রেজিস্ট্রেশন করুন।' };
   }
 
-  function registerUser({ username, phone, email, password, referralCode }) {
+  // Auth: Real Supabase Table Sync Sign-Up with Automated ৳100 Bonus
+  async function registerUser({ username, phone, email, password, referralCode }) {
     const cleanUser = (username || '').trim();
     const cleanPhone = (phone || '').trim();
     const cleanEmail = (email || '').trim().toLowerCase();
@@ -655,7 +1028,7 @@ export function GameProvider({ children }) {
 
     // Duplicate account validation
     const duplicate = allUsers.find(u => 
-      u.username.toLowerCase() === cleanUser.toLowerCase() ||
+      (u.username && u.username.toLowerCase() === cleanUser.toLowerCase()) ||
       (cleanPhone && u.phone === cleanPhone) ||
       (cleanEmail && u.email && u.email.toLowerCase() === cleanEmail)
     );
@@ -666,37 +1039,70 @@ export function GameProvider({ children }) {
 
     // Automatic Sign-up Welcome Bonus (Admin Configurable, default ৳100)
     const welcomeCoins = settings.SIGNUP_BONUS_AMOUNT !== undefined ? Number(settings.SIGNUP_BONUS_AMOUNT) : 100;
+    const generatedUid = Math.floor(100000 + Math.random() * 900000).toString();
+
     const newUser = {
-      uid: Math.floor(100000 + Math.random() * 900000).toString(),
+      uid: generatedUid,
       username: cleanUser,
       password: password,
       phone: cleanPhone || null,
-      email: cleanEmail || null,
-      referral_code: referralCode || null,
       balance: welcomeCoins, // ৳100 added automatically to main balance for instant gameplay
-      total_won: 0,
-      total_wagered: 0,
+      custom_win_rate: 95,
       vip_level: 1,
-      is_admin: cleanUser.toLowerCase() === 'admin',
-      is_banned: false,
-      created_at: new Date().toISOString(),
-      last_faucet_claim: null
+      is_online: true
     };
 
-    setAllUsers(prev => [...prev, newUser]);
+    // 1. Write row directly to Supabase users table
+    try {
+      const { data, error } = await supabase.from('users').insert({
+        uid: newUser.uid,
+        username: newUser.username,
+        phone: newUser.phone,
+        password: newUser.password,
+        balance: newUser.balance,
+        custom_win_rate: newUser.custom_win_rate,
+        vip_level: newUser.vip_level,
+        is_online: true
+      }).select().single();
+
+      if (!error && data) {
+        newUser.id = data.id;
+        newUser.created_at = data.created_at;
+      } else if (error) {
+        console.warn('Supabase register notice (fallback to resilient state):', error.message);
+      }
+    } catch (e) {
+      console.warn('Supabase register error:', e);
+    }
+
+    // 2. Update React State & Local Storage
+    setAllUsers(prev => [newUser, ...prev]);
     setUser(newUser);
 
+    // 3. Register transaction in local and Supabase
     const bonusTx = {
       id: Date.now(),
       uid: newUser.uid,
-      type: "bonus",
+      username: newUser.username,
+      type: "deposit",
       amount: welcomeCoins,
       fee: 0,
       method: "অটোমেটিক সাইন-আপ ওয়েলকাম বোনাস",
-      status: "completed",
+      status: "approved",
       created_at: new Date().toISOString()
     };
     setTransactions(prev => [bonusTx, ...prev]);
+
+    try {
+      supabase.from('transactions').insert({
+        user_id: newUser.uid,
+        username: newUser.username,
+        type: 'deposit',
+        amount: welcomeCoins,
+        method: 'Sign-up Bonus',
+        status: 'approved'
+      }).then(() => {}).catch(() => {});
+    } catch (e) {}
 
     return { success: true, user: newUser, bonus: welcomeCoins };
   }
@@ -745,9 +1151,17 @@ export function GameProvider({ children }) {
       recordGameHistory,
       gameControl,
       updateGameControl,
+      updateServerRtp,
+      updateGameOverride,
+      updateUserWinRate,
+      updateUserDirectBalance,
+      updateSignupBonusAmount,
+      getGameEffectiveSettings,
       login,
       registerUser,
-      logout
+      logout,
+      supabaseStatus,
+      refreshSupabaseData
     }}>
       {children}
     </GameContext.Provider>
