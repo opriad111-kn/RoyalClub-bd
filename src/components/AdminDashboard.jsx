@@ -192,13 +192,13 @@ export default function AdminDashboard() {
   }
 
   async function handleGameOverrideChange(gameId, key, value) {
-    updateGameOverride(gameId, { [key]: value });
+    updateGameOverride(gameId, { [key]: value, ...(key === 'rtp' ? { winRate: value } : key === 'winRate' ? { rtp: value } : {}) });
     addAuditLog('GAME_OVERRIDE_UPDATE', `${gameId.toUpperCase()} ${key} updated to ${value}`);
 
     // Live update to Supabase game_settings
     try {
       const curOverride = (gameControl.gameOverrides || {})[gameId] || {};
-      const newWinRate = key === 'winRate' ? Number(value) : (curOverride.winRate || 96);
+      const newWinRate = (key === 'winRate' || key === 'rtp') ? Number(value) : (curOverride.winRate || curOverride.rtp || 96);
       const newMaxMult = key === 'maxMultiplier' ? Number(value) : (curOverride.maxMultiplier || 100);
       const srvProvider = (gameId === 'aviator' || gameId === 'mines' || gameId === 'plinko' || gameId === 'limbo') ? 'SPRIBE' : (gameId.startsWith('fortune') || gameId.startsWith('super') || gameId === 'crazy777' || gameId === 'boxingking' || gameId === 'moneycoming' || gameId === 'goldenempire' ? 'JILI' : (gameId === 'gatesofolympus' || gameId === 'sweetbonanza' || gameId === 'spaceman' ? 'PRAGMATIC' : 'LOTTERY'));
 

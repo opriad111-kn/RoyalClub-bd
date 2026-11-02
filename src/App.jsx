@@ -100,6 +100,27 @@ function AppContent() {
   const [isFairnessOpen, setIsFairnessOpen] = useState(false);
   const [isPartnerRewardOpen, setIsPartnerRewardOpen] = useState(false);
   const [isUsdtBonusOpen, setIsUsdtBonusOpen] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: '' });
+
+  // Intercept all native alerts to guarantee smooth in-app toasts (Zero browser alerts)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.alert = (msg) => {
+        setToast({ show: true, message: String(msg) });
+        setTimeout(() => setToast({ show: false, message: '' }), 3500);
+      };
+      const handleCustomToast = (e) => {
+        if (e?.detail?.message) {
+          setToast({ show: true, message: String(e.detail.message) });
+          setTimeout(() => setToast({ show: false, message: '' }), 3500);
+        }
+      };
+      window.addEventListener('royalclub_show_toast', handleCustomToast);
+      return () => {
+        window.removeEventListener('royalclub_show_toast', handleCustomToast);
+      };
+    }
+  }, []);
 
   // Sync state with URL hash and search params
   useEffect(() => {
@@ -226,6 +247,18 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-[#F4F5F8] sm:bg-[#0f172a] text-slate-800 flex justify-center items-start selection:bg-amber-400 selection:text-slate-900 relative overflow-x-hidden font-sans">
       
+      {/* Universal In-App Toast Alert (Zero Native Browser Alerts) */}
+      {toast.show && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-[9999] max-w-sm w-[92%] bg-slate-900/95 backdrop-blur-md text-amber-300 border border-amber-400/50 px-4 py-3 rounded-2xl shadow-2xl flex items-center space-x-3 pointer-events-auto transition-all">
+          <div className="w-8 h-8 rounded-full bg-[#FFC107] text-slate-950 flex items-center justify-center shrink-0 font-black text-sm shadow">
+            👑
+          </div>
+          <div className="flex-1 text-xs font-bold text-white leading-snug">
+            {toast.message}
+          </div>
+        </div>
+      )}
+
       {/* Floating Right Action Widgets (Desktop Shortcuts) */}
       {!activeGame && (
         <aside aria-label="Quick Actions" className="fixed right-2 sm:right-6 top-1/2 -translate-y-1/2 z-50 hidden sm:flex flex-col space-y-3 pointer-events-auto">

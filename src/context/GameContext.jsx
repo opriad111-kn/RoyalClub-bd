@@ -78,45 +78,36 @@ export function GameProvider({ children }) {
     ];
   });
 
-  // 3. Current User State (Synced with Supabase users table)
+  // 3. Current User State (Strictly default to GUEST_USER on new devices; no auto-login to admin/iueri)
   const [user, setUser] = useState(() => {
-    if (typeof window !== 'undefined' && localStorage.getItem('royalclub_logged_out') === 'true') {
-      return {
-        uid: "100000",
-        username: "Guest",
-        phone: "",
-        balance: 0.00,
-        total_won: 0,
-        total_wagered: 0,
-        vip_level: 0,
-        is_admin: false,
-        is_banned: false,
-        is_online: false,
-        is_guest: true
-      };
-    }
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('royalclub_current_user') : null;
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed && parsed.username && parsed.username !== 'Guest' && !parsed.is_guest) {
-          return parsed;
-        }
-      } catch (e) {}
-    }
-    return {
-      uid: "722200",
-      username: "iueri",
-      phone: "01403398346",
-      balance: 282.00,
-      total_won: 3250.00,
-      total_wagered: 4500.00,
-      vip_level: 1,
-      is_admin: true,
+    const guestUser = {
+      uid: "100000",
+      username: "Guest",
+      phone: "",
+      balance: 0.00,
+      total_won: 0,
+      total_wagered: 0,
+      vip_level: 0,
+      is_admin: false,
       is_banned: false,
-      is_online: true,
-      last_faucet_claim: null
+      is_online: false,
+      is_guest: true
     };
+    if (typeof window !== 'undefined') {
+      if (localStorage.getItem('royalclub_logged_out') === 'true') {
+        return guestUser;
+      }
+      const saved = localStorage.getItem('royalclub_current_user');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.username && parsed.username !== 'Guest' && !parsed.is_guest) {
+            return parsed;
+          }
+        } catch (e) {}
+      }
+    }
+    return guestUser;
   });
 
   // 3B. Unified Game History (Aviator, Slots, Wheel)
@@ -263,13 +254,19 @@ export function GameProvider({ children }) {
 
   function updateGameOverride(gameId, updates) {
     setGameControl(prev => {
+      const mergedUpdates = { ...updates };
+      if (mergedUpdates.rtp !== undefined && mergedUpdates.winRate === undefined) {
+        mergedUpdates.winRate = mergedUpdates.rtp;
+      } else if (mergedUpdates.winRate !== undefined && mergedUpdates.rtp === undefined) {
+        mergedUpdates.rtp = mergedUpdates.winRate;
+      }
       const updated = {
         ...prev,
         gameOverrides: {
           ...prev.gameOverrides,
           [gameId]: {
             ...(prev.gameOverrides[gameId] || {}),
-            ...updates
+            ...mergedUpdates
           }
         }
       };
@@ -317,10 +314,14 @@ export function GameProvider({ children }) {
     const serverRtp = gameControl.serverRtp?.[provider] ?? 96;
 
     let effectiveWinRate = serverRtp;
-    if (gameOverride?.rtp !== undefined && gameOverride.rtp !== '') {
-      effectiveWinRate = Number(gameOverride.rtp);
+    const rtpVal = gameOverride?.rtp !== undefined ? gameOverride.rtp : gameOverride?.winRate;
+    if (rtpVal !== undefined && rtpVal !== '' && !isNaN(Number(rtpVal))) {
+      effectiveWinRate = Number(rtpVal);
     }
-    if (userOverride?.customWinRate !== undefined && userOverride.customWinRate !== '') {
+    if (activeUser?.custom_win_rate !== undefined && activeUser.custom_win_rate !== null && !isNaN(Number(activeUser.custom_win_rate))) {
+      effectiveWinRate = Number(activeUser.custom_win_rate);
+    }
+    if (userOverride?.customWinRate !== undefined && userOverride.customWinRate !== '' && !isNaN(Number(userOverride.customWinRate))) {
       effectiveWinRate = Number(userOverride.customWinRate);
     }
 
@@ -420,7 +421,7 @@ export function GameProvider({ children }) {
             return;
           }
 
-          // Sync current user balance live from Supabase
+          // Sync current user balance live from Supabase ONLY if user is already authenticated
           const savedCurrent = localStorage.getItem('royalclub_current_user');
           let liveMatch = null;
           if (savedCurrent) {
@@ -435,17 +436,11 @@ export function GameProvider({ children }) {
               }
             } catch (e) {}
           }
-          if (!liveMatch && localStorage.getItem('royalclub_logged_out') !== 'true') {
-            const rawUser = localStorage.getItem('royalclub_current_user');
-            if (!rawUser || (!rawUser.includes('"Guest"') && !rawUser.includes('"is_guest":true'))) {
-              liveMatch = supaUsers.find(u => u.username?.toLowerCase() === 'iueri') || supaUsers[0];
-            }
-          }
 
           if (liveMatch) {
             const updatedUser = {
               ...liveMatch,
-              balance: Number(liveMatch.balance ?? 282.00),
+              balance: Number(liveMatch.balance ?? 0.00),
               vip_level: Number(liveMatch.vip_level ?? 1),
               custom_win_rate: Number(liveMatch.custom_win_rate ?? 96),
               is_online: true
@@ -457,15 +452,17 @@ export function GameProvider({ children }) {
           setSupabaseStatus('connected');
         }
 
-        // 2. Fetch game settings from Supabase game_settings table
+        // 2. Fetch game settings from Supabase game_settings table (Syncs live across all devices)
         const { data: supaSettings, error: sErr } = await supabase.from('game_settings').select('*');
         if (!sErr && supaSettings && supaSettings.length > 0) {
           setGameControl(prev => {
             const nextOverrides = { ...(prev.gameOverrides || {}) };
             supaSettings.forEach(s => {
               if (s.game_id) {
+                const rtp = Number(s.rtp_percentage !== undefined && s.rtp_percentage !== null ? s.rtp_percentage : 96);
                 nextOverrides[s.game_id] = {
-                  winRate: Number(s.rtp_percentage || 96),
+                  winRate: rtp,
+                  rtp: rtp,
                   maxMultiplier: Number(s.max_multiplier || 100),
                   gameName: s.game_name
                 };
@@ -498,45 +495,49 @@ export function GameProvider({ children }) {
     }
 
     initSupabaseData();
+
+    // Real-time continuous sync of game settings across all connected players
+    const syncInterval = setInterval(async () => {
+      try {
+        const { data: supaSettings } = await supabase.from('game_settings').select('*');
+        if (supaSettings && supaSettings.length > 0) {
+          setGameControl(prev => {
+            const nextOverrides = { ...(prev.gameOverrides || {}) };
+            supaSettings.forEach(s => {
+              if (s.game_id) {
+                const rtp = Number(s.rtp_percentage !== undefined && s.rtp_percentage !== null ? s.rtp_percentage : 96);
+                nextOverrides[s.game_id] = {
+                  winRate: rtp,
+                  rtp: rtp,
+                  maxMultiplier: Number(s.max_multiplier || 100),
+                  gameName: s.game_name
+                };
+              }
+            });
+            return { ...prev, gameOverrides: nextOverrides };
+          });
+        }
+      } catch (e) {}
+    }, 5000);
+
+    return () => {
+      clearInterval(syncInterval);
+    };
   }, []);
 
   async function refreshSupabaseData() {
     try {
-      if (user?.username === 'Guest' || user?.is_guest || (typeof window !== 'undefined' && localStorage.getItem('royalclub_logged_out') === 'true')) {
-        return true;
-      }
-      const { data: supaUsers } = await supabase.from('users').select('*');
-      if (supaUsers && supaUsers.length > 0) {
-        setAllUsers(supaUsers);
-        const match = supaUsers.find(u => 
-          (u.username && user.username && u.username.toLowerCase() === user.username.toLowerCase()) ||
-          (u.phone && user.phone && u.phone === user.phone) ||
-          (u.uid && user.uid && u.uid === user.uid)
-        );
-        if (match) {
-          const updatedUser = {
-            ...match,
-            balance: Number(match.balance ?? 282.00),
-            vip_level: Number(match.vip_level ?? 1),
-            custom_win_rate: Number(match.custom_win_rate ?? 96),
-            is_online: true
-          };
-          setUser(updatedUser);
-          localStorage.setItem('royalclub_current_user', JSON.stringify(updatedUser));
-        }
-      }
-      const { data: supaTx } = await supabase.from('transactions').select('*').order('created_at', { ascending: false });
-      if (supaTx && supaTx.length > 0) {
-        setTransactions(supaTx);
-      }
+      // 1. Fetch game settings for all users
       const { data: supaSettings } = await supabase.from('game_settings').select('*');
       if (supaSettings && supaSettings.length > 0) {
         setGameControl(prev => {
           const nextOverrides = { ...(prev.gameOverrides || {}) };
           supaSettings.forEach(s => {
             if (s.game_id) {
+              const rtp = Number(s.rtp_percentage !== undefined && s.rtp_percentage !== null ? s.rtp_percentage : 96);
               nextOverrides[s.game_id] = {
-                winRate: Number(s.rtp_percentage || 96),
+                winRate: rtp,
+                rtp: rtp,
                 maxMultiplier: Number(s.max_multiplier || 100),
                 gameName: s.game_name
               };
@@ -544,6 +545,34 @@ export function GameProvider({ children }) {
           });
           return { ...prev, gameOverrides: nextOverrides };
         });
+      }
+
+      // 2. Fetch all users and transactions
+      const { data: supaUsers } = await supabase.from('users').select('*');
+      if (supaUsers && supaUsers.length > 0) {
+        setAllUsers(supaUsers);
+        if (user && user.username !== 'Guest' && !user.is_guest) {
+          const match = supaUsers.find(u => 
+            (u.username && user.username && u.username.toLowerCase() === user.username.toLowerCase()) ||
+            (u.phone && user.phone && u.phone === user.phone) ||
+            (u.uid && user.uid && u.uid === user.uid)
+          );
+          if (match) {
+            const updatedUser = {
+              ...match,
+              balance: Number(match.balance ?? 0.00),
+              vip_level: Number(match.vip_level ?? 1),
+              custom_win_rate: Number(match.custom_win_rate ?? 96),
+              is_online: true
+            };
+            setUser(updatedUser);
+            localStorage.setItem('royalclub_current_user', JSON.stringify(updatedUser));
+          }
+        }
+      }
+      const { data: supaTx } = await supabase.from('transactions').select('*').order('created_at', { ascending: false });
+      if (supaTx && supaTx.length > 0) {
+        setTransactions(supaTx);
       }
       return true;
     } catch (e) {

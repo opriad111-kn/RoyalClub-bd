@@ -326,24 +326,26 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           </div>
         </div>
 
-        {/* 6. Admin Panel Link, Auth & Logout */}
+        {/* 6. Admin Panel Link (Strictly restricted to Admin users), Auth & Logout */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-100 overflow-hidden">
-          {/* Always Available Admin Panel Button */}
-          <button
-            onClick={onOpenAdmin}
-            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-amber-50/50 transition cursor-pointer"
-          >
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
-                <ShieldAlert className="w-4 h-4" />
+          {/* Admin Panel Button (Visible ONLY to Admin) */}
+          {user?.is_admin && (
+            <button
+              onClick={onOpenAdmin}
+              className="w-full p-3.5 flex justify-between items-center text-left hover:bg-amber-50/50 transition cursor-pointer"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                  <ShieldAlert className="w-4 h-4" />
+                </div>
+                <div>
+                  <h5 className="font-black text-slate-800 text-xs">Admin Control Panel</h5>
+                  <span className="text-[10px] text-slate-400">Game RTP, User Moderation & Transactions</span>
+                </div>
               </div>
-              <div>
-                <h5 className="font-black text-slate-800 text-xs">Admin Control Panel</h5>
-                <span className="text-[10px] text-slate-400">Game RTP, User Moderation & Transactions</span>
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-slate-400" />
-          </button>
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+            </button>
+          )}
 
           {/* Switch / Login Button */}
           <button

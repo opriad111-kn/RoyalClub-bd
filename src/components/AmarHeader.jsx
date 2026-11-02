@@ -60,13 +60,6 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenDeposit, on
             >
               {t('register')}
             </button>
-            <button
-              onClick={onOpenAdmin}
-              title="Admin Panel"
-              className="w-7 h-7 rounded-full bg-slate-900 text-[#FFC107] flex items-center justify-center text-xs active:scale-95 transition cursor-pointer shrink-0"
-            >
-              <ShieldAlert className="w-3.5 h-3.5" />
-            </button>
           </>
         ) : (
           <>
@@ -98,21 +91,28 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenDeposit, on
 
             {/* App Download Icon */}
             <button
-              onClick={() => alert("App installed / available on web")}
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  const event = new CustomEvent('royalclub_show_toast', { detail: { message: "RoyalClub BD Web App সক্রিয় রয়েছে!" } });
+                  window.dispatchEvent(event);
+                }
+              }}
               title="Download App"
               className="w-7 h-7 rounded-full bg-amber-50 text-amber-600 hover:bg-amber-100 flex items-center justify-center transition active:scale-95 cursor-pointer shrink-0"
             >
               <Download className="w-3.5 h-3.5" />
             </button>
 
-            {/* Master Admin Panel Button */}
-            <button
-              onClick={onOpenAdmin}
-              title="Master Admin Panel"
-              className="w-7 h-7 rounded-full bg-slate-900 hover:bg-slate-800 text-[#FFC107] border border-yellow-500/30 shadow-xs flex items-center justify-center text-xs active:scale-95 transition cursor-pointer shrink-0"
-            >
-              <ShieldAlert className="w-3.5 h-3.5" />
-            </button>
+            {/* Master Admin Panel Button (Strictly restricted to Admin users) */}
+            {user?.is_admin && (
+              <button
+                onClick={onOpenAdmin}
+                title="Master Admin Panel"
+                className="w-7 h-7 rounded-full bg-slate-900 hover:bg-slate-800 text-[#FFC107] border border-yellow-500/30 shadow-xs flex items-center justify-center text-xs active:scale-95 transition cursor-pointer shrink-0"
+              >
+                <ShieldAlert className="w-3.5 h-3.5" />
+              </button>
+            )}
           </>
         )}
       </div>

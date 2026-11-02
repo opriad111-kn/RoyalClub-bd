@@ -425,21 +425,28 @@ export default function UniversalSlotEngine({ gameId = 'fortunegems2', onClose }
       else if (chosen === 'WHEEL') mult = 10;
     }
 
-    // Admin Server & User RNG Control Override
+    // Admin Server & User RNG Control Override (Directly ties Admin RTP to spin hit frequency)
     const eff = getGameEffectiveSettings 
       ? getGameEffectiveSettings(gameId, config.provider, user)
       : { effectiveWinRate: 96, mode: 'auto', maxMultiplier: 500 };
 
-    if (eff.mode === 'force_loss') {
+    // Authentic casino slot hit rate: at 96% RTP, hit frequency is ~33%. At 10% RTP, hit rate is 3.5%. At 0% RTP, 0%.
+    const spinHitRate = Math.max(0, Math.min(0.95, (eff.effectiveWinRate / 100) * 0.35));
+    const isSlotWin = Math.random() < spinHitRate;
+
+    if (eff.mode === 'force_loss' || eff.effectiveWinRate === 0 || !isSlotWin) {
       baseWin = 0;
       winningLines = [];
-    } else if (eff.mode === 'force_win' && baseWin === 0) {
-      const topSym = config.symbols[0] || { name: 'JACKPOT', mult: 15 };
-      baseWin = betAmount * (topSym.mult || 15);
-      winningLines = [`${topSym.name} MEGA COMBO`];
-    } else if (eff.effectiveWinRate < 50 && Math.random() > (eff.effectiveWinRate / 100)) {
-      baseWin = 0;
-      winningLines = [];
+    } else if (eff.mode === 'force_win') {
+      if (baseWin === 0) {
+        const topSym = config.symbols[0] || { name: 'JACKPOT', mult: 15 };
+        baseWin = betAmount * (topSym.mult || 15);
+        winningLines = [`${topSym.name} MEGA COMBO`];
+      }
+    } else if (isSlotWin && baseWin === 0) {
+      const sym = config.symbols[Math.floor(Math.random() * config.symbols.length)] || { name: 'BONUS', mult: 5 };
+      baseWin = betAmount * (sym.mult / 3);
+      winningLines = [`${sym.name} MATCH`];
     }
 
     const maxCap = (eff.maxMultiplier || 500) * betAmount;
