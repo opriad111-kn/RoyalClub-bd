@@ -24,20 +24,23 @@ import {
 import VipModal from '../components/VipModal';
 
 export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth }) {
-  const { user, logout, gameHistory, transactions } = useGame();
+  const { user, logout, gameHistory, transactions, refreshSupabaseData } = useGame();
   const [copied, setCopied] = useState(false);
   const [showVipModal, setShowVipModal] = useState(false);
   const [activeHistoryModal, setActiveHistoryModal] = useState(null); // 'game', 'transaction', 'deposit', 'withdraw'
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   function handleCopyUid() {
-    navigator.clipboard.writeText(user.uid ? user.uid.toString() : '120356');
+    navigator.clipboard.writeText(user.uid ? user.uid.toString() : '722200');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
 
-  function handleRefreshBalance() {
+  async function handleRefreshBalance() {
     setIsRefreshing(true);
+    if (refreshSupabaseData) {
+      await refreshSupabaseData();
+    }
     setTimeout(() => setIsRefreshing(false), 600);
   }
 
@@ -47,8 +50,8 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth }) {
   return (
     <div className="space-y-3.5 pb-20 text-xs select-none -mx-3.5 -mt-3.5">
       
-      {/* 1. Curved Yellow Header (Matching Screenshot 4) */}
-      <div className="bg-[#F5BE00] text-slate-900 px-5 pt-6 pb-12 rounded-b-[32px] relative shadow-sm">
+      {/* 1. Curved Golden Gradient Header (Matching AmarClub / 91 Club) */}
+      <div className="bg-gradient-to-b from-[#F5BE00] via-[#F5BE00] to-[#E2A600] text-slate-900 px-5 pt-6 pb-12 rounded-b-[32px] relative shadow-sm">
         <div className="flex items-center space-x-3.5 relative z-10">
           
           {/* 3D Cartoon Avatar */}
@@ -64,16 +67,16 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth }) {
           <div className="flex-1 space-y-1">
             <div className="flex items-center space-x-2">
               <h3 className="font-black text-lg tracking-tight text-slate-900 font-sans">
-                {user.username === 'MEMBERNNGAAF85' ? 'RIYAD' : (user.username || 'RIYAD')}
+                {user.username || 'iueri'}
               </h3>
               
-              {/* Pink Star VIP3 Badge matching Screenshot 4 */}
+              {/* Pink Star VIP1 Badge matching AmarClub Screenshot */}
               <button 
                 onClick={() => setShowVipModal(true)}
-                className="bg-gradient-to-r from-rose-400 via-pink-500 to-rose-500 text-white font-black text-[10px] px-2 py-0.5 rounded-full shadow-sm flex items-center space-x-1 border border-white/60 active:scale-95 transition"
+                className="bg-gradient-to-r from-rose-400 via-pink-500 to-rose-500 text-white font-black text-[10px] px-2.5 py-0.5 rounded-full shadow-sm flex items-center space-x-1 border border-white/60 active:scale-95 transition cursor-pointer"
               >
                 <span>⭐</span>
-                <span>VIP{user.vip_level || 3}</span>
+                <span>VIP{user.vip_level || 1}</span>
               </button>
             </div>
 
@@ -84,7 +87,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth }) {
                 className="inline-flex items-center space-x-1.5 bg-white/30 hover:bg-white/40 border border-white/40 px-2.5 py-0.5 rounded-full cursor-pointer transition active:scale-95"
               >
                 <span className="text-slate-800 font-mono text-[11px] font-bold">
-                  UID | {user.uid === '198808' ? '120356' : (user.uid || '120356')}
+                  UID | {user.uid || '722200'}
                 </span>
                 {copied ? (
                   <Check className="w-3 h-3 text-slate-900 font-bold" />
@@ -96,7 +99,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth }) {
 
             {/* Last Login Timestamp */}
             <div className="text-[10px] text-slate-800/80 font-medium">
-              Last login: 2026-11-01 20:37:06
+              Last login: 2026-11-02 14:15:30
             </div>
           </div>
         </div>
@@ -105,20 +108,20 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth }) {
       {/* Floating Body Container (Padding) */}
       <div className="px-3.5 space-y-3.5 -mt-9 relative z-20">
 
-        {/* 2. Floating Total Balance Card with 4 Pastel Buttons (Matching Screenshot 4) */}
+        {/* 2. Floating Total Balance Card with 4 Pastel Buttons (Matching Screenshot) */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-3">
           <div className="flex justify-between items-center">
             <div>
-              <span className="text-[11px] font-bold text-slate-400 block">
+              <span className="text-[11px] font-bold text-slate-400 block font-sans">
                 Total balance
               </span>
               <div className="flex items-center space-x-2 mt-0.5">
                 <span className="text-2xl font-black font-mono text-slate-900 tracking-tight">
-                  ৳{user.balance.toFixed(2)}
+                  ৳{(user.balance !== undefined ? user.balance : 282.00).toFixed(2)}
                 </span>
                 <button 
                   onClick={handleRefreshBalance}
-                  className={`text-slate-400 hover:text-slate-600 p-1 active:scale-95 transition ${
+                  className={`text-slate-400 hover:text-slate-600 p-1 active:scale-95 transition cursor-pointer ${
                     isRefreshing ? 'animate-spin text-amber-500' : ''
                   }`}
                   title="রিফ্রেশ ব্যালেন্স"
