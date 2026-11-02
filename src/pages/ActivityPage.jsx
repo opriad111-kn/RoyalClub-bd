@@ -20,7 +20,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
         <div className="flex justify-center mb-3">
           <div className="flex items-center space-x-1.5 bg-white/20 border border-white/40 px-4 py-1 rounded-full shadow-inner">
             <span className="text-base font-black italic tracking-tight text-white drop-shadow">
-              DK<span className="text-slate-900 font-extrabold not-italic ml-1">WIN</span>
+              ROYAL<span className="text-slate-900 font-extrabold not-italic ml-1">CLUB BD</span>
             </span>
           </div>
         </div>

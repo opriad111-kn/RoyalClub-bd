@@ -189,8 +189,12 @@ export default function AdminDashboard() {
 
   function handleSaveBonusRules() {
     localStorage.setItem('royalclub_bonus_rules', JSON.stringify(bonusRules));
-    addAuditLog('BONUS_ENGINE_UPDATE', '10-Tier bonus engine configuration saved.');
-    alert("১০টি বোনাস রুলস সফলভাবে সেভ হয়েছে!");
+    if (bonusRules.signupBonus) {
+      updateSetting('SIGNUP_BONUS_AMOUNT', Number(bonusRules.signupBonus.amount));
+      updateSetting('SIGNUP_BONUS_ENABLED', bonusRules.signupBonus.enabled);
+    }
+    addAuditLog('BONUS_ENGINE_UPDATE', `Sign-Up Welcome Bonus updated to ৳${bonusRules.signupBonus?.amount || 100}`);
+    alert(`বোনাস রুলস সফলভাবে সেভ হয়েছে! নতুন সাইন-আপ ওয়েলকাম বোনাস: ৳${bonusRules.signupBonus?.amount || 100}`);
   }
 
   function handleCreateBanner(e) {

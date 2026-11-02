@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="320" height="320">
+    <defs>
+      <linearGradient id="tigerBg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#991b1b"/>
+        <stop offset="50%" stop-color="#7f1d1d"/>
+        <stop offset="100%" stop-color="#450a0a"/>
+      </linearGradient>
+      <linearGradient id="goldIngot" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#fef08a"/>
+        <stop offset="100%" stop-color="#ca8a04"/>
+      </linearGradient>
+    </defs>
+    <rect width="320" height="320" rx="24" fill="url(#tigerBg)"/>
+    <!-- Golden Tiger Face Mask -->
+    <g transform="translate(160, 115)">
+      <circle cx="0" cy="0" r="65" fill="#ea580c" stroke="url(#goldIngot)" stroke-width="4"/>
+      <!-- Ears -->
+      <polygon points="-50,-40 -65,-75 -25,-60" fill="url(#goldIngot)"/>
+      <polygon points="50,-40 65,-75 25,-60" fill="url(#goldIngot)"/>
+      <!-- Tiger Stripes -->
+      <path d="M-40 -10 Q-15 0 -40 10" stroke="#000" stroke-width="5" fill="none"/>
+      <path d="M40 -10 Q15 0 40 10" stroke="#000" stroke-width="5" fill="none"/>
+      <!-- Eyes & Nose -->
+      <ellipse cx="-20" cy="-5" rx="9" ry="6" fill="#fef08a" stroke="#000" stroke-width="2"/>
+      <ellipse cx="20" cy="-5" rx="9" ry="6" fill="#fef08a" stroke="#000" stroke-width="2"/>
+      <polygon points="-8,15 8,15 0,25" fill="#000"/>
+      <!-- 10x Respin Badge -->
+      <rect x="-40" y="38" width="80" height="24" rx="6" fill="url(#goldIngot)"/>
+      <text x="0" y="55" font-family="Arial Black" font-size="14" font-weight="900" fill="#000" text-anchor="middle">10X RESPIN</text>
+    </g>
+    <!-- Title Banner -->
+    <g transform="translate(15, 230)">
+      <rect width="290" height="70" rx="14" fill="#09090b" opacity="0.94" stroke="#f97316" stroke-width="2"/>
+      <text x="145" y="30" font-family="Arial Black, Impact, sans-serif" font-size="21" font-weight="900" fill="#fb923c" text-anchor="middle" letter-spacing="1">FORTUNE TIGER</text>
+      <text x="145" y="52" font-family="sans-serif" font-size="11" font-weight="bold" fill="#fef08a" text-anchor="middle" letter-spacing="2">PG SOFT • RTP 96.81%</text>
+    </g>
+  </svg>

@@ -1,0 +1,370 @@
+// RoyalClubBD Official Game Registry
+// Categorized and verified games: Honest Provider Attribution & Live Routes
+
+export const GAME_CATEGORIES = [
+  { id: 'all', label: 'All Games', icon: '🎮' },
+  { id: 'popular', label: 'Popular', icon: '🔥' },
+  { id: 'slots', label: 'Slots', icon: '🎰' },
+  { id: 'lottery', label: 'Lottery', icon: '🎲' },
+  { id: 'crash', label: 'Crash & Mine', icon: '🚀' },
+  { id: 'fishing', label: 'Fishing', icon: '🎣' },
+  { id: 'arcade', label: 'Arcade', icon: '⚡' },
+  { id: 'wheel', label: 'Wheel', icon: '🎡' }
+];
+
+export const ALL_GAMES = [
+  // 1. Flagship Slots
+  {
+    id: 'fortunegems2',
+    name: 'Fortune Gems 2',
+    display: 'Fortune Gems 2',
+    category: 'slots',
+    provider: 'RoyalClubBD Original (JILI Style)',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '97.46%',
+    maxWin: '10,000x',
+    isHot: true,
+    isPopular: true,
+    thumbnail: '/assets/amarclub/game_fortunegems.png',
+    badge: 'HOT'
+  },
+  {
+    id: 'moneycoming',
+    name: 'Money Coming',
+    display: 'Money Coming',
+    category: 'wheel',
+    provider: 'RoyalClubBD Original (JILI Style)',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '97.00%',
+    maxWin: '10,000x',
+    isHot: true,
+    isPopular: true,
+    thumbnail: '/assets/amarclub/game_moneycoming.png',
+    badge: 'TOP'
+  },
+  {
+    id: 'superace',
+    name: 'Super Ace',
+    display: 'Super Ace',
+    category: 'slots',
+    provider: 'RoyalClubBD Original (JILI Style)',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '96.50%',
+    maxWin: '1,500x',
+    isHot: true,
+    isPopular: true,
+    thumbnail: '/assets/games/superace.svg',
+    badge: 'HOT'
+  },
+  {
+    id: 'superacedeluxe',
+    name: 'Super Ace Deluxe',
+    display: 'Super Ace Deluxe',
+    category: 'slots',
+    provider: 'RoyalClubBD Original (JILI Style)',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '96.80%',
+    maxWin: '2,500x',
+    isHot: false,
+    isPopular: true,
+    thumbnail: '/assets/games/superacedeluxe.svg',
+    badge: 'NEW'
+  },
+  {
+    id: 'goldenempire',
+    name: 'Golden Empire',
+    display: 'Golden Empire',
+    category: 'slots',
+    provider: 'RoyalClubBD Original (JILI Style)',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '97.00%',
+    maxWin: '2,000x',
+    isHot: true,
+    isPopular: true,
+    thumbnail: '/assets/games/goldenempire.svg',
+    badge: 'JACKPOT'
+  },
+  {
+    id: 'fortunegems3',
+    name: 'Fortune Gems 3',
+    display: 'Fortune Gems 3',
+    category: 'slots',
+    provider: 'RoyalClubBD Original (JILI Style)',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '97.50%',
+    maxWin: '10,125x',
+    isHot: true,
+    isPopular: false,
+    thumbnail: '/assets/games/fortunegems3.svg',
+    badge: 'NEW'
+  },
+  {
+    id: 'crazy777',
+    name: 'Crazy 777',
+    display: 'Crazy 777',
+    category: 'slots',
+    provider: 'RoyalClubBD Original (JILI Style)',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '96.90%',
+    maxWin: '3,333x',
+    isHot: false,
+    isPopular: true,
+    thumbnail: '/assets/games/crazy777.svg',
+    badge: 'CLASSIC'
+  },
+  {
+    id: 'jelly',
+    name: 'Jelly Bonanza',
+    display: 'Jelly Bonanza',
+    category: 'slots',
+    provider: 'RoyalClubBD Original (Pragmatic Style)',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '96.85%',
+    maxWin: '5,000x',
+    isHot: false,
+    isPopular: false,
+    isHidden: true,
+    thumbnail: '/assets/categories/slots.svg',
+    badge: 'NEW'
+  },
+  {
+    id: 'boxingking',
+    name: 'Boxing King',
+    display: 'Boxing King',
+    category: 'slots',
+    provider: 'RoyalClubBD Original (JILI Style)',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '96.70%',
+    maxWin: '2,000x',
+    isHot: false,
+    isPopular: true,
+    thumbnail: '/assets/games/boxingking.svg',
+    badge: 'ACTION'
+  },
+  {
+    id: 'fortuneox',
+    name: 'Fortune Ox',
+    display: 'Fortune Ox',
+    category: 'slots',
+    provider: 'RoyalClubBD Original (PG Style)',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '96.75%',
+    maxWin: '2,000x',
+    isHot: true,
+    isPopular: true,
+    thumbnail: '/assets/games/fortuneox.svg',
+    badge: 'PG'
+  },
+  {
+    id: 'jackpotfishing',
+    name: 'Jackpot Fishing',
+    display: 'Jackpot Fishing',
+    category: 'fishing',
+    provider: 'RoyalClubBD Original (JILI Style)',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '97.20%',
+    maxWin: '888x',
+    isHot: true,
+    isPopular: true,
+    thumbnail: '/assets/games/jackpotfishing.svg',
+    badge: 'FISH'
+  },
+
+  // 2. Lottery & Numbers
+  {
+    id: 'wingo',
+    name: 'Win Go 1M',
+    display: 'Win Go Multi-Mode',
+    category: 'lottery',
+    provider: 'RoyalClubBD Original Demo',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '98.00%',
+    maxWin: '9x',
+    isHot: true,
+    isPopular: true,
+    thumbnail: '/assets/amarclub/game_wingo.png',
+    badge: 'LIVE'
+  },
+  {
+    id: 'trxwingo',
+    name: 'TRX WinGo',
+    display: 'TRX WinGo (Tron Node)',
+    category: 'lottery',
+    provider: 'RoyalClubBD Original Demo',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '98.50%',
+    maxWin: '9x',
+    isHot: true,
+    isPopular: true,
+    thumbnail: '/assets/games/wingo.svg',
+    badge: 'CRYPTO'
+  },
+  {
+    id: 'k3lottery',
+    name: 'K3 Lottery',
+    display: 'K3 3-Dice Lottery',
+    category: 'lottery',
+    provider: 'RoyalClubBD Original Demo',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '97.80%',
+    maxWin: '207x',
+    isHot: false,
+    isPopular: true,
+    thumbnail: '/assets/categories/lottery.svg',
+    badge: 'DICE'
+  },
+  {
+    id: '5dlottery',
+    name: '5D Lottery',
+    display: '5D Fast Lottery',
+    category: 'lottery',
+    provider: 'RoyalClubBD Original Demo',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '97.50%',
+    maxWin: '9,000x',
+    isHot: false,
+    isPopular: false,
+    thumbnail: '/assets/categories/lottery.svg',
+    badge: '5D'
+  },
+
+  // 3. Crash & Mines & Action
+  {
+    id: 'aviator',
+    name: 'Aviator Crash',
+    display: 'Aviator Crash',
+    category: 'crash',
+    provider: 'RoyalClubBD Original (Spribe Style)',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '97.00%',
+    maxWin: '100x',
+    isHot: true,
+    isPopular: true,
+    thumbnail: '/assets/amarclub/game_aviator.png',
+    badge: 'CRASH'
+  },
+  {
+    id: 'mines',
+    name: 'Mines Gold',
+    display: 'Mines Gold Minefield',
+    category: 'crash',
+    provider: 'RoyalClubBD Original Demo',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '98.00%',
+    maxWin: '500x',
+    isHot: true,
+    isPopular: true,
+    thumbnail: '/assets/games/mines.svg',
+    badge: 'MINES'
+  },
+  {
+    id: 'motoracing',
+    name: 'Moto Racing',
+    display: 'Moto Drag Racing',
+    category: 'crash',
+    provider: 'RoyalClubBD Original Demo',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '97.00%',
+    maxWin: '200x',
+    isHot: false,
+    isPopular: false,
+    isHidden: true,
+    thumbnail: '/assets/categories/original.svg',
+    badge: 'TURBO'
+  },
+  {
+    id: 'limbo',
+    name: 'Limbo Rocket',
+    display: 'Limbo Rocket',
+    category: 'crash',
+    provider: 'RoyalClubBD Original Demo',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '98.00%',
+    maxWin: '10,000x',
+    isHot: false,
+    isPopular: false,
+    thumbnail: '/assets/games/aviator.svg',
+    badge: 'FAST'
+  },
+
+  // 4. Arcade & Wheel
+  {
+    id: 'tierx',
+    name: 'Tier X',
+    display: 'Tier X Multiplier Ladder',
+    category: 'arcade',
+    provider: 'RoyalClubBD Original Demo',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '98.00%',
+    maxWin: '150x',
+    isHot: false,
+    isPopular: false,
+    isHidden: true,
+    thumbnail: '/assets/categories/original.svg',
+    badge: 'NEW'
+  },
+  {
+    id: 'moneywheel',
+    name: 'Money Wheel',
+    display: 'Lucky Money Wheel',
+    category: 'wheel',
+    provider: 'RoyalClubBD Original Demo',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '96.80%',
+    maxWin: '40x',
+    isHot: true,
+    isPopular: true,
+    thumbnail: '/assets/categories/casino.svg',
+    badge: 'WHEEL'
+  },
+  {
+    id: 'plinko',
+    name: 'Plinko Classic',
+    display: 'Plinko Classic',
+    category: 'arcade',
+    provider: 'RoyalClubBD Original Demo',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '98.50%',
+    maxWin: '1,000x',
+    isHot: true,
+    isPopular: true,
+    thumbnail: '/assets/categories/casino.svg',
+    badge: 'HOT'
+  },
+  {
+    id: 'chickenroad',
+    name: 'Chicken Road',
+    display: 'Chicken Cross Road',
+    category: 'arcade',
+    provider: 'RoyalClubBD Original Demo',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '97.00%',
+    maxWin: '25x',
+    isHot: true,
+    isPopular: true,
+    thumbnail: '/assets/categories/original.svg',
+    badge: 'POPULAR'
+  },
+  {
+    id: 'sevenupdown',
+    name: '7 Up 7 Down',
+    display: '7 Up 7 Down',
+    category: 'arcade',
+    provider: 'RoyalClubBD Original Demo',
+    type: 'ROYALCLUB_ORIGINAL',
+    rtp: '97.50%',
+    maxWin: '5x',
+    isHot: false,
+    isPopular: true,
+    thumbnail: '/assets/games/7up7down.svg',
+    badge: 'DICE'
+  }
+];
+
+export function getGameById(gameId) {
+  if (gameId === 'fortunegems') return ALL_GAMES.find(g => g.id === 'fortunegems2');
+  return ALL_GAMES.find(g => g.id === gameId) || null;
+}
+
+export const PUBLIC_LOBBY_GAMES = ALL_GAMES.filter(g => !g.isHidden);
+

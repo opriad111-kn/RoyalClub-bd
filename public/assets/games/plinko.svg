@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="320" height="320">
+    <defs>
+      <linearGradient id="plinkoBg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#0f172a"/>
+        <stop offset="100%" stop-color="#1e1b4b"/>
+      </linearGradient>
+      <filter id="ballGlow">
+        <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#ec4899" flood-opacity="0.8"/>
+      </filter>
+    </defs>
+    <rect width="320" height="320" rx="24" fill="url(#plinkoBg)"/>
+    <!-- Pegs Pyramid -->
+    <g fill="#94a3b8" transform="translate(160, 45)">
+      <circle cx="0" cy="0" r="4"/>
+      <circle cx="-20" cy="22" r="4"/><circle cx="20" cy="22" r="4"/>
+      <circle cx="-40" cy="44" r="4"/><circle cx="0" cy="44" r="4"/><circle cx="40" cy="44" r="4"/>
+      <circle cx="-60" cy="66" r="4"/><circle cx="-20" cy="66" r="4"/><circle cx="20" cy="66" r="4"/><circle cx="60" cy="66" r="4"/>
+      <circle cx="-80" cy="88" r="4"/><circle cx="-40" cy="88" r="4"/><circle cx="0" cy="88" r="4"/><circle cx="40" cy="88" r="4"/><circle cx="80" cy="88" r="4"/>
+      <circle cx="-100" cy="110" r="4"/><circle cx="-60" cy="110" r="4"/><circle cx="-20" cy="110" r="4"/><circle cx="20" cy="110" r="4"/><circle cx="60" cy="110" r="4"/><circle cx="100" cy="110" r="4"/>
+      <!-- Falling Pink Ball -->
+      <circle cx="20" cy="55" r="9" fill="#f43f5e" filter="url(#ballGlow)"/>
+    </g>
+    <!-- Multiplier Buckets -->
+    <g transform="translate(45, 175)">
+      <rect x="0" y="0" width="30" height="20" rx="4" fill="#ef4444"/><text x="15" y="14" fill="#fff" font-size="9" font-weight="900" text-anchor="middle">16x</text>
+      <rect x="34" y="0" width="30" height="20" rx="4" fill="#f97316"/><text x="49" y="14" fill="#fff" font-size="9" font-weight="900" text-anchor="middle">9x</text>
+      <rect x="68" y="0" width="30" height="20" rx="4" fill="#eab308"/><text x="83" y="14" fill="#fff" font-size="9" font-weight="900" text-anchor="middle">2x</text>
+      <rect x="102" y="0" width="30" height="20" rx="4" fill="#10b981"/><text x="117" y="14" fill="#fff" font-size="9" font-weight="900" text-anchor="middle">0.4x</text>
+      <rect x="136" y="0" width="30" height="20" rx="4" fill="#eab308"/><text x="151" y="14" fill="#fff" font-size="9" font-weight="900" text-anchor="middle">2x</text>
+      <rect x="170" y="0" width="30" height="20" rx="4" fill="#f97316"/><text x="185" y="14" fill="#fff" font-size="9" font-weight="900" text-anchor="middle">9x</text>
+      <rect x="204" y="0" width="30" height="20" rx="4" fill="#ef4444"/><text x="219" y="14" fill="#fff" font-size="9" font-weight="900" text-anchor="middle">16x</text>
+    </g>
+    <!-- Title Banner -->
+    <g transform="translate(15, 230)">
+      <rect width="290" height="70" rx="14" fill="#09090b" opacity="0.94" stroke="#ec4899" stroke-width="2"/>
+      <text x="145" y="30" font-family="Arial Black, Impact, sans-serif" font-size="22" font-weight="900" fill="#f43f5e" text-anchor="middle" letter-spacing="2">PLINKO</text>
+      <text x="145" y="52" font-family="sans-serif" font-size="11" font-weight="bold" fill="#38bdf8" text-anchor="middle" letter-spacing="2">SPRIBE • RTP 98.50%</text>
+    </g>
+  </svg>

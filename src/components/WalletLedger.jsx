@@ -126,13 +126,13 @@ export default function WalletLedger() {
   return (
     <div className="space-y-3.5 select-none text-slate-800">
       
-      {/* 0. Virtual Demo Coin Disclaimer Badge */}
-      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 flex items-center justify-between text-amber-900 text-xs shadow-sm">
+      {/* 0. Secure Wallet Status Header */}
+      <div className="bg-gradient-to-r from-amber-50 to-yellow-100 border border-amber-200 rounded-2xl p-3 flex items-center justify-between text-amber-900 text-xs shadow-sm">
         <div className="flex items-center space-x-2">
-          <span className="text-xl">🎮</span>
+          <span className="text-xl">💳</span>
           <div>
-            <span className="font-black block text-amber-950">১০০% ফ্রি ভার্চুয়াল ডেমো ওয়ালেট</span>
-            <span className="text-[10px] text-amber-800">সকল কয়েন ভার্চুয়াল এবং বিনোদনের উদ্দেশ্যে ব্যবহৃত।</span>
+            <span className="font-black block text-amber-950">রয়েল ক্লাব অফিশিয়াল ওয়ালেট</span>
+            <span className="text-[10px] text-amber-800">bKash, Nagad ও Rocket-এ তাৎক্ষণিক ডিপোজিট ও নিরাপদ উইথড্র সুবিধা।</span>
           </div>
         </div>
 

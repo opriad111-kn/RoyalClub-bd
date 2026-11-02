@@ -12,22 +12,35 @@ export function GameProvider({ children }) {
   // 1. App Settings & Config
   const [settings, setSettings] = useState(() => {
     const saved = localStorage.getItem('royalclub_settings');
-    return saved ? JSON.parse(saved) : {
-      ENABLE_PAID_MODE: false, // 100% Free Demo Virtual Coins Mode
-      SIGNUP_BONUS_ENABLED: true, // Bonus ON/OFF toggle
-      SIGNUP_BONUS_AMOUNT: 1000, // Phase 5 Requirement: 1,000 Free Virtual Coins
+    let base = saved ? JSON.parse(saved) : {};
+
+    const savedBonus = localStorage.getItem('royalclub_bonus_rules');
+    let adminBonusAmount = 100;
+    if (savedBonus) {
+      try {
+        const parsedB = JSON.parse(savedBonus);
+        if (parsedB.signupBonus?.amount) {
+          adminBonusAmount = Number(parsedB.signupBonus.amount);
+        }
+      } catch (e) {}
+    }
+
+    return {
+      ENABLE_PAID_MODE: false,
+      SIGNUP_BONUS_ENABLED: true,
+      SIGNUP_BONUS_AMOUNT: base.SIGNUP_BONUS_AMOUNT && base.SIGNUP_BONUS_AMOUNT !== 1000 ? base.SIGNUP_BONUS_AMOUNT : adminBonusAmount,
       ROUND_DURATION_SECONDS: 60,
-      FAUCET_AMOUNT: 500, // Phase 5 Requirement: 500 Free Coins when balance < 50
+      FAUCET_AMOUNT: 500,
       FAUCET_COOLDOWN_HOURS: 4,
       MIN_DEPOSIT_AMOUNT: 100,
       MIN_WITHDRAWAL_AMOUNT: 200,
-      DAILY_WITHDRAWAL_LIMIT: 5000, // Phase 5 Requirement: 5,000 daily limit simulation
+      DAILY_WITHDRAWAL_LIMIT: 5000,
       WITHDRAWAL_FEE_PERCENT: 0,
-      BKASH_NUMBER: "01855-987654 (Personal Demo)",
-      NAGAD_NUMBER: "01755-123456 (Personal Demo)",
-      ROCKET_NUMBER: "01955-456789 (Personal Demo)",
-      USDT_DEPOSIT_ADDRESS: "TQu8sB7xNkL2mP89qZtV1yWz4AeR6cX4Kd",
-      ANNOUNCEMENT_TEXT: "🎉 DK WIN-এ স্বাগতম! রেজিস্ট্রেশন করলেই ১,০০০ ফ্রি ভার্চুয়াল কয়েন! ব্যালেন্স ৫০-এর নিচে নামলে পাবেন ফ্রি ৫০০ কয়েন রিচার্জ!"
+      BKASH_NUMBER: base.BKASH_NUMBER || "01855-987654 (Personal)",
+      NAGAD_NUMBER: base.NAGAD_NUMBER || "01755-123456 (Personal)",
+      ROCKET_NUMBER: base.ROCKET_NUMBER || "01955-456789 (Personal)",
+      USDT_DEPOSIT_ADDRESS: base.USDT_DEPOSIT_ADDRESS || "TQu8sB7xNkL2mP89qZtV1yWz4AeR6cX4Kd",
+      ANNOUNCEMENT_TEXT: base.ANNOUNCEMENT_TEXT || "🎉 RoyalClubBD-তে স্বাগতম! রেজিস্ট্রেশন করলেই মেইন ব্যালেন্সে অটোমেটিক ৳১০০ ওয়েলকাম বোনাস! bKash, Nagad ও Rocket-এ সুপারফাস্ট ডিপোজিট ও ইনস্ট্যান্ট ক্যাশ-আউট সুবিধা চালু রয়েছে।"
     };
   });
 
@@ -294,9 +307,6 @@ export function GameProvider({ children }) {
 
     let totalWinAmount = 0;
     const userHasBets = bets.some(b => b.period === period && b.status === 'pending');
-    if (userHasBets) {
-      soundManager.playRoll();
-    }
 
     const updatedBets = bets.map(b => {
       if (b.period === period && b.status === 'pending') {
@@ -318,9 +328,6 @@ export function GameProvider({ children }) {
     setRounds(prev => [newRound, ...prev.slice(0, 49)]);
 
     if (totalWinAmount > 0) {
-      soundManager.playWin();
-      confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
-
       setUser(prev => ({
         ...prev,
         balance: parseFloat((prev.balance + totalWinAmount).toFixed(2)),
@@ -339,8 +346,6 @@ export function GameProvider({ children }) {
         created_at: new Date().toISOString()
       };
       setTransactions(prev => [winTx, ...prev]);
-    } else if (userHasBets) {
-      soundManager.playLoss();
     }
   }
 
@@ -440,12 +445,29 @@ export function GameProvider({ children }) {
     return true;
   }
 
-  // Deposit Request with sender phone & TrxID
+  // Deposit Request with sender phone & TrxID & Duplicate Prevention
   function requestDeposit({ method, amount, senderPhone, txHash, proofUrl }) {
     if (amount < (settings.MIN_DEPOSIT_AMOUNT || 100)) {
       alert(`সর্বনিম্ন ডিপোজিট ৳${settings.MIN_DEPOSIT_AMOUNT || 100} টাকা।`);
       return false;
     }
+    if (!txHash || txHash.trim().length < 4) {
+      alert("সঠিক ট্রানজেকশন আইডি (TrxID) লিখুন।");
+      return false;
+    }
+
+    // Duplicate TrxID check
+    const cleanTrx = txHash.trim().toUpperCase();
+    const isDuplicate = transactions.some(t => 
+      t.type === 'deposit' && 
+      t.tx_hash === cleanTrx && 
+      (t.status === 'pending' || t.status === 'approved')
+    );
+    if (isDuplicate) {
+      alert("এই TrxID দিয়ে ইতোমধ্যে একটি ডিপোজিট রিকোয়েস্ট জমা দেওয়া রয়েছে!");
+      return false;
+    }
+
     const newTx = {
       id: Date.now(),
       uid: user.uid,
@@ -454,13 +476,13 @@ export function GameProvider({ children }) {
       fee: 0,
       method: method || "bKash",
       account_number: senderPhone || "",
-      tx_hash: txHash || "N/A",
+      tx_hash: cleanTrx,
       proof_url: proofUrl || null,
       status: "pending",
       created_at: new Date().toISOString()
     };
     setTransactions(prev => [newTx, ...prev]);
-    alert("আপনার ডিপোজিট রিকোয়েস্ট সফলভাবে জমা হয়েছে! অ্যাডমিন অ্যাপ্রুভ করার সাথে সাথে ব্যালেন্স যোগ হবে।");
+    alert("আপনার ডিপোজিট রিকোয়েস্ট সফলভাবে জমা হয়েছে (Pending)! অ্যাডমিন প্যানেল থেকে অনুমোদনের পর ব্যালেন্সে ভার্চুয়াল কয়েন যোগ হবে।");
     return true;
   }
 
@@ -516,12 +538,13 @@ export function GameProvider({ children }) {
     return true;
   }
 
-  // Admin Approvals
+  // Admin Approvals with Dual State Sync
   function approveTransaction(txId, adminNote = "") {
     setTransactions(prev => prev.map(tx => {
       if (tx.id === txId) {
         if (tx.type === 'deposit') {
           setUser(u => u.uid === tx.uid ? { ...u, balance: parseFloat((u.balance + tx.amount).toFixed(2)) } : u);
+          setAllUsers(users => users.map(u => u.uid === tx.uid ? { ...u, balance: parseFloat((u.balance + tx.amount).toFixed(2)) } : u));
         }
         return { ...tx, status: 'approved', admin_note: adminNote };
       }
@@ -534,6 +557,7 @@ export function GameProvider({ children }) {
       if (tx.id === txId) {
         if (tx.type === 'withdrawal') {
           setUser(u => u.uid === tx.uid ? { ...u, balance: parseFloat((u.balance + tx.amount).toFixed(2)) } : u);
+          setAllUsers(users => users.map(u => u.uid === tx.uid ? { ...u, balance: parseFloat((u.balance + tx.amount).toFixed(2)) } : u));
         }
         return { ...tx, status: 'rejected', admin_note: adminNote };
       }
@@ -589,7 +613,7 @@ export function GameProvider({ children }) {
     }));
   }
 
-  // Auth: Login / Register with 1,000 Virtual Coins Signup Bonus
+  // Auth: Login / Register with 1,000 Virtual Coins Signup Bonus & Password Validation
   function login(identifier, password, rememberMe = true) {
     const cleanId = (identifier || '').trim().toLowerCase();
     if (!cleanId) return { success: false, message: 'ইউজারনেম, মোবাইল বা ইমেইল লিখুন।' };
@@ -603,6 +627,9 @@ export function GameProvider({ children }) {
     if (existing) {
       if (existing.is_banned) {
         return { success: false, message: 'এই অ্যাকাউন্টটি স্থগিত (Banned) করা হয়েছে।' };
+      }
+      if (existing.password && password && existing.password !== password) {
+        return { success: false, message: 'ভুল পাসওয়ার্ড! অনুগ্রহ করে সঠিক পাসওয়ার্ড লিখুন।' };
       }
       setUser(existing);
       if (rememberMe) {
@@ -637,15 +664,16 @@ export function GameProvider({ children }) {
       return { success: false, message: 'এই ইউজারনেম, মোবাইল বা ইমেইল দিয়ে ইতোমধ্যে একটি অ্যাকাউন্ট রয়েছে!' };
     }
 
-    // Phase 5: Registration: 1,000 Virtual Coins
-    const welcomeCoins = settings.SIGNUP_BONUS_AMOUNT || 1000;
+    // Automatic Sign-up Welcome Bonus (Admin Configurable, default ৳100)
+    const welcomeCoins = settings.SIGNUP_BONUS_AMOUNT !== undefined ? Number(settings.SIGNUP_BONUS_AMOUNT) : 100;
     const newUser = {
       uid: Math.floor(100000 + Math.random() * 900000).toString(),
       username: cleanUser,
+      password: password,
       phone: cleanPhone || null,
       email: cleanEmail || null,
       referral_code: referralCode || null,
-      balance: welcomeCoins,
+      balance: welcomeCoins, // ৳100 added automatically to main balance for instant gameplay
       total_won: 0,
       total_wagered: 0,
       vip_level: 1,
@@ -664,7 +692,7 @@ export function GameProvider({ children }) {
       type: "bonus",
       amount: welcomeCoins,
       fee: 0,
-      method: "Registration Welcome Gift (1,000 Free Coins)",
+      method: "অটোমেটিক সাইন-আপ ওয়েলকাম বোনাস",
       status: "completed",
       created_at: new Date().toISOString()
     };

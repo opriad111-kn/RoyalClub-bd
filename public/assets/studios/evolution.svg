@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" width="200" height="80">
+    <defs>
+      <linearGradient id="evoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#d4af37"/>
+        <stop offset="100%" stop-color="#fff275"/>
+      </linearGradient>
+    </defs>
+    <rect width="200" height="80" rx="16" fill="#090a0f"/>
+    <g transform="translate(20, 18)">
+      <circle cx="18" cy="22" r="14" fill="none" stroke="url(#evoGrad)" stroke-width="3"/>
+      <polygon points="14,14 26,22 14,30" fill="url(#evoGrad)"/>
+      <text x="40" y="26" font-family="Georgia, serif" font-size="16" font-weight="900" fill="url(#evoGrad)" letter-spacing="1">EVOLUTION</text>
+      <text x="41" y="40" font-family="sans-serif" font-size="9" font-weight="bold" fill="#9ca3af" letter-spacing="3">LIVE CASINO</text>
+    </g>
+  </svg>

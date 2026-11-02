@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320">
+  <defs>
+    <radialGradient id="k3Bg" cx="50%" cy="40%" r="75%">
+      <stop offset="0%" stop-color="#14532d" />
+      <stop offset="60%" stop-color="#052e16" />
+      <stop offset="100%" stop-color="#021a0c" />
+    </radialGradient>
+    <linearGradient id="goldRim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="50%" stop-color="#eab308" />
+      <stop offset="100%" stop-color="#854d0e" />
+    </linearGradient>
+    <filter id="diceShadow">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#000" flood-opacity="0.8" />
+    </filter>
+  </defs>
+
+  <rect width="400" height="320" rx="24" fill="url(#k3Bg)" />
+
+  <!-- Outer Golden Casino Tray Ring -->
+  <circle cx="200" cy="120" r="105" fill="#032210" stroke="url(#goldRim)" stroke-width="4" filter="url(#diceShadow)" />
+  <circle cx="200" cy="120" r="95" fill="none" stroke="#eab308" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.6" />
+
+  <!-- Left Die: 1 (Red Pip) -->
+  <g transform="translate(130, 115) rotate(-12)" filter="url(#diceShadow)">
+    <rect x="-28" y="-28" width="56" height="56" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" />
+    <!-- Giant Center Red Pip -->
+    <circle cx="0" cy="0" r="9" fill="#dc2626" />
+  </g>
+
+  <!-- Center Die: 4 (Black Pips) -->
+  <g transform="translate(200, 95) rotate(8)" filter="url(#diceShadow)">
+    <rect x="-30" y="-30" width="60" height="60" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" />
+    <circle cx="-14" cy="-14" r="6" fill="#1e293b" />
+    <circle cx="14" cy="-14" r="6" fill="#1e293b" />
+    <circle cx="-14" cy="14" r="6" fill="#1e293b" />
+    <circle cx="14" cy="14" r="6" fill="#1e293b" />
+  </g>
+
+  <!-- Right Die: 6 (Black Pips) -->
+  <g transform="translate(270, 125) rotate(18)" filter="url(#diceShadow)">
+    <rect x="-28" y="-28" width="56" height="56" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" />
+    <circle cx="-13" cy="-16" r="5" fill="#1e293b" />
+    <circle cx="-13" cy="0" r="5" fill="#1e293b" />
+    <circle cx="-13" cy="16" r="5" fill="#1e293b" />
+    <circle cx="13" cy="-16" r="5" fill="#1e293b" />
+    <circle cx="13" cy="0" r="5" fill="#1e293b" />
+    <circle cx="13" cy="16" r="5" fill="#1e293b" />
+  </g>
+
+  <!-- K3 3-Dice Badge -->
+  <g transform="translate(200, 195)">
+    <rect x="-70" y="-14" width="140" height="28" rx="14" fill="#000000" stroke="#eab308" stroke-width="2" />
+    <text x="0" y="5" font-family="'Arial Black', sans-serif" font-size="12" font-weight="900" fill="#facc15" text-anchor="middle" letter-spacing="1.5">
+      3-DICE CASINO
+    </text>
+  </g>
+
+  <!-- Bottom Title Banner -->
+  <g transform="translate(200, 260)">
+    <text x="0" y="0" font-family="'Arial Black', sans-serif" font-size="28" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="1">
+      K3 LOTTERY
+    </text>
+    <text x="0" y="24" font-family="sans-serif" font-size="13" font-weight="700" fill="#86efac" text-anchor="middle">
+      SUM • PAIR • TRIPLE 207X
+    </text>
+  </g>
+</svg>
+

@@ -263,3 +263,4 @@ export default function FortuneGems3Game({ onClose }) {
     </div>
   );
 }
+

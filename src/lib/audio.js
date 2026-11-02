@@ -1,8 +1,9 @@
-﻿// World-Class Web Audio API Synthesizer (Zero external mp3 dependencies, 100% reliable)
+// World-Class Web Audio API Synthesizer (Zero external mp3 dependencies, 100% reliable)
 class AudioEngine {
   constructor() {
     this.ctx = null;
-    this.enabled = localStorage.getItem('royalclub_sound_enabled') !== 'false';
+    // Default to false (muted) so no unexpected audio interrupts the user
+    this.enabled = localStorage.getItem('royalclub_sound_enabled') === 'true';
   }
 
   init() {

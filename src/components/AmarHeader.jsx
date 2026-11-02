@@ -7,7 +7,7 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenAdmin }) {
 
   return (
     <header className="sticky top-0 z-40 bg-[#F5BE00] text-slate-900 px-3.5 py-2.5 flex items-center justify-between shadow-sm select-none">
-      {/* Brand Logo with DKWIN / ROYAL CLUB style branding */}
+      {/* Brand Logo with RoyalClubBD branding */}
       <div className="flex items-center space-x-2 cursor-pointer">
         <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center p-1 border border-yellow-200">
           <span className="text-base font-black leading-none">👑</span>
@@ -15,10 +15,10 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenAdmin }) {
         <div className="flex flex-col">
           <div className="flex items-center space-x-1">
             <span className="font-black text-sm tracking-tight text-slate-900 font-sans leading-none">
-              DKWIN<span className="text-white drop-shadow-sm">11</span>
+              ROYAL<span className="text-white drop-shadow-sm">CLUB</span> BD
             </span>
-            <span className="bg-white/80 text-[8px] font-black px-1.5 py-0.2 rounded-full text-amber-900">
-              DEMO
+            <span className="bg-amber-950 text-[8px] font-black px-1.5 py-0.2 rounded-full text-yellow-300">
+              VIP
             </span>
           </div>
           <span className="text-[8px] text-slate-800 font-bold uppercase tracking-widest leading-none mt-0.5 opacity-80">

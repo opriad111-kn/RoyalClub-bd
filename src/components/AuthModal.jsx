@@ -148,7 +148,7 @@ export default function AuthModal({ isOpen, onClose }) {
           <div className="flex items-center space-x-1.5 mb-1">
             <span className="text-2xl">👑</span>
             <span className="font-serif font-black text-xl tracking-wider text-slate-950">
-              DK WIN
+              ROYAL CLUB BD
             </span>
           </div>
           <span className="text-[11px] font-bold text-slate-800 tracking-wide">
@@ -197,12 +197,12 @@ export default function AuthModal({ isOpen, onClose }) {
         {/* Content Body */}
         <div className="p-4 sm:p-5 max-h-[75vh] overflow-y-auto no-scrollbar space-y-3.5 text-xs text-slate-700">
           
-          {/* Registration 1,000 Coins Badge */}
+          {/* Registration Welcome Bonus Badge */}
           {activeTab === 'register' && (
             <div className="bg-gradient-to-r from-amber-50 to-yellow-100 p-2.5 rounded-2xl border border-yellow-300 flex items-center space-x-2 text-[11px] shadow-sm">
               <Gift className="w-5 h-5 text-amber-600 shrink-0 animate-bounce" />
               <span className="text-amber-950 font-medium">
-                নতুন অ্যাকাউন্টে সাথে সাথে পাবেন <strong className="font-black text-amber-700">৳১,০০০ ফ্রি ভার্চুয়াল কয়েন</strong> সাইন-আপ গিফট!
+                নতুন অ্যাকাউন্টে সাথে সাথে পাবেন <strong className="font-black text-amber-700">৳{settings?.SIGNUP_BONUS_AMOUNT || 100} রিয়েল বোনাস</strong> যা দিয়ে সাথে সাথে যেকোনো গেম খেলতে পারবেন!
               </span>
             </div>
           )}
@@ -422,7 +422,7 @@ export default function AuthModal({ isOpen, onClose }) {
                     onChange={e => setAgreedTerms(e.target.checked)}
                     className="accent-[#F5BE00] mt-0.5"
                   />
-                  <span>আমি এই প্ল্যাটফর্মের ডেমো গেমিং নিয়ামাবলী এবং ১৮+ নীতিমালা মেনে চলতে সম্মত।</span>
+                  <span>আমি এই গেমিং প্ল্যাটফর্মের সেবা শর্তাবলী এবং ১৮+ নীতিমালা মেনে চলতে সম্মত।</span>
                 </label>
               </div>
 
@@ -436,7 +436,7 @@ export default function AuthModal({ isOpen, onClose }) {
                   <span>অ্যাকাউন্ট তৈরি হচ্ছে...</span>
                 ) : (
                   <>
-                    <span>রেজিস্ট্রেশন করুন (+৳১,০০০ কয়েন)</span>
+                    <span>রেজিস্ট্রেশন করুন (+৳{settings?.SIGNUP_BONUS_AMOUNT || 100} বোনাস)</span>
                     <Sparkles className="w-4 h-4 text-slate-950" />
                   </>
                 )}
@@ -444,10 +444,10 @@ export default function AuthModal({ isOpen, onClose }) {
             </form>
           )}
 
-          {/* Quick Demo Credentials Footer */}
+          {/* Quick Support Footer */}
           <div className="pt-2 text-center border-t border-slate-100">
             <span className="text-[10px] text-slate-400 block font-mono">
-              ১০০% ফ্রি ভার্চুয়াল ডেমো অ্যাকাউন্ট • কোনো আর্থিক লেনদেন হয় না
+              অফিসিয়াল নিরাপদ প্ল্যাটফর্ম • ২৪/৭ কাস্টমার সাপোর্ট
             </span>
           </div>
 

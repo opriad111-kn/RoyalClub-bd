@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import { Crown, X } from 'lucide-react';
 
@@ -16,50 +16,62 @@ const VIP_LEVELS = [
 ];
 
 export default function VipModal({ isOpen, onClose }) {
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const { user } = useGame();
-  const currentExp = Math.floor(user.total_wagered || 500);
+  const currentExp = Math.floor(user?.total_wagered || 500);
   const currentLevel = VIP_LEVELS.reduce((acc, lvl) => (currentExp >= lvl.reqExp ? lvl.level : acc), 1);
   const nextLvl = VIP_LEVELS.find(l => l.level === currentLevel + 1) || VIP_LEVELS[VIP_LEVELS.length - 1];
   const progressPercent = Math.min(100, Math.floor((currentExp / nextLvl.reqExp) * 100));
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3"
+      className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 select-none"
       onClick={onClose}
     >
       <div 
-        className="bg-gradient-to-b from-[#1c1917] via-[#0c0a09] to-[#0c0a09] border border-amber-500/50 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-150"
+        className="bg-gradient-to-b from-[#1c1917] via-[#0c0a09] to-[#0c0a09] border border-amber-500/50 w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-150"
         onClick={e => e.stopPropagation()}
       >
         
         {/* Header */}
-        <div className="bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700 p-5 text-slate-950 flex justify-between items-start relative overflow-hidden">
+        <div className="bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700 p-4 text-slate-950 flex justify-between items-start relative overflow-hidden shrink-0">
           <div className="relative z-10">
             <span className="text-[10px] font-black uppercase tracking-widest bg-black/20 px-2 py-0.5 rounded-full inline-block">
               ROYAL VIP PRIVILEGE
             </span>
             <div className="flex items-center space-x-2 mt-1">
-              <Crown className="w-8 h-8 text-yellow-200 fill-yellow-200" />
-              <h2 className="text-2xl font-black font-mono">VIP LEVEL {currentLevel}</h2>
+              <Crown className="w-7 h-7 text-yellow-200 fill-yellow-200" />
+              <h2 className="text-xl font-black font-mono">VIP LEVEL {currentLevel}</h2>
             </div>
-            <p className="text-xs font-semibold mt-0.5 opacity-90">
+            <p className="text-[11px] font-semibold mt-0.5 opacity-90">
               EXP: {currentExp} / {nextLvl.reqExp} (লেভেল আপ করতে বাজি ধরুন)
             </p>
           </div>
 
           <button 
             type="button"
-            onClick={onClose} 
-            className="w-8 h-8 rounded-full bg-black/30 hover:bg-black/50 text-white flex items-center justify-center relative z-10 transition active:scale-90"
-            aria-label="Close"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }} 
+            className="w-9 h-9 rounded-full bg-black/30 hover:bg-black/50 text-white flex items-center justify-center relative z-10 transition active:scale-90 cursor-pointer"
+            aria-label="Close VIP Modal"
           >
             <X className="w-5 h-5 stroke-[2.5]" />
           </button>
 
           {/* Progress Bar */}
-          <div className="absolute bottom-0 left-0 right-0 h-2 bg-black/40">
+          <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/40">
             <div 
               className="h-full bg-emerald-400 transition-all duration-500" 
               style={{ width: `${progressPercent}%` }} 
@@ -68,44 +80,44 @@ export default function VipModal({ isOpen, onClose }) {
         </div>
 
         {/* Benefits Ribbon */}
-        <div className="p-4 overflow-y-auto space-y-3">
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="bg-white/5 border border-amber-500/20 rounded-2xl p-2.5">
-              <span className="text-[10px] text-amber-400 font-bold block">লেভেল আপ বোনাস</span>
-              <span className="text-sm font-black text-white font-mono mt-0.5 block">
+        <div className="p-3.5 overflow-y-auto space-y-2.5">
+          <div className="grid grid-cols-3 gap-1.5 text-center">
+            <div className="bg-white/5 border border-amber-500/20 rounded-2xl p-2">
+              <span className="text-[9px] text-amber-400 font-bold block">লেভেল আপ বোনাস</span>
+              <span className="text-xs font-black text-white font-mono mt-0.5 block">
                 ৳{VIP_LEVELS[currentLevel - 1].bonus}
               </span>
             </div>
-            <div className="bg-white/5 border border-amber-500/20 rounded-2xl p-2.5">
-              <span className="text-[10px] text-amber-400 font-bold block">দৈনিক রিবেট</span>
-              <span className="text-sm font-black text-emerald-400 font-mono mt-0.5 block">
+            <div className="bg-white/5 border border-amber-500/20 rounded-2xl p-2">
+              <span className="text-[9px] text-amber-400 font-bold block">দৈনিক রিবেট</span>
+              <span className="text-xs font-black text-emerald-400 font-mono mt-0.5 block">
                 {VIP_LEVELS[currentLevel - 1].rebate}
               </span>
             </div>
-            <div className="bg-white/5 border border-amber-500/20 rounded-2xl p-2.5">
-              <span className="text-[10px] text-amber-400 font-bold block">উইথড্র স্পিড</span>
-              <span className="text-sm font-black text-yellow-300 font-mono mt-0.5 block">
+            <div className="bg-white/5 border border-amber-500/20 rounded-2xl p-2">
+              <span className="text-[9px] text-amber-400 font-bold block">উইথড্র স্পিড</span>
+              <span className="text-xs font-black text-yellow-300 font-mono mt-0.5 block">
                 ইন্সট্যান্ট
               </span>
             </div>
           </div>
 
-          <h3 className="text-xs font-black text-slate-300 uppercase tracking-wider pt-2">
+          <h3 className="text-[11px] font-black text-slate-300 uppercase tracking-wider pt-1">
             সকল ভিআইপি টিয়ার (VIP TIERS 1-10)
           </h3>
 
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {VIP_LEVELS.map(lvl => (
               <div 
                 key={lvl.level}
-                className={`p-3 rounded-2xl border flex justify-between items-center transition ${
+                className={`p-2.5 rounded-2xl border flex justify-between items-center transition ${
                   currentLevel >= lvl.level 
                     ? 'bg-amber-950/30 border-amber-500/60 text-white' 
                     : 'bg-white/5 border-white/10 text-slate-400'
                 }`}
               >
-                <div className="flex items-center space-x-3">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-black font-mono text-sm ${
+                <div className="flex items-center space-x-2.5">
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black font-mono text-xs ${
                     currentLevel >= lvl.level 
                       ? 'bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 shadow-md' 
                       : 'bg-white/10 text-slate-400'
@@ -114,13 +126,13 @@ export default function VipModal({ isOpen, onClose }) {
                   </div>
                   <div>
                     <h4 className="font-bold text-xs">VIP {lvl.level}</h4>
-                    <span className="text-[10px] text-slate-400">বাজির টার্গেট: ৳{lvl.reqExp.toLocaleString()}</span>
+                    <span className="text-[9px] text-slate-400">বাজির টার্গেট: ৳{lvl.reqExp.toLocaleString()}</span>
                   </div>
                 </div>
 
                 <div className="text-right">
                   <span className="font-mono font-bold text-yellow-400 text-xs block">+৳{lvl.bonus}</span>
-                  <span className="text-[10px] text-emerald-400">{lvl.rebate} Rebate</span>
+                  <span className="text-[9px] text-emerald-400">{lvl.rebate} Rebate</span>
                 </div>
               </div>
             ))}
@@ -128,11 +140,14 @@ export default function VipModal({ isOpen, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-black/40 border-t border-white/5">
+        <div className="p-3 bg-black/40 border-t border-white/5 shrink-0">
           <button
             type="button"
-            onClick={onClose}
-            className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black py-2.5 rounded-xl transition shadow-lg text-xs tracking-wider uppercase active:scale-95"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+            className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black py-2.5 rounded-xl transition shadow-lg text-xs tracking-wider uppercase active:scale-95 cursor-pointer"
           >
             বন্ধ করুন
           </button>
