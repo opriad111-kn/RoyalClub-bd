@@ -29,8 +29,18 @@ export default function HomePage({
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
-  const [showNotice, setShowNotice] = useState(false);
+  const [showNotice, setShowNotice] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const todayStr = new Date().toDateString();
+      if (localStorage.getItem('royalclub_notice_dismissed_date') === todayStr) {
+        return false;
+      }
+      return !sessionStorage.getItem('royalclub_notice_closed');
+    }
+    return false;
+  });
   const [activeBanner, setActiveBanner] = useState(0);
+  const [showInstallTip, setShowInstallTip] = useState(false);
 
   const banners = [
     {
@@ -629,9 +639,9 @@ export default function HomePage({
       </div>
 
       {/* 8. Add to Desktop Floating Pill (photo_2026-11-02_15-15-49 match) */}
-      <div className="flex justify-center pt-1">
+      <div className="flex flex-col items-center pt-1 space-y-2">
         <button
-          onClick={() => alert("RoyalClub BD is ready to add to your Home Screen! Click your browser menu (⋮) -> 'Add to Home screen'.")}
+          onClick={() => setShowInstallTip(prev => !prev)}
           className="bg-[#FFC107] hover:bg-yellow-400 text-slate-950 px-5 py-2 rounded-full font-black text-xs shadow-md flex items-center space-x-2 active:scale-95 transition cursor-pointer"
         >
           <div className="w-4 h-4 rounded-full bg-slate-950 text-[#FFC107] flex items-center justify-center text-[9px] font-black">
@@ -639,6 +649,21 @@ export default function HomePage({
           </div>
           <span>Add to Desktop</span>
         </button>
+
+        {showInstallTip && (
+          <div className="bg-slate-900 border border-amber-400 text-white p-3 rounded-2xl max-w-xs text-center text-xs shadow-xl space-y-1">
+            <span className="font-bold text-amber-400 block">📲 হোম স্ক্রিনে অ্যাপ যুক্ত করুন</span>
+            <span className="text-[11px] text-slate-300 block">
+              আপনার ব্রাউজারের থ্রি-ডট মেনু (⋮) বা শেয়ার বাটনে ক্লিক করে <strong>'Add to Home screen'</strong> সিলেক্ট করুন।
+            </span>
+            <button 
+              onClick={() => setShowInstallTip(false)}
+              className="text-[10px] text-amber-400 hover:underline pt-1 block mx-auto"
+            >
+              বন্ধ করুন
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Notice Modal */}

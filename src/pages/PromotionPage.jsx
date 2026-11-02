@@ -124,6 +124,31 @@ export default function PromotionPage() {
           </div>
         </div>
 
+        {/* 2B. Special Referral Task Mission (DK WIN Exact Rule) */}
+        <div className="bg-gradient-to-tr from-amber-500 via-[#FFC107] to-yellow-400 rounded-2xl p-4 text-slate-950 shadow-sm space-y-2.5">
+          <div className="flex items-center justify-between">
+            <span className="font-black text-xs uppercase tracking-wider flex items-center space-x-1">
+              <Gift className="w-4 h-4 text-slate-950" />
+              <span>রেফারেল ইনভাইটেশন টাস্ক (৳১০০ বোনাস)</span>
+            </span>
+            <span className="bg-slate-950 text-[#FFC107] text-[9px] font-black px-2 py-0.5 rounded-full uppercase">
+              Special Task
+            </span>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur-xs rounded-xl p-3 space-y-2 border border-white/60 text-slate-900">
+            <p className="text-[11px] leading-relaxed font-bold">
+              • আপনার লিংকে বন্ধু একাউন্ট খুলে ৭ দিনের মধ্যে <strong>৳৩০০ ডিপোজিট</strong> এবং <strong>৳১,৫০০ বেটিং টার্নওভার</strong> করলেই আপনি পাবেন <strong>৳১০০ নগদ ক্যাশ বোনাস</strong>!
+            </p>
+            <p className="text-[11px] leading-relaxed font-bold">
+              • বন্ধু ৳৩০০ ডিপোজিট করলেই সেন্ট্রাল লাকি হুইলে পাবেন <strong>+১টি ফ্রি স্পিন</strong>!
+            </p>
+            <p className="text-[11px] leading-relaxed font-bold">
+              • মিনিমাম ২০ জন রেফারেল সম্পন্ন করে স্পিন ভল্ট থেকে সরাসরি <strong>৳৫০০ বিকাশ বা নগদে ক্যাশআউট</strong> করুন!
+            </p>
+          </div>
+        </div>
+
         {/* 3. Agency Commission Tier Breakdown */}
         <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-3">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">

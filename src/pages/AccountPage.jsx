@@ -29,6 +29,8 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
   const [showVipModal, setShowVipModal] = useState(false);
   const [activeHistoryModal, setActiveHistoryModal] = useState(null); // 'game', 'transaction', 'deposit', 'withdraw'
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [safeModalOpen, setSafeModalOpen] = useState(false);
+  const [notificationModalOpen, setNotificationModalOpen] = useState(false);
 
   function handleCopyUid() {
     navigator.clipboard.writeText(user.uid ? user.uid.toString() : '722200');
@@ -46,70 +48,102 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
 
   const depositList = (transactions || []).filter(t => t.type === 'deposit');
   const withdrawList = (transactions || []).filter(t => t.type === 'withdrawal');
+  const isGuest = user.username === 'Guest' || user.is_guest;
+
+  function handleAction(callback) {
+    if (isGuest) {
+      if (onOpenAuth) onOpenAuth('login');
+      return;
+    }
+    if (callback) callback();
+  }
 
   return (
     <div className="space-y-3.5 pb-20 text-xs select-none -mx-3.5 -mt-3.5">
       
-      {/* 1. Curved Golden Gradient Header (Matching AmarClub / 91 Club) */}
+      {/* 1. Curved Golden Gradient Header (Matching DK WIN / 91 Club) */}
       <div className="bg-gradient-to-b from-[#F5BE00] via-[#F5BE00] to-[#E2A600] text-slate-900 px-5 pt-6 pb-12 rounded-b-[32px] relative shadow-sm">
-        <div className="flex items-center space-x-3.5 relative z-10">
-          
-          {/* Modern Vector Avatar */}
-          <div className="relative">
-            <div className="w-16 h-16 rounded-full bg-white/40 border-2 border-white p-0.5 shadow-md flex items-center justify-center overflow-hidden">
+        {isGuest ? (
+          <div className="flex items-center space-x-3.5 relative z-10">
+            <div className="w-16 h-16 rounded-full bg-white/40 border-2 border-white p-0.5 shadow-md flex items-center justify-center overflow-hidden shrink-0">
               <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-200 to-yellow-100 flex items-center justify-center text-slate-800">
                 <User className="w-8 h-8 stroke-[2.2]" />
               </div>
             </div>
-          </div>
-
-          {/* User Info & Badges */}
-          <div className="flex-1 space-y-1">
-            <div className="flex items-center space-x-2">
-              <h3 className="font-black text-lg tracking-tight text-slate-900 font-sans">
-                {user.username === 'Guest' || user.is_guest ? 'Guest Player' : (user.username || 'iueri')}
-              </h3>
-              
-              {user.username === 'Guest' || user.is_guest ? (
-                <button 
-                  onClick={onOpenAuth}
-                  className="bg-slate-950 text-[#FFC107] font-black text-[10px] px-2.5 py-0.5 rounded-full shadow-sm active:scale-95 transition cursor-pointer"
+            <div className="flex-1 space-y-2 text-left">
+              <div>
+                <h3 className="font-black text-base tracking-tight text-slate-900 font-sans">
+                  ROYAL CLUB BD-তে স্বাগতম
+                </h3>
+                <span className="text-[10px] text-slate-800/80 block mt-0.5">
+                  লগইন বা রেজিস্টার করে ব্যালেন্স ও ভিআইপি দেখুন
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => onOpenAuth('login')}
+                  className="bg-slate-950 hover:bg-slate-900 text-[#FFC107] font-black text-xs px-4 py-1.5 rounded-full shadow-sm active:scale-95 transition cursor-pointer"
                 >
                   Log in
                 </button>
-              ) : (
+                <button
+                  onClick={() => onOpenAuth('register')}
+                  className="bg-white hover:bg-slate-50 text-slate-900 font-bold text-xs px-4 py-1.5 rounded-full shadow-sm border border-slate-300 active:scale-95 transition cursor-pointer"
+                >
+                  Register
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center space-x-3.5 relative z-10">
+            {/* Modern Vector Avatar */}
+            <div className="relative">
+              <div className="w-16 h-16 rounded-full bg-white/40 border-2 border-white p-0.5 shadow-md flex items-center justify-center overflow-hidden">
+                <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-200 to-yellow-100 flex items-center justify-center text-slate-800">
+                  <User className="w-8 h-8 stroke-[2.2]" />
+                </div>
+              </div>
+            </div>
+
+            {/* User Info & Badges */}
+            <div className="flex-1 space-y-1">
+              <div className="flex items-center space-x-2">
+                <h3 className="font-black text-lg tracking-tight text-slate-900 font-sans">
+                  {user.username || 'iueri'}
+                </h3>
                 <button 
                   onClick={() => setShowVipModal(true)}
                   className="bg-gradient-to-r from-rose-400 via-pink-500 to-rose-500 text-white font-black text-[10px] px-2.5 py-0.5 rounded-full shadow-sm flex items-center space-x-1 border border-white/60 active:scale-95 transition cursor-pointer"
                 >
                   <span>VIP{user.vip_level || 1}</span>
                 </button>
-              )}
-            </div>
+              </div>
 
-            {/* UID Badge with Copy Button */}
-            <div className="flex items-center space-x-2">
-              <div 
-                onClick={handleCopyUid}
-                className="inline-flex items-center space-x-1.5 bg-white/30 hover:bg-white/40 border border-white/40 px-2.5 py-0.5 rounded-full cursor-pointer transition active:scale-95"
-              >
-                <span className="text-slate-800 font-mono text-[11px] font-bold">
-                  UID | {user.uid || '722200'}
-                </span>
-                {copied ? (
-                  <Check className="w-3 h-3 text-slate-900 font-bold" />
-                ) : (
-                  <Copy className="w-3 h-3 text-slate-800" />
-                )}
+              {/* UID Badge with Copy Button */}
+              <div className="flex items-center space-x-2">
+                <div 
+                  onClick={handleCopyUid}
+                  className="inline-flex items-center space-x-1.5 bg-white/30 hover:bg-white/40 border border-white/40 px-2.5 py-0.5 rounded-full cursor-pointer transition active:scale-95"
+                >
+                  <span className="text-slate-800 font-mono text-[11px] font-bold">
+                    UID | {user.uid || '722200'}
+                  </span>
+                  {copied ? (
+                    <Check className="w-3 h-3 text-slate-900 font-bold" />
+                  ) : (
+                    <Copy className="w-3 h-3 text-slate-800" />
+                  )}
+                </div>
+              </div>
+
+              {/* Last Login Timestamp */}
+              <div className="text-[10px] text-slate-800/80 font-medium">
+                Last login: 2026-11-02 14:15:30
               </div>
             </div>
-
-            {/* Last Login Timestamp */}
-            <div className="text-[10px] text-slate-800/80 font-medium">
-              Last login: 2026-11-02 14:15:30
-            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Floating Body Container (Padding) */}
@@ -143,8 +177,8 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           <div className="grid grid-cols-4 gap-2 pt-1">
             {/* 1. Wallet (Pastel Pink) */}
             <button
-              onClick={onOpenWallet}
-              className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 transition active:scale-95"
+              onClick={() => handleAction(onOpenWallet)}
+              className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 transition active:scale-95 cursor-pointer"
             >
               <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 text-rose-500 flex items-center justify-center mb-1 shadow-sm">
                 <Wallet className="w-6 h-6 stroke-[2]" />
@@ -154,8 +188,8 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
 
             {/* 2. Deposit (Pastel Orange) */}
             <button
-              onClick={onOpenDeposit || onOpenWallet}
-              className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 transition active:scale-95"
+              onClick={() => handleAction(onOpenDeposit || onOpenWallet)}
+              className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 transition active:scale-95 cursor-pointer"
             >
               <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 text-amber-500 flex items-center justify-center mb-1 shadow-sm">
                 <ArrowDownLeft className="w-6 h-6 stroke-[2.2]" />
@@ -165,8 +199,8 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
 
             {/* 3. Withdraw (Pastel Blue) */}
             <button
-              onClick={onOpenWithdraw || onOpenWallet}
-              className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 transition active:scale-95"
+              onClick={() => handleAction(onOpenWithdraw || onOpenWallet)}
+              className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 transition active:scale-95 cursor-pointer"
             >
               <div className="w-12 h-12 rounded-2xl bg-sky-50 border border-sky-100 text-sky-500 flex items-center justify-center mb-1 shadow-sm">
                 <CreditCard className="w-6 h-6 stroke-[2]" />
@@ -176,8 +210,8 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
 
             {/* 4. VIP (Pastel Teal) */}
             <button
-              onClick={() => setShowVipModal(true)}
-              className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 transition active:scale-95"
+              onClick={() => handleAction(() => setShowVipModal(true))}
+              className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 transition active:scale-95 cursor-pointer"
             >
               <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-100 text-teal-600 flex items-center justify-center mb-1 shadow-sm font-black text-base">
                 V
@@ -189,7 +223,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
 
         {/* 3. "Safe" Daily Interest Box (Matching Screenshot 4) */}
         <div 
-          onClick={() => alert("Safe Vault: আপনার ব্যালেন্স Safe-এ জমা রাখলে দৈনিক ০.১% হারে লভ্যাংশ পাওয়া যাবে। লভ্যাংশ প্রতি ১ মিনিট পর পর হিসেব করা হয়।")}
+          onClick={() => handleAction(() => setSafeModalOpen(true))}
           className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md transition active:scale-95"
         >
           <div className="flex items-center space-x-3">
@@ -210,11 +244,11 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           </div>
         </div>
 
-        {/* 4. 2x2 Grid for Game History, Transaction, Deposit History, and Withdraw History (Matching Screenshot 4) */}
+        {/* 4. 2x2 Grid for Game History, Transaction, Deposit History, and Withdraw History */}
         <div className="grid grid-cols-2 gap-2.5">
-          {/* 1. Game History (Pastel Blue) */}
+          {/* 1. Game History */}
           <div 
-            onClick={() => setActiveHistoryModal('game')}
+            onClick={() => handleAction(() => setActiveHistoryModal('game'))}
             className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
             <div className="w-10 h-10 rounded-xl bg-blue-500 text-white flex items-center justify-center shrink-0 shadow-sm shadow-blue-500/20">
@@ -226,9 +260,9 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             </div>
           </div>
 
-          {/* 2. Transaction (Pastel Green) */}
+          {/* 2. Transaction */}
           <div 
-            onClick={() => setActiveHistoryModal('transaction')}
+            onClick={() => handleAction(() => setActiveHistoryModal('transaction'))}
             className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
             <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm shadow-emerald-500/20">
@@ -240,9 +274,9 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             </div>
           </div>
 
-          {/* 3. Deposit (Pastel Pink) */}
+          {/* 3. Deposit */}
           <div 
-            onClick={() => setActiveHistoryModal('deposit')}
+            onClick={() => handleAction(() => setActiveHistoryModal('deposit'))}
             className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
             <div className="w-10 h-10 rounded-xl bg-rose-400 text-white flex items-center justify-center shrink-0 shadow-sm shadow-rose-400/20">
@@ -254,9 +288,9 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             </div>
           </div>
 
-          {/* 4. Withdraw (Pastel Orange) */}
+          {/* 4. Withdraw */}
           <div 
-            onClick={() => setActiveHistoryModal('withdraw')}
+            onClick={() => handleAction(() => setActiveHistoryModal('withdraw'))}
             className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
             <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm shadow-amber-500/20">
@@ -271,7 +305,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
 
         {/* 5. Notification Bar (Matching Screenshot 4) */}
         <div 
-          onClick={() => alert("অফিশিয়াল নোটিফিকেশন: আপনার অ্যাকাউন্টে কোনো অমীমাংসিত সিকিউরিটি অ্যালার্ট নেই।")}
+          onClick={() => setNotificationModalOpen(true)}
           className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md transition active:scale-95"
         >
           <div className="flex items-center space-x-3">
@@ -486,6 +520,58 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               className="w-full bg-[#F5BE00] hover:bg-yellow-500 text-slate-900 font-black py-2.5 rounded-xl text-xs transition"
             >
               Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Safe Vault In-App Modal */}
+      {safeModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-5 max-w-xs w-full text-center space-y-3 shadow-2xl text-slate-900">
+            <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-2xl mx-auto">
+              🪙
+            </div>
+            <h4 className="font-black text-sm text-slate-900">RoyalClub Safe Vault</h4>
+            <p className="text-[11px] text-slate-600 leading-relaxed">
+              Safe-এ ব্যালেন্স জমা রাখলে আপনি দৈনিক ০.১% হারে নির্দিষ্ট লভ্যাংশ পাবেন। যেকোনো সময় সম্পূর্ণ ব্যালেন্স মূল অ্যাকাউন্টে স্থানান্তর করা যায়।
+            </p>
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-2.5 text-xs font-mono font-bold text-amber-800">
+              বর্তমান Safe ব্যালেন্স: ৳0.00
+            </div>
+            <button
+              onClick={() => setSafeModalOpen(false)}
+              className="w-full bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black py-2.5 rounded-xl text-xs cursor-pointer active:scale-95 transition"
+            >
+              ঠিক আছে
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Notification In-App Modal */}
+      {notificationModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-5 max-w-xs w-full text-left space-y-3 shadow-2xl text-slate-900">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+              <h4 className="font-black text-sm text-slate-900">অফিশিয়াল নোটিফিকেশন</h4>
+              <button onClick={() => setNotificationModalOpen(false)} className="text-slate-400 hover:text-slate-700">✕</button>
+            </div>
+            <div className="space-y-2 text-xs">
+              <div className="p-2.5 bg-yellow-50 border border-yellow-200 rounded-xl">
+                <span className="font-bold text-slate-900 block">🎁 নতুন ওয়েলকাম বোনাস</span>
+                <span className="text-[10px] text-slate-600">রেজিস্ট্রেশন করলেই পাচ্ছেন তাৎক্ষণিক ৳১০০ ওয়েলকাম বোনাস!</span>
+              </div>
+              <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
+                <span className="font-bold text-slate-900 block">⚡ দ্রুত ডিপোজিট ও উইথড্র</span>
+                <span className="text-[10px] text-slate-600">বিকাশ ও নগদ অ্যাকাউন্টে মাত্র ৩-৫ মিনিটে ক্যাশআউট সম্পন্ন হচ্ছে।</span>
+              </div>
+            </div>
+            <button
+              onClick={() => setNotificationModalOpen(false)}
+              className="w-full bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black py-2 rounded-xl text-xs cursor-pointer"
+            >
+              বন্ধ করুন
             </button>
           </div>
         </div>

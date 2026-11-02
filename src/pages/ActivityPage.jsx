@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
-export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel }) {
+export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel, onOpenAuth }) {
   const { user, adjustUserBalance } = useGame();
 
   // In-App Interactive Modals (Zero Browser Alerts)
@@ -27,27 +27,48 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
   const [bettingRebateOpen, setBettingRebateOpen] = useState(false);
   const [superJackpotOpen, setSuperJackpotOpen] = useState(false);
 
-  // Claim State
-  const [claimedRebate, setClaimedRebate] = useState(false);
-  const [claimedAward, setClaimedAward] = useState(false);
+  // Persistent Daily Claim State
+  const todayStr = typeof window !== 'undefined' ? new Date().toDateString() : '';
+  const [claimedRebate, setClaimedRebate] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('royalclub_claimed_rebate_date') === todayStr;
+    }
+    return false;
+  });
+  const [claimedAward, setClaimedAward] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('royalclub_claimed_award_date') === todayStr;
+    }
+    return false;
+  });
 
   function handleClaimRebate() {
     if (claimedRebate) return;
+    if (user.username === 'Guest' || user.is_guest) {
+      if (onOpenAuth) onOpenAuth();
+      return;
+    }
     const rebateAmount = 28.50;
     if (adjustUserBalance && user?.uid) {
       adjustUserBalance(user.uid, rebateAmount);
     }
     setClaimedRebate(true);
+    localStorage.setItem('royalclub_claimed_rebate_date', todayStr);
     confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
   }
 
   function handleClaimActivityAward() {
     if (claimedAward) return;
+    if (user.username === 'Guest' || user.is_guest) {
+      if (onOpenAuth) onOpenAuth();
+      return;
+    }
     const awardAmount = 20.00;
     if (adjustUserBalance && user?.uid) {
       adjustUserBalance(user.uid, awardAmount);
     }
     setClaimedAward(true);
+    localStorage.setItem('royalclub_claimed_award_date', todayStr);
     confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
   }
 

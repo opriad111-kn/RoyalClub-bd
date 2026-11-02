@@ -379,3 +379,4 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
     </div>
   );
 }
+

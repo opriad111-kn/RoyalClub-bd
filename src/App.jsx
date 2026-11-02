@@ -136,6 +136,7 @@ function AppContent() {
 
       if (VALID_TABS.includes(cleanTab)) {
         setActiveTab(cleanTab);
+        setActiveGame(null);
       } else if (rawHash.startsWith('game/')) {
         const gId = rawHash.replace('game/', '');
         setActiveGame(gId);
@@ -158,6 +159,7 @@ function AppContent() {
   }
 
   function handleSelectTab(tab) {
+    setActiveGame(null);
     setActiveTab(tab);
     window.location.hash = `#/${tab}`;
   }
@@ -247,7 +249,7 @@ function AppContent() {
 
           {/* 3. Customer Service */}
           <button
-            onClick={() => alert("অফিশিয়াল কাস্টমার সার্ভিসের জন্য টেলিগ্রামে যোগাযোগ করুন: @ROYALCLUB_Support")}
+            onClick={() => window.open('https://t.me/ROYALCLUB_Support', '_blank')}
             title="Customer Service"
             className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#F5BE00] shadow-xl border-2 border-white flex items-center justify-center p-1.5 hover:scale-110 active:scale-95 transition transform text-slate-950 font-bold cursor-pointer"
           >
@@ -300,6 +302,10 @@ function AppContent() {
               onOpenGift={() => setIsGiftOpen(true)}
               onOpenAttendance={() => setIsAttendanceOpen(true)}
               onOpenWheel={() => setIsWheelOpen(true)}
+              onOpenAuth={() => {
+                setAuthTab('login');
+                setIsAuthOpen(true);
+              }}
             />
           )}
 
@@ -378,6 +384,10 @@ function AppContent() {
             activeTab={activeTab}
             onSelectTab={handleSelectTab}
             onOpenWheel={() => setIsWheelOpen(true)}
+            onOpenAuth={(tab = 'login') => {
+              setAuthTab(tab);
+              setIsAuthOpen(true);
+            }}
           />
         )}
 
@@ -428,6 +438,10 @@ function AppContent() {
         <AttendanceModal 
           isOpen={isAttendanceOpen} 
           onClose={() => setIsAttendanceOpen(false)} 
+          onOpenAuth={() => {
+            setAuthTab('login');
+            setIsAuthOpen(true);
+          }}
         />
         <GiftCodeModal 
           isOpen={isGiftOpen} 
