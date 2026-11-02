@@ -89,3 +89,4 @@ ON CONFLICT (game_id) DO UPDATE SET
     rtp_percentage = EXCLUDED.rtp_percentage,
     max_multiplier = EXCLUDED.max_multiplier,
     updated_at = timezone('utc'::text, now());
+
