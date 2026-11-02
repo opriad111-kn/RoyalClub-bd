@@ -434,16 +434,10 @@ export default function UniversalSlotEngine({ gameId = 'fortunegems2', onClose }
     const spinHitRate = Math.max(0, Math.min(0.95, (eff.effectiveWinRate / 100) * 0.35));
     const isSlotWin = Math.random() < spinHitRate;
 
-    if (eff.mode === 'force_loss' || eff.effectiveWinRate === 0 || !isSlotWin) {
+    if (!isSlotWin) {
       baseWin = 0;
       winningLines = [];
-    } else if (eff.mode === 'force_win') {
-      if (baseWin === 0) {
-        const topSym = config.symbols[0] || { name: 'JACKPOT', mult: 15 };
-        baseWin = betAmount * (topSym.mult || 15);
-        winningLines = [`${topSym.name} MEGA COMBO`];
-      }
-    } else if (isSlotWin && baseWin === 0) {
+    } else if (baseWin === 0) {
       const sym = config.symbols[Math.floor(Math.random() * config.symbols.length)] || { name: 'BONUS', mult: 5 };
       baseWin = betAmount * (sym.mult / 3);
       winningLines = [`${sym.name} MATCH`];

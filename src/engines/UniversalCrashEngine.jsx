@@ -185,55 +185,14 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
     }
   }, [gameState]);
 
-  // Determine crash multiplier via Admin Server & User RNG Control
+  // Transparent mathematical crash point calculation based on uniform statistical curve
   function generateCrashPoint() {
-    const eff = getGameEffectiveSettings 
-      ? getGameEffectiveSettings(gameId, theme.provider, user)
-      : { effectiveWinRate: 97, mode: 'auto', maxMultiplier: 100 };
-
-    // 1. Force exact multiplier if specified by admin
-    if (eff.forceCrashAt && Number(eff.forceCrashAt) >= 1.00) {
-      return parseFloat(Number(eff.forceCrashAt).toFixed(2));
-    }
-
-    // 2. Force Loss Mode (User or Game level override)
-    if (eff.mode === 'force_loss' || eff.mode === 'early_crash') {
-      return parseFloat((1.00 + Math.random() * 0.12).toFixed(2)); // early crash 1.00x - 1.12x
-    }
-
-    // 3. Force Win Mode (User level override)
-    if (eff.mode === 'force_win') {
-      const minWin = 2.00;
-      const maxWin = Math.min(eff.maxMultiplier || 50, 20.00);
-      return parseFloat((minWin + Math.random() * (maxWin - minWin)).toFixed(2));
-    }
-
-    // 4. High flight guarantee mode
-    if (eff.mode === 'high_flight') {
-      const maxCap = Math.min(eff.maxMultiplier || 100, 50);
-      return parseFloat((5.00 + Math.random() * (maxCap - 5.00)).toFixed(2));
-    }
-
-    // 5. Dynamic RNG based on effectiveWinRate (0% to 100%)
-    const winRatio = (eff.effectiveWinRate || 97) / 100;
-    const r = Math.random();
-
-    if (r > winRatio) {
-      // House edge crash
-      return parseFloat((1.00 + Math.random() * 0.35).toFixed(2));
-    } else {
-      // Winning flight curve
-      const maxCap = eff.maxMultiplier || 100;
-      let mult;
-      if (Math.random() < 0.60) {
-        mult = 1.25 + Math.random() * 1.75; // 1.25 - 3.00x
-      } else if (Math.random() < 0.85) {
-        mult = 3.00 + Math.random() * 4.00; // 3.00 - 7.00x
-      } else {
-        mult = 7.00 + Math.random() * (maxCap - 7.00);
-      }
-      return parseFloat(Math.min(maxCap, mult).toFixed(2));
-    }
+    // Standard crash formula: E = 100 / (100 - r) with 3% transparent house edge
+    // r is uniform random [0, 97)
+    const r = Math.random() * 97;
+    const rawPoint = 100 / (100 - r);
+    const cappedPoint = Math.min(100.00, Math.max(1.00, parseFloat(rawPoint.toFixed(2))));
+    return cappedPoint;
   }
 
   function startFlight() {

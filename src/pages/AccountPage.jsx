@@ -21,12 +21,35 @@ import {
   Bell,
   Mail,
   Diamond,
-  Globe
+  Globe,
+  KeyRound,
+  Edit2,
+  LifeBuoy,
+  AlertCircle,
+  ShieldCheck,
+  Gift,
+  Coins
 } from 'lucide-react';
 import VipModal from '../components/VipModal';
 
-export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onOpenDeposit, onOpenWithdraw }) {
-  const { user, logout, gameHistory, transactions, refreshSupabaseData } = useGame();
+export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onOpenDeposit, onOpenWithdraw, onOpenGift }) {
+  const { 
+    user, 
+    logout, 
+    gameHistory, 
+    transactions, 
+    refreshSupabaseData,
+    claimFaucet,
+    notifications,
+    markNotificationRead,
+    supportTickets,
+    createSupportTicket,
+    responsiblePlay,
+    updateResponsiblePlay,
+    editUserProfile,
+    changeUserPassword
+  } = useGame();
+  
   const { lang, toggleLang, t } = useLanguage();
   const [copied, setCopied] = useState(false);
   const [showVipModal, setShowVipModal] = useState(false);
@@ -34,6 +57,33 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [safeModalOpen, setSafeModalOpen] = useState(false);
   const [notificationModalOpen, setNotificationModalOpen] = useState(false);
+
+  // User Panel Modals State
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
+  const [showResponsibleModal, setShowResponsibleModal] = useState(false);
+  const [faucetClaimedNotice, setFaucetClaimedNotice] = useState('');
+
+  // Profile Edit Form State
+  const [editUsername, setEditUsername] = useState(user?.username || '');
+  const [editPhone, setEditPhone] = useState(user?.phone || '');
+
+  // Password Change Form State
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordNotice, setPasswordNotice] = useState({ text: '', type: '' });
+
+  // Support Ticket Form State
+  const [ticketSubject, setTicketSubject] = useState('');
+  const [ticketCategory, setTicketCategory] = useState('Deposit');
+  const [ticketMessage, setTicketMessage] = useState('');
+  const [ticketNotice, setTicketNotice] = useState('');
+
+  // Responsible Gaming State
+  const [respDailyLimit, setRespDailyLimit] = useState(responsiblePlay?.dailyLimit || 50000);
+  const [respSessionMin, setRespSessionMin] = useState(responsiblePlay?.sessionMinutes || 120);
 
   function handleCopyUid() {
     navigator.clipboard.writeText(user.uid ? user.uid.toString() : '722200');
@@ -49,9 +99,28 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
     setTimeout(() => setIsRefreshing(false), 600);
   }
 
-  const depositList = (transactions || []).filter(t => t.type === 'deposit');
-  const withdrawList = (transactions || []).filter(t => t.type === 'withdrawal');
+  function handleClaimFaucetCoins() {
+    if (isGuest) {
+      if (onOpenAuth) onOpenAuth('login');
+      return;
+    }
+    const success = claimFaucet();
+    if (success) {
+      setFaucetClaimedNotice('🎉 অভিনন্দন! ৳৫০০ ফ্রি ডেমো কয়েন যোগ হয়েছে!');
+      setTimeout(() => setFaucetClaimedNotice(''), 3500);
+    }
+  }
+
   const isGuest = user.username === 'Guest' || user.is_guest;
+  const depositList = (transactions || []).filter(t => t.type === 'deposit');
+  const withdrawList = (transactions || []).filter(t => t.type === 'withdrawal' || t.type === 'withdraw');
+
+  // Filter notifications for this user
+  const userNotifications = (notifications || []).filter(n => n.targetUid === 'all' || n.targetUid === user?.uid);
+  const unreadNotifCount = userNotifications.filter(n => !n.isRead).length;
+
+  // Filter support tickets for this user
+  const userTickets = (supportTickets || []).filter(t => t.uid === user?.uid);
 
   function handleAction(callback) {
     if (isGuest) {
@@ -61,8 +130,56 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
     if (callback) callback();
   }
 
+  function handleSaveProfile(e) {
+    e.preventDefault();
+    if (!editUsername) return;
+    editUserProfile(user.uid, { username: editUsername, phone: editPhone });
+    setShowProfileModal(false);
+  }
+
+  function handleChangePasswordSubmit(e) {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      setPasswordNotice({ text: 'নতুন পাসওয়ার্ড দুটি মিলছে না!', type: 'error' });
+      return;
+    }
+    if (newPassword.length < 6) {
+      setPasswordNotice({ text: 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে!', type: 'error' });
+      return;
+    }
+    const res = changeUserPassword(oldPassword, newPassword);
+    if (res.success) {
+      setPasswordNotice({ text: res.message, type: 'success' });
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setTimeout(() => {
+        setPasswordNotice({ text: '', type: '' });
+        setShowPasswordModal(false);
+      }, 1500);
+    } else {
+      setPasswordNotice({ text: res.message, type: 'error' });
+    }
+  }
+
+  function handleCreateTicket(e) {
+    e.preventDefault();
+    if (!ticketSubject || !ticketMessage) return;
+    const res = createSupportTicket({
+      subject: ticketSubject,
+      category: ticketCategory,
+      message: ticketMessage
+    });
+    if (res.success) {
+      setTicketNotice('আপনার সাপোর্ট টিকিট সফলভাবে জমা হয়েছে!');
+      setTicketSubject('');
+      setTicketMessage('');
+      setTimeout(() => setTicketNotice(''), 3000);
+    }
+  }
+
   return (
-    <div className="space-y-3.5 pb-20 text-xs select-none -mx-3.5 -mt-3.5">
+    <div className="space-y-3.5 pb-20 text-xs select-none -mx-3.5 -mt-3.5 font-sans">
       
       {/* 1. Curved Golden Gradient Header (Matching DK WIN / 91 Club) */}
       <div className="bg-gradient-to-b from-[#F5BE00] via-[#F5BE00] to-[#E2A600] text-slate-900 px-5 pt-6 pb-12 rounded-b-[32px] relative shadow-sm">
@@ -100,26 +217,35 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           </div>
         ) : (
           <div className="flex items-center space-x-3.5 relative z-10">
-            {/* Modern Vector Avatar */}
             <div className="relative">
               <div className="w-16 h-16 rounded-full bg-white/40 border-2 border-white p-0.5 shadow-md flex items-center justify-center overflow-hidden">
-                <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-200 to-yellow-100 flex items-center justify-center text-slate-800">
-                  <User className="w-8 h-8 stroke-[2.2]" />
+                <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-200 to-yellow-100 flex items-center justify-center text-slate-800 font-black text-xl">
+                  {user.username ? user.username[0].toUpperCase() : 'U'}
                 </div>
               </div>
             </div>
 
-            {/* User Info & Badges */}
             <div className="flex-1 space-y-1">
               <div className="flex items-center space-x-2">
                 <h3 className="font-black text-lg tracking-tight text-slate-900 font-sans">
-                  {user.username || 'iueri'}
+                  {user.username || 'Player'}
                 </h3>
                 <button 
                   onClick={() => setShowVipModal(true)}
                   className="bg-gradient-to-r from-rose-400 via-pink-500 to-rose-500 text-white font-black text-[10px] px-2.5 py-0.5 rounded-full shadow-sm flex items-center space-x-1 border border-white/60 active:scale-95 transition cursor-pointer"
                 >
                   <span>VIP{user.vip_level || 1}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setEditUsername(user.username || '');
+                    setEditPhone(user.phone || '');
+                    setShowProfileModal(true);
+                  }}
+                  className="w-6 h-6 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center text-slate-900 transition"
+                  title="প্রোফাইল এডিট"
+                >
+                  <Edit2 className="w-3 h-3" />
                 </button>
               </div>
 
@@ -140,28 +266,27 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                 </div>
               </div>
 
-              {/* Last Login Timestamp */}
               <div className="text-[10px] text-slate-800/80 font-medium">
-                Last login: 2026-11-02 14:15:30
+                {user.phone ? `Phone: ${user.phone}` : 'Account Status: Active'}
               </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Floating Body Container (Padding) */}
+      {/* Floating Body Container */}
       <div className="px-3.5 space-y-3.5 -mt-9 relative z-20">
 
-        {/* 2. Floating Total Balance Card with 4 Pastel Buttons (Matching Screenshot) */}
+        {/* 2. Floating Total Balance Card with 4 Pastel Buttons */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-3">
           <div className="flex justify-between items-center">
             <div>
               <span className="text-[11px] font-bold text-slate-400 block font-sans">
-                Total balance
+                Total balance (Demo Coins)
               </span>
               <div className="flex items-center space-x-2 mt-0.5">
                 <span className="text-2xl font-black font-mono text-slate-900 tracking-tight">
-                  ৳{(user.balance !== undefined ? user.balance : 282.00).toFixed(2)}
+                  ৳{(user.balance !== undefined ? user.balance : 0.00).toFixed(2)}
                 </span>
                 <button 
                   onClick={handleRefreshBalance}
@@ -174,11 +299,28 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                 </button>
               </div>
             </div>
+
+            {/* Quick Faucet Refill Button */}
+            {!isGuest && (
+              <button
+                onClick={handleClaimFaucetCoins}
+                className="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-bold text-[10px] px-3 py-1.5 rounded-full flex items-center space-x-1 transition active:scale-95 cursor-pointer shadow-xs"
+              >
+                <Coins className="w-3.5 h-3.5 text-amber-600" />
+                <span>+৳৫০০ ফ্রি কয়েন</span>
+              </button>
+            )}
           </div>
 
-          {/* 4 Pastel Action Buttons Row: Wallet, Deposit, Withdraw, VIP */}
+          {/* Faucet Notice */}
+          {faucetClaimedNotice && (
+            <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-center text-[11px] animate-in fade-in">
+              {faucetClaimedNotice}
+            </div>
+          )}
+
+          {/* 4 Action Buttons Row: Wallet, Deposit, Withdraw, VIP */}
           <div className="grid grid-cols-4 gap-2 pt-1">
-            {/* 1. Wallet (Pastel Pink) */}
             <button
               onClick={() => handleAction(onOpenWallet)}
               className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 transition active:scale-95 cursor-pointer"
@@ -189,7 +331,6 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               <span className="font-bold text-[11px] text-slate-700">Wallet</span>
             </button>
 
-            {/* 2. Deposit (Pastel Orange) */}
             <button
               onClick={() => handleAction(onOpenDeposit || onOpenWallet)}
               className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 transition active:scale-95 cursor-pointer"
@@ -200,7 +341,6 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               <span className="font-bold text-[11px] text-slate-700">Deposit</span>
             </button>
 
-            {/* 3. Withdraw (Pastel Blue) */}
             <button
               onClick={() => handleAction(onOpenWithdraw || onOpenWallet)}
               className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 transition active:scale-95 cursor-pointer"
@@ -211,7 +351,6 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               <span className="font-bold text-[11px] text-slate-700">Withdraw</span>
             </button>
 
-            {/* 4. VIP (Pastel Teal) */}
             <button
               onClick={() => handleAction(() => setShowVipModal(true))}
               className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 transition active:scale-95 cursor-pointer"
@@ -224,7 +363,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           </div>
         </div>
 
-        {/* 3. "Safe" Daily Interest Box (Matching Screenshot 4) */}
+        {/* 3. "Safe" Daily Interest Box */}
         <div 
           onClick={() => handleAction(() => setSafeModalOpen(true))}
           className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md transition active:scale-95"
@@ -234,9 +373,9 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               🪙
             </div>
             <div>
-              <h4 className="font-black text-slate-900 text-sm">Safe</h4>
+              <h4 className="font-black text-slate-900 text-sm">Safe Vault</h4>
               <p className="text-[10px] text-slate-400 mt-0.5 leading-snug max-w-[220px]">
-                The daily interest rate is 0.1%, and the income is calculated once every 1 minutes.
+                The daily interest rate is 0.1%, and income is calculated once every 1 minute.
               </p>
             </div>
           </div>
@@ -247,9 +386,8 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           </div>
         </div>
 
-        {/* 4. 2x2 Grid for Game History, Transaction, Deposit History, and Withdraw History */}
+        {/* 4. 2x2 Grid for Game History, Transaction, Deposit, and Withdraw */}
         <div className="grid grid-cols-2 gap-2.5">
-          {/* 1. Game History */}
           <div 
             onClick={() => handleAction(() => setActiveHistoryModal('game'))}
             className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
@@ -259,11 +397,10 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             </div>
             <div className="flex-1 overflow-hidden">
               <h5 className="font-black text-slate-900 text-xs truncate">Game History</h5>
-              <span className="text-[10px] text-slate-400 block truncate">My game history</span>
+              <span className="text-[10px] text-slate-400 block truncate">My game records</span>
             </div>
           </div>
 
-          {/* 2. Transaction */}
           <div 
             onClick={() => handleAction(() => setActiveHistoryModal('transaction'))}
             className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
@@ -272,12 +409,11 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               <FileText className="w-5 h-5" />
             </div>
             <div className="flex-1 overflow-hidden">
-              <h5 className="font-black text-slate-900 text-xs truncate">Transaction</h5>
-              <span className="text-[10px] text-slate-400 block truncate">My transaction history</span>
+              <h5 className="font-black text-slate-900 text-xs truncate">Transactions</h5>
+              <span className="text-[10px] text-slate-400 block truncate">Ledger records</span>
             </div>
           </div>
 
-          {/* 3. Deposit */}
           <div 
             onClick={() => handleAction(() => setActiveHistoryModal('deposit'))}
             className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
@@ -287,11 +423,10 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             </div>
             <div className="flex-1 overflow-hidden">
               <h5 className="font-black text-slate-900 text-xs truncate">Deposit</h5>
-              <span className="text-[10px] text-slate-400 block truncate">My deposit history</span>
+              <span className="text-[10px] text-slate-400 block truncate">Deposit records</span>
             </div>
           </div>
 
-          {/* 4. Withdraw */}
           <div 
             onClick={() => handleAction(() => setActiveHistoryModal('withdraw'))}
             className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
@@ -301,12 +436,12 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             </div>
             <div className="flex-1 overflow-hidden">
               <h5 className="font-black text-slate-900 text-xs truncate">Withdraw</h5>
-              <span className="text-[10px] text-slate-400 block truncate">My withdraw history</span>
+              <span className="text-[10px] text-slate-400 block truncate">Withdraw records</span>
             </div>
           </div>
         </div>
 
-        {/* 5. Notification Bar (Matching Screenshot 4) */}
+        {/* 5. In-App Notifications Bar */}
         <div 
           onClick={() => setNotificationModalOpen(true)}
           className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md transition active:scale-95"
@@ -315,19 +450,99 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
               <Mail className="w-5 h-5" />
             </div>
-            <span className="font-bold text-slate-800 text-xs">Notification</span>
+            <span className="font-bold text-slate-800 text-xs">Notifications</span>
           </div>
 
           <div className="flex items-center space-x-1.5">
-            <span className="w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] font-black shadow-sm">
-              6
-            </span>
+            {unreadNotifCount > 0 && (
+              <span className="w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] font-black shadow-sm">
+                {unreadNotifCount}
+              </span>
+            )}
             <ChevronRight className="w-4 h-4 text-slate-400" />
           </div>
         </div>
 
-        {/* 6. Admin Panel Link (Strictly restricted to Admin users), Auth & Logout */}
+        {/* 6. Comprehensive Account Services & Settings List */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-100 overflow-hidden">
+          
+          {/* Redeem Gift Code */}
+          <button
+            onClick={() => handleAction(onOpenGift)}
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-50 transition cursor-pointer"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
+                <Gift className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="font-bold text-xs text-slate-800">Gifts & Promo Codes</span>
+                <span className="text-[10px] text-slate-400 block">উপহার রিডেম্পশন কোড দিয়ে বোনাস নিন</span>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-400" />
+          </button>
+
+          {/* Customer Support Desk */}
+          <button
+            onClick={() => handleAction(() => setShowSupportModal(true))}
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-50 transition cursor-pointer"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center">
+                <LifeBuoy className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="font-bold text-xs text-slate-800">Support Desk & Tickets</span>
+                <span className="text-[10px] text-slate-400 block">সাপোর্ট টিকিট পাঠান এবং উত্তর দেখুন</span>
+              </div>
+            </div>
+            <div className="flex items-center space-x-1">
+              {userTickets.filter(t => t.status === 'open').length > 0 && (
+                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-100 text-amber-700">
+                  {userTickets.filter(t => t.status === 'open').length} Open
+                </span>
+              )}
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+            </div>
+          </button>
+
+          {/* Change Password */}
+          {!isGuest && (
+            <button
+              onClick={() => setShowPasswordModal(true)}
+              className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-50 transition cursor-pointer"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+                  <KeyRound className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="font-bold text-xs text-slate-800">Change Password</span>
+                  <span className="text-[10px] text-slate-400 block">লগইন পাসওয়ার্ড পরিবর্তন করুন</span>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+            </button>
+          )}
+
+          {/* Responsible Gaming Limits */}
+          <button
+            onClick={() => setShowResponsibleModal(true)}
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-50 transition cursor-pointer"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="font-bold text-xs text-slate-800">Responsible Gaming Limits</span>
+                <span className="text-[10px] text-slate-400 block">দৈনিক ডেমো বাজি ও সময়সীমা নিয়ন্ত্রণ</span>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-400" />
+          </button>
+
           {/* Admin Panel Button (Visible ONLY to Admin) */}
           {user?.is_admin && (
             <button
@@ -339,8 +554,8 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                   <ShieldAlert className="w-4 h-4" />
                 </div>
                 <div>
-                  <h5 className="font-black text-slate-800 text-xs">Admin Control Panel</h5>
-                  <span className="text-[10px] text-slate-400">Game RTP, User Moderation & Transactions</span>
+                  <h5 className="font-black text-slate-800 text-xs">Admin Command Center</h5>
+                  <span className="text-[10px] text-slate-400">RTP Control, Users & Transactions</span>
                 </div>
               </div>
               <ChevronRight className="w-4 h-4 text-slate-400" />
@@ -386,6 +601,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             </div>
           </button>
 
+          {/* Logout */}
           <button
             onClick={() => {
               logout();
@@ -405,8 +621,289 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
 
       </div>
 
-      {/* VIP Modal */}
+      {/* VIP Privileges Modal */}
       <VipModal isOpen={showVipModal} onClose={() => setShowVipModal(false)} />
+
+      {/* EDIT PROFILE MODAL */}
+      {showProfileModal && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-5 max-w-xs w-full text-left space-y-4 shadow-2xl text-slate-900">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+              <h4 className="font-black text-sm text-slate-900">প্রোফাইল এডিট</h4>
+              <button onClick={() => setShowProfileModal(false)} className="text-slate-400 hover:text-slate-700">✕</button>
+            </div>
+            <form onSubmit={handleSaveProfile} className="space-y-3">
+              <div>
+                <label className="text-[10px] font-bold text-slate-500 block mb-1">ইউজারনেম (Nickname):</label>
+                <input
+                  type="text"
+                  value={editUsername}
+                  onChange={e => setEditUsername(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-500 block mb-1">ফোন নম্বর:</label>
+                <input
+                  type="text"
+                  value={editPhone}
+                  onChange={e => setEditPhone(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono text-slate-800"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black py-2.5 rounded-xl text-xs transition cursor-pointer"
+              >
+                সেভ করুন
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* CHANGE PASSWORD MODAL */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-5 max-w-xs w-full text-left space-y-4 shadow-2xl text-slate-900">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+              <h4 className="font-black text-sm text-slate-900">পাসওয়ার্ড পরিবর্তন</h4>
+              <button onClick={() => setShowPasswordModal(false)} className="text-slate-400 hover:text-slate-700">✕</button>
+            </div>
+            {passwordNotice.text && (
+              <div className={`p-2 rounded-xl text-xs font-bold text-center ${
+                passwordNotice.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
+              }`}>
+                {passwordNotice.text}
+              </div>
+            )}
+            <form onSubmit={handleChangePasswordSubmit} className="space-y-3">
+              <div>
+                <label className="text-[10px] font-bold text-slate-500 block mb-1">নতুন পাসওয়ার্ড:</label>
+                <input
+                  type="password"
+                  placeholder="কমপক্ষে ৬ অক্ষর..."
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-500 block mb-1">কনফার্ম পাসওয়ার্ড:</label>
+                <input
+                  type="password"
+                  placeholder="পুনরায় নতুন পাসওয়ার্ড দিন..."
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black py-2.5 rounded-xl text-xs transition cursor-pointer"
+              >
+                পাসওয়ার্ড আপডেট করুন
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* SUPPORT TICKETS DRAWER */}
+      {showSupportModal && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-5 max-w-sm w-full text-left space-y-4 shadow-2xl text-slate-900 max-h-[85vh] overflow-y-auto">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+              <h4 className="font-black text-sm text-slate-900">কাস্টমার সাপোর্ট ডেস্ক</h4>
+              <button onClick={() => setShowSupportModal(false)} className="text-slate-400 hover:text-slate-700">✕</button>
+            </div>
+
+            {ticketNotice && (
+              <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold text-center">
+                {ticketNotice}
+              </div>
+            )}
+
+            {/* Submit New Ticket */}
+            <form onSubmit={handleCreateTicket} className="space-y-2.5 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+              <span className="font-bold text-xs text-slate-800 block">নতুন অভিযোগ / টিকিট পাঠান:</span>
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  placeholder="বিষয় (Subject)..."
+                  value={ticketSubject}
+                  onChange={e => setTicketSubject(e.target.value)}
+                  className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800"
+                />
+                <select
+                  value={ticketCategory}
+                  onChange={e => setTicketCategory(e.target.value)}
+                  className="bg-white border border-slate-200 rounded-xl px-2 py-1.5 text-xs text-slate-800"
+                >
+                  <option value="Deposit">Deposit</option>
+                  <option value="Withdrawal">Withdraw</option>
+                  <option value="Game">Game</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <textarea
+                rows={2}
+                placeholder="বিস্তারিত সমস্যা লিখুন..."
+                value={ticketMessage}
+                onChange={e => setTicketMessage(e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800"
+              />
+              <button
+                type="submit"
+                className="w-full bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-bold py-2 rounded-xl text-xs transition"
+              >
+                টিকিট সাবমিট করুন
+              </button>
+            </form>
+
+            {/* My Tickets List */}
+            <div className="space-y-2">
+              <span className="font-bold text-xs text-slate-700 block">আমার টিকিট হিস্ট্রি:</span>
+              {userTickets.length > 0 ? (
+                userTickets.map(t => (
+                  <div key={t.id} className="p-3 bg-slate-50 border border-slate-100 rounded-2xl space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-xs text-slate-900">{t.subject}</span>
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
+                        t.status === 'open' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
+                      }`}>
+                        {t.status.toUpperCase()}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-600">{t.message}</p>
+                    {t.adminReplies && t.adminReplies.length > 0 && (
+                      <div className="pl-3 border-l-2 border-emerald-500 pt-1 space-y-1">
+                        {t.adminReplies.map((r, i) => (
+                          <div key={i} className="text-[10px] text-emerald-800 font-bold">
+                            <span>অ্যাডমিন: </span>
+                            <span className="text-slate-700 font-normal">{r.text}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4 text-slate-400 text-[11px]">কোনো সাপোর্ট টিকিট নেই</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* RESPONSIBLE GAMING LIMITS MODAL */}
+      {showResponsibleModal && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-5 max-w-xs w-full text-left space-y-4 shadow-2xl text-slate-900">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+              <h4 className="font-black text-sm text-slate-900">Responsible Gaming</h4>
+              <button onClick={() => setShowResponsibleModal(false)} className="text-slate-400 hover:text-slate-700">✕</button>
+            </div>
+            <p className="text-[11px] text-slate-600">
+              প্ল্যাটফর্মটি বিনোদনের জন্য। আপনার দৈনিক ডেমো বাজেট ও সেশনের সীমা নির্ধারণ করুন।
+            </p>
+            <div className="space-y-3">
+              <div>
+                <label className="text-[10px] font-bold text-slate-500 block mb-1">দৈনিক ডেমো বাজি লিমিট (৳):</label>
+                <input
+                  type="number"
+                  value={respDailyLimit}
+                  onChange={e => setRespDailyLimit(Number(e.target.value))}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono font-bold"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-500 block mb-1">সেশন রিমাইন্ডার (মিনিট):</label>
+                <input
+                  type="number"
+                  value={respSessionMin}
+                  onChange={e => setRespSessionMin(Number(e.target.value))}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono font-bold"
+                />
+              </div>
+              <button
+                onClick={() => {
+                  updateResponsiblePlay({ dailyLimit: respDailyLimit, sessionMinutes: respSessionMin });
+                  setShowResponsibleModal(false);
+                }}
+                className="w-full bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black py-2.5 rounded-xl text-xs transition cursor-pointer"
+              >
+                লিমিট সেভ করুন
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Notification In-App Modal */}
+      {notificationModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-5 max-w-sm w-full text-left space-y-3 shadow-2xl text-slate-900 max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+              <h4 className="font-black text-sm text-slate-900">ইন-অ্যাপ নোটিফিকেশন</h4>
+              <button onClick={() => setNotificationModalOpen(false)} className="text-slate-400 hover:text-slate-700">✕</button>
+            </div>
+            <div className="space-y-2 text-xs">
+              {userNotifications.length > 0 ? (
+                userNotifications.map(n => (
+                  <div 
+                    key={n.id} 
+                    onClick={() => markNotificationRead(n.id)}
+                    className={`p-3 rounded-2xl border transition cursor-pointer ${
+                      n.isRead ? 'bg-slate-50 border-slate-100' : 'bg-amber-50/70 border-amber-200 shadow-xs'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-black text-slate-900 block">{n.title}</span>
+                      {!n.isRead && (
+                        <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+                      )}
+                    </div>
+                    <span className="text-[11px] text-slate-600 block mt-1 leading-relaxed">{n.message}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-6 text-slate-400">কোনো নোটিফিকেশন নেই</div>
+              )}
+            </div>
+            <button
+              onClick={() => setNotificationModalOpen(false)}
+              className="w-full bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black py-2 rounded-xl text-xs cursor-pointer"
+            >
+              বন্ধ করুন
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Safe Vault Modal */}
+      {safeModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-5 max-w-xs w-full text-center space-y-3 shadow-2xl text-slate-900">
+            <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-2xl mx-auto">
+              🪙
+            </div>
+            <h4 className="font-black text-sm text-slate-900">RoyalClub Safe Vault</h4>
+            <p className="text-[11px] text-slate-600 leading-relaxed">
+              Safe-এ ব্যালেন্স জমা রাখলে আপনি দৈনিক ০.১% হারে নির্দিষ্ট লভ্যাংশ পাবেন। যেকোনো সময় সম্পূর্ণ ব্যালেন্স মূল অ্যাকাউন্টে স্থানান্তর করা যায়।
+            </p>
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-2.5 text-xs font-mono font-bold text-amber-800">
+              বর্তমান Safe ব্যালেন্স: ৳0.00
+            </div>
+            <button
+              onClick={() => setSafeModalOpen(false)}
+              className="w-full bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black py-2.5 rounded-xl text-xs cursor-pointer active:scale-95 transition"
+            >
+              ঠিক আছে
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* History Records Detail Modal */}
       {activeHistoryModal && (
@@ -426,7 +923,6 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               </button>
             </div>
 
-            {/* Dynamic Content List */}
             <div className="py-3 max-h-72 overflow-y-auto space-y-2 no-scrollbar">
               {activeHistoryModal === 'game' && (
                 gameHistory && gameHistory.length > 0 ? (
@@ -469,12 +965,12 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                       <div>
                         <span className="font-black text-slate-800 text-xs">{item.method} Deposit</span>
                         <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
-                          TrxID: {item.txHash || 'PENDING'}
+                          TrxID: {item.trx_id || item.txHash || 'PENDING'}
                         </span>
                       </div>
                       <div className="text-right">
                         <span className="text-xs font-black font-mono text-emerald-600 block">
-                          +৳{item.amount.toFixed(2)}
+                          +৳{(Number(item.amount) || 0).toFixed(2)}
                         </span>
                         <span className={`text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase ${
                           item.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
@@ -496,12 +992,12 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                       <div>
                         <span className="font-black text-slate-800 text-xs">{item.method} Payout</span>
                         <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
-                          A/C: {item.senderPhone || item.accountNo || '***'}
+                          A/C: {item.account_number || item.senderPhone || '***'}
                         </span>
                       </div>
                       <div className="text-right">
                         <span className="text-xs font-black font-mono text-red-500 block">
-                          -৳{item.amount.toFixed(2)}
+                          -৳{(Number(item.amount) || 0).toFixed(2)}
                         </span>
                         <span className={`text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase ${
                           item.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
@@ -523,14 +1019,14 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                       <div>
                         <span className="font-black text-slate-800 text-xs capitalize">{item.type} ({item.method})</span>
                         <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
-                          {new Date(item.timestamp || Date.now()).toLocaleTimeString()}
+                          {new Date(item.created_at || Date.now()).toLocaleTimeString()}
                         </span>
                       </div>
                       <div className="text-right">
                         <span className={`text-xs font-black font-mono block ${
-                          item.type === 'deposit' ? 'text-emerald-600' : 'text-red-500'
+                          item.type === 'deposit' || item.type === 'bonus' || item.type === 'faucet' ? 'text-emerald-600' : 'text-red-500'
                         }`}>
-                          {item.type === 'deposit' ? '+' : '-'}৳{item.amount.toFixed(2)}
+                          {item.type === 'deposit' || item.type === 'bonus' || item.type === 'faucet' ? '+' : '-'}৳{(Number(item.amount) || 0).toFixed(2)}
                         </span>
                         <span className="text-[9px] text-slate-500 font-bold uppercase">{item.status}</span>
                       </div>
@@ -547,58 +1043,6 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               className="w-full bg-[#F5BE00] hover:bg-yellow-500 text-slate-900 font-black py-2.5 rounded-xl text-xs transition"
             >
               Close
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Safe Vault In-App Modal */}
-      {safeModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-5 max-w-xs w-full text-center space-y-3 shadow-2xl text-slate-900">
-            <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-2xl mx-auto">
-              🪙
-            </div>
-            <h4 className="font-black text-sm text-slate-900">RoyalClub Safe Vault</h4>
-            <p className="text-[11px] text-slate-600 leading-relaxed">
-              Safe-এ ব্যালেন্স জমা রাখলে আপনি দৈনিক ০.১% হারে নির্দিষ্ট লভ্যাংশ পাবেন। যেকোনো সময় সম্পূর্ণ ব্যালেন্স মূল অ্যাকাউন্টে স্থানান্তর করা যায়।
-            </p>
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-2.5 text-xs font-mono font-bold text-amber-800">
-              বর্তমান Safe ব্যালেন্স: ৳0.00
-            </div>
-            <button
-              onClick={() => setSafeModalOpen(false)}
-              className="w-full bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black py-2.5 rounded-xl text-xs cursor-pointer active:scale-95 transition"
-            >
-              ঠিক আছে
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Notification In-App Modal */}
-      {notificationModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-5 max-w-xs w-full text-left space-y-3 shadow-2xl text-slate-900">
-            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-              <h4 className="font-black text-sm text-slate-900">অফিশিয়াল নোটিফিকেশন</h4>
-              <button onClick={() => setNotificationModalOpen(false)} className="text-slate-400 hover:text-slate-700">✕</button>
-            </div>
-            <div className="space-y-2 text-xs">
-              <div className="p-2.5 bg-yellow-50 border border-yellow-200 rounded-xl">
-                <span className="font-bold text-slate-900 block">🎁 নতুন ওয়েলকাম বোনাস</span>
-                <span className="text-[10px] text-slate-600">রেজিস্ট্রেশন করলেই পাচ্ছেন তাৎক্ষণিক ৳১০০ ওয়েলকাম বোনাস!</span>
-              </div>
-              <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
-                <span className="font-bold text-slate-900 block">⚡ দ্রুত ডিপোজিট ও উইথড্র</span>
-                <span className="text-[10px] text-slate-600">বিকাশ ও নগদ অ্যাকাউন্টে মাত্র ৩-৫ মিনিটে ক্যাশআউট সম্পন্ন হচ্ছে।</span>
-              </div>
-            </div>
-            <button
-              onClick={() => setNotificationModalOpen(false)}
-              className="w-full bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black py-2 rounded-xl text-xs cursor-pointer"
-            >
-              বন্ধ করুন
             </button>
           </div>
         </div>

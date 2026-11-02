@@ -403,6 +403,7 @@ function AppContent() {
               onOpenDeposit={() => setActiveTab('deposit')}
               onOpenWithdraw={() => setActiveTab('withdraw')}
               onOpenAdmin={() => setActiveTab('admin')}
+              onOpenGift={() => setIsGiftOpen(true)}
               onOpenAuth={() => {
                 setAuthTab('login');
                 setIsAuthOpen(true);

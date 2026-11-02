@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import { soundManager } from '../lib/audio';
 import { sha256, calculateRoundResult, evaluateBet } from '../lib/provablyFair';
 import confetti from 'canvas-confetti';
+import { ALL_GAMES } from '../config/gamesRegistry';
 
 const GameContext = createContext(null);
 
@@ -179,7 +180,7 @@ export function GameProvider({ children }) {
     }));
   }
 
-  // 3C. Comprehensive Admin Game & User Win-Rate Controls
+  // 3C. Platform-Wide Transparent Game & Server Settings
   const [gameControl, setGameControl] = useState(() => {
     const saved = localStorage.getItem('royalclub_game_control');
     const defaults = {
@@ -190,16 +191,15 @@ export function GameProvider({ children }) {
         ORIGINAL: 98
       },
       gameOverrides: {
-        aviator: { rtp: 97, maxMultiplier: 100, mode: 'auto', forceCrashAt: '' },
-        fortunegems2: { rtp: 96, maxMultiplier: 1000, mode: 'auto', reelBoost: 'normal' },
-        superace: { rtp: 96, maxMultiplier: 500, mode: 'auto', goldenCardRate: 'normal' },
-        wingo: { rtp: 98, mode: 'auto', forceOutcome: 'auto' },
-        k3: { rtp: 97, mode: 'auto' },
-        mines: { rtp: 98, mode: 'auto', safeDiamonds: 3 },
-        gatesofolympus: { rtp: 96, maxMultiplier: 500, mode: 'auto' },
-        sweetbonanza: { rtp: 96, maxMultiplier: 100, mode: 'auto' }
+        aviator: { rtp: 97, maxMultiplier: 100 },
+        fortunegems2: { rtp: 96, maxMultiplier: 1000 },
+        superace: { rtp: 96, maxMultiplier: 500 },
+        wingo: { rtp: 98 },
+        k3: { rtp: 97 },
+        mines: { rtp: 98, safeDiamonds: 3 },
+        gatesofolympus: { rtp: 96, maxMultiplier: 500 },
+        sweetbonanza: { rtp: 96, maxMultiplier: 100 }
       },
-      userOverrides: {}, // { [uid]: { customWinRate: '', mode: 'default' } }
       signupBonus: 100
     };
     if (saved) {
@@ -209,8 +209,7 @@ export function GameProvider({ children }) {
           ...defaults,
           ...parsed,
           serverRtp: { ...defaults.serverRtp, ...(parsed.serverRtp || {}) },
-          gameOverrides: { ...defaults.gameOverrides, ...(parsed.gameOverrides || {}) },
-          userOverrides: { ...(parsed.userOverrides || {}) }
+          gameOverrides: { ...defaults.gameOverrides, ...(parsed.gameOverrides || {}) }
         };
       } catch (e) {
         return defaults;
@@ -241,7 +240,6 @@ export function GameProvider({ children }) {
       return updated;
     });
 
-    // Live update to Supabase game_settings table
     try {
       await supabase.from('game_settings').update({
         rtp_percentage: numRtp,
@@ -255,11 +253,6 @@ export function GameProvider({ children }) {
   function updateGameOverride(gameId, updates) {
     setGameControl(prev => {
       const mergedUpdates = { ...updates };
-      if (mergedUpdates.rtp !== undefined && mergedUpdates.winRate === undefined) {
-        mergedUpdates.winRate = mergedUpdates.rtp;
-      } else if (mergedUpdates.winRate !== undefined && mergedUpdates.rtp === undefined) {
-        mergedUpdates.rtp = mergedUpdates.winRate;
-      }
       const updated = {
         ...prev,
         gameOverrides: {
@@ -267,23 +260,6 @@ export function GameProvider({ children }) {
           [gameId]: {
             ...(prev.gameOverrides[gameId] || {}),
             ...mergedUpdates
-          }
-        }
-      };
-      localStorage.setItem('royalclub_game_control', JSON.stringify(updated));
-      return updated;
-    });
-  }
-
-  function updateUserWinRate(uid, updates) {
-    setGameControl(prev => {
-      const updated = {
-        ...prev,
-        userOverrides: {
-          ...prev.userOverrides,
-          [uid]: {
-            ...(prev.userOverrides[uid] || { customWinRate: '', mode: 'default' }),
-            ...updates
           }
         }
       };
@@ -308,8 +284,8 @@ export function GameProvider({ children }) {
     });
   }
 
-  function getGameEffectiveSettings(gameId, provider, activeUser) {
-    const userOverride = gameControl.userOverrides?.[activeUser?.uid];
+  // Pure, transparent RNG settings for all games — Zero per-user manipulation
+  function getGameEffectiveSettings(gameId, provider) {
     const gameOverride = gameControl.gameOverrides?.[gameId];
     const serverRtp = gameControl.serverRtp?.[provider] ?? 96;
 
@@ -318,25 +294,10 @@ export function GameProvider({ children }) {
     if (rtpVal !== undefined && rtpVal !== '' && !isNaN(Number(rtpVal))) {
       effectiveWinRate = Number(rtpVal);
     }
-    if (activeUser?.custom_win_rate !== undefined && activeUser.custom_win_rate !== null && !isNaN(Number(activeUser.custom_win_rate))) {
-      effectiveWinRate = Number(activeUser.custom_win_rate);
-    }
-    if (userOverride?.customWinRate !== undefined && userOverride.customWinRate !== '' && !isNaN(Number(userOverride.customWinRate))) {
-      effectiveWinRate = Number(userOverride.customWinRate);
-    }
-
-    let mode = 'auto';
-    if (userOverride?.mode && userOverride.mode !== 'default') {
-      mode = userOverride.mode; // 'force_win' or 'force_loss'
-    } else if (gameOverride?.mode && gameOverride.mode !== 'auto') {
-      mode = gameOverride.mode;
-    }
 
     return {
       effectiveWinRate: Math.max(0, Math.min(100, effectiveWinRate)),
-      mode,
       maxMultiplier: gameOverride?.maxMultiplier || 500,
-      forceCrashAt: gameOverride?.forceCrashAt || null,
       extra: gameOverride || {}
     };
   }
@@ -401,6 +362,409 @@ export function GameProvider({ children }) {
       { uid: "100888", username: "Player777", balance: 100.00, total_won: 0, total_wagered: 0, vip_level: 1, is_admin: false, is_banned: false, is_online: false }
     ];
   });
+
+  // 3D. Comprehensive Game Management Config (Module C)
+  const [gamesConfig, setGamesConfig] = useState(() => {
+    const saved = localStorage.getItem('royalclub_games_config');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return ALL_GAMES.map((g, idx) => ({
+      id: g.id,
+      name: g.name || g.display,
+      category: g.category || 'slots',
+      provider: g.provider || 'RoyalClub',
+      isEnabled: true,
+      isFeatured: !!(g.isHot || g.isPopular),
+      minBet: 10,
+      maxBet: 10000,
+      rtp: parseFloat(g.rtp) || 96.5,
+      sortOrder: idx + 1,
+      thumbnail: g.thumbnail || '/assets/amarclub/game_fortunegems.png'
+    }));
+  });
+
+  function toggleGameStatus(gameId) {
+    setGamesConfig(prev => {
+      const updated = prev.map(g => g.id === gameId ? { ...g, isEnabled: !g.isEnabled } : g);
+      localStorage.setItem('royalclub_games_config', JSON.stringify(updated));
+      return updated;
+    });
+  }
+
+  function toggleGameFeatured(gameId) {
+    setGamesConfig(prev => {
+      const updated = prev.map(g => g.id === gameId ? { ...g, isFeatured: !g.isFeatured } : g);
+      localStorage.setItem('royalclub_games_config', JSON.stringify(updated));
+      return updated;
+    });
+  }
+
+  function updateGameSettings(gameId, updates) {
+    setGamesConfig(prev => {
+      const updated = prev.map(g => g.id === gameId ? { ...g, ...updates } : g);
+      localStorage.setItem('royalclub_games_config', JSON.stringify(updated));
+      return updated;
+    });
+  }
+
+  // 3E. Promo Codes & Gift Vouchers (Module F)
+  const [promoCodes, setPromoCodes] = useState(() => {
+    const saved = localStorage.getItem('royalclub_promo_codes');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return [
+      { code: 'ROYAL100', amount: 100, maxUses: 1000, usedCount: 14, expiresAt: '2026-12-31', enabled: true },
+      { code: 'AMARCLUB', amount: 150, maxUses: 500, usedCount: 8, expiresAt: '2026-12-31', enabled: true },
+      { code: 'VIP2026', amount: 200, maxUses: 200, usedCount: 3, expiresAt: '2026-12-31', enabled: true },
+      { code: 'WELCOME50', amount: 50, maxUses: 2000, usedCount: 42, expiresAt: '2026-12-31', enabled: true }
+    ];
+  });
+
+  function createPromoCode({ code, amount, maxUses, expiresAt }) {
+    const cleanCode = (code || '').trim().toUpperCase();
+    if (!cleanCode) return { success: false, message: 'কোড দিন' };
+    const exists = promoCodes.some(p => p.code === cleanCode);
+    if (exists) return { success: false, message: 'এই কোডটি ইতিমধ্যে তৈরি রয়েছে' };
+    const newPromo = {
+      code: cleanCode,
+      amount: Number(amount) || 100,
+      maxUses: Number(maxUses) || 100,
+      usedCount: 0,
+      expiresAt: expiresAt || '2026-12-31',
+      enabled: true
+    };
+    setPromoCodes(prev => {
+      const updated = [newPromo, ...prev];
+      localStorage.setItem('royalclub_promo_codes', JSON.stringify(updated));
+      return updated;
+    });
+    return { success: true, promo: newPromo };
+  }
+
+  function togglePromoCode(code) {
+    setPromoCodes(prev => {
+      const updated = prev.map(p => p.code === code ? { ...p, enabled: !p.enabled } : p);
+      localStorage.setItem('royalclub_promo_codes', JSON.stringify(updated));
+      return updated;
+    });
+  }
+
+  function deletePromoCode(code) {
+    setPromoCodes(prev => {
+      const updated = prev.filter(p => p.code !== code);
+      localStorage.setItem('royalclub_promo_codes', JSON.stringify(updated));
+      return updated;
+    });
+  }
+
+  function redeemPromoCode(inputCode) {
+    const clean = (inputCode || '').trim().toUpperCase();
+    if (!clean) return { success: false, message: 'উপহার কোডটি লিখুন।' };
+    
+    const userRedeemedKey = `royalclub_redeemed_${user.uid || 'guest'}`;
+    const redeemedList = JSON.parse(localStorage.getItem(userRedeemedKey) || '[]');
+    if (redeemedList.includes(clean)) {
+      return { success: false, message: 'আপনি এই কোডটি ইতোমধ্যে সংগ্রহ করে ফেলেছেন!' };
+    }
+
+    const promo = promoCodes.find(p => p.code === clean);
+    if (!promo) {
+      if (['ROYAL100', 'WELCOME', 'VIP100'].includes(clean)) {
+        const amt = 100;
+        adjustUserBalance(user.uid, amt);
+        redeemedList.push(clean);
+        localStorage.setItem(userRedeemedKey, JSON.stringify(redeemedList));
+        return { success: true, amount: amt };
+      }
+      return { success: false, message: 'ভুল উপহার কোড! সঠিক কোড দিন।' };
+    }
+
+    if (!promo.enabled) {
+      return { success: false, message: 'এই কোডটি বর্তমানে নিষ্ক্রিয় রয়েছে।' };
+    }
+
+    if (promo.usedCount >= promo.maxUses) {
+      return { success: false, message: 'এই কোডের সর্বোচ্চ লিমিট পূর্ণ হয়ে গেছে!' };
+    }
+
+    if (new Date(promo.expiresAt).getTime() < Date.now()) {
+      return { success: false, message: 'এই কোডের মেয়াদ শেষ হয়ে গেছে।' };
+    }
+
+    adjustUserBalance(user.uid, promo.amount);
+    
+    setPromoCodes(prev => {
+      const updated = prev.map(p => p.code === clean ? { ...p, usedCount: p.usedCount + 1 } : p);
+      localStorage.setItem('royalclub_promo_codes', JSON.stringify(updated));
+      return updated;
+    });
+
+    redeemedList.push(clean);
+    localStorage.setItem(userRedeemedKey, JSON.stringify(redeemedList));
+
+    const promoTx = {
+      id: Date.now(),
+      uid: user.uid,
+      type: 'bonus',
+      amount: promo.amount,
+      fee: 0,
+      method: `Gift Code Redeem (${clean})`,
+      status: 'approved',
+      created_at: new Date().toISOString()
+    };
+    setTransactions(prev => [promoTx, ...prev]);
+
+    return { success: true, amount: promo.amount };
+  }
+
+  // 3F. Support Ticket System (Module K)
+  const [supportTickets, setSupportTickets] = useState(() => {
+    const saved = localStorage.getItem('royalclub_support_tickets');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return [
+      {
+        id: 'TKT-101',
+        uid: '120356',
+        username: 'RIYAD',
+        subject: 'ডিপোজিট ব্যালেন্স আপডেট সমস্যা',
+        category: 'Deposit',
+        message: 'আমি বিকাশ থেকে ৫০০ কয়েন ডেমো ডিপোজিট করেছি কিন্তু সাথে সাথে আসে নাই।',
+        status: 'open',
+        priority: 'high',
+        created_at: new Date(Date.now() - 3600000).toISOString(),
+        adminReplies: []
+      },
+      {
+        id: 'TKT-100',
+        uid: '100888',
+        username: 'Player777',
+        subject: 'উইথড্র অনুমোদন কতক্ষণ লাগবে?',
+        category: 'Withdrawal',
+        message: 'ডেমো ক্যাশআউট রিকোয়েস্ট পাঠিয়েছি। অনুগ্রহ করে অনুমোদন দিন।',
+        status: 'resolved',
+        priority: 'medium',
+        created_at: new Date(Date.now() - 86400000).toISOString(),
+        adminReplies: [
+          { sender: 'Admin Support', text: 'আপনার রিকোয়েস্ট সফলভাবে অ্যাপ্রুভ করা হয়েছে!', time: 'গতকাল ৪:৩০ PM' }
+        ]
+      }
+    ];
+  });
+
+  function createSupportTicket({ subject, category, message }) {
+    if (!subject || !message) return { success: false, message: 'বিষয় ও বার্তা উভয়ই আবশ্যক।' };
+    const newTicket = {
+      id: 'TKT-' + Math.floor(100 + Math.random() * 900),
+      uid: user.uid || '100000',
+      username: user.username || 'Guest',
+      subject,
+      category: category || 'General',
+      message,
+      status: 'open',
+      priority: 'medium',
+      created_at: new Date().toISOString(),
+      adminReplies: []
+    };
+    setSupportTickets(prev => {
+      const updated = [newTicket, ...prev];
+      localStorage.setItem('royalclub_support_tickets', JSON.stringify(updated));
+      return updated;
+    });
+    return { success: true, ticket: newTicket };
+  }
+
+  function replySupportTicket(ticketId, replyText, newStatus) {
+    if (!replyText) return false;
+    setSupportTickets(prev => {
+      const updated = prev.map(t => {
+        if (t.id === ticketId) {
+          const replies = t.adminReplies || [];
+          return {
+            ...t,
+            status: newStatus || t.status,
+            adminReplies: [
+              ...replies,
+              { sender: 'Master Admin', text: replyText, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+            ]
+          };
+        }
+        return t;
+      });
+      localStorage.setItem('royalclub_support_tickets', JSON.stringify(updated));
+      return updated;
+    });
+    return true;
+  }
+
+  function updateTicketStatus(ticketId, status) {
+    setSupportTickets(prev => {
+      const updated = prev.map(t => t.id === ticketId ? { ...t, status } : t);
+      localStorage.setItem('royalclub_support_tickets', JSON.stringify(updated));
+      return updated;
+    });
+  }
+
+  // 3G. Notification System (Module J)
+  const [notifications, setNotifications] = useState(() => {
+    const saved = localStorage.getItem('royalclub_notifications');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return [
+      {
+        id: 'NTF-1',
+        targetUid: 'all',
+        title: '🎉 মেগা টুর্নামেন্ট শুরু হয়েছে!',
+        message: 'আজকের Aviator ও WinGo গেমে ডাবল এক্সপি ও বিশেষ ডেমো রিওয়ার্ড চালু হয়েছে!',
+        type: 'reward',
+        isRead: false,
+        created_at: new Date().toISOString()
+      },
+      {
+        id: 'NTF-2',
+        targetUid: 'all',
+        title: 'নতুন গেম আপডেট: Super Ace Deluxe',
+        message: 'নতুন JILI স্টাইল স্লট গেম সুপার এস ডিলাক্স এখন লাইভ। এখনই উপভোগ করুন!',
+        type: 'info',
+        isRead: true,
+        created_at: new Date(Date.now() - 7200000).toISOString()
+      }
+    ];
+  });
+
+  function sendNotification({ targetUid = 'all', title, message, type = 'info' }) {
+    if (!title || !message) return false;
+    const newNotif = {
+      id: 'NTF-' + Date.now().toString().slice(-6),
+      targetUid,
+      title,
+      message,
+      type,
+      isRead: false,
+      created_at: new Date().toISOString()
+    };
+    setNotifications(prev => {
+      const updated = [newNotif, ...prev];
+      localStorage.setItem('royalclub_notifications', JSON.stringify(updated));
+      return updated;
+    });
+    return true;
+  }
+
+  function markNotificationRead(id) {
+    setNotifications(prev => {
+      const updated = prev.map(n => n.id === id ? { ...n, isRead: true } : n);
+      localStorage.setItem('royalclub_notifications', JSON.stringify(updated));
+      return updated;
+    });
+  }
+
+  function deleteNotification(id) {
+    setNotifications(prev => {
+      const updated = prev.filter(n => n.id !== id);
+      localStorage.setItem('royalclub_notifications', JSON.stringify(updated));
+      return updated;
+    });
+  }
+
+  // 3H. Admin Role & RBAC (Module M)
+  const [adminRole, setAdminRole] = useState(() => {
+    return localStorage.getItem('royalclub_admin_role') || 'super_admin';
+  });
+
+  function updateAdminRole(role) {
+    setAdminRole(role);
+    localStorage.setItem('royalclub_admin_role', role);
+  }
+
+  // 3I. Responsible Gaming Controls
+  const [responsiblePlay, setResponsiblePlay] = useState(() => {
+    const saved = localStorage.getItem('royalclub_responsible_play');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return {
+      dailyLimit: 50000,
+      sessionMinutes: 120,
+      isPaused: false
+    };
+  });
+
+  function updateResponsiblePlay(updates) {
+    setResponsiblePlay(prev => {
+      const updated = { ...prev, ...updates };
+      localStorage.setItem('royalclub_responsible_play', JSON.stringify(updated));
+      return updated;
+    });
+  }
+
+  // 3J. Profile Edit & Password Change Operations
+  function editUserProfile(uid, updates) {
+    setAllUsers(prev => prev.map(u => (u.uid === uid || u.id === uid) ? { ...u, ...updates } : u));
+    setUser(prev => (prev.uid === uid || prev.id === uid) ? { ...prev, ...updates } : prev);
+    
+    const savedCurrent = localStorage.getItem('royalclub_current_user');
+    if (savedCurrent) {
+      try {
+        const parsed = JSON.parse(savedCurrent);
+        if (parsed.uid === uid) {
+          localStorage.setItem('royalclub_current_user', JSON.stringify({ ...parsed, ...updates }));
+        }
+      } catch (e) {}
+    }
+
+    try {
+      const targetUser = allUsers.find(u => u.uid === uid || u.id === uid);
+      if (targetUser && targetUser.username) {
+        supabase.from('users').update(updates).eq('username', targetUser.username).then(() => {}).catch(() => {});
+      }
+    } catch (e) {}
+  }
+
+  function adminResetPassword(uid, newPassword) {
+    if (!newPassword || newPassword.length < 6) return { success: false, message: 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।' };
+    editUserProfile(uid, { password: newPassword });
+    return { success: true };
+  }
+
+  function adminAdjustBalanceWithReason(uid, amount, type = 'add', reason = 'Admin Adjustment') {
+    const num = Math.abs(parseFloat(amount) || 0);
+    if (num <= 0) return false;
+    
+    const delta = type === 'add' ? num : -num;
+    const target = allUsers.find(u => u.uid === uid || u.id === uid);
+    const curBal = target ? Number(target.balance || 0) : 0;
+    const newBal = Math.max(0, parseFloat((curBal + delta).toFixed(2)));
+
+    updateUserDirectBalance(uid, newBal);
+
+    const adjTx = {
+      id: Date.now(),
+      uid,
+      username: target?.username || 'User',
+      type: type === 'add' ? 'deposit' : 'withdrawal',
+      amount: num,
+      fee: 0,
+      method: `Admin Manual (${reason})`,
+      status: 'approved',
+      created_at: new Date().toISOString()
+    };
+    setTransactions(prev => [adjTx, ...prev]);
+    return true;
+  }
+
+  function changeUserPassword(oldPassword, newPassword) {
+    if (!newPassword || newPassword.length < 6) {
+      return { success: false, message: 'নতুন পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।' };
+    }
+    setUser(prev => ({ ...prev, password: newPassword }));
+    editUserProfile(user.uid, { password: newPassword });
+    return { success: true, message: 'পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে!' };
+  }
 
   const [supabaseStatus, setSupabaseStatus] = useState('checking'); // 'connected' | 'offline' | 'checking'
 
@@ -1320,7 +1684,6 @@ export function GameProvider({ children }) {
       updateGameControl,
       updateServerRtp,
       updateGameOverride,
-      updateUserWinRate,
       updateUserDirectBalance,
       updateSignupBonusAmount,
       getGameEffectiveSettings,
@@ -1328,7 +1691,32 @@ export function GameProvider({ children }) {
       registerUser,
       logout,
       supabaseStatus,
-      refreshSupabaseData
+      refreshSupabaseData,
+      gamesConfig,
+      toggleGameStatus,
+      toggleGameFeatured,
+      updateGameSettings,
+      promoCodes,
+      createPromoCode,
+      togglePromoCode,
+      deletePromoCode,
+      redeemPromoCode,
+      supportTickets,
+      createSupportTicket,
+      replySupportTicket,
+      updateTicketStatus,
+      notifications,
+      sendNotification,
+      markNotificationRead,
+      deleteNotification,
+      adminRole,
+      updateAdminRole,
+      responsiblePlay,
+      updateResponsiblePlay,
+      editUserProfile,
+      adminResetPassword,
+      adminAdjustBalanceWithReason,
+      changeUserPassword
     }}>
       {children}
     </GameContext.Provider>

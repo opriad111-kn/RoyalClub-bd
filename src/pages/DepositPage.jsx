@@ -117,6 +117,15 @@ export default function DepositPage({ onBack, onOpenAuth }) {
 
       <div className="px-3.5 space-y-3.5">
         
+        {/* Virtual Demo Platform Notice */}
+        <div className="bg-amber-50 border border-amber-300 rounded-2xl p-3 text-amber-950 flex items-start space-x-2.5">
+          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="text-[11px] leading-relaxed">
+            <span className="font-black block text-amber-900">ভার্চুয়াল কয়েন ডেমো রিকোয়েস্ট (100% Demo Simulation)</span>
+            <span>এটি সম্পূর্ণ একটি ভার্চুয়াল ডেমো সিমুলেশন প্ল্যাটফর্ম। কোনো আসল টাকা ডিপোজিট বা জুয়া খেলা হয় না। bKash, Nagad, Rocket ও USDT কেবলমাত্র ডেমো কয়েন টেস্ট করার উদ্দেশ্যে ব্যবহৃত হয়।</span>
+          </div>
+        </div>
+
         {/* 2. Total Balance Card */}
         <div className="bg-gradient-to-tr from-amber-500 via-[#F5BE00] to-yellow-400 rounded-2xl p-4 text-slate-950 shadow-sm flex items-center justify-between">
           <div>

@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
 import { soundManager } from '../lib/audio';
 import confetti from 'canvas-confetti';
@@ -7,32 +7,31 @@ import { Gift, X, Sparkles, CheckCircle2 } from 'lucide-react';
 export default function GiftCodeModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
-  const { user, adjustUserBalance } = useGame();
+  const { user, redeemPromoCode } = useGame();
   const [code, setCode] = useState('');
   const [claimed, setClaimed] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   function handleRedeem(e) {
     e.preventDefault();
     const c = code.trim().toUpperCase();
     if (!c) {
-      alert("উপহার কোডটি লিখুন।");
+      setErrorMsg("উপহার কোডটি লিখুন।");
       return;
     }
+    setErrorMsg('');
 
-    // Supported codes
-    const rewards = {
-      'ROYAL100': 100,
-      'AMARCLUB': 150,
-      'VIP2026': 200,
-      'WELCOME': 50
-    };
-
-    const amt = rewards[c] || 100; // gives reward for any valid promo input
-    adjustUserBalance(user.uid, amt);
-    soundManager.playWin();
-    confetti({ particleCount: 75, spread: 60, origin: { y: 0.6 } });
-    setClaimed(amt);
-    setCode('');
+    if (redeemPromoCode) {
+      const res = redeemPromoCode(c);
+      if (res.success) {
+        soundManager.playWin();
+        confetti({ particleCount: 75, spread: 60, origin: { y: 0.6 } });
+        setClaimed(res.amount);
+        setCode('');
+      } else {
+        setErrorMsg(res.message || 'ভুল উপহার কোড!');
+      }
+    }
   }
 
   return (
@@ -73,6 +72,7 @@ export default function GiftCodeModal({ isOpen, onClose }) {
               onChange={e => setCode(e.target.value.toUpperCase())}
               className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white font-mono text-center font-bold tracking-wider text-sm focus:border-red-500"
             />
+            {errorMsg && <p className="text-rose-400 text-xs font-bold text-center">{errorMsg}</p>}
             <button
               type="submit"
               className="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-black py-3 rounded-xl text-sm shadow-xl transition"

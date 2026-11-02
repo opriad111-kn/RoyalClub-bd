@@ -101,6 +101,15 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
 
       <div className="px-3.5 space-y-3.5">
         
+        {/* Virtual Demo Platform Notice */}
+        <div className="bg-amber-50 border border-amber-300 rounded-2xl p-3 text-amber-950 flex items-start space-x-2.5">
+          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="text-[11px] leading-relaxed">
+            <span className="font-black block text-amber-900">ভার্চুয়াল কয়েন ডেমো উইথড্র রিকোয়েস্ট (100% Demo Simulation)</span>
+            <span>এটি সম্পূর্ণ একটি ভার্চুয়াল ডেমো সিমুলেশন প্ল্যাটফর্ম। কোনো আসল টাকা উত্তোলন বা আর্থিক লেনদেন হয় না। ডেমো ক্যাশ-আউট টেস্ট করার জন্য বিকাশ ও নগদ নম্বর ব্যবহৃত হয়।</span>
+          </div>
+        </div>
+
         {/* 2. Total Balance & Withdrawable Card */}
         <div className="bg-gradient-to-tr from-amber-500 via-[#F5BE00] to-yellow-400 rounded-2xl p-4 text-slate-950 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
