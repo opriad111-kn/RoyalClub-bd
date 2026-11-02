@@ -112,7 +112,13 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
         {/* Center Bonus Details Pill Button */}
         <div className="flex justify-center mt-3.5">
           <button
-            onClick={() => setBonusDetailsOpen(true)}
+            onClick={() => {
+              if (user.username === 'Guest' || user.is_guest) {
+                if (onOpenAuth) onOpenAuth();
+                return;
+              }
+              setBonusDetailsOpen(true);
+            }}
             className="bg-white hover:bg-slate-50 text-amber-500 font-black text-xs px-6 py-1.5 rounded-full shadow-sm transition active:scale-95 border border-amber-200 cursor-pointer"
           >
             Bonus details
@@ -127,7 +133,13 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
         <div className="grid grid-cols-4 gap-2 text-center">
           {/* 1. Activity Award */}
           <button 
-            onClick={() => setActivityAwardOpen(true)}
+            onClick={() => {
+              if (user.username === 'Guest' || user.is_guest) {
+                if (onOpenAuth) onOpenAuth();
+                return;
+              }
+              setActivityAwardOpen(true);
+            }}
             className="flex flex-col items-center group transition active:scale-95 cursor-pointer"
           >
             <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-rose-400 to-rose-200 p-2.5 text-white flex items-center justify-center shadow-sm mb-1 group-hover:scale-105 transition">
@@ -140,7 +152,13 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
 
           {/* 2. Betting Rebate (With Red Notification Dot) */}
           <button 
-            onClick={() => setBettingRebateOpen(true)}
+            onClick={() => {
+              if (user.username === 'Guest' || user.is_guest) {
+                if (onOpenAuth) onOpenAuth();
+                return;
+              }
+              setBettingRebateOpen(true);
+            }}
             className="flex flex-col items-center group transition active:scale-95 relative cursor-pointer"
           >
             <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-amber-400 to-amber-200 p-2.5 text-white flex items-center justify-center shadow-sm mb-1 group-hover:scale-105 transition relative">
@@ -155,7 +173,13 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
 
           {/* 3. Super Jackpot */}
           <button 
-            onClick={() => setSuperJackpotOpen(true)}
+            onClick={() => {
+              if (user.username === 'Guest' || user.is_guest) {
+                if (onOpenAuth) onOpenAuth();
+                return;
+              }
+              setSuperJackpotOpen(true);
+            }}
             className="flex flex-col items-center group transition active:scale-95 cursor-pointer"
           >
             <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-teal-400 to-cyan-200 p-2.5 text-white flex items-center justify-center shadow-sm mb-1 group-hover:scale-105 transition">
@@ -366,13 +390,13 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
               <span className="text-[10px] font-bold opacity-80 uppercase">Available Rebate</span>
               <div className="flex items-baseline space-x-1">
                 <span className="text-2xl font-black font-mono">
-                  {claimedRebate ? '৳0.00' : '৳28.50'}
+                  {user.is_guest ? '৳0.00' : claimedRebate ? '৳0.00' : '৳28.50'}
                 </span>
                 <span className="text-[10px] font-bold">(0.6% Rate)</span>
               </div>
               <div className="text-[10px] font-medium pt-1 border-t border-slate-950/10 flex justify-between">
                 <span>Today's Total Turnover:</span>
-                <span className="font-mono font-black">৳{(user?.total_wagered || 4500).toFixed(2)}</span>
+                <span className="font-mono font-black">৳{(user.is_guest ? 0 : (user?.total_wagered || 0)).toFixed(2)}</span>
               </div>
             </div>
 
@@ -397,15 +421,22 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
             </div>
 
             <button
-              onClick={handleClaimRebate}
-              disabled={claimedRebate}
+              onClick={() => {
+                if (user.is_guest || user.username === 'Guest') {
+                  setBettingRebateOpen(false);
+                  if (onOpenAuth) onOpenAuth('login');
+                  return;
+                }
+                handleClaimRebate();
+              }}
+              disabled={!user.is_guest && claimedRebate}
               className={`w-full py-3 rounded-full font-black text-xs uppercase tracking-wider transition active:scale-95 shadow-md ${
-                claimedRebate
+                !user.is_guest && claimedRebate
                   ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
                   : 'bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 cursor-pointer'
               }`}
             >
-              {claimedRebate ? 'Rebate Claimed Successfully ✔' : 'One-Click Claim All (৳28.50)'}
+              {user.is_guest ? 'লগইন করুন (LOGIN TO CLAIM)' : claimedRebate ? 'Rebate Claimed Successfully ✔' : 'One-Click Claim All (৳28.50)'}
             </button>
           </div>
         </div>

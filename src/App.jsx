@@ -260,11 +260,18 @@ function AppContent() {
       )}
 
       {/* Floating Right Action Widgets (Desktop Shortcuts) */}
-      {!activeGame && (
+      {!activeGame && activeTab !== 'admin' && (
         <aside aria-label="Quick Actions" className="fixed right-2 sm:right-6 top-1/2 -translate-y-1/2 z-50 hidden sm:flex flex-col space-y-3 pointer-events-auto">
           {/* 1. Activity Gift Box */}
           <button
-            onClick={() => setIsGiftOpen(true)}
+            onClick={() => {
+              if (user?.username === 'Guest' || user?.is_guest) {
+                setAuthTab('login');
+                setIsAuthOpen(true);
+                return;
+              }
+              setIsGiftOpen(true);
+            }}
             title="Gift Rewards"
             className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-600 shadow-lg border-2 border-white flex items-center justify-center p-2 hover:scale-110 active:scale-95 transition transform animate-pulse cursor-pointer"
           >
@@ -273,7 +280,14 @@ function AppContent() {
 
           {/* 2. Lucky Spin Wheel */}
           <button
-            onClick={() => setIsWheelOpen(true)}
+            onClick={() => {
+              if (user?.username === 'Guest' || user?.is_guest) {
+                setAuthTab('login');
+                setIsAuthOpen(true);
+                return;
+              }
+              setIsWheelOpen(true);
+            }}
             title="Lucky Wheel"
             className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-tr from-red-500 via-yellow-400 to-orange-500 shadow-lg border-2 border-white flex items-center justify-center p-2 hover:scale-110 active:scale-95 transition transform hover:rotate-45 cursor-pointer"
           >
@@ -291,11 +305,11 @@ function AppContent() {
         </aside>
       )}
 
-      {/* Mobile Max-Width Container (Expands for Admin Dashboard on Desktop) */}
-      <div className={`w-full ${activeTab === 'admin' ? 'max-w-6xl' : 'max-w-[480px] sm:max-w-[500px]'} min-h-screen bg-[#F4F5F8] border-x border-slate-200/60 flex flex-col justify-between relative shadow-2xl transition-all duration-200`}>
+      {/* Main Container: Expands to full screen on Admin matching Screenshot 4 */}
+      <div className={`w-full ${activeTab === 'admin' ? 'max-w-full bg-[#0d1117]' : 'max-w-[480px] sm:max-w-[500px] bg-[#F4F5F8] border-x border-slate-200/60'} min-h-screen flex flex-col justify-between relative shadow-2xl transition-all duration-200`}>
         
-        {/* Sticky Top Header (Hidden in Game, WinGo, Account, Activity, Deposit, Withdraw) */}
-        {!activeGame && activeTab !== 'wingo' && activeTab !== 'account' && activeTab !== 'activity' && activeTab !== 'deposit' && activeTab !== 'withdraw' && (
+        {/* Sticky Top Header (Hidden in Game, WinGo, Account, Activity, Deposit, Withdraw, Admin) */}
+        {!activeGame && activeTab !== 'admin' && activeTab !== 'wingo' && activeTab !== 'account' && activeTab !== 'activity' && activeTab !== 'deposit' && activeTab !== 'withdraw' && (
           <AmarHeader
             onOpenAuth={(tab = 'login') => {
               setAuthTab(tab);
@@ -309,7 +323,9 @@ function AppContent() {
 
         {/* Dynamic Pages */}
         <main className={`flex-1 ${
-          activeTab === 'wingo' 
+          activeTab === 'admin'
+            ? 'p-0 pb-0'
+            : activeTab === 'wingo' 
             ? 'p-0 pb-16' 
             : activeTab === 'account' || activeTab === 'activity' || activeTab === 'deposit' || activeTab === 'withdraw'
             ? 'p-3.5 pt-0 pb-20' 
@@ -318,8 +334,22 @@ function AppContent() {
           {activeTab === 'home' && (
             <HomePage 
               onOpenGame={handleOpenGame}
-              onOpenWheel={() => setIsWheelOpen(true)}
-              onOpenGift={() => setIsGiftOpen(true)}
+              onOpenWheel={() => {
+                if (user?.username === 'Guest' || user?.is_guest) {
+                  setAuthTab('login');
+                  setIsAuthOpen(true);
+                  return;
+                }
+                setIsWheelOpen(true);
+              }}
+              onOpenGift={() => {
+                if (user?.username === 'Guest' || user?.is_guest) {
+                  setAuthTab('login');
+                  setIsAuthOpen(true);
+                  return;
+                }
+                setIsGiftOpen(true);
+              }}
               onOpenAuth={(tab = 'login') => {
                 setAuthTab(tab);
                 setIsAuthOpen(true);
@@ -332,9 +362,30 @@ function AppContent() {
 
           {activeTab === 'activity' && (
             <ActivityPage 
-              onOpenGift={() => setIsGiftOpen(true)}
-              onOpenAttendance={() => setIsAttendanceOpen(true)}
-              onOpenWheel={() => setIsWheelOpen(true)}
+              onOpenGift={() => {
+                if (user?.username === 'Guest' || user?.is_guest) {
+                  setAuthTab('login');
+                  setIsAuthOpen(true);
+                  return;
+                }
+                setIsGiftOpen(true);
+              }}
+              onOpenAttendance={() => {
+                if (user?.username === 'Guest' || user?.is_guest) {
+                  setAuthTab('login');
+                  setIsAuthOpen(true);
+                  return;
+                }
+                setIsAttendanceOpen(true);
+              }}
+              onOpenWheel={() => {
+                if (user?.username === 'Guest' || user?.is_guest) {
+                  setAuthTab('login');
+                  setIsAuthOpen(true);
+                  return;
+                }
+                setIsWheelOpen(true);
+              }}
               onOpenAuth={() => {
                 setAuthTab('login');
                 setIsAuthOpen(true);
@@ -392,15 +443,7 @@ function AppContent() {
           )}
 
           {activeTab === 'admin' && (
-            <div className="space-y-3">
-              <button
-                onClick={() => setActiveTab('home')}
-                className="text-xs font-bold text-yellow-600 flex items-center space-x-1 mb-2 hover:underline"
-              >
-                ← হোমপেজে ফিরে যান
-              </button>
-              <AdminDashboard />
-            </div>
+            <AdminDashboard onExit={() => handleSelectTab('home')} />
           )}
 
           {activeTab === 'wingo' && (
@@ -411,12 +454,19 @@ function AppContent() {
           )}
         </main>
 
-        {/* 5-Tab AmarClub Style Bottom Navigation (Hidden in Game, WinGo, Deposit, Withdraw) */}
-        {!activeGame && activeTab !== 'wingo' && activeTab !== 'deposit' && activeTab !== 'withdraw' && (
+        {/* 5-Tab AmarClub Style Bottom Navigation (Hidden in Admin, Game, WinGo, Deposit, Withdraw) */}
+        {!activeGame && activeTab !== 'admin' && activeTab !== 'wingo' && activeTab !== 'deposit' && activeTab !== 'withdraw' && (
           <AmarBottomNav
             activeTab={activeTab}
             onSelectTab={handleSelectTab}
-            onOpenWheel={() => setIsWheelOpen(true)}
+            onOpenWheel={() => {
+              if (user?.username === 'Guest' || user?.is_guest) {
+                setAuthTab('login');
+                setIsAuthOpen(true);
+                return;
+              }
+              setIsWheelOpen(true);
+            }}
             onOpenAuth={(tab = 'login') => {
               setAuthTab(tab);
               setIsAuthOpen(true);
@@ -472,6 +522,10 @@ function AppContent() {
         <LuckyWheelModal 
           isOpen={isWheelOpen} 
           onClose={() => setIsWheelOpen(false)} 
+          onOpenAuth={(tab = 'login') => {
+            setAuthTab(tab);
+            setIsAuthOpen(true);
+          }}
         />
         <AttendanceModal 
           isOpen={isAttendanceOpen} 

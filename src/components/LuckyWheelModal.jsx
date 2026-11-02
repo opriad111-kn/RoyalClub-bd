@@ -26,10 +26,44 @@ const SECTORS = [
   { label: '+৳2', value: 2, color: '#f97316' }
 ];
 
-export default function LuckyWheelModal({ isOpen, onClose }) {
+export default function LuckyWheelModal({ isOpen, onClose, onOpenAuth }) {
   if (!isOpen) return null;
 
   const { user, requestWithdrawal } = useGame();
+  const isGuest = user?.username === 'Guest' || user?.is_guest;
+
+  if (isGuest) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="bg-[#121824] border border-amber-500/30 rounded-3xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl relative text-white">
+          <button 
+            onClick={onClose} 
+            className="absolute top-4 right-4 text-slate-400 hover:text-white w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-xs cursor-pointer"
+          >
+            ✕
+          </button>
+          <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-tr from-amber-500 to-yellow-400 flex items-center justify-center text-3xl shadow-lg shadow-amber-500/20">
+            🎡
+          </div>
+          <div>
+            <h3 className="text-lg font-black text-yellow-300">স্পিন করতে লগইন করুন</h3>
+            <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+              ৫০০ টাকা ক্যাশআউট স্পিন এবং আকর্ষণীয় বোনাস আনলক করতে অনুগ্রহ করে আপনার অ্যাকাউন্টে লগইন বা সাইন-আপ করুন।
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              onClose();
+              if (onOpenAuth) onOpenAuth('login');
+            }}
+            className="w-full bg-[#FFC107] hover:bg-yellow-400 text-slate-950 font-black py-3 rounded-full text-xs shadow-lg active:scale-95 transition cursor-pointer"
+          >
+            লগইন / রেজিস্টার করুন (LOGIN)
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Persistent Event Data in localStorage (Vault Balance, Box Opened, Spins Left)
   const [eventData, setEventData] = useState(() => {
