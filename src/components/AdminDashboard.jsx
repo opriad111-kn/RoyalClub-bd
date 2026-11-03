@@ -136,6 +136,21 @@ export default function AdminDashboard({ onExit }) {
   const [balanceAdjustReason, setBalanceAdjustReason] = useState('Promotional Member Grant');
   const [newPasswordVal, setNewPasswordVal] = useState('');
   const [userVipEditVal, setUserVipEditVal] = useState(1);
+  const [userTargetLuckMode, setUserTargetLuckMode] = useState('controlled');
+  const [userTargetWinRate, setUserTargetWinRate] = useState(20);
+  const [isSavingTarget, setIsSavingTarget] = useState(false);
+
+  function handleSelectUser(u) {
+    setSelectedUser(u);
+    setUserModalTab('profile');
+    setBalanceEditVal(u.balance?.toString() || '0');
+    setUserVipEditVal(Number(u.vip_level || 1));
+    const mode = (u.force_result === 'force_lose' || u.luck_mode === 'drain') 
+      ? 'drain' 
+      : (u.force_result === 'force_win' || u.luck_mode === 'sweetener' ? 'sweetener' : 'controlled');
+    setUserTargetLuckMode(mode);
+    setUserTargetWinRate(Number(u.custom_win_rate !== undefined ? u.custom_win_rate : (mode === 'drain' ? 5 : mode === 'sweetener' ? 40 : 20)));
+  }
 
   const defaultAdminPhone = '01403398319 (Personal)';
   const sanitizeAdminPhone = (num) => {
@@ -1024,12 +1039,7 @@ export default function AdminDashboard({ onExit }) {
                   {userList.map(u => (
                     <div
                       key={u.uid || u.id}
-                      onClick={() => {
-                        setSelectedUser(u);
-                        setUserModalTab('profile');
-                        setBalanceEditVal(u.balance?.toString() || '0');
-                        setUserVipEditVal(u.vip_level || 1);
-                      }}
+                      onClick={() => handleSelectUser(u)}
                       className="bg-[#0d1117] hover:bg-[#1f242c] border border-[#21262d] hover:border-[#30363d] rounded-xl p-3.5 flex items-center justify-between cursor-pointer transition group"
                     >
                       <div className="flex items-center space-x-3 min-w-0">
@@ -1172,12 +1182,7 @@ export default function AdminDashboard({ onExit }) {
                           </td>
                           <td className="p-3.5 text-right">
                             <button
-                              onClick={() => {
-                                setSelectedUser(u);
-                                setUserModalTab('profile');
-                                setBalanceEditVal(u.balance?.toString() || '0');
-                                setUserVipEditVal(u.vip_level || 1);
-                              }}
+                              onClick={() => handleSelectUser(u)}
                               className="px-3 py-1.5 rounded-lg bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black text-xs transition cursor-pointer"
                             >
                               Manage User
@@ -2802,85 +2807,95 @@ export default function AdminDashboard({ onExit }) {
                 </div>
 
                 {/* Personal Player Luck Mode Override */}
-                <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-3.5 space-y-2.5">
-                  <span className="text-xs font-bold text-white block">Individual User Luck Control (টার্গেটেড ইউজার কন্ট্রোল):</span>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {[
-                      { id: 'controlled', label: 'Controlled (ডিফল্ট)', wr: 20 },
-                      { id: 'drain', label: 'Strict Drain (১০০% লস)', wr: 5 },
-                      { id: 'sweetener', label: 'Sweetener (ট্রিকল উইন)', wr: 40 }
-                    ].map(mode => {
-                      const isCurrentActive = 
-                        (mode.id === 'drain' && (selectedUser.force_result === 'force_lose' || selectedUser.luck_mode === 'drain')) ||
-                        (mode.id === 'sweetener' && (selectedUser.force_result === 'force_win' || selectedUser.luck_mode === 'sweetener')) ||
-                        (mode.id === 'controlled' && (selectedUser.force_result !== 'force_lose' && selectedUser.force_result !== 'force_win' && selectedUser.luck_mode !== 'drain' && selectedUser.luck_mode !== 'sweetener'));
-
-                      return (
-                        <button
-                          key={mode.id}
-                          type="button"
-                          onClick={async () => {
-                            await updateUserLuckMode(selectedUser.uid, mode.id, mode.wr);
-                            setSelectedUser(prev => prev ? ({
-                              ...prev,
-                              luck_mode: mode.id,
-                              force_result: mode.id === 'drain' ? 'force_lose' : (mode.id === 'sweetener' ? 'force_win' : 'normal'),
-                              custom_win_rate: mode.wr
-                            }) : null);
-                            setStatusNotice(`ইউজার #${selectedUser.username || selectedUser.uid}-কে ${mode.label} মোডে সেট করা হয়েছে (Supabase ক্লাউডে লাইভ সেভড)`);
-                            setTimeout(() => setStatusNotice(''), 3000);
-                          }}
-                          className={`py-2 px-1.5 rounded-xl font-bold text-[10px] transition cursor-pointer flex flex-col items-center justify-center text-center ${
-                            isCurrentActive
-                              ? 'bg-[#F5BE00] text-slate-950 font-black shadow-md'
-                              : 'bg-[#161b22] text-[#8b949e] hover:text-white border border-[#21262d]'
-                          }`}
-                        >
-                          <span>{mode.label}</span>
-                          {isCurrentActive && <span className="text-[9px] text-slate-950 font-black mt-0.5">● সক্রিয় (Active)</span>}
-                        </button>
-                      );
-                    })}
+                <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-4 space-y-3 shadow-inner">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-white">Individual User Luck Control (টার্গেটেড ইউজার কন্ট্রোল):</span>
+                    <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase ${
+                      userTargetLuckMode === 'drain' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' :
+                      userTargetLuckMode === 'sweetener' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' :
+                      'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40'
+                    }`}>
+                      {userTargetLuckMode === 'drain' ? '🔴 ১০০% লস (Strict Drain)' : userTargetLuckMode === 'sweetener' ? '🟢 ট্রিকল উইন (Sweetener)' : '🟡 কন্ট্রোলড (Controlled)'}
+                    </span>
                   </div>
 
-                  {/* Targeted Custom Win Rate Slider */}
-                  <div className="pt-2 border-t border-[#21262d]/60">
-                    <div className="flex items-center justify-between text-[11px] mb-1">
-                      <span className="text-[#8b949e]">সুনির্দিষ্ট টার্গেট উইন রেট (Win Chance %):</span>
-                      <span className="text-yellow-400 font-mono font-bold">{selectedUser.custom_win_rate ?? 20}%</span>
+                  {/* 3 Quick Mode Buttons */}
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: 'controlled', label: 'Controlled (ডিফল্ট ২০%)', wr: 20 },
+                      { id: 'drain', label: 'Strict Drain (১০০% লস)', wr: 5 },
+                      { id: 'sweetener', label: 'Sweetener (ট্রিকল উইন)', wr: 40 }
+                    ].map(mode => (
+                      <button
+                        key={mode.id}
+                        type="button"
+                        onClick={() => {
+                          setUserTargetLuckMode(mode.id);
+                          setUserTargetWinRate(mode.wr);
+                        }}
+                        className={`py-2 px-1.5 rounded-xl font-bold text-[11px] transition cursor-pointer flex flex-col items-center justify-center text-center ${
+                          userTargetLuckMode === mode.id
+                            ? 'bg-[#F5BE00] text-slate-950 font-black shadow-md ring-2 ring-yellow-400'
+                            : 'bg-[#161b22] text-[#8b949e] hover:text-white border border-[#21262d]'
+                        }`}
+                      >
+                        <span>{mode.label}</span>
+                        {userTargetLuckMode === mode.id && <span className="text-[9px] text-slate-950 font-black mt-0.5">● সিলেক্টেড</span>}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Targeted Custom Win Rate Slider & Number Input */}
+                  <div className="pt-2 border-t border-[#21262d]/60 space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-[#8b949e]">সুনির্দিষ্ট টার্গেট উইন রেট (Target Win Chance %):</span>
+                      <span className="text-yellow-400 font-mono font-black text-sm">{userTargetWinRate}%</span>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-3">
                       <input
                         type="range"
                         min="1"
                         max="100"
-                        value={selectedUser.custom_win_rate ?? 20}
-                        onChange={(e) => {
-                          const val = Number(e.target.value);
-                          setSelectedUser(prev => prev ? ({ ...prev, custom_win_rate: val }) : null);
-                        }}
-                        onMouseUp={async (e) => {
-                          const val = Number(e.target.value);
-                          await updateUserLuckMode(selectedUser.uid, selectedUser.luck_mode || 'controlled', val);
-                          setStatusNotice(`টার্গেট উইন রেট ${val}% সফলভাবে ক্লাউডে সিঙ্ক হয়েছে`);
-                          setTimeout(() => setStatusNotice(''), 2500);
-                        }}
-                        onTouchEnd={async (e) => {
-                          const val = Number(e.target.value);
-                          await updateUserLuckMode(selectedUser.uid, selectedUser.luck_mode || 'controlled', val);
-                          setStatusNotice(`টার্গেট উইন রেট ${val}% সফলভাবে ক্লাউডে সিঙ্ক হয়েছে`);
-                          setTimeout(() => setStatusNotice(''), 2500);
-                        }}
-                        className="flex-1 accent-[#F5BE00] cursor-pointer"
+                        value={userTargetWinRate}
+                        onChange={(e) => setUserTargetWinRate(Number(e.target.value))}
+                        className="flex-1 accent-[#F5BE00] cursor-pointer h-2 bg-slate-800 rounded-lg"
                       />
-                      <span className="text-xs font-mono font-black text-[#F5BE00] w-12 text-right">
-                        {selectedUser.custom_win_rate ?? 20}%
-                      </span>
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        value={userTargetWinRate}
+                        onChange={(e) => setUserTargetWinRate(Number(e.target.value))}
+                        className="w-16 bg-[#161b22] border border-[#30363d] rounded-xl px-2 py-1 text-xs font-mono font-black text-[#F5BE00] text-center focus:outline-none focus:border-[#F5BE00]"
+                      />
                     </div>
                   </div>
 
+                  {/* PROMINENT, BOLD, HIGH-VISIBILITY SAVE BUTTON */}
+                  <button
+                    type="button"
+                    disabled={isSavingTarget}
+                    onClick={async () => {
+                      setIsSavingTarget(true);
+                      await updateUserLuckMode(selectedUser.uid, userTargetLuckMode, userTargetWinRate);
+                      setSelectedUser(prev => prev ? ({
+                        ...prev,
+                        luck_mode: userTargetLuckMode,
+                        force_result: userTargetLuckMode === 'drain' ? 'force_lose' : (userTargetLuckMode === 'sweetener' ? 'force_win' : 'normal'),
+                        custom_win_rate: userTargetWinRate
+                      }) : null);
+                      setIsSavingTarget(false);
+                      setStatusNotice(`ইউজার #${selectedUser.username || selectedUser.uid}-এর টার্গেট সেটিংস (${userTargetLuckMode.toUpperCase()} - ${userTargetWinRate}%) সফলভাবে ক্লাউডে সেভ করা হয়েছে!`);
+                      setTimeout(() => setStatusNotice(''), 3500);
+                    }}
+                    className="w-full bg-gradient-to-r from-amber-400 via-[#F5BE00] to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-slate-950 font-black py-3 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center space-x-2 shadow-lg shadow-yellow-500/20 active:scale-98 transition cursor-pointer"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>{isSavingTarget ? 'ক্লাউডে সেভ হচ্ছে...' : 'Save Target Settings / টার্গেট সেটিংস সেভ করুন'}</span>
+                  </button>
+
                   <p className="text-[10px] text-[#8b949e]">
-                    Strict Drain মোড দিলে ইউজারের প্রতিটি বাজি ১০০% লস হবে (ব্যালেন্স দ্রুত কমবে)।
+                    সেভ করার সাথে সাথে এই ইউজারের সব গেমে (Slots, Aviator, WinGo, K3) এই সেটিংস সরাসরি ক্লাউড ডাটাবেজ থেকে কার্যকর হবে।
                   </p>
                 </div>
 
