@@ -151,7 +151,7 @@ export default function FortuneGemsGame({ onClose }) {
     if (isSpinning) return;
     if (user.balance < effectiveBet) {
       setAutoPlay(false);
-      alert("পর্যাপ্ত ব্যালেন্স নেই! ওয়ালেট থেকে ফ্রি কয়েন গ্রহণ করুন।");
+      alert("পর্যাপ্ত ব্যালেন্স নেই! অনুগ্রহ করে ওয়ালেটে ডিপোজিট করুন।");
       return;
     }
 

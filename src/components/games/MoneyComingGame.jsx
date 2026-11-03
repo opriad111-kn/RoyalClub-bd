@@ -104,7 +104,7 @@ export default function MoneyComingGame({ onClose }) {
   function executeSpin(isFreeRespin = false) {
     if (!isFreeRespin && user.balance < betAmount) {
       setAutoPlay(false);
-      alert("পর্যাপ্ত ব্যালেন্স নেই! ওয়ালেট থেকে ফ্রি ডেমো ব্যালেন্স নিন।");
+      alert("পর্যাপ্ত ব্যালেন্স নেই! অনুগ্রহ করে ওয়ালেটে ডিপোজিট করুন।");
       return;
     }
 

@@ -606,7 +606,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             RoyalClub BD • Premium Gaming & Entertainment
           </p>
           <p className="leading-relaxed max-w-xs mx-auto">
-            প্ল্যাটফর্মের সমস্ত পয়েন্ট ও কয়েন শুধুমাত্র ভার্চুয়াল বিনোদনের উদ্দেশ্যে ব্যবহৃত হয়। এর কোনো বাস্তব আর্থিক বা নগদ রূপান্তরযোগ্য বিনিময় মূল্য নেই।
+            RoyalClub BD একটি নিরাপদ ও সুরক্ষিত অফিসিয়াল গেমিং প্ল্যাটফর্ম।
           </p>
         </div>
 

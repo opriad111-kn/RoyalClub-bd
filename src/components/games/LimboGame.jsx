@@ -46,7 +46,7 @@ export default function LimboGame({ onClose }) {
   function handleLaunch() {
     if (isLaunching) return;
     if (user.balance < betAmount) {
-      alert("পর্যাপ্ত ব্যালেন্স নেই! ওয়ালেট থেকে কয়েন গ্রহণ করুন।");
+      alert("পর্যাপ্ত ব্যালেন্স নেই! অনুগ্রহ করে ওয়ালেটে ডিপোজিট করুন।");
       return;
     }
 

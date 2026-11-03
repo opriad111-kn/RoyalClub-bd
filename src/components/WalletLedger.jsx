@@ -129,11 +129,20 @@ export default function WalletLedger() {
     }
   }
 
+  const defaultOfficialPhone = '01403398319 (Personal)';
+  const sanitizeDisplayNumber = (num) => {
+    if (!num || typeof num !== 'string') return defaultOfficialPhone;
+    if (num.includes('01855') || num.includes('01755') || num.includes('01955') || num.includes('987654') || num.includes('123456') || num.includes('456789')) {
+      return defaultOfficialPhone;
+    }
+    return num;
+  };
+
   const currentPayNumber = depMethod === 'bKash' 
-    ? (safeSettings.BKASH_NUMBER || '01403398319 (Personal)')
+    ? sanitizeDisplayNumber(safeSettings.BKASH_NUMBER)
     : depMethod === 'Nagad' 
-    ? (safeSettings.NAGAD_NUMBER || '01403398319 (Personal)')
-    : (safeSettings.ROCKET_NUMBER || '01955-456789 (Personal)');
+    ? sanitizeDisplayNumber(safeSettings.NAGAD_NUMBER)
+    : sanitizeDisplayNumber(safeSettings.ROCKET_NUMBER);
 
   const filteredTxs = (transactions || []).filter(tx => {
     if (filterType === 'all') return true;
@@ -471,7 +480,7 @@ export default function WalletLedger() {
 
           {/* Receiver Phone */}
           <div>
-            <label className="text-slate-800 font-bold block mb-1">৩. যে নম্বরে কয়েন উত্তোলন করবেন ({witMethod}):</label>
+            <label className="text-slate-800 font-bold block mb-1">৩. যে নম্বরে টাকা উত্তোলন করবেন ({witMethod}):</label>
             <input
               type="text"
               placeholder="01XXXXXXXXX"
@@ -499,8 +508,7 @@ export default function WalletLedger() {
               { id: 'all', label: 'সকল' },
               { id: 'deposit', label: 'ডিপোজিট' },
               { id: 'withdrawal', label: 'উইথড্র' },
-              { id: 'bonus', label: 'বোনাস' },
-              { id: 'faucet', label: 'ফসেট' }
+              { id: 'bonus', label: 'বোনাস' }
             ].map(f => (
               <button
                 key={f.id}

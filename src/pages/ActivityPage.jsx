@@ -315,7 +315,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
               <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3 flex items-center justify-between">
                 <div>
                   <span className="font-black text-xs text-slate-800 block">Milestone 1 (টার্নওভার ৳১,০০০)</span>
-                  <span className="text-[10px] text-slate-400 font-mono">পুরস্কার: ৳১০.০০ কয়েন</span>
+                  <span className="text-[10px] text-slate-400 font-mono">পুরস্কার: ৳১০.০০ টাকা</span>
                 </div>
                 <button
                   onClick={handleClaimActivityAward}
@@ -334,7 +334,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
               <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3 flex items-center justify-between">
                 <div>
                   <span className="font-black text-xs text-slate-800 block">Milestone 2 (টার্নওভার ৳৫,০০০)</span>
-                  <span className="text-[10px] text-slate-400 font-mono">পুরস্কার: ৳৫০.০০ কয়েন</span>
+                  <span className="text-[10px] text-slate-400 font-mono">পুরস্কার: ৳৫০.০০ টাকা</span>
                 </div>
                 <span className="text-[10px] font-bold text-slate-400 bg-slate-200/60 px-2.5 py-1 rounded-full">
                   In Progress
@@ -345,7 +345,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
               <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3 flex items-center justify-between">
                 <div>
                   <span className="font-black text-xs text-slate-800 block">Milestone 3 (টার্নওভার ৳২০,০০০)</span>
-                  <span className="text-[10px] text-slate-400 font-mono">পুরস্কার: ৳২০০.০০ কয়েন</span>
+                  <span className="text-[10px] text-slate-400 font-mono">পুরস্কার: ৳২০০.০০ টাকা</span>
                 </div>
                 <span className="text-[10px] font-bold text-slate-400 bg-slate-200/60 px-2.5 py-1 rounded-full">
                   Locked
@@ -519,7 +519,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1">
                 <span className="font-black text-slate-900 block text-xs">১. সাইন-আপ ওয়েলকাম বোনাস</span>
                 <p className="text-[11px] text-slate-500 leading-relaxed">
-                  নতুন একাউন্ট রেজিস্টার করলেই মেইন ব্যালেন্সে অটোমেটিক ৳১০০ ওয়েলকাম কয়েন যোগ হয়।
+                  নতুন একাউন্ট রেজিস্টার করলেই মেইন ব্যালেন্সে অটোমেটিক ৳১০০ ওয়েলকাম বোনাস যোগ হয়।
                 </p>
               </div>
 

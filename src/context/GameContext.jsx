@@ -26,6 +26,15 @@ export function GameProvider({ children }) {
       } catch (e) {}
     }
 
+    const defaultOfficialPhone = "01403398319 (Personal)";
+    const sanitizePhone = (val) => {
+      if (!val || typeof val !== 'string') return defaultOfficialPhone;
+      if (val.includes('01855') || val.includes('01755') || val.includes('01955') || val.includes('987654') || val.includes('123456') || val.includes('456789')) {
+        return defaultOfficialPhone;
+      }
+      return val;
+    };
+
     return {
       ENABLE_PAID_MODE: false,
       SIGNUP_BONUS_ENABLED: true,
@@ -37,9 +46,9 @@ export function GameProvider({ children }) {
       MIN_WITHDRAWAL_AMOUNT: 200,
       DAILY_WITHDRAWAL_LIMIT: 5000,
       WITHDRAWAL_FEE_PERCENT: 0,
-      BKASH_NUMBER: base.BKASH_NUMBER || "01403398319 (Personal)",
-      NAGAD_NUMBER: base.NAGAD_NUMBER || "01403398319 (Personal)",
-      ROCKET_NUMBER: base.ROCKET_NUMBER || "01955-456789 (Personal)",
+      BKASH_NUMBER: sanitizePhone(base.BKASH_NUMBER),
+      NAGAD_NUMBER: sanitizePhone(base.NAGAD_NUMBER),
+      ROCKET_NUMBER: sanitizePhone(base.ROCKET_NUMBER),
       USDT_DEPOSIT_ADDRESS: base.USDT_DEPOSIT_ADDRESS || "TQu8sB7xNkL2mP89qZtV1yWz4AeR6cX4Kd",
       BKASH_ENABLED: base.BKASH_ENABLED !== false,
       NAGAD_ENABLED: base.NAGAD_ENABLED !== false,
@@ -979,6 +988,52 @@ export function GameProvider({ children }) {
 
   const [supabaseStatus, setSupabaseStatus] = useState('checking'); // 'connected' | 'offline' | 'checking'
 
+  // Auto-heal payment numbers and synchronize settings live across all tabs
+  useEffect(() => {
+    const defaultOfficial = "01403398319 (Personal)";
+    try {
+      const raw = localStorage.getItem('royalclub_settings');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        let changed = false;
+        if (!parsed.BKASH_NUMBER || parsed.BKASH_NUMBER.includes('01855') || parsed.BKASH_NUMBER.includes('987654')) {
+          parsed.BKASH_NUMBER = defaultOfficial;
+          changed = true;
+        }
+        if (!parsed.NAGAD_NUMBER || parsed.NAGAD_NUMBER.includes('01755') || parsed.NAGAD_NUMBER.includes('123456')) {
+          parsed.NAGAD_NUMBER = defaultOfficial;
+          changed = true;
+        }
+        if (!parsed.ROCKET_NUMBER || parsed.ROCKET_NUMBER.includes('01955') || parsed.ROCKET_NUMBER.includes('456789')) {
+          parsed.ROCKET_NUMBER = defaultOfficial;
+          changed = true;
+        }
+        if (changed) {
+          localStorage.setItem('royalclub_settings', JSON.stringify(parsed));
+          setSettings(prev => ({ ...prev, ...parsed }));
+        }
+      }
+    } catch (e) {}
+
+    function handleSettingsSync(e) {
+      if (e?.detail) {
+        setSettings(e.detail);
+      } else {
+        try {
+          const fresh = localStorage.getItem('royalclub_settings');
+          if (fresh) setSettings(JSON.parse(fresh));
+        } catch (err) {}
+      }
+    }
+
+    window.addEventListener('storage', handleSettingsSync);
+    window.addEventListener('royalclub_settings_sync', handleSettingsSync);
+    return () => {
+      window.removeEventListener('storage', handleSettingsSync);
+      window.removeEventListener('royalclub_settings_sync', handleSettingsSync);
+    };
+  }, []);
+
   // Master Synchronized Supabase Sync on Mount
   useEffect(() => {
     async function initSupabaseData() {
@@ -1761,6 +1816,19 @@ export function GameProvider({ children }) {
       try {
         localStorage.setItem('royalclub_settings', JSON.stringify(updated));
         window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new CustomEvent('royalclub_settings_sync', { detail: updated }));
+      } catch (e) {}
+      return updated;
+    });
+  }
+
+  function updateSettings(patchObj) {
+    setSettings(prev => {
+      const updated = { ...prev, ...patchObj };
+      try {
+        localStorage.setItem('royalclub_settings', JSON.stringify(updated));
+        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new CustomEvent('royalclub_settings_sync', { detail: updated }));
       } catch (e) {}
       return updated;
     });
@@ -2003,6 +2071,7 @@ export function GameProvider({ children }) {
     <GameContext.Provider value={{
       settings,
       updateSetting,
+      updateSettings,
       banners,
       addBanner,
       deleteBanner,

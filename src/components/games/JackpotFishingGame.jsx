@@ -54,7 +54,7 @@ export default function JackpotFishingGame({ onClose }) {
 
   function handleShoot(fish) {
     if (user.balance < cannonPower) {
-      alert("পর্যাপ্ত ব্যালেন্স নেই! বুলেট কিনতে কয়েন প্রয়োজন।");
+      alert("পর্যাপ্ত ব্যালেন্স নেই! বুলেট কিনতে ডিপোজিট প্রয়োজন।");
       return;
     }
 

@@ -48,12 +48,21 @@ export default function DepositPage({ onBack, onOpenAuth }) {
 
   const quickAmounts = [100, 200, 500, 1000, 2000, 5000, 10000, 25000];
 
+  const defaultOfficialPhone = '01403398319 (Personal)';
+  const sanitizeDisplayNumber = (num) => {
+    if (!num || typeof num !== 'string') return defaultOfficialPhone;
+    if (num.includes('01855') || num.includes('01755') || num.includes('01955') || num.includes('987654') || num.includes('123456') || num.includes('456789')) {
+      return defaultOfficialPhone;
+    }
+    return num;
+  };
+
   const currentPayNumber = method === 'bKash'
-    ? (settings?.BKASH_NUMBER || '01403398319 (Personal)')
+    ? sanitizeDisplayNumber(settings?.BKASH_NUMBER)
     : method === 'Nagad'
-    ? (settings?.NAGAD_NUMBER || '01403398319 (Personal)')
+    ? sanitizeDisplayNumber(settings?.NAGAD_NUMBER)
     : method === 'Rocket'
-    ? (settings?.ROCKET_NUMBER || '01955-456789 (Personal)')
+    ? sanitizeDisplayNumber(settings?.ROCKET_NUMBER)
     : (settings?.USDT_DEPOSIT_ADDRESS || 'TQu8sB7xNkL2mP89qZtV1yWz4AeR6cX4Kd');
 
   function handleCopyNumber() {

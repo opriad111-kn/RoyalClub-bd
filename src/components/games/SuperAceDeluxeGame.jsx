@@ -41,7 +41,7 @@ export default function SuperAceDeluxeGame({ onClose }) {
 
   function handleSpin() {
     if (user.balance < betAmount) {
-      alert("পর্যাপ্ত ব্যালেন্স নেই! দয়া করে ওয়ালেট থেকে ফ্রি কয়েন সংগ্রহ করুন।");
+      alert("পর্যাপ্ত ব্যালেন্স নেই! অনুগ্রহ করে ওয়ালেটে ডিপোজিট করুন।");
       return;
     }
 

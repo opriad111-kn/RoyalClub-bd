@@ -98,6 +98,7 @@ export default function AdminDashboard({ onExit }) {
     deleteNotification,
     adminRole,
     updateAdminRole,
+    updateSettings,
     editUserProfile,
     adminResetPassword,
     adminAdjustBalanceWithReason
@@ -136,11 +137,20 @@ export default function AdminDashboard({ onExit }) {
   const [newPasswordVal, setNewPasswordVal] = useState('');
   const [userVipEditVal, setUserVipEditVal] = useState(1);
 
+  const defaultAdminPhone = '01403398319 (Personal)';
+  const sanitizeAdminPhone = (num) => {
+    if (!num || typeof num !== 'string') return defaultAdminPhone;
+    if (num.includes('01855') || num.includes('01755') || num.includes('01955') || num.includes('987654') || num.includes('123456') || num.includes('456789')) {
+      return defaultAdminPhone;
+    }
+    return num;
+  };
+
   // 4. Payment Gateway Settings State
   const [paySettings, setPaySettings] = useState({
-    BKASH_NUMBER: settings?.BKASH_NUMBER || '01403398319 (Personal)',
-    NAGAD_NUMBER: settings?.NAGAD_NUMBER || '01403398319 (Personal)',
-    ROCKET_NUMBER: settings?.ROCKET_NUMBER || '01955-456789 (Personal)',
+    BKASH_NUMBER: sanitizeAdminPhone(settings?.BKASH_NUMBER),
+    NAGAD_NUMBER: sanitizeAdminPhone(settings?.NAGAD_NUMBER),
+    ROCKET_NUMBER: sanitizeAdminPhone(settings?.ROCKET_NUMBER),
     USDT_DEPOSIT_ADDRESS: settings?.USDT_DEPOSIT_ADDRESS || 'TQu8sB7xNkL2mP89qZtV1yWz4AeR6cX4Kd',
     BKASH_ENABLED: settings?.BKASH_ENABLED !== false,
     NAGAD_ENABLED: settings?.NAGAD_ENABLED !== false,
@@ -156,9 +166,9 @@ export default function AdminDashboard({ onExit }) {
     if (settings) {
       setPaySettings(prev => ({
         ...prev,
-        BKASH_NUMBER: settings.BKASH_NUMBER || prev.BKASH_NUMBER,
-        NAGAD_NUMBER: settings.NAGAD_NUMBER || prev.NAGAD_NUMBER,
-        ROCKET_NUMBER: settings.ROCKET_NUMBER || prev.ROCKET_NUMBER,
+        BKASH_NUMBER: sanitizeAdminPhone(settings.BKASH_NUMBER || prev.BKASH_NUMBER),
+        NAGAD_NUMBER: sanitizeAdminPhone(settings.NAGAD_NUMBER || prev.NAGAD_NUMBER),
+        ROCKET_NUMBER: sanitizeAdminPhone(settings.ROCKET_NUMBER || prev.ROCKET_NUMBER),
         USDT_DEPOSIT_ADDRESS: settings.USDT_DEPOSIT_ADDRESS || prev.USDT_DEPOSIT_ADDRESS,
         BKASH_ENABLED: settings.BKASH_ENABLED !== false,
         NAGAD_ENABLED: settings.NAGAD_ENABLED !== false,
@@ -323,17 +333,33 @@ export default function AdminDashboard({ onExit }) {
 
   function handleSavePayments(e) {
     e.preventDefault();
-    updateSetting('BKASH_NUMBER', paySettings.BKASH_NUMBER);
-    updateSetting('NAGAD_NUMBER', paySettings.NAGAD_NUMBER);
-    updateSetting('ROCKET_NUMBER', paySettings.ROCKET_NUMBER);
-    updateSetting('USDT_DEPOSIT_ADDRESS', paySettings.USDT_DEPOSIT_ADDRESS);
-    updateSetting('BKASH_ENABLED', paySettings.BKASH_ENABLED);
-    updateSetting('NAGAD_ENABLED', paySettings.NAGAD_ENABLED);
-    updateSetting('ROCKET_ENABLED', paySettings.ROCKET_ENABLED);
-    updateSetting('USDT_ENABLED', paySettings.USDT_ENABLED);
-    updateSetting('MIN_DEPOSIT_AMOUNT', Number(paySettings.MIN_DEPOSIT_AMOUNT));
-    updateSetting('MIN_WITHDRAWAL_AMOUNT', Number(paySettings.MIN_WITHDRAWAL_AMOUNT));
-    updateSetting('DAILY_WITHDRAWAL_LIMIT', Number(paySettings.DAILY_WITHDRAWAL_LIMIT));
+    if (updateSettings) {
+      updateSettings({
+        BKASH_NUMBER: paySettings.BKASH_NUMBER,
+        NAGAD_NUMBER: paySettings.NAGAD_NUMBER,
+        ROCKET_NUMBER: paySettings.ROCKET_NUMBER,
+        USDT_DEPOSIT_ADDRESS: paySettings.USDT_DEPOSIT_ADDRESS,
+        BKASH_ENABLED: paySettings.BKASH_ENABLED,
+        NAGAD_ENABLED: paySettings.NAGAD_ENABLED,
+        ROCKET_ENABLED: paySettings.ROCKET_ENABLED,
+        USDT_ENABLED: paySettings.USDT_ENABLED,
+        MIN_DEPOSIT_AMOUNT: Number(paySettings.MIN_DEPOSIT_AMOUNT),
+        MIN_WITHDRAWAL_AMOUNT: Number(paySettings.MIN_WITHDRAWAL_AMOUNT),
+        DAILY_WITHDRAWAL_LIMIT: Number(paySettings.DAILY_WITHDRAWAL_LIMIT)
+      });
+    } else {
+      updateSetting('BKASH_NUMBER', paySettings.BKASH_NUMBER);
+      updateSetting('NAGAD_NUMBER', paySettings.NAGAD_NUMBER);
+      updateSetting('ROCKET_NUMBER', paySettings.ROCKET_NUMBER);
+      updateSetting('USDT_DEPOSIT_ADDRESS', paySettings.USDT_DEPOSIT_ADDRESS);
+      updateSetting('BKASH_ENABLED', paySettings.BKASH_ENABLED);
+      updateSetting('NAGAD_ENABLED', paySettings.NAGAD_ENABLED);
+      updateSetting('ROCKET_ENABLED', paySettings.ROCKET_ENABLED);
+      updateSetting('USDT_ENABLED', paySettings.USDT_ENABLED);
+      updateSetting('MIN_DEPOSIT_AMOUNT', Number(paySettings.MIN_DEPOSIT_AMOUNT));
+      updateSetting('MIN_WITHDRAWAL_AMOUNT', Number(paySettings.MIN_WITHDRAWAL_AMOUNT));
+      updateSetting('DAILY_WITHDRAWAL_LIMIT', Number(paySettings.DAILY_WITHDRAWAL_LIMIT));
+    }
     addAuditLog('PAYMENT_UPDATE', `Updated gateways: bKash(${paySettings.BKASH_ENABLED ? 'ON' : 'OFF'}), Nagad(${paySettings.NAGAD_ENABLED ? 'ON' : 'OFF'}), Rocket(${paySettings.ROCKET_ENABLED ? 'ON' : 'OFF'}), USDT(${paySettings.USDT_ENABLED ? 'ON' : 'OFF'})`);
     setStatusNotice('পেমেন্ট গেটওয়ে ইনফরমেশন ও অন/অফ সেটিংস সফলভাবে আপডেট হয়েছে!');
     setTimeout(() => setStatusNotice(''), 3000);
@@ -617,7 +643,7 @@ export default function AdminDashboard({ onExit }) {
                 }`}
               >
                 <Coins className="w-4 h-4 shrink-0" />
-                <span>Virtual Wallet Hub</span>
+                <span>Player Wallet Hub</span>
               </button>
 
               <button
@@ -1704,7 +1730,7 @@ export default function AdminDashboard({ onExit }) {
           {activeNav === 'wallet_management' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-black text-white">Virtual Wallet Management & Transaction Ledger</h2>
+                <h2 className="text-xl font-black text-white">Player Wallet Management & Transaction Ledger</h2>
                 <p className="text-xs text-[#8b949e]">
                   প্লেয়ার ওয়ালেট ব্যালেন্স পর্যবেক্ষণ, ম্যানুয়াল ক্রেডিট/ডেবিট এবং লেনদেন হিস্ট্রি
                 </p>
@@ -1730,7 +1756,7 @@ export default function AdminDashboard({ onExit }) {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center space-x-2">
                   <span className="text-xs font-bold text-[#8b949e]">Filter Type:</span>
-                  {['all', 'deposit', 'withdrawal', 'bonus', 'faucet'].map(f => (
+                  {['all', 'deposit', 'withdrawal', 'bonus'].map(f => (
                     <button
                       key={f}
                       onClick={() => setLedgerTypeFilter(f)}
@@ -2579,7 +2605,7 @@ export default function AdminDashboard({ onExit }) {
                       value={paySettings.ROCKET_NUMBER}
                       onChange={e => setPaySettings({ ...paySettings, ROCKET_NUMBER: e.target.value })}
                       className="w-full bg-[#161b22] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#F5BE00]"
-                      placeholder="01955-456789 (Personal)"
+                      placeholder="01403398319 (Personal)"
                     />
                   </div>
                 </div>
