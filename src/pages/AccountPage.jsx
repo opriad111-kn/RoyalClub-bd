@@ -187,16 +187,16 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                   {t('guestSubtitle')}
                 </span>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2.5 pt-1">
                 <button
                   onClick={() => onOpenAuth('login')}
-                  className="bg-slate-950 hover:bg-slate-900 text-[#FFC107] font-black text-xs px-4 py-1.5 rounded-full shadow-sm active:scale-95 transition cursor-pointer"
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:brightness-110 text-white font-black text-xs px-5 py-2 rounded-full shadow-md active:scale-95 transition cursor-pointer"
                 >
                   {t('login')}
                 </button>
                 <button
                   onClick={() => onOpenAuth('register')}
-                  className="bg-white hover:bg-slate-800/50 text-white font-bold text-xs px-4 py-1.5 rounded-full shadow-sm border border-slate-300 active:scale-95 transition cursor-pointer"
+                  className="bg-gradient-to-r from-red-600 to-rose-600 hover:brightness-110 text-white font-black text-xs px-5 py-2 rounded-full shadow-md border border-red-400/50 active:scale-95 transition cursor-pointer"
                 >
                   {t('register')}
                 </button>
@@ -303,7 +303,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               onClick={() => handleAction(onOpenWallet)}
               className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-800/50 transition active:scale-95 cursor-pointer"
             >
-              <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 text-rose-500 flex items-center justify-center mb-1 shadow-sm">
+              <div className="w-12 h-12 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center mb-1 shadow-sm">
                 <Wallet className="w-6 h-6 stroke-[2]" />
               </div>
               <span className="font-bold text-[11px] text-slate-300">Wallet</span>
@@ -313,7 +313,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               onClick={() => handleAction(onOpenDeposit || onOpenWallet)}
               className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-800/50 transition active:scale-95 cursor-pointer"
             >
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 text-amber-500 flex items-center justify-center mb-1 shadow-sm">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center mb-1 shadow-sm">
                 <ArrowDownLeft className="w-6 h-6 stroke-[2.2]" />
               </div>
               <span className="font-bold text-[11px] text-slate-300">Deposit</span>
@@ -323,7 +323,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               onClick={() => handleAction(onOpenWithdraw || onOpenWallet)}
               className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-800/50 transition active:scale-95 cursor-pointer"
             >
-              <div className="w-12 h-12 rounded-2xl bg-sky-50 border border-sky-100 text-sky-500 flex items-center justify-center mb-1 shadow-sm">
+              <div className="w-12 h-12 rounded-2xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center mb-1 shadow-sm">
                 <CreditCard className="w-6 h-6 stroke-[2]" />
               </div>
               <span className="font-bold text-[11px] text-slate-300">Withdraw</span>
@@ -333,7 +333,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               onClick={() => handleAction(() => setShowVipModal(true))}
               className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-800/50 transition active:scale-95 cursor-pointer"
             >
-              <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-100 text-teal-600 flex items-center justify-center mb-1 shadow-sm font-black text-base">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mb-1 shadow-sm font-black text-base">
                 V
               </div>
               <span className="font-bold text-[11px] text-slate-300">VIP</span>
@@ -347,7 +347,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           className="bg-[#0f1730] rounded-2xl text-white p-3.5 border border-slate-800 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md transition active:scale-95"
         >
           <div className="flex items-center space-x-3">
-            <div className="w-11 h-11 rounded-xl bg-amber-100 border border-amber-200 text-amber-600 flex items-center justify-center text-xl shadow-sm shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center text-xl shadow-sm shrink-0">
               🪙
             </div>
             <div>
@@ -358,7 +358,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             </div>
           </div>
 
-          <div className="bg-amber-500 text-white font-black text-[11px] px-2.5 py-1 rounded-full flex items-center space-x-0.5 shadow-sm shrink-0">
+          <div className="bg-amber-400/20 border border-amber-400/40 text-amber-300 font-mono font-bold text-[11px] px-2.5 py-1 rounded-full flex items-center space-x-0.5 shadow-sm shrink-0">
             <span>৳0.00</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </div>
@@ -422,10 +422,10 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
         {/* 5. In-App Notifications Bar */}
         <div 
           onClick={() => setNotificationModalOpen(true)}
-          className="bg-[#0f1730] rounded-2xl text-white p-3.5 border border-slate-800 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md transition active:scale-95"
+          className="bg-[#0f1730] rounded-2xl text-white p-3.5 border border-slate-800 shadow-sm flex items-center justify-between cursor-pointer hover:bg-[#131b35] transition active:scale-95"
         >
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
               <Mail className="w-5 h-5" />
             </div>
             <span className="font-bold text-slate-200 text-xs">Notifications</span>
@@ -442,7 +442,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
         </div>
 
         {/* 6. Comprehensive Account Services & Settings List */}
-        <div className="bg-[#0f1730] rounded-2xl text-white border border-slate-800 shadow-sm divide-y divide-slate-800 overflow-hidden">
+        <div className="bg-[#0f1730] rounded-2xl text-white border border-slate-800 shadow-sm divide-y divide-slate-800/80 overflow-hidden">
           
           {/* Redeem Gift Code */}
           <button
@@ -450,7 +450,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-800/50 transition cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 flex items-center justify-center">
                 <Gift className="w-4 h-4" />
               </div>
               <div>
@@ -467,7 +467,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-800/50 transition cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-teal-500/20 text-teal-400 border border-teal-500/30 flex items-center justify-center">
                 <LifeBuoy className="w-4 h-4" />
               </div>
               <div>
@@ -477,7 +477,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             </div>
             <div className="flex items-center space-x-1">
               {userTickets.filter(t => t.status === 'open').length > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-100 text-amber-700">
+                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
                   {userTickets.filter(t => t.status === 'open').length} Open
                 </span>
               )}
@@ -492,7 +492,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-800/50 transition cursor-pointer"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 border border-purple-500/30 flex items-center justify-center">
                   <KeyRound className="w-4 h-4" />
                 </div>
                 <div>
@@ -510,7 +510,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-800/50 transition cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center">
                 <ShieldCheck className="w-4 h-4" />
               </div>
               <div>
@@ -525,31 +525,31 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           {(user?.is_admin || user?.phone === '1403398319' || user?.phone === '01403398319' || user?.username === 'u398319' || user?.username === 'admin') && (
             <button
               onClick={onOpenAdmin}
-              className="w-full p-3.5 flex justify-between items-center text-left bg-amber-50/70 hover:bg-amber-100/70 transition cursor-pointer border-y border-amber-200/50"
+              className="w-full p-3.5 flex justify-between items-center text-left bg-amber-500/10 hover:bg-amber-500/20 transition cursor-pointer border-y border-amber-500/30"
             >
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 rounded-lg bg-[#F5BE00] text-slate-950 flex items-center justify-center font-black">
                   👑
                 </div>
                 <div>
-                  <h5 className="font-black text-amber-950 text-xs flex items-center space-x-1.5">
+                  <h5 className="font-black text-amber-400 text-xs flex items-center space-x-1.5">
                     <span>Admin Command Center</span>
-                    <span className="bg-amber-200 text-amber-900 text-[9px] font-black px-1.5 py-0.2 rounded-full">MASTER</span>
+                    <span className="bg-amber-400 text-slate-950 text-[9px] font-black px-1.5 py-0.2 rounded-full">MASTER</span>
                   </h5>
-                  <span className="text-[10px] text-amber-800">গেম উইনিং কন্ট্রোল, প্লেয়ার ও পেমেন্ট অন/অফ</span>
+                  <span className="text-[10px] text-amber-200/80">গেম উইনিং কন্ট্রোল, প্লেয়ার ও পেমেন্ট অন/অফ</span>
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-amber-700" />
+              <ChevronRight className="w-4 h-4 text-amber-400" />
             </button>
           )}
 
           {/* Switch / Login Button */}
           <button
             onClick={onOpenAuth}
-            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-amber-50/50 text-slate-200 transition cursor-pointer"
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-800/50 text-slate-200 transition cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-amber-100 text-[#FFC107] flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center">
                 <User className="w-4 h-4" />
               </div>
               <div>
@@ -566,7 +566,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-800/50 transition cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
+              <div className="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center justify-center font-bold text-xs">
                 {lang === 'en' ? '🇺🇸' : '🇧🇩'}
               </div>
               <div>
@@ -576,7 +576,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                 </span>
               </div>
             </div>
-            <div className="flex items-center space-x-1 bg-slate-100 px-2 py-0.5 rounded-full text-[10px] font-black text-slate-300">
+            <div className="flex items-center space-x-1 bg-slate-800 border border-slate-700 px-2 py-0.5 rounded-full text-[10px] font-black text-slate-300">
               <span>{lang === 'en' ? 'EN' : 'বাংলা'}</span>
               <ChevronRight className="w-3 h-3 text-slate-400" />
             </div>
@@ -588,10 +588,10 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               logout();
               if (onOpenAuth) onOpenAuth();
             }}
-            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-red-50 text-red-600 transition cursor-pointer"
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-red-500/10 text-red-400 transition cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 flex items-center justify-center">
                 <LogOut className="w-4 h-4" />
               </div>
               <span className="font-bold text-xs">{isGuest ? 'Log in to Account' : t('logout')}</span>

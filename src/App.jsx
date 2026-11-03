@@ -296,52 +296,6 @@ function AppContent() {
         </div>
       )}
 
-      {/* Floating Right Action Widgets (Desktop Shortcuts) */}
-      {!activeGame && activeTab !== 'admin' && (
-        <aside aria-label="Quick Actions" className="fixed right-2 sm:right-6 top-1/2 -translate-y-1/2 z-50 hidden sm:flex flex-col space-y-3 pointer-events-auto">
-          {/* 1. Activity Gift Box */}
-          <button
-            onClick={() => {
-              if (user?.username === 'Guest' || user?.is_guest) {
-                setAuthTab('login');
-                setIsAuthOpen(true);
-                return;
-              }
-              setIsGiftOpen(true);
-            }}
-            title="Gift Rewards"
-            className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-600 shadow-lg border-2 border-white flex items-center justify-center p-2 hover:scale-110 active:scale-95 transition transform animate-pulse cursor-pointer"
-          >
-            <span className="text-xl">🧧</span>
-          </button>
-
-          {/* 2. Lucky Spin Wheel */}
-          <button
-            onClick={() => {
-              if (user?.username === 'Guest' || user?.is_guest) {
-                setAuthTab('login');
-                setIsAuthOpen(true);
-                return;
-              }
-              setIsWheelOpen(true);
-            }}
-            title="Lucky Wheel"
-            className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-tr from-red-500 via-yellow-400 to-orange-500 shadow-lg border-2 border-white flex items-center justify-center p-2 hover:scale-110 active:scale-95 transition transform hover:rotate-45 cursor-pointer"
-          >
-            <span className="text-xl">🎡</span>
-          </button>
-
-          {/* 3. Customer Service */}
-          <button
-            onClick={() => window.open('https://t.me/ROYALCLUB_Support', '_blank')}
-            title="Customer Service"
-            className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#F5BE00] shadow-xl border-2 border-white flex items-center justify-center p-1.5 hover:scale-110 active:scale-95 transition transform text-slate-950 font-bold cursor-pointer"
-          >
-            <span className="text-lg">🎧</span>
-          </button>
-        </aside>
-      )}
-
       {/* Main Container: Exact KhelV Dark Navy Luxury Shell */}
       <div className={`w-full ${activeTab === 'admin' ? 'max-w-full bg-[#0d1117]' : 'max-w-[480px] sm:max-w-[500px] bg-[#070b19] text-white border-x border-slate-800/80'} min-h-screen flex flex-col justify-between relative shadow-2xl transition-all duration-200`}>
         
