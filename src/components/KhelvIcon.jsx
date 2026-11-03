@@ -8,3 +8,4 @@ export default function KhelvIcon({ name, className = 'w-6 h-6', style, ...props
     </svg>
   );
 }
+

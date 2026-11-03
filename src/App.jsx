@@ -6,6 +6,7 @@ import HomePage from './pages/HomePage';
 import ActivityPage from './pages/ActivityPage';
 import PromotionPage from './pages/PromotionPage';
 import AccountPage from './pages/AccountPage';
+import WalletPage from './pages/WalletPage';
 import DepositPage from './pages/DepositPage';
 import WithdrawPage from './pages/WithdrawPage';
 import WalletLedger from './components/WalletLedger';
@@ -423,15 +424,14 @@ function AppContent() {
           )}
 
           {activeTab === 'wallet' && (
-            <div className="space-y-3">
-              <button
-                onClick={() => setActiveTab('home')}
-                className="text-xs font-bold text-emerald-600 flex items-center space-x-1 mb-2 hover:underline"
-              >
-                ← হোমপেজে ফিরে যান
-              </button>
-              <WalletLedger />
-            </div>
+            <WalletPage 
+              onOpenDeposit={() => setActiveTab('deposit')} 
+              onOpenWithdraw={() => setActiveTab('withdraw')} 
+              onOpenAuth={(t = 'login') => {
+                setAuthTab(t);
+                setIsAuthOpen(true);
+              }}
+            />
           )}
 
           {activeTab === 'admin' && (

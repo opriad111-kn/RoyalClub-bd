@@ -5,15 +5,14 @@ import NoticeModal from '../components/NoticeModal';
 import { 
   Volume2, 
   Search, 
-  Play, 
+  ChevronLeft,
   ChevronRight,
-  Download,
   X,
-  Sparkles,
   ExternalLink,
-  ShieldCheck,
-  Flame,
-  Award
+  MessageCircle,
+  Headphones,
+  Gift,
+  HelpCircle
 } from 'lucide-react';
 
 export default function HomePage({ 
@@ -29,12 +28,18 @@ export default function HomePage({
   const { lang, t } = useLanguage();
   
   // 8 Official Categories from KhelV
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState('Popular');
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [showNotice, setShowNotice] = useState(false);
   const [activeBanner, setActiveBanner] = useState(0);
   const [showDesktopWidget, setShowDesktopWidget] = useState(true);
+
+  // Pagination state for each section (6 cards per page = 3x2 grid)
+  const [popularPage, setPopularPage] = useState(0);
+  const [slotsPage, setSlotsPage] = useState(0);
+  const [lotteryPage, setLotteryPage] = useState(0);
+  const [originalPage, setOriginalPage] = useState(0);
 
   // First Deposit Bonus Welcome Popup (Exact APK Match)
   const [showWelcomeBonus, setShowWelcomeBonus] = useState(() => {
@@ -75,14 +80,131 @@ export default function HomePage({
     return () => clearInterval(interval);
   }, [banners.length]);
 
-  // 1. JILI Studio Games (Official KhelV Live Assets)
-  const jiliGames = [
+  // 1. POPULAR GAMES (Matches Screenshot 10 1:1)
+  const popularGamesList = [
+    { 
+      id: 'aviator', 
+      title: 'AVIATOR', 
+      display: 'Aviator', 
+      category: 'Original',
+      image: '/assets/official_khelv/game_aviator_spribe.png', 
+      provider: 'SPRIBE'
+    },
+    { 
+      id: 'fortunegems', 
+      title: 'FORTUNE GEMS', 
+      display: 'Fortune Gems', 
+      category: 'Slots',
+      image: '/assets/official_khelv/game_fortunegems.png', 
+      provider: 'JILI'
+    },
+    { 
+      id: 'aviator', 
+      title: 'AVIATOR', 
+      display: 'Aviator Red', 
+      category: 'Original',
+      image: '/assets/official_khelv/game_aviator_red.png', 
+      provider: 'ORIGINAL'
+    },
+    { 
+      id: 'mines', 
+      title: 'MINES', 
+      display: 'Mines', 
+      category: 'Original',
+      image: '/assets/official_khelv/game_mines_jili.png', 
+      provider: 'JILI'
+    },
+    { 
+      id: 'boom', 
+      title: 'BOOM', 
+      display: 'Boom', 
+      category: 'Original',
+      image: '/assets/official_khelv/game_boom.png', 
+      provider: 'ORIGINAL'
+    },
     { 
       id: 'superace', 
       title: 'SUPER ACE', 
       display: 'Super Ace', 
       category: 'Slots',
       image: '/assets/official_khelv/game_superace.png', 
+      provider: 'JILI'
+    },
+    // Page 2
+    { 
+      id: 'wingo', 
+      title: 'WIN GO 30S', 
+      display: 'Win Go 30s', 
+      category: 'Lottery',
+      image: '/assets/official_khelv/lottery_wingo.png', 
+      provider: 'ORIGINAL'
+    },
+    { 
+      id: 'trxwingo', 
+      title: 'TRX WIN GO', 
+      display: 'TRX WinGo', 
+      category: 'Lottery',
+      image: '/assets/official_khelv/lottery_trx.png', 
+      provider: 'TRON'
+    },
+    { 
+      id: 'crazy777', 
+      title: 'CRAZY 777', 
+      display: 'Crazy 777', 
+      category: 'Slots',
+      image: '/assets/official_khelv/game_crazy777.png', 
+      provider: 'JILI'
+    },
+    { 
+      id: 'goldenempire', 
+      title: 'GOLDEN EMPIRE', 
+      display: 'Golden Empire', 
+      category: 'Slots',
+      image: '/assets/official_khelv/game_goldenempire.png', 
+      provider: 'JILI'
+    },
+    { 
+      id: 'boxingking', 
+      title: 'BOXING KING', 
+      display: 'Boxing King', 
+      category: 'Slots',
+      image: '/assets/official_khelv/game_boxingking.png', 
+      provider: 'JILI'
+    },
+    { 
+      id: 'moneycoming', 
+      title: 'MONEY COMING', 
+      display: 'Money Coming', 
+      category: 'Slots',
+      image: '/assets/official_khelv/game_moneycoming.png', 
+      provider: 'JILI'
+    }
+  ];
+
+  // 2. SLOTS GAMES (Matches Screenshot 10 1:1)
+  const slotsGamesList = [
+    { 
+      id: 'crazy777', 
+      title: 'CRAZY 777', 
+      display: 'Crazy 777', 
+      category: 'Slots',
+      image: '/assets/official_khelv/game_crazy777.png', 
+      provider: 'JILI'
+    },
+    { 
+      id: 'goldenempire', 
+      title: 'GOLDEN EMPIRE', 
+      display: 'Golden Empire', 
+      category: 'Slots',
+      image: '/assets/official_khelv/game_goldenempire.png', 
+      provider: 'JILI'
+    },
+    { 
+      id: 'boxingking', 
+      title: 'BOXING KING', 
+      display: 'Boxing King', 
+      category: 'Slots',
+      image: '/assets/official_khelv/game_boxingking.png', 
       provider: 'JILI'
     },
     { 
@@ -102,11 +224,20 @@ export default function HomePage({
       provider: 'JILI'
     },
     { 
-      id: 'fortunegems', 
-      title: 'FORTUNE GEMS', 
-      display: 'Fortune Gems', 
+      id: 'fortuneox', 
+      title: 'FORTUNE OX', 
+      display: 'Fortune Ox', 
       category: 'Slots',
-      image: '/assets/official_khelv/game_fortunegems.png', 
+      image: '/assets/official_khelv/game_fortuneox.png', 
+      provider: 'PG SOFT'
+    },
+    // Page 2
+    { 
+      id: 'superace', 
+      title: 'SUPER ACE', 
+      display: 'Super Ace', 
+      category: 'Slots',
+      image: '/assets/official_khelv/game_superace.png', 
       provider: 'JILI'
     },
     { 
@@ -118,45 +249,9 @@ export default function HomePage({
       provider: 'JILI'
     },
     { 
-      id: 'goldenempire', 
-      title: 'GOLDEN EMPIRE', 
-      display: 'Golden Empire', 
-      category: 'Slots',
-      image: '/assets/official_khelv/game_goldenempire.png', 
-      provider: 'JILI'
-    },
-    { 
-      id: 'crazy777', 
-      title: 'CRAZY 777', 
-      display: 'Crazy 777', 
-      category: 'Slots',
-      image: '/assets/official_khelv/game_crazy777.png', 
-      provider: 'JILI'
-    },
-    { 
-      id: 'boxingking', 
-      title: 'BOXING KING', 
-      display: 'Boxing King', 
-      category: 'Slots',
-      image: '/assets/official_khelv/game_boxingking.png', 
-      provider: 'JILI'
-    }
-  ];
-
-  // 2. PG Soft Games (Official KhelV Live Assets)
-  const pgsoftGames = [
-    { 
-      id: 'fortuneox', 
-      title: 'FORTUNE OX', 
-      display: 'Fortune Ox', 
-      category: 'Slots',
-      image: '/assets/official_khelv/game_fortuneox.png', 
-      provider: 'PG SOFT'
-    },
-    { 
       id: 'wildbounty', 
       title: 'WILD BOUNTY', 
-      display: 'Wild Bounty Showdown', 
+      display: 'Wild Bounty', 
       category: 'Slots',
       image: '/assets/official_khelv/game_wildbounty.png', 
       provider: 'PG SOFT'
@@ -164,23 +259,11 @@ export default function HomePage({
     { 
       id: 'aztec', 
       title: 'TREASURES OF AZTEC', 
-      display: 'Treasures of Aztec', 
+      display: 'Aztec', 
       category: 'Slots',
       image: '/assets/official_khelv/game_aztec.png', 
       provider: 'PG SOFT'
     },
-    { 
-      id: 'mahjongways', 
-      title: 'MAHJONG WAYS 2', 
-      display: 'Mahjong Ways 2', 
-      category: 'Slots',
-      image: '/assets/game_assets/png/7-CyClOlek.png', 
-      provider: 'PG SOFT'
-    }
-  ];
-
-  // 3. Pragmatic Games
-  const pragmaticGames = [
     { 
       id: 'gatesofolympus', 
       title: 'GATES OF OLYMPUS', 
@@ -199,16 +282,15 @@ export default function HomePage({
     }
   ];
 
-  // 4. Lottery Games (Official KhelV 3D Card Posters)
-  const lotteryGames = [
+  // 3. LOTTERY GAMES
+  const lotteryGamesList = [
     { 
       id: 'wingo', 
       title: 'WIN GO 30S', 
       display: 'Win Go 30s', 
       category: 'Lottery',
       image: '/assets/official_khelv/lottery_wingo.png', 
-      provider: 'ORIGINAL',
-      badge: 'PROVABLY FAIR'
+      provider: 'ORIGINAL'
     },
     { 
       id: 'trxwingo', 
@@ -216,17 +298,15 @@ export default function HomePage({
       display: 'TRX WinGo 1M', 
       category: 'Lottery',
       image: '/assets/official_khelv/lottery_trx.png', 
-      provider: 'TRON BLOCKCHAIN',
-      badge: 'BLOCKCHAIN'
+      provider: 'TRON'
     },
     { 
       id: 'k3', 
-      title: 'K3 LOTTERY', 
+      title: 'K3 3D LOTTERY', 
       display: 'K3 3D Lottery', 
       category: 'Lottery',
       image: '/assets/official_khelv/lottery_k3.png', 
-      provider: 'ORIGINAL',
-      badge: '207X WIN'
+      provider: 'ORIGINAL'
     },
     { 
       id: '5d', 
@@ -235,123 +315,101 @@ export default function HomePage({
       category: 'Lottery',
       image: '/assets/official_khelv/lottery_5d.png', 
       provider: 'ORIGINAL'
-    }
-  ];
-
-  // 5. Crash, Casino, PVC, Mini Games
-  const casinoGames = [
-    { 
-      id: 'aviator', 
-      title: 'AVIATOR CRASH', 
-      display: 'Aviator', 
-      category: 'Casino',
-      image: '/assets/official_khelv/game_aviator.png', 
-      provider: 'SPRIBE',
-      badge: 'HOT'
     },
     { 
-      id: 'crazytime', 
-      title: 'CRAZY TIME', 
-      display: 'Crazy Time', 
-      category: 'Casino',
-      image: '/assets/game_assets/png/9-BajteX48.png', 
-      provider: 'EVOLUTION'
+      id: 'wingo', 
+      title: 'WIN GO 1 MIN', 
+      display: 'Win Go 1M', 
+      category: 'Lottery',
+      image: '/assets/official_khelv/lottery_wingo.png', 
+      provider: 'ORIGINAL'
     },
     { 
-      id: 'roulette', 
-      title: 'EURO ROULETTE', 
-      display: 'Roulette', 
-      category: 'Casino',
-      image: '/assets/game_assets/png/video-CepDEnWM.png', 
+      id: 'wingo', 
+      title: 'WIN GO 3 MIN', 
+      display: 'Win Go 3M', 
+      category: 'Lottery',
+      image: '/assets/official_khelv/lottery_wingo.png', 
       provider: 'ORIGINAL'
     }
   ];
 
-  const sportsGames = [
-    { 
-      id: 'cricket', 
-      title: 'BPL CRICKET LIVE', 
-      display: 'Cricket Sports', 
-      category: 'Sports',
-      image: '/assets/game_assets/png/sport-CFnl9BGk.png', 
-      provider: 'SABA'
-    }
-  ];
-
-  const pvcGames = [
+  // 4. ORIGINAL / FLASH GAMES
+  const originalGamesList = [
     { 
       id: 'mines', 
       title: 'MINES PRO', 
       display: 'Mines', 
-      category: 'PVC',
-      image: '/assets/game_assets/png/1-27ESYDeX.png', 
+      category: 'Original',
+      image: '/assets/official_khelv/game_mines_jili.png', 
       provider: 'ORIGINAL'
-    }
-  ];
-
-  const miniGames = [
+    },
     { 
       id: 'aviator', 
       title: 'AVIATOR CRASH', 
-      display: 'Aviator Fast', 
-      category: 'MiniGame',
-      image: '/assets/official_khelv/game_aviator.png', 
-      provider: 'SPRIBE'
+      display: 'Aviator', 
+      category: 'Original',
+      image: '/assets/official_khelv/game_aviator_red.png', 
+      provider: 'ORIGINAL'
     },
     { 
-      id: 'mines', 
-      title: 'MINES GOLD', 
-      display: 'Mines Gold', 
-      category: 'MiniGame',
+      id: 'boom', 
+      title: 'BOOM CRASH', 
+      display: 'Boom Crash', 
+      category: 'Original',
+      image: '/assets/official_khelv/game_boom.png', 
+      provider: 'ORIGINAL'
+    },
+    { 
+      id: 'dice', 
+      title: 'DICE CLASSIC', 
+      display: 'Dice', 
+      category: 'Original',
       image: '/assets/game_assets/png/1-27ESYDeX.png', 
+      provider: 'ORIGINAL'
+    },
+    { 
+      id: 'plinko', 
+      title: 'PLINKO MASTER', 
+      display: 'Plinko', 
+      category: 'Original',
+      image: '/assets/game_assets/png/7-CyClOlek.png', 
+      provider: 'ORIGINAL'
+    },
+    { 
+      id: 'chickenroad', 
+      title: 'CHICKEN ROAD', 
+      display: 'Chicken Road', 
+      category: 'Original',
+      image: '/assets/official_khelv/act_chicken_road.png', 
       provider: 'ORIGINAL'
     }
   ];
 
-  const fishingGames = [
-    { 
-      id: 'jackpotfishing', 
-      title: 'JACKPOT FISHING', 
-      display: 'Jackpot Fishing', 
-      category: 'Fishing',
-      image: '/assets/game_assets/png/fish-D0liGLFa.png', 
-      provider: 'JILI'
-    }
+  // 8 Official 3D Category Items (Matching Screenshot 10 1:1)
+  const categoryTabs = [
+    { id: 'Popular', label: 'Popular', icon: '/assets/official_khelv/cat_3d_popular.png' },
+    { id: 'Slots', label: 'Slots', icon: '/assets/official_khelv/cat_3d_slot.png' },
+    { id: 'Lottery', label: 'Lottery', icon: '/assets/official_khelv/cat_3d_lottery.png' },
+    { id: 'Original', label: 'Original', icon: '/assets/official_khelv/cat_3d_flash.png' },
+    { id: 'Casino', label: 'Casino', icon: '/assets/official_khelv/cat_3d_video.png' },
+    { id: 'Sports', label: 'Sports', icon: '/assets/official_khelv/cat_3d_sport.png' },
+    { id: 'Rummy', label: 'Rummy', icon: '/assets/official_khelv/cat_3d_chess.png' },
+    { id: 'Fishing', label: 'Fishing', icon: '/assets/official_khelv/cat_3d_fish.png' }
   ];
 
-  const allSlots = [...jiliGames, ...pgsoftGames, ...pragmaticGames];
-  const allGames = [...lotteryGames, ...allSlots, ...casinoGames, ...pvcGames, ...sportsGames, ...fishingGames];
-
-  const currentDisplayGames = searchQuery.trim() !== ''
-    ? allGames.filter(g => 
-        g.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        g.display.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        g.provider.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : selectedCategory === 'Slots'
-    ? allSlots
-    : selectedCategory === 'Lottery'
-    ? lotteryGames
-    : selectedCategory === 'Sports'
-    ? sportsGames
-    : selectedCategory === 'Casino'
-    ? casinoGames
-    : selectedCategory === 'PVC'
-    ? pvcGames
-    : selectedCategory === 'Fishing'
-    ? fishingGames
-    : selectedCategory === 'MiniGame'
-    ? miniGames
-    : allGames;
-
-  // Live Winning Stream Simulation (Screenshot 5)
-  const [winnerStream] = useState([
-    { user: 'Mem***BHR', game: 'TRX WinGo', amount: '৳2,488.16', vip: 'V3' },
-    { user: 'Mem***W7A', game: 'Super Ace', amount: '৳1,350.00', vip: 'V2' },
-    { user: 'Mem***K99', game: 'K3 3D Lottery', amount: '৳4,196.00', vip: 'V4' },
-    { user: 'Mem***DX2', game: 'Fortune Gems 2', amount: '৳850.00', vip: 'V1' },
-    { user: 'Mem***T8P', game: 'Aviator Crash', amount: '৳5,620.50', vip: 'V5' }
-  ]);
+  // Helper to slice 6 cards for 3x2 grid
+  function getPaginatedCards(list, page) {
+    const PAGE_SIZE = 6;
+    const totalPages = Math.ceil(list.length / PAGE_SIZE) || 1;
+    const validPage = ((page % totalPages) + totalPages) % totalPages;
+    const start = validPage * PAGE_SIZE;
+    return {
+      cards: list.slice(start, start + PAGE_SIZE),
+      page: validPage,
+      totalPages
+    };
+  }
 
   function handleBannerClick(banner) {
     if (banner.action === 'deposit') {
@@ -365,8 +423,96 @@ export default function HomePage({
     }
   }
 
+  // Section Header with Authentic KhelV Curved Red Banner (Screenshot 10 Match)
+  const renderSectionHeader = (title, onPrev, onNext, onViewAll) => (
+    <div className="flex items-center justify-between mt-3 mb-2 px-1">
+      {/* Left: Authentic Red Curved Section Title (sectionTitleBg.png) */}
+      <div 
+        className="h-8 px-4 flex items-center bg-no-repeat bg-left bg-contain"
+        style={{ backgroundImage: `url('/assets/official_khelv/sectionTitleBg.png')` }}
+      >
+        <span className="font-black text-sm text-white tracking-wide uppercase drop-shadow-sm pr-3">
+          {title}
+        </span>
+      </div>
+
+      {/* Right: All, < (prev), > (next) Controls */}
+      <div className="flex items-center space-x-1.5">
+        <button 
+          onClick={onViewAll}
+          className="bg-[#182046] hover:bg-[#202b5e] border border-blue-900/60 text-slate-300 hover:text-white text-[11px] font-bold px-2.5 py-1 rounded transition active:scale-95 cursor-pointer"
+        >
+          All
+        </button>
+        <button 
+          onClick={onPrev}
+          className="w-6 h-6 bg-[#182046] hover:bg-[#202b5e] border border-blue-900/60 text-slate-300 hover:text-white flex items-center justify-center rounded text-xs font-bold transition active:scale-95 cursor-pointer"
+        >
+          <ChevronLeft className="w-3.5 h-3.5" />
+        </button>
+        <button 
+          onClick={onNext}
+          className="w-6 h-6 bg-[#182046] hover:bg-[#202b5e] border border-blue-900/60 text-slate-300 hover:text-white flex items-center justify-center rounded text-xs font-bold transition active:scale-95 cursor-pointer"
+        >
+          <ChevronRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+  );
+
+  // 3x2 Game Cards Grid (Screenshot 10 Aspect Ratio 37/50 Match)
+  const renderGameGrid = (games) => (
+    <div className="grid grid-cols-3 gap-2 px-1">
+      {games.map((game, idx) => (
+        <div
+          key={`${game.id}-${idx}`}
+          onClick={() => onOpenGame(game.id)}
+          className="relative aspect-[37/50] rounded-xl overflow-hidden cursor-pointer active:scale-95 transition group bg-gradient-to-b from-[#141d3a] to-[#0b1024] border border-[#232f63]/80 shadow-lg flex flex-col justify-between"
+        >
+          {/* Studio Badge Top Right */}
+          {game.provider && (
+            <div className="absolute top-1 right-1 bg-black/75 backdrop-blur-xs text-amber-300 border border-amber-400/30 text-[7px] font-black px-1.5 py-0.2 rounded shadow-xs z-10 uppercase tracking-wider">
+              {game.provider}
+            </div>
+          )}
+
+          {/* High-Res 3D Artwork Poster */}
+          <div className="w-full h-full flex items-center justify-center p-1 overflow-hidden">
+            <img 
+              src={game.image} 
+              alt={game.title} 
+              className="w-full h-full object-contain group-hover:scale-108 transition duration-300 drop-shadow-[0_4px_10px_rgba(0,0,0,0.6)]" 
+            />
+          </div>
+
+          {/* Bottom Title Bar */}
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent py-1.5 px-1 text-center">
+            <span className="text-white font-black text-[9px] tracking-tight block truncate uppercase drop-shadow-sm">
+              {game.title}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  // Filtered games if search is active
+  const allAvailableGames = [...popularGamesList, ...slotsGamesList, ...lotteryGamesList, ...originalGamesList];
+  const searchResults = searchQuery.trim() !== ''
+    ? allAvailableGames.filter(g => 
+        g.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        g.display.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        g.provider.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : null;
+
+  const currentPopular = getPaginatedCards(popularGamesList, popularPage);
+  const currentSlots = getPaginatedCards(slotsGamesList, slotsPage);
+  const currentLottery = getPaginatedCards(lotteryGamesList, lotteryPage);
+  const currentOriginal = getPaginatedCards(originalGamesList, originalPage);
+
   return (
-    <div className="space-y-3 pb-24 text-white select-none font-sans bg-[#070b19]">
+    <div className="space-y-3 pb-24 text-white select-none font-sans bg-[#070b19] relative">
       
       {/* 1. Promotional High-Res Banner Carousel (Authentic APK Graphic) */}
       <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[702/330] bg-[#0c1224] border border-slate-800/80">
@@ -395,7 +541,7 @@ export default function HomePage({
         </div>
       </div>
 
-      {/* 2. Scrolling Marquee Announcement Box (Screenshot 5 Match) */}
+      {/* 2. Scrolling Marquee Announcement Box (Screenshot 10 Match) */}
       <div className="bg-[#0f1730] rounded-2xl px-3 py-2.5 shadow-md border border-slate-800/80 flex items-center justify-between">
         <div className="flex items-center space-x-2 flex-1 overflow-hidden">
           <div className="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/30">
@@ -413,19 +559,10 @@ export default function HomePage({
         </button>
       </div>
 
-      {/* 3. Official KhelV 8-Category 3D Navigation (Horizontal Scrolling Bar) */}
-      <div className="bg-[#0f1730] rounded-2xl p-2 shadow-lg border border-slate-800/80 overflow-x-auto no-scrollbar">
-        <div className="flex items-center space-x-2 min-w-max">
-          {[
-            { id: 'All', label: 'Popular', icon: '/assets/official_khelv/cat_popular.png' },
-            { id: 'Lottery', label: 'Lottery', icon: '/assets/official_khelv/cat_lottery.png' },
-            { id: 'Slots', label: 'Slots', icon: '/assets/official_khelv/cat_slot.png' },
-            { id: 'Casino', label: 'Casino', icon: '/assets/official_khelv/cat_video.png' },
-            { id: 'Sports', label: 'Sports', icon: '/assets/official_khelv/cat_sport.png' },
-            { id: 'PVC', label: 'Cards', icon: '/assets/official_khelv/cat_chess.png' },
-            { id: 'Fishing', label: 'Fishing', icon: '/assets/official_khelv/cat_fish.png' },
-            { id: 'MiniGame', label: 'Mini Game', icon: '/assets/official_khelv/cat_flash.png' }
-          ].map(cat => {
+      {/* 3. Official KhelV 3D Category Navigation Bar (Exact Screenshot 10 Match) */}
+      <div className="overflow-x-auto no-scrollbar py-1">
+        <div className="flex items-center space-x-2 min-w-max px-1">
+          {categoryTabs.map(cat => {
             const isActive = selectedCategory === cat.id;
             return (
               <button
@@ -433,152 +570,191 @@ export default function HomePage({
                 onClick={() => {
                   setSelectedCategory(cat.id);
                   setSearchQuery('');
+                  // Smooth scroll to section if matching
+                  const el = document.getElementById(`section-${cat.id.toLowerCase()}`);
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className={`flex flex-col items-center justify-center py-2 px-3 rounded-xl transition cursor-pointer min-w-[65px] ${
+                className={`flex flex-col items-center justify-center pt-1.5 pb-2 px-3 rounded-2xl transition cursor-pointer min-w-[72px] ${
                   isActive 
-                    ? 'bg-gradient-to-b from-[#1a2b5e] to-[#0f1b3b] text-amber-300 font-black border border-amber-400/50 shadow-[0_0_12px_rgba(245,190,0,0.35)] scale-102' 
-                    : 'bg-[#0b1022]/60 text-slate-400 hover:text-white hover:bg-slate-800/50 border border-slate-800/50'
+                    ? 'bg-gradient-to-b from-[#1e2a5c] to-[#0f1738] text-amber-300 font-black border border-amber-400/90 shadow-[0_0_12px_rgba(245,190,0,0.35)] scale-102' 
+                    : 'bg-[#0f1730]/90 text-slate-300 hover:text-white hover:bg-[#141e3d] border border-slate-800/80'
                 }`}
               >
                 <img 
                   src={cat.icon} 
                   alt={cat.label} 
-                  className="w-10 h-10 object-contain drop-shadow-md mb-1 transform transition group-hover:scale-105" 
+                  className="w-12 h-12 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] mb-1 transform transition group-hover:scale-105" 
                 />
-                <span className="text-[10px] font-bold tracking-tight whitespace-nowrap">{cat.label}</span>
+                <span className={`text-[11px] font-black tracking-tight whitespace-nowrap ${isActive ? 'text-amber-300' : 'text-slate-300'}`}>
+                  {cat.label}
+                </span>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* 4. Category Title Header & Search Bar */}
-      <div className="flex justify-between items-center px-1">
+      {/* Search Bar Toggle */}
+      <div className="flex justify-between items-center px-2">
         <div className="flex items-center space-x-2">
-          <span className="font-black text-xs sm:text-sm tracking-wide text-white font-sans uppercase">
-            {selectedCategory === 'All' ? 'POPULAR GAMES' : `${selectedCategory} GAMES`}
-          </span>
-          <span className="bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[9px] font-black px-2 py-0.2 rounded-full uppercase">
-            {currentDisplayGames.length} GAMES
+          <span className="font-black text-xs tracking-wider text-slate-400 uppercase">
+            EXPLORE GAMES
           </span>
         </div>
-
         <button 
           onClick={() => setShowSearch(prev => !prev)}
-          className="text-slate-400 hover:text-white p-1"
+          className="text-slate-400 hover:text-white p-1 flex items-center space-x-1 text-xs"
           title="Search"
         >
           <Search className="w-4 h-4" />
+          <span>Search</span>
         </button>
       </div>
 
       {/* Search Input Box */}
       {showSearch && (
-        <div className="relative">
+        <div className="relative px-1">
           <input 
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="গেম খুঁজুন (e.g. Wingo, Aviator, Super Ace)..."
+            placeholder="গেম খুঁজুন (e.g. Aviator, Super Ace, Wingo, Mines)..."
             className="w-full bg-[#0f1730] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-amber-400 shadow-inner"
             autoFocus
           />
         </div>
       )}
 
-      {/* 5. 3-Column Dark Luxury Game Cards Grid (Official KhelV Live 3D Posters) */}
-      <div className="grid grid-cols-3 gap-2.5">
-        {currentDisplayGames.map((game, idx) => {
-          return (
-            <div
-              key={`${game.id}-${idx}`}
-              onClick={() => onOpenGame(game.id)}
-              className="cursor-pointer flex flex-col items-center transition transform active:scale-95 group"
-            >
-              <div className="w-full aspect-square rounded-2xl overflow-hidden relative shadow-lg border border-slate-800 bg-gradient-to-b from-[#141d38] to-[#0a0f24] flex flex-col justify-between">
-                
-                {/* Official Studio Badge Top Right */}
-                <div className="absolute top-1 right-1 bg-black/75 backdrop-blur-xs text-amber-300 border border-amber-400/30 text-[7.5px] font-black px-1.5 py-0.2 rounded shadow-xs z-10 uppercase tracking-wider">
-                  {game.provider}
-                </div>
+      {/* 4. GAME SECTIONS (Exact 1:1 Match to Screenshot 10) */}
+      {searchResults ? (
+        <div className="space-y-2">
+          <div className="px-2 text-xs font-bold text-amber-300">
+            অনুসন্ধান ফলাফল: {searchResults.length} টি গেম পাওয়া গেছে
+          </div>
+          {renderGameGrid(searchResults)}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          
+          {/* SECTION 1: POPULAR (Screenshot 10 Row 1 & Row 2) */}
+          <div id="section-popular">
+            {renderSectionHeader(
+              'Popular',
+              () => setPopularPage(p => p - 1),
+              () => setPopularPage(p => p + 1),
+              () => setSelectedCategory('Popular')
+            )}
+            {renderGameGrid(currentPopular.cards)}
+          </div>
 
-                {/* 3D Game Poster Artwork */}
-                <div className="w-full h-full flex items-center justify-center p-1.5 overflow-hidden">
-                  <img 
-                    src={game.image} 
-                    alt={game.title} 
-                    className="w-full h-full object-contain group-hover:scale-108 transition duration-300 drop-shadow-[0_4px_10px_rgba(0,0,0,0.6)]" 
-                  />
-                </div>
+          {/* SECTION 2: SLOTS (Screenshot 10 Section 2) */}
+          <div id="section-slots">
+            {renderSectionHeader(
+              'Slots',
+              () => setSlotsPage(p => p - 1),
+              () => setSlotsPage(p => p + 1),
+              () => setSelectedCategory('Slots')
+            )}
+            {renderGameGrid(currentSlots.cards)}
+          </div>
 
-                {/* Bottom Game Name Ribbon */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent py-1 px-1 text-center">
-                  <span className="text-white font-black text-[9px] tracking-tight block truncate uppercase drop-shadow-sm">
-                    {game.title}
-                  </span>
-                </div>
-              </div>
+          {/* SECTION 3: LOTTERY (Win Go, TRX, K3, 5D) */}
+          <div id="section-lottery">
+            {renderSectionHeader(
+              'Lottery',
+              () => setLotteryPage(p => p - 1),
+              () => setLotteryPage(p => p + 1),
+              () => setSelectedCategory('Lottery')
+            )}
+            {renderGameGrid(currentLottery.cards)}
+          </div>
 
-              {/* Title Text Below Card */}
-              <span className="text-[10px] font-bold text-slate-300 mt-1 truncate max-w-full text-center">
-                {game.display}
-              </span>
-            </div>
-          );
-        })}
-      </div>
+          {/* SECTION 4: ORIGINAL / FLASH */}
+          <div id="section-original">
+            {renderSectionHeader(
+              'Original',
+              () => setOriginalPage(p => p - 1),
+              () => setOriginalPage(p => p + 1),
+              () => setSelectedCategory('Original')
+            )}
+            {renderGameGrid(currentOriginal.cards)}
+          </div>
 
-      {/* 6. All Games Pill Button */}
-      <div className="pt-1">
+        </div>
+      )}
+
+      {/* 5. FLOATING RIGHT ACTION STACK (Matches Screenshot 10 1:1) */}
+      <aside aria-label="Floating Actions" className="fixed right-2 bottom-24 z-40 flex flex-col space-y-2 pointer-events-auto">
+        {/* 1. Gift / Activity Button */}
         <button
-          onClick={() => {
-            setSelectedCategory('All');
-            setSearchQuery('');
-          }}
-          className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:brightness-110 text-white font-black rounded-full text-xs uppercase tracking-wider shadow-md transition active:scale-98 cursor-pointer"
+          onClick={() => onOpenGift && onOpenGift()}
+          title="Daily Gift Code"
+          className="w-11 h-11 rounded-full bg-gradient-to-tr from-rose-500 via-red-600 to-amber-500 p-0.5 shadow-2xl flex items-center justify-center transition active:scale-90 cursor-pointer animate-bounce group"
         >
-          All Games
+          <div className="w-full h-full rounded-full bg-[#14122e] flex items-center justify-center">
+            <img 
+              src="/assets/official_khelv/turntableFg-B.png" 
+              alt="Gift" 
+              className="w-7 h-7 object-contain drop-shadow-md group-hover:scale-110 transition"
+            />
+          </div>
         </button>
-      </div>
 
-      {/* 7. Live Winning Information Stream (Screenshot 5 Match) */}
-      <div className="bg-[#0f1730] rounded-2xl p-3 border border-slate-800/80 shadow-md space-y-2">
-        <div className="flex items-center space-x-1.5">
-          <span className="w-5 h-5 rounded bg-amber-400/20 text-amber-400 flex items-center justify-center text-xs">💰</span>
-          <span className="font-black text-xs text-white tracking-wide">Winning information</span>
-        </div>
+        {/* 2. Turntable Spin Wheel Button */}
+        <button
+          onClick={() => onOpenWheel && onOpenWheel()}
+          title="Lucky Wheel"
+          className="w-11 h-11 rounded-full bg-gradient-to-tr from-amber-400 via-yellow-500 to-amber-600 p-0.5 shadow-2xl flex items-center justify-center transition active:scale-90 cursor-pointer group"
+        >
+          <div className="w-full h-full rounded-full bg-[#14122e] flex items-center justify-center overflow-hidden">
+            <span className="text-xl group-hover:rotate-45 transition duration-300">🎡</span>
+          </div>
+        </button>
 
-        <div className="space-y-1.5">
-          {winnerStream.map((w, idx) => (
-            <div 
-              key={idx}
-              className="bg-[#0b1023] rounded-xl p-2 flex items-center justify-between text-xs border border-slate-800/80"
-            >
-              <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-500 text-slate-950 flex items-center justify-center font-black text-[10px] shadow-xs">
-                  {w.vip}
-                </div>
-                <span className="text-slate-200 font-bold text-[11px]">{w.user}</span>
-                <span className="text-slate-400 text-[10px]">in {w.game}</span>
-              </div>
-              <span className="text-amber-400 font-mono font-black text-xs">
-                {w.amount}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
+        {/* 3. Telegram Airplane Button */}
+        <button
+          onClick={() => window.open('https://t.me/ROYALCLUB_Support', '_blank')}
+          title="Official Telegram"
+          className="w-11 h-11 rounded-full bg-[#2AABEE] shadow-2xl flex items-center justify-center text-white transition active:scale-90 cursor-pointer group"
+        >
+          <svg className="w-5 h-5 fill-current group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+          </svg>
+        </button>
 
-      {/* 8. Floating "Get ৳17 / Add to Desktop" Widget (Exact APK Match Image 6) */}
+        {/* 4. Partner Rewards / VIP Button */}
+        <button
+          onClick={() => onOpenPartnerReward && onOpenPartnerReward()}
+          title="VIP Rewards"
+          className="w-11 h-11 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 p-0.5 shadow-2xl flex items-center justify-center transition active:scale-90 cursor-pointer group"
+        >
+          <div className="w-full h-full rounded-full bg-[#14122e] flex items-center justify-center">
+            <span className="text-lg">🐉</span>
+          </div>
+        </button>
+
+        {/* 5. Customer Service Robot Button */}
+        <button
+          onClick={() => window.open('https://t.me/ROYALCLUB_Support', '_blank')}
+          title="Customer Service"
+          className="w-11 h-11 rounded-full bg-gradient-to-tr from-cyan-400 to-blue-600 p-0.5 shadow-2xl flex items-center justify-center transition active:scale-90 cursor-pointer group"
+        >
+          <div className="w-full h-full rounded-full bg-[#14122e] flex items-center justify-center">
+            <Headphones className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition" />
+          </div>
+        </button>
+      </aside>
+
+      {/* 6. Floating "Get ৳100 / Add to Desktop" Pill (Screenshot 10 Match) */}
       {showDesktopWidget && (
-        <div className="sticky bottom-16 z-30 flex justify-center px-3 pointer-events-auto">
-          <div className="bg-[#0e1736]/95 backdrop-blur-md border border-blue-500/50 rounded-full px-4 py-2 shadow-2xl flex items-center space-x-3 text-xs">
-            <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-amber-400 to-yellow-500 flex items-center justify-center text-xs shadow-xs">
+        <aside aria-label="Desktop Download" className="sticky bottom-16 z-30 flex justify-center px-3 pointer-events-auto">
+          <div className="bg-[#10193d]/95 backdrop-blur-md border border-blue-500/60 rounded-full px-4 py-2 shadow-2xl flex items-center space-x-3 text-xs">
+            <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-amber-400 to-yellow-500 flex items-center justify-center text-sm shadow-xs">
               👑
             </div>
-            <div className="flex items-center space-x-1">
-              <span className="text-amber-300 font-bold">Get ৳17</span>
-              <span className="text-white font-black">Add to Desktop</span>
+            <div className="flex flex-col">
+              <span className="text-amber-300 font-black text-xs leading-none">Get ৳100</span>
+              <span className="text-slate-300 font-bold text-[10px] leading-tight">Add to Desktop</span>
             </div>
             <button
               onClick={() => {
@@ -589,21 +765,21 @@ export default function HomePage({
                   window.dispatchEvent(event);
                 }
               }}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-[10px] px-2.5 py-0.5 rounded-full"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:brightness-110 text-white font-black text-[11px] px-3 py-1 rounded-full shadow-sm cursor-pointer"
             >
               Install
             </button>
             <button 
               onClick={() => setShowDesktopWidget(false)}
-              className="text-slate-400 hover:text-white p-0.5"
+              className="text-slate-400 hover:text-white p-0.5 cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
-        </div>
+        </aside>
       )}
 
-      {/* 9. FIRST DEPOSIT BONUS WELCOME POPUP DIALOG (EXACT APK CLONE SCREENSHOT 6) */}
+      {/* 7. FIRST DEPOSIT BONUS WELCOME POPUP DIALOG */}
       {showWelcomeBonus && (
         <div className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3">
           <div className="relative w-full max-w-[360px] rounded-3xl overflow-hidden shadow-2xl border border-blue-500/50 bg-[#0d142d] animate-in zoom-in-95 duration-200">
@@ -619,7 +795,7 @@ export default function HomePage({
                   setShowWelcomeBonus(false);
                   sessionStorage.setItem('royalclub_bonus_closed', 'true');
                 }}
-                className="text-white/80 hover:text-white p-1"
+                className="text-white/80 hover:text-white p-1 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -644,7 +820,7 @@ export default function HomePage({
             {/* Golden 3D Chest & Reward Table */}
             <div className="p-4 space-y-3 bg-gradient-to-b from-[#0d142d] via-[#090e24] to-[#060918]">
               
-              {/* Golden 3D Chest Graphic from APK (Screenshot 6 Match) */}
+              {/* Golden 3D Chest Graphic from APK */}
               <div className="flex flex-col items-center justify-center -my-1">
                 <img 
                   src="/assets/game_assets/png/gift-Q7IYrFBN.png" 
@@ -653,7 +829,7 @@ export default function HomePage({
                 />
               </div>
 
-              {/* Tiered Deposit Reward Table (Exact Screenshot 6 Values) */}
+              {/* Tiered Deposit Reward Table */}
               <div className="rounded-xl border border-slate-800 bg-[#070b1a] overflow-hidden">
                 <div className="grid grid-cols-2 bg-slate-900/80 px-3 py-1.5 text-[10px] font-bold text-slate-400 border-b border-slate-800 text-center uppercase tracking-wider">
                   <span>ডিপোজিট পরিমাণ</span>
