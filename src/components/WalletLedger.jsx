@@ -53,11 +53,25 @@ export default function WalletLedger() {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  const safeUser = user || {};
+  const userBalance = Number(safeUser.balance || 0);
+  const totalWagered = Number(safeUser.total_wagered || 0);
+  const totalWon = Number(safeUser.total_won || 0);
+  const safeSettings = settings || {};
+
+  const isBkashActive = safeSettings.BKASH_ENABLED !== false;
+  const isNagadActive = safeSettings.NAGAD_ENABLED !== false;
+  const isRocketActive = safeSettings.ROCKET_ENABLED === true;
+
   function handleDepositSubmit(e) {
     e.preventDefault();
+    if (depMethod === 'Rocket' && !isRocketActive) {
+      alert("রকেট পেমেন্ট সার্ভিস বর্তমানে সাময়িকভাবে বন্ধ আছে। অনুগ্রহ করে বিকাশ বা নগদ ব্যবহার করুন।");
+      return;
+    }
     const amt = parseFloat(depAmount);
-    if (!amt || isNaN(amt) || amt < (settings.MIN_DEPOSIT_AMOUNT || 100)) {
-      alert(`সর্বনিম্ন ডিপোজিট ৳${settings.MIN_DEPOSIT_AMOUNT || 100} টাকা।`);
+    if (!amt || isNaN(amt) || amt < (safeSettings.MIN_DEPOSIT_AMOUNT || 100)) {
+      alert(`সর্বনিম্ন ডিপোজিট ৳${safeSettings.MIN_DEPOSIT_AMOUNT || 100} টাকা।`);
       return;
     }
     if (!senderPhone.trim()) {
@@ -85,12 +99,16 @@ export default function WalletLedger() {
 
   function handleWithdrawSubmit(e) {
     e.preventDefault();
-    const amt = parseFloat(witAmount);
-    if (!amt || isNaN(amt) || amt < (settings.MIN_WITHDRAWAL_AMOUNT || 200)) {
-      alert(`সর্বনিম্ন উইথড্র ৳${settings.MIN_WITHDRAWAL_AMOUNT || 200} টাকা।`);
+    if (witMethod === 'Rocket' && !isRocketActive) {
+      alert("রকেট পেমেন্ট সার্ভিস বর্তমানে সাময়িকভাবে বন্ধ আছে। অনুগ্রহ করে বিকাশ বা নগদ ব্যবহার করুন।");
       return;
     }
-    if (amt > user.balance) {
+    const amt = parseFloat(witAmount);
+    if (!amt || isNaN(amt) || amt < (safeSettings.MIN_WITHDRAWAL_AMOUNT || 200)) {
+      alert(`সর্বনিম্ন উইথড্র ৳${safeSettings.MIN_WITHDRAWAL_AMOUNT || 200} টাকা।`);
+      return;
+    }
+    if (amt > userBalance) {
       alert("পর্যাপ্ত ব্যালেন্স নেই!");
       return;
     }
@@ -113,12 +131,12 @@ export default function WalletLedger() {
   }
 
   const currentPayNumber = depMethod === 'bKash' 
-    ? settings.BKASH_NUMBER 
+    ? (safeSettings.BKASH_NUMBER || '01403398319 (Personal)')
     : depMethod === 'Nagad' 
-    ? settings.NAGAD_NUMBER 
-    : settings.ROCKET_NUMBER;
+    ? (safeSettings.NAGAD_NUMBER || '01403398319 (Personal)')
+    : (safeSettings.ROCKET_NUMBER || '01955-456789 (Personal)');
 
-  const filteredTxs = transactions.filter(tx => {
+  const filteredTxs = (transactions || []).filter(tx => {
     if (filterType === 'all') return true;
     return tx.type === filterType;
   });
@@ -136,10 +154,10 @@ export default function WalletLedger() {
           </div>
         </div>
 
-        {user.balance < 50 && (
+        {userBalance < 50 && (
           <button
             onClick={() => claimFaucet()}
-            className="bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black text-[11px] px-3 py-1.5 rounded-full shadow-sm active:scale-95 transition"
+            className="bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black text-[11px] px-3 py-1.5 rounded-full shadow-sm active:scale-95 transition cursor-pointer"
           >
             ফ্রি ৫০০ কয়েন
           </button>
@@ -155,7 +173,7 @@ export default function WalletLedger() {
             </span>
             <div className="flex items-baseline space-x-1 mt-1">
               <span className="text-3xl font-black font-mono text-slate-950">
-                ৳{user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ৳{userBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
               <span className="text-xs text-slate-800 font-bold">COINS</span>
             </div>
@@ -163,10 +181,10 @@ export default function WalletLedger() {
 
           <div className="text-right text-xs">
             <span className="bg-white/60 text-slate-900 font-mono px-2 py-0.5 rounded-full font-bold">
-              UID: #{user.uid}
+              UID: #{safeUser.uid || '100888'}
             </span>
             <span className="block text-slate-950 font-black mt-1">
-              {user.username}
+              {safeUser.username || 'Player'}
             </span>
           </div>
         </div>
@@ -175,11 +193,11 @@ export default function WalletLedger() {
         <div className="grid grid-cols-2 gap-2 pt-2.5 border-t border-yellow-500 text-xs mt-2.5">
           <div className="bg-white/40 p-2 rounded-xl">
             <span className="text-[10px] text-slate-800 block font-bold">মোট বাজি (Wagered):</span>
-            <span className="font-black text-slate-950 font-mono">৳{user.total_wagered.toFixed(2)}</span>
+            <span className="font-black text-slate-950 font-mono">৳{totalWagered.toFixed(2)}</span>
           </div>
           <div className="bg-white/40 p-2 rounded-xl">
             <span className="text-[10px] text-slate-800 block font-bold">মোট জয় (Won):</span>
-            <span className="font-black text-slate-950 font-mono">৳{user.total_won.toFixed(2)}</span>
+            <span className="font-black text-slate-950 font-mono">৳{totalWon.toFixed(2)}</span>
           </div>
         </div>
       </div>
@@ -260,15 +278,21 @@ export default function WalletLedger() {
               {/* Rocket */}
               <button
                 type="button"
-                onClick={() => setDepMethod('Rocket')}
-                className={`py-2 px-1 rounded-xl font-black text-xs border transition flex flex-col items-center ${
-                  depMethod === 'Rocket'
+                onClick={() => isRocketActive && setDepMethod('Rocket')}
+                disabled={!isRocketActive}
+                className={`py-2 px-1 rounded-xl font-black text-xs border transition flex flex-col items-center relative ${
+                  !isRocketActive 
+                    ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400' 
+                    : depMethod === 'Rocket'
                     ? 'bg-purple-50 border-purple-400 text-purple-700 shadow-sm'
                     : 'bg-slate-50 text-slate-600 border-slate-200'
                 }`}
               >
+                {!isRocketActive && (
+                  <span className="absolute -top-1.5 -right-1 bg-rose-500 text-white text-[8px] font-bold px-1 rounded-full">বন্ধ</span>
+                )}
                 <span className="font-black">Rocket</span>
-                <span className="text-[9px] opacity-75">রকেট</span>
+                <span className="text-[9px] opacity-75">{isRocketActive ? 'রকেট' : 'সাময়িক বন্ধ'}</span>
               </button>
             </div>
           </div>
@@ -363,20 +387,29 @@ export default function WalletLedger() {
           <div>
             <label className="text-slate-800 font-bold block mb-1.5">১. উইথড্র মেথড বেছে নিন:</label>
             <div className="grid grid-cols-3 gap-2">
-              {['bKash', 'Nagad', 'Rocket'].map(m => (
-                <button
-                  type="button"
-                  key={m}
-                  onClick={() => setWitMethod(m)}
-                  className={`py-2 rounded-xl font-bold text-xs border transition ${
-                    witMethod === m 
-                      ? 'bg-[#F5BE00] text-slate-950 border-yellow-500 shadow-sm' 
-                      : 'bg-slate-50 text-slate-600 border-slate-200'
-                  }`}
-                >
-                  {m}
-                </button>
-              ))}
+              {['bKash', 'Nagad', 'Rocket'].map(m => {
+                const isMethodDisabled = m === 'Rocket' && !isRocketActive;
+                return (
+                  <button
+                    type="button"
+                    key={m}
+                    disabled={isMethodDisabled}
+                    onClick={() => !isMethodDisabled && setWitMethod(m)}
+                    className={`py-2 rounded-xl font-bold text-xs border transition relative ${
+                      isMethodDisabled
+                        ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
+                        : witMethod === m 
+                        ? 'bg-[#F5BE00] text-slate-950 border-yellow-500 shadow-sm' 
+                        : 'bg-slate-50 text-slate-600 border-slate-200'
+                    }`}
+                  >
+                    {isMethodDisabled && (
+                      <span className="absolute -top-1.5 -right-1 bg-rose-500 text-white text-[8px] font-bold px-1 rounded-full">বন্ধ</span>
+                    )}
+                    <span>{m}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 

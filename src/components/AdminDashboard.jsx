@@ -129,14 +129,38 @@ export default function AdminDashboard({ onExit }) {
 
   // 4. Payment Gateway Settings State
   const [paySettings, setPaySettings] = useState({
-    BKASH_NUMBER: settings?.BKASH_NUMBER || '01855-987654 (Personal)',
-    NAGAD_NUMBER: settings?.NAGAD_NUMBER || '01755-123456 (Personal)',
+    BKASH_NUMBER: settings?.BKASH_NUMBER || '01403398319 (Personal)',
+    NAGAD_NUMBER: settings?.NAGAD_NUMBER || '01403398319 (Personal)',
     ROCKET_NUMBER: settings?.ROCKET_NUMBER || '01955-456789 (Personal)',
     USDT_DEPOSIT_ADDRESS: settings?.USDT_DEPOSIT_ADDRESS || 'TQu8sB7xNkL2mP89qZtV1yWz4AeR6cX4Kd',
+    BKASH_ENABLED: settings?.BKASH_ENABLED !== false,
+    NAGAD_ENABLED: settings?.NAGAD_ENABLED !== false,
+    ROCKET_ENABLED: settings?.ROCKET_ENABLED === true,
+    USDT_ENABLED: settings?.USDT_ENABLED !== false,
     MIN_DEPOSIT_AMOUNT: settings?.MIN_DEPOSIT_AMOUNT || 100,
     MIN_WITHDRAWAL_AMOUNT: settings?.MIN_WITHDRAWAL_AMOUNT || 200,
     DAILY_WITHDRAWAL_LIMIT: settings?.DAILY_WITHDRAWAL_LIMIT || 5000
   });
+
+  // Keep paySettings updated if settings change
+  useEffect(() => {
+    if (settings) {
+      setPaySettings(prev => ({
+        ...prev,
+        BKASH_NUMBER: settings.BKASH_NUMBER || prev.BKASH_NUMBER,
+        NAGAD_NUMBER: settings.NAGAD_NUMBER || prev.NAGAD_NUMBER,
+        ROCKET_NUMBER: settings.ROCKET_NUMBER || prev.ROCKET_NUMBER,
+        USDT_DEPOSIT_ADDRESS: settings.USDT_DEPOSIT_ADDRESS || prev.USDT_DEPOSIT_ADDRESS,
+        BKASH_ENABLED: settings.BKASH_ENABLED !== false,
+        NAGAD_ENABLED: settings.NAGAD_ENABLED !== false,
+        ROCKET_ENABLED: settings.ROCKET_ENABLED === true,
+        USDT_ENABLED: settings.USDT_ENABLED !== false,
+        MIN_DEPOSIT_AMOUNT: settings.MIN_DEPOSIT_AMOUNT || prev.MIN_DEPOSIT_AMOUNT,
+        MIN_WITHDRAWAL_AMOUNT: settings.MIN_WITHDRAWAL_AMOUNT || prev.MIN_WITHDRAWAL_AMOUNT,
+        DAILY_WITHDRAWAL_LIMIT: settings.DAILY_WITHDRAWAL_LIMIT || prev.DAILY_WITHDRAWAL_LIMIT
+      }));
+    }
+  }, [settings]);
 
   // 5. Promo Code Creation State
   const [newPromoCode, setNewPromoCode] = useState('');
@@ -294,11 +318,15 @@ export default function AdminDashboard({ onExit }) {
     updateSetting('NAGAD_NUMBER', paySettings.NAGAD_NUMBER);
     updateSetting('ROCKET_NUMBER', paySettings.ROCKET_NUMBER);
     updateSetting('USDT_DEPOSIT_ADDRESS', paySettings.USDT_DEPOSIT_ADDRESS);
+    updateSetting('BKASH_ENABLED', paySettings.BKASH_ENABLED);
+    updateSetting('NAGAD_ENABLED', paySettings.NAGAD_ENABLED);
+    updateSetting('ROCKET_ENABLED', paySettings.ROCKET_ENABLED);
+    updateSetting('USDT_ENABLED', paySettings.USDT_ENABLED);
     updateSetting('MIN_DEPOSIT_AMOUNT', Number(paySettings.MIN_DEPOSIT_AMOUNT));
     updateSetting('MIN_WITHDRAWAL_AMOUNT', Number(paySettings.MIN_WITHDRAWAL_AMOUNT));
     updateSetting('DAILY_WITHDRAWAL_LIMIT', Number(paySettings.DAILY_WITHDRAWAL_LIMIT));
-    addAuditLog('PAYMENT_UPDATE', 'Updated official official payment numbers and transaction limits.');
-    setStatusNotice('পেমেন্ট গেটওয়ে ইনফরমেশন সফলভাবে আপডেট হয়েছে!');
+    addAuditLog('PAYMENT_UPDATE', `Updated gateways: bKash(${paySettings.BKASH_ENABLED ? 'ON' : 'OFF'}), Nagad(${paySettings.NAGAD_ENABLED ? 'ON' : 'OFF'}), Rocket(${paySettings.ROCKET_ENABLED ? 'ON' : 'OFF'}), USDT(${paySettings.USDT_ENABLED ? 'ON' : 'OFF'})`);
+    setStatusNotice('পেমেন্ট গেটওয়ে ইনফরমেশন ও অন/অফ সেটিংস সফলভাবে আপডেট হয়েছে!');
     setTimeout(() => setStatusNotice(''), 3000);
   }
 
@@ -907,7 +935,7 @@ export default function AdminDashboard({ onExit }) {
 
                 <div className="bg-[#161b22] border border-[#21262d] rounded-2xl p-4 space-y-1.5">
                   <div className="flex items-center justify-between text-[#8b949e]">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">মোট ডেমো ব্যালেন্স</span>
+                    <span className="text-[11px] font-bold uppercase tracking-wider">মোট প্লেয়ার ব্যালেন্স</span>
                     <Coins className="w-4 h-4 text-yellow-400" />
                   </div>
                   <div className="flex items-baseline space-x-1.5">
@@ -1766,7 +1794,7 @@ export default function AdminDashboard({ onExit }) {
                   {activeNav === 'deposits' ? 'Deposit Approval Requests' : 'Withdrawal Approval Requests'}
                 </h2>
                 <p className="text-xs text-[#8b949e]">
-                  ১-ক্লিকে ডেমো রিকোয়েস্ট অ্যাপ্রুভ বা রিজেক্ট করুন (অ্যাপ্রুভ করলে ইউজারের ব্যালেন্সে রিয়েল-টাইমে কয়েন যোগ হবে)
+                  ১-ক্লিকে প্লেয়ারদের রিকোয়েস্ট অ্যাপ্রুভ বা রিজেক্ট করুন (অ্যাপ্রুভ করলে ইউজারের ব্যালেন্সে রিয়েল-টাইমে ব্যালেন্স আপডেট হবে)
                 </p>
               </div>
 
@@ -2422,56 +2450,170 @@ export default function AdminDashboard({ onExit }) {
 
           {/* MODULE: PAYMENT GATEWAYS */}
           {activeNav === 'payments' && (
-            <div className="space-y-4 max-w-2xl">
+            <div className="space-y-4 max-w-3xl">
               <div>
                 <h2 className="text-xl font-black text-white">Payment Gateways & Official Accounts</h2>
                 <p className="text-xs text-[#8b949e]">
-                  ডেমো ডিপোজিট ও ডেমো ক্যাশ-আউটের জন্য বিকাশ, নগদ, রকেট এবং ইউএসডিটি অ্যাড্রেস আপডেট করুন
+                  ডিপোজিট ও ক্যাশ-আউটের জন্য বিকাশ, নগদ, রকেট এবং ইউএসডিটি গেটওয়ে অন/অফ কন্ট্রোল ও অফিশিয়াল অ্যাকাউন্ট নম্বর সেট করুন।
                 </p>
               </div>
 
+              <div className="bg-[#161b22] border border-amber-500/30 rounded-2xl p-4 flex items-center justify-between text-xs text-amber-200 bg-amber-500/10">
+                <div className="flex items-center space-x-2.5">
+                  <span className="text-lg">⚡</span>
+                  <div>
+                    <span className="font-black text-white block">গেটওয়ে অন/অফ সিস্টেম (Gateway Toggle Controls)</span>
+                    <span className="text-[11px] text-amber-300">যেকোনো মেথড (যেমন রকেট) অফ করে সেভ করলে ইউজারদের জন্য সাইট ও অ্যাপে সেটি সাময়িকভাবে বন্ধ হয়ে যাবে।</span>
+                  </div>
+                </div>
+              </div>
+
               <form onSubmit={handleSavePayments} className="bg-[#161b22] border border-[#21262d] rounded-2xl p-5 space-y-4">
-                <div>
-                  <label className="text-xs font-bold text-white block mb-1">bKash Personal Account:</label>
-                  <input
-                    type="text"
-                    value={paySettings.BKASH_NUMBER}
-                    onChange={e => setPaySettings({ ...paySettings, BKASH_NUMBER: e.target.value })}
-                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#F5BE00]"
-                  />
+                
+                {/* 1. bKash Gateway */}
+                <div className="bg-[#0d1117] border border-[#30363d] rounded-xl p-3.5 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-7 h-7 rounded-full bg-[#E2136E] text-white flex items-center justify-center font-black text-xs">
+                        ব
+                      </div>
+                      <span className="text-xs font-black text-white">bKash Gateway (বিকাশ)</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setPaySettings(prev => ({ ...prev, BKASH_ENABLED: !prev.BKASH_ENABLED }))}
+                      className={`px-3 py-1 rounded-full text-[11px] font-black transition cursor-pointer flex items-center space-x-1 ${
+                        paySettings.BKASH_ENABLED
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                          : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
+                      }`}
+                    >
+                      <span>{paySettings.BKASH_ENABLED ? '🟢 ACTIVE (চালু)' : '🔴 OFF (বন্ধ)'}</span>
+                    </button>
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-[#8b949e] block mb-1">bKash Personal Account Number:</label>
+                    <input
+                      type="text"
+                      value={paySettings.BKASH_NUMBER}
+                      onChange={e => setPaySettings({ ...paySettings, BKASH_NUMBER: e.target.value })}
+                      className="w-full bg-[#161b22] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#F5BE00]"
+                      placeholder="01403398319 (Personal)"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="text-xs font-bold text-white block mb-1">Nagad Personal Account:</label>
-                  <input
-                    type="text"
-                    value={paySettings.NAGAD_NUMBER}
-                    onChange={e => setPaySettings({ ...paySettings, NAGAD_NUMBER: e.target.value })}
-                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#F5BE00]"
-                  />
+
+                {/* 2. Nagad Gateway */}
+                <div className="bg-[#0d1117] border border-[#30363d] rounded-xl p-3.5 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-7 h-7 rounded-full bg-[#F7941D] text-white flex items-center justify-center font-black text-xs">
+                        ন
+                      </div>
+                      <span className="text-xs font-black text-white">Nagad Gateway (নগদ)</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setPaySettings(prev => ({ ...prev, NAGAD_ENABLED: !prev.NAGAD_ENABLED }))}
+                      className={`px-3 py-1 rounded-full text-[11px] font-black transition cursor-pointer flex items-center space-x-1 ${
+                        paySettings.NAGAD_ENABLED
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                          : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
+                      }`}
+                    >
+                      <span>{paySettings.NAGAD_ENABLED ? '🟢 ACTIVE (চালু)' : '🔴 OFF (বন্ধ)'}</span>
+                    </button>
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-[#8b949e] block mb-1">Nagad Personal Account Number:</label>
+                    <input
+                      type="text"
+                      value={paySettings.NAGAD_NUMBER}
+                      onChange={e => setPaySettings({ ...paySettings, NAGAD_NUMBER: e.target.value })}
+                      className="w-full bg-[#161b22] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#F5BE00]"
+                      placeholder="01403398319 (Personal)"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="text-xs font-bold text-white block mb-1">Rocket Personal Account:</label>
-                  <input
-                    type="text"
-                    value={paySettings.ROCKET_NUMBER}
-                    onChange={e => setPaySettings({ ...paySettings, ROCKET_NUMBER: e.target.value })}
-                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#F5BE00]"
-                  />
+
+                {/* 3. Rocket Gateway (Requested to keep toggleable and easily turn OFF) */}
+                <div className="bg-[#0d1117] border border-[#30363d] rounded-xl p-3.5 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-7 h-7 rounded-full bg-[#8C3494] text-white flex items-center justify-center font-black text-xs">
+                        র
+                      </div>
+                      <div>
+                        <span className="text-xs font-black text-white">Rocket Gateway (রকেট)</span>
+                        <span className="text-[10px] text-[#8b949e] block">অফ রাখলে ইউজাররা রকেট সিলেক্ট করতে পারবে না</span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setPaySettings(prev => ({ ...prev, ROCKET_ENABLED: !prev.ROCKET_ENABLED }))}
+                      className={`px-3 py-1 rounded-full text-[11px] font-black transition cursor-pointer flex items-center space-x-1 ${
+                        paySettings.ROCKET_ENABLED
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                          : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
+                      }`}
+                    >
+                      <span>{paySettings.ROCKET_ENABLED ? '🟢 ACTIVE (চালু)' : '🔴 OFF (বন্ধ)'}</span>
+                    </button>
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-[#8b949e] block mb-1">Rocket Personal Account Number:</label>
+                    <input
+                      type="text"
+                      value={paySettings.ROCKET_NUMBER}
+                      onChange={e => setPaySettings({ ...paySettings, ROCKET_NUMBER: e.target.value })}
+                      className="w-full bg-[#161b22] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#F5BE00]"
+                      placeholder="01955-456789 (Personal)"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="text-xs font-bold text-white block mb-1">USDT (TRC20) Deposit Wallet:</label>
-                  <input
-                    type="text"
-                    value={paySettings.USDT_DEPOSIT_ADDRESS}
-                    onChange={e => setPaySettings({ ...paySettings, USDT_DEPOSIT_ADDRESS: e.target.value })}
-                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-[#F5BE00]"
-                  />
+
+                {/* 4. USDT TRC20 Gateway */}
+                <div className="bg-[#0d1117] border border-[#30363d] rounded-xl p-3.5 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-7 h-7 rounded-full bg-[#26A17B] text-white flex items-center justify-center font-black text-xs">
+                        ₮
+                      </div>
+                      <span className="text-xs font-black text-white">USDT TRC20 Crypto Wallet</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setPaySettings(prev => ({ ...prev, USDT_ENABLED: !prev.USDT_ENABLED }))}
+                      className={`px-3 py-1 rounded-full text-[11px] font-black transition cursor-pointer flex items-center space-x-1 ${
+                        paySettings.USDT_ENABLED
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                          : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
+                      }`}
+                    >
+                      <span>{paySettings.USDT_ENABLED ? '🟢 ACTIVE (চালু)' : '🔴 OFF (বন্ধ)'}</span>
+                    </button>
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-[#8b949e] block mb-1">USDT (TRC20) Deposit Wallet Address:</label>
+                    <input
+                      type="text"
+                      value={paySettings.USDT_DEPOSIT_ADDRESS}
+                      onChange={e => setPaySettings({ ...paySettings, USDT_DEPOSIT_ADDRESS: e.target.value })}
+                      className="w-full bg-[#161b22] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-[#F5BE00]"
+                      placeholder="TQu8sB7xNkL2mP89qZtV1yWz4AeR6cX4Kd"
+                    />
+                  </div>
                 </div>
+
                 <button
                   type="submit"
-                  className="bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black px-6 py-2.5 rounded-xl text-xs transition cursor-pointer"
+                  className="bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black px-6 py-2.5 rounded-xl text-xs transition cursor-pointer shadow-md"
                 >
-                  Save Payment Information
+                  Save Payment Information & Gateway Status
                 </button>
               </form>
             </div>

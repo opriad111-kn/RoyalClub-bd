@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import { 
   ArrowLeft, 
@@ -18,7 +18,32 @@ import confetti from 'canvas-confetti';
 export default function WithdrawPage({ onBack, onOpenAuth }) {
   const { user, settings, requestWithdrawal, transactions } = useGame();
 
-  const [method, setMethod] = useState('bKash');
+  const safeSettings = settings || {
+    WITHDRAWAL_FEE_PERCENT: 0,
+    MIN_WITHDRAWAL_AMOUNT: 200,
+    DAILY_WITHDRAWAL_LIMIT: 5000,
+    BKASH_ENABLED: true,
+    NAGAD_ENABLED: true,
+    ROCKET_ENABLED: false
+  };
+
+  const isBkashActive = safeSettings.BKASH_ENABLED !== false;
+  const isNagadActive = safeSettings.NAGAD_ENABLED !== false;
+  const isRocketActive = safeSettings.ROCKET_ENABLED === true;
+
+  const [method, setMethod] = useState(() => {
+    if (isBkashActive) return 'bKash';
+    if (isNagadActive) return 'Nagad';
+    return 'bKash';
+  });
+
+  useEffect(() => {
+    if (method === 'Rocket' && !isRocketActive) {
+      if (isBkashActive) setMethod('bKash');
+      else if (isNagadActive) setMethod('Nagad');
+    }
+  }, [isRocketActive, isBkashActive, isNagadActive, method]);
+
   const [accountType, setAccountType] = useState('Personal');
   const [amount, setAmount] = useState('500');
   const [accountNumber, setAccountNumber] = useState('');
@@ -30,11 +55,6 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
   const quickAmounts = [200, 500, 1000, 2000, 5000];
 
   const safeUser = user || { username: 'Guest', is_guest: true, balance: 0, uid: '722200' };
-  const safeSettings = settings || {
-    WITHDRAWAL_FEE_PERCENT: 0,
-    MIN_WITHDRAWAL_AMOUNT: 200,
-    DAILY_WITHDRAWAL_LIMIT: 5000
-  };
 
   const currentBal = Number(safeUser?.balance !== undefined ? safeUser.balance : 0);
   const numAmount = parseFloat(amount) || 0;
@@ -55,6 +75,11 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
 
     if (safeUser.username === 'Guest' || safeUser.is_guest) {
       if (onOpenAuth) onOpenAuth();
+      return;
+    }
+
+    if (method === 'Rocket' && !isRocketActive) {
+      setErrorMessage("রকেট উইথড্র সার্ভিস বর্তমানে সাময়িকভাবে বন্ধ আছে। অনুগ্রহ করে বিকাশ অথবা নগদ ব্যবহার করুন।");
       return;
     }
 
@@ -260,52 +285,70 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
             {/* bKash */}
             <button
               type="button"
-              onClick={() => setMethod('bKash')}
-              className={`p-2.5 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer ${
-                method === 'bKash'
+              disabled={!isBkashActive}
+              onClick={() => isBkashActive && setMethod('bKash')}
+              className={`p-2.5 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${
+                !isBkashActive
+                  ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
+                  : method === 'bKash'
                   ? 'border-[#E2136E] bg-pink-50/60 shadow-xs'
                   : 'border-slate-100 bg-slate-50 hover:bg-slate-100'
               }`}
             >
+              {!isBkashActive && (
+                <span className="absolute -top-1.5 -right-1 bg-rose-500 text-white text-[8px] font-bold px-1 rounded-full">বন্ধ</span>
+              )}
               <div className="w-9 h-9 rounded-full bg-[#E2136E] text-white flex items-center justify-center font-black text-sm shadow-xs mb-1">
                 ব
               </div>
               <span className="text-xs font-black text-slate-900">bKash</span>
-              <span className="text-[9px] text-slate-400 font-bold mt-0.5">3-5 mins</span>
+              <span className="text-[9px] text-slate-400 font-bold mt-0.5">{isBkashActive ? '3-5 mins' : 'সাময়িক বন্ধ'}</span>
             </button>
 
             {/* Nagad */}
             <button
               type="button"
-              onClick={() => setMethod('Nagad')}
-              className={`p-2.5 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer ${
-                method === 'Nagad'
+              disabled={!isNagadActive}
+              onClick={() => isNagadActive && setMethod('Nagad')}
+              className={`p-2.5 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${
+                !isNagadActive
+                  ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
+                  : method === 'Nagad'
                   ? 'border-[#F7941D] bg-orange-50/60 shadow-xs'
                   : 'border-slate-100 bg-slate-50 hover:bg-slate-100'
               }`}
             >
+              {!isNagadActive && (
+                <span className="absolute -top-1.5 -right-1 bg-rose-500 text-white text-[8px] font-bold px-1 rounded-full">বন্ধ</span>
+              )}
               <div className="w-9 h-9 rounded-full bg-[#F7941D] text-white flex items-center justify-center font-black text-sm shadow-xs mb-1">
                 ন
               </div>
               <span className="text-xs font-black text-slate-900">Nagad</span>
-              <span className="text-[9px] text-slate-400 font-bold mt-0.5">3-5 mins</span>
+              <span className="text-[9px] text-slate-400 font-bold mt-0.5">{isNagadActive ? '3-5 mins' : 'সাময়িক বন্ধ'}</span>
             </button>
 
             {/* Rocket */}
             <button
               type="button"
-              onClick={() => setMethod('Rocket')}
-              className={`p-2.5 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer ${
-                method === 'Rocket'
+              disabled={!isRocketActive}
+              onClick={() => isRocketActive && setMethod('Rocket')}
+              className={`p-2.5 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${
+                !isRocketActive
+                  ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
+                  : method === 'Rocket'
                   ? 'border-[#8C3494] bg-purple-50/60 shadow-xs'
                   : 'border-slate-100 bg-slate-50 hover:bg-slate-100'
               }`}
             >
+              {!isRocketActive && (
+                <span className="absolute -top-1.5 -right-1 bg-rose-500 text-white text-[8px] font-bold px-1 rounded-full">বন্ধ</span>
+              )}
               <div className="w-9 h-9 rounded-full bg-[#8C3494] text-white flex items-center justify-center font-black text-sm shadow-xs mb-1">
                 র
               </div>
               <span className="text-xs font-black text-slate-900">Rocket</span>
-              <span className="text-[9px] text-slate-400 font-bold mt-0.5">3-5 mins</span>
+              <span className="text-[9px] text-slate-400 font-bold mt-0.5">{isRocketActive ? '3-5 mins' : 'সাময়িক বন্ধ'}</span>
             </button>
 
           </div>

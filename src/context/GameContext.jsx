@@ -37,11 +37,15 @@ export function GameProvider({ children }) {
       MIN_WITHDRAWAL_AMOUNT: 200,
       DAILY_WITHDRAWAL_LIMIT: 5000,
       WITHDRAWAL_FEE_PERCENT: 0,
-      BKASH_NUMBER: base.BKASH_NUMBER || "01855-987654 (Personal)",
-      NAGAD_NUMBER: base.NAGAD_NUMBER || "01755-123456 (Personal)",
+      BKASH_NUMBER: base.BKASH_NUMBER || "01403398319 (Personal)",
+      NAGAD_NUMBER: base.NAGAD_NUMBER || "01403398319 (Personal)",
       ROCKET_NUMBER: base.ROCKET_NUMBER || "01955-456789 (Personal)",
       USDT_DEPOSIT_ADDRESS: base.USDT_DEPOSIT_ADDRESS || "TQu8sB7xNkL2mP89qZtV1yWz4AeR6cX4Kd",
-      ANNOUNCEMENT_TEXT: base.ANNOUNCEMENT_TEXT || "🎉 RoyalClubBD-তে স্বাগতম! রেজিস্ট্রেশন করলেই মেইন ব্যালেন্সে অটোমেটিক ৳১০০ ওয়েলকাম বোনাস! bKash, Nagad ও Rocket-এ সুপারফাস্ট ডিপোজিট ও ইনস্ট্যান্ট ক্যাশ-আউট সুবিধা চালু রয়েছে।"
+      BKASH_ENABLED: base.BKASH_ENABLED !== false,
+      NAGAD_ENABLED: base.NAGAD_ENABLED !== false,
+      ROCKET_ENABLED: base.ROCKET_ENABLED === true ? true : false, // Default Rocket to OFF as requested: "jmon roket off rakhabo"
+      USDT_ENABLED: base.USDT_ENABLED !== false,
+      ANNOUNCEMENT_TEXT: base.ANNOUNCEMENT_TEXT || "🎉 RoyalClubBD-তে স্বাগতম! রেজিস্ট্রেশন করলেই মেইন ব্যালেন্সে অটোমেটিক ৳১০০ ওয়েলকাম বোনাস! bKash ও Nagad-এ সুপারফাস্ট ডিপোজিট ও ইনস্ট্যান্ট ক্যাশ-আউট সুবিধা চালু রয়েছে।"
     };
   });
 
@@ -739,7 +743,7 @@ export function GameProvider({ children }) {
         username: 'RIYAD',
         subject: 'ডিপোজিট ব্যালেন্স আপডেট সমস্যা',
         category: 'Deposit',
-        message: 'আমি বিকাশ থেকে ৫০০ কয়েন ডেমো ডিপোজিট করেছি কিন্তু সাথে সাথে আসে নাই।',
+        message: 'আমি বিকাশ থেকে ৫০০ টাকা ডিপোজিট করেছি কিন্তু সাথে সাথে আসে নাই।',
         status: 'open',
         priority: 'high',
         created_at: new Date(Date.now() - 3600000).toISOString(),
@@ -751,7 +755,7 @@ export function GameProvider({ children }) {
         username: 'Player777',
         subject: 'উইথড্র অনুমোদন কতক্ষণ লাগবে?',
         category: 'Withdrawal',
-        message: 'ডেমো ক্যাশআউট রিকোয়েস্ট পাঠিয়েছি। অনুগ্রহ করে অনুমোদন দিন।',
+        message: 'ক্যাশআউট রিকোয়েস্ট পাঠিয়েছি। অনুগ্রহ করে অনুমোদন দিন।',
         status: 'resolved',
         priority: 'medium',
         created_at: new Date(Date.now() - 86400000).toISOString(),
@@ -826,7 +830,7 @@ export function GameProvider({ children }) {
         id: 'NTF-1',
         targetUid: 'all',
         title: '🎉 মেগা টুর্নামেন্ট শুরু হয়েছে!',
-        message: 'আজকের Aviator ও WinGo গেমে ডাবল এক্সপি ও বিশেষ ডেমো রিওয়ার্ড চালু হয়েছে!',
+        message: 'আজকের Aviator ও WinGo গেমে ডাবল এক্সপি ও বিশেষ উইনিং রিওয়ার্ড চালু হয়েছে!',
         type: 'reward',
         isRead: false,
         created_at: new Date().toISOString()
@@ -1143,7 +1147,20 @@ export function GameProvider({ children }) {
       }
       const { data: supaTx } = await supabase.from('transactions').select('*').order('created_at', { ascending: false });
       if (supaTx && supaTx.length > 0) {
-        setTransactions(supaTx);
+        setTransactions(prev => {
+          const merged = [...supaTx];
+          const supaIds = new Set(supaTx.map(t => String(t.id)));
+          const supaTrxIds = new Set(supaTx.map(t => t.trx_id).filter(Boolean));
+          (prev || []).forEach(localTx => {
+            if (!supaIds.has(String(localTx.id)) && (!localTx.trx_id || !supaTrxIds.has(localTx.trx_id))) {
+              merged.push(localTx);
+            }
+          });
+          try {
+            localStorage.setItem('royalclub_transactions', JSON.stringify(merged));
+          } catch (e) {}
+          return merged;
+        });
       }
       return true;
     } catch (e) {
@@ -1191,6 +1208,39 @@ export function GameProvider({ children }) {
   useEffect(() => {
     localStorage.setItem('royalclub_all_users', JSON.stringify(allUsers));
   }, [allUsers]);
+
+  // Real-time Cross-Tab & Admin Synchronization Listener
+  useEffect(() => {
+    function handleStorageChange(e) {
+      if (!e.key || e.key === 'royalclub_transactions') {
+        const savedTx = localStorage.getItem('royalclub_transactions');
+        if (savedTx) {
+          try {
+            setTransactions(JSON.parse(savedTx));
+          } catch (err) {}
+        }
+      }
+      if (!e.key || e.key === 'royalclub_settings') {
+        const savedSettings = localStorage.getItem('royalclub_settings');
+        if (savedSettings) {
+          try {
+            setSettings(JSON.parse(savedSettings));
+          } catch (err) {}
+        }
+      }
+      if (!e.key || e.key === 'royalclub_all_users') {
+        const savedUsers = localStorage.getItem('royalclub_all_users');
+        if (savedUsers) {
+          try {
+            setAllUsers(JSON.parse(savedUsers));
+          } catch (err) {}
+        }
+      }
+    }
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // Master Synchronized 1-minute Clock (WinGo background simulation without noisy auto-sounds)
   useEffect(() => {
@@ -1438,7 +1488,14 @@ export function GameProvider({ children }) {
       status: "pending",
       created_at: new Date().toISOString()
     };
-    setTransactions(prev => [newTx, ...prev]);
+    setTransactions(prev => {
+      const updated = [newTx, ...prev];
+      try {
+        localStorage.setItem('royalclub_transactions', JSON.stringify(updated));
+        window.dispatchEvent(new Event('storage'));
+      } catch (e) {}
+      return updated;
+    });
     alert("আপনার ডিপোজিট রিকোয়েস্ট সফলভাবে জমা হয়েছে (Pending)! অ্যাডমিন প্যানেল থেকে অনুমোদনের পর ব্যালেন্সে কয়েন যোগ হবে।");
     return true;
   }
@@ -1523,7 +1580,14 @@ export function GameProvider({ children }) {
       status: "pending",
       created_at: new Date().toISOString()
     };
-    setTransactions(prev => [newTx, ...prev]);
+    setTransactions(prev => {
+      const updated = [newTx, ...prev];
+      try {
+        localStorage.setItem('royalclub_transactions', JSON.stringify(updated));
+        window.dispatchEvent(new Event('storage'));
+      } catch (e) {}
+      return updated;
+    });
     alert(`উইথড্র রিকোয়েস্ট জমা হয়েছে! পাবেন: ৳${netAmount} টাকা। অ্যাডমিন অনুমোদনের পর পেমেন্ট সম্পন্ন হবে।`);
     return true;
   }
@@ -1532,41 +1596,48 @@ export function GameProvider({ children }) {
   async function approveTransaction(txId, adminNote = "") {
     let affectedTx = null;
 
-    setTransactions(prev => prev.map(tx => {
-      if (tx.id === txId) {
-        affectedTx = tx;
-        if (tx.type === 'deposit') {
-          const addAmount = Number(tx.amount || 0);
-          const mult = Number(gameControl?.turnoverMultiplier || 2.0);
-          const addTurnover = parseFloat((addAmount * mult).toFixed(2));
-          setUser(u => {
-            if (u.uid === tx.uid || u.username === tx.username) {
-              const updated = { 
-                ...u, 
-                balance: parseFloat((u.balance + addAmount).toFixed(2)),
-                total_deposited: parseFloat(((u.total_deposited || 0) + addAmount).toFixed(2)),
-                turnover_required: parseFloat(((u.turnover_required || 0) + addTurnover).toFixed(2))
-              };
-              localStorage.setItem('royalclub_current_user', JSON.stringify(updated));
-              return updated;
-            }
-            return u;
-          });
-          setAllUsers(users => users.map(u => 
-            (u.uid === tx.uid || u.username === tx.username) 
-              ? { 
+    setTransactions(prev => {
+      const updated = prev.map(tx => {
+        if (tx.id === txId) {
+          affectedTx = tx;
+          if (tx.type === 'deposit') {
+            const addAmount = Number(tx.amount || 0);
+            const mult = Number(gameControl?.turnoverMultiplier || 2.0);
+            const addTurnover = parseFloat((addAmount * mult).toFixed(2));
+            setUser(u => {
+              if (u.uid === tx.uid || u.username === tx.username) {
+                const updatedUser = { 
                   ...u, 
                   balance: parseFloat((u.balance + addAmount).toFixed(2)),
                   total_deposited: parseFloat(((u.total_deposited || 0) + addAmount).toFixed(2)),
                   turnover_required: parseFloat(((u.turnover_required || 0) + addTurnover).toFixed(2))
-                } 
-              : u
-          ));
+                };
+                localStorage.setItem('royalclub_current_user', JSON.stringify(updatedUser));
+                return updatedUser;
+              }
+              return u;
+            });
+            setAllUsers(users => users.map(u => 
+              (u.uid === tx.uid || u.username === tx.username) 
+                ? { 
+                    ...u, 
+                    balance: parseFloat((u.balance + addAmount).toFixed(2)),
+                    total_deposited: parseFloat(((u.total_deposited || 0) + addAmount).toFixed(2)),
+                    turnover_required: parseFloat(((u.turnover_required || 0) + addTurnover).toFixed(2))
+                  } 
+                : u
+            ));
+          }
+          return { ...tx, status: 'approved', admin_note: adminNote };
         }
-        return { ...tx, status: 'approved', admin_note: adminNote };
-      }
-      return tx;
-    }));
+        return tx;
+      });
+      try {
+        localStorage.setItem('royalclub_transactions', JSON.stringify(updated));
+        window.dispatchEvent(new Event('storage'));
+      } catch (e) {}
+      return updated;
+    });
 
     // Sync approval to Supabase
     try {
@@ -1589,29 +1660,36 @@ export function GameProvider({ children }) {
   async function rejectTransaction(txId, adminNote = "") {
     let affectedTx = null;
 
-    setTransactions(prev => prev.map(tx => {
-      if (tx.id === txId) {
-        affectedTx = tx;
-        if (tx.type === 'withdrawal') {
-          const refundAmount = Number(tx.amount || 0);
-          setUser(u => {
-            if (u.uid === tx.uid || u.username === tx.username) {
-              const updated = { ...u, balance: parseFloat((u.balance + refundAmount).toFixed(2)) };
-              localStorage.setItem('royalclub_current_user', JSON.stringify(updated));
-              return updated;
-            }
-            return u;
-          });
-          setAllUsers(users => users.map(u => 
-            (u.uid === tx.uid || u.username === tx.username) 
-              ? { ...u, balance: parseFloat((u.balance + refundAmount).toFixed(2)) } 
-              : u
-          ));
+    setTransactions(prev => {
+      const updated = prev.map(tx => {
+        if (tx.id === txId) {
+          affectedTx = tx;
+          if (tx.type === 'withdrawal') {
+            const refundAmount = Number(tx.amount || 0);
+            setUser(u => {
+              if (u.uid === tx.uid || u.username === tx.username) {
+                const updatedUser = { ...u, balance: parseFloat((u.balance + refundAmount).toFixed(2)) };
+                localStorage.setItem('royalclub_current_user', JSON.stringify(updatedUser));
+                return updatedUser;
+              }
+              return u;
+            });
+            setAllUsers(users => users.map(u => 
+              (u.uid === tx.uid || u.username === tx.username) 
+                ? { ...u, balance: parseFloat((u.balance + refundAmount).toFixed(2)) } 
+                : u
+            ));
+          }
+          return { ...tx, status: 'rejected', admin_note: adminNote };
         }
-        return { ...tx, status: 'rejected', admin_note: adminNote };
-      }
-      return tx;
-    }));
+        return tx;
+      });
+      try {
+        localStorage.setItem('royalclub_transactions', JSON.stringify(updated));
+        window.dispatchEvent(new Event('storage'));
+      } catch (e) {}
+      return updated;
+    });
 
     // Sync rejection to Supabase
     try {
@@ -1655,7 +1733,14 @@ export function GameProvider({ children }) {
 
   // Admin Settings Updates
   function updateSetting(key, value) {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    setSettings(prev => {
+      const updated = { ...prev, [key]: value };
+      try {
+        localStorage.setItem('royalclub_settings', JSON.stringify(updated));
+        window.dispatchEvent(new Event('storage'));
+      } catch (e) {}
+      return updated;
+    });
   }
 
   function adjustUserBalance(targetUid, amount) {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import { 
   ArrowLeft, 
@@ -18,7 +18,26 @@ import confetti from 'canvas-confetti';
 export default function DepositPage({ onBack, onOpenAuth }) {
   const { user, settings, requestDeposit, transactions } = useGame();
 
-  const [method, setMethod] = useState('bKash');
+  const isBkashActive = settings?.BKASH_ENABLED !== false;
+  const isNagadActive = settings?.NAGAD_ENABLED !== false;
+  const isRocketActive = settings?.ROCKET_ENABLED === true;
+  const isUsdtActive = settings?.USDT_ENABLED !== false;
+
+  const [method, setMethod] = useState(() => {
+    if (isBkashActive) return 'bKash';
+    if (isNagadActive) return 'Nagad';
+    if (isUsdtActive) return 'USDT';
+    return 'bKash';
+  });
+
+  useEffect(() => {
+    if (method === 'Rocket' && !isRocketActive) {
+      if (isBkashActive) setMethod('bKash');
+      else if (isNagadActive) setMethod('Nagad');
+      else if (isUsdtActive) setMethod('USDT');
+    }
+  }, [isRocketActive, isBkashActive, isNagadActive, isUsdtActive, method]);
+
   const [amount, setAmount] = useState('500');
   const [senderPhone, setSenderPhone] = useState('');
   const [txHash, setTxHash] = useState('');
@@ -30,12 +49,12 @@ export default function DepositPage({ onBack, onOpenAuth }) {
   const quickAmounts = [100, 200, 500, 1000, 2000, 5000, 10000, 25000];
 
   const currentPayNumber = method === 'bKash'
-    ? (settings.BKASH_NUMBER || '01855-987654 (Personal)')
+    ? (settings?.BKASH_NUMBER || '01403398319 (Personal)')
     : method === 'Nagad'
-    ? (settings.NAGAD_NUMBER || '01755-123456 (Personal)')
+    ? (settings?.NAGAD_NUMBER || '01403398319 (Personal)')
     : method === 'Rocket'
-    ? (settings.ROCKET_NUMBER || '01955-456789 (Personal)')
-    : (settings.USDT_DEPOSIT_ADDRESS || 'TQu8sB7xNkL2mP89qZtV1yWz4AeR6cX4Kd');
+    ? (settings?.ROCKET_NUMBER || '01955-456789 (Personal)')
+    : (settings?.USDT_DEPOSIT_ADDRESS || 'TQu8sB7xNkL2mP89qZtV1yWz4AeR6cX4Kd');
 
   function handleCopyNumber() {
     const rawNum = currentPayNumber.split(' ')[0];
@@ -46,14 +65,19 @@ export default function DepositPage({ onBack, onOpenAuth }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (user.username === 'Guest' || user.is_guest) {
+    if (user?.username === 'Guest' || user?.is_guest) {
       if (onOpenAuth) onOpenAuth();
       return;
     }
 
+    if (method === 'Rocket' && !isRocketActive) {
+      alert("রকেট গেটওয়ে বর্তমানে সাময়িকভাবে বন্ধ আছে। অনুগ্রহ করে বিকাশ অথবা নগদ ব্যবহার করুন।");
+      return;
+    }
+
     const numAmount = parseFloat(amount);
-    if (!numAmount || isNaN(numAmount) || numAmount < (settings.MIN_DEPOSIT_AMOUNT || 100)) {
-      alert(`সর্বনিম্ন ডিপোজিট ৳${settings.MIN_DEPOSIT_AMOUNT || 100} টাকা।`);
+    if (!numAmount || isNaN(numAmount) || numAmount < (settings?.MIN_DEPOSIT_AMOUNT || 100)) {
+      alert(`সর্বনিম্ন ডিপোজিট ৳${settings?.MIN_DEPOSIT_AMOUNT || 100} টাকা।`);
       return;
     }
     if (!senderPhone.trim()) {
@@ -192,13 +216,19 @@ export default function DepositPage({ onBack, onOpenAuth }) {
             {/* bKash */}
             <button
               type="button"
-              onClick={() => setMethod('bKash')}
-              className={`p-2 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer ${
-                method === 'bKash'
+              disabled={!isBkashActive}
+              onClick={() => isBkashActive && setMethod('bKash')}
+              className={`p-2 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${
+                !isBkashActive
+                  ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
+                  : method === 'bKash'
                   ? 'border-[#E2136E] bg-pink-50/60 shadow-xs'
                   : 'border-slate-100 bg-slate-50 hover:bg-slate-100'
               }`}
             >
+              {!isBkashActive && (
+                <span className="absolute -top-1.5 -right-1 bg-rose-500 text-white text-[8px] font-bold px-1 rounded-full">বন্ধ</span>
+              )}
               <div className="w-8 h-8 rounded-full bg-[#E2136E] text-white flex items-center justify-center font-black text-xs shadow-xs mb-1">
                 ব
               </div>
@@ -208,13 +238,19 @@ export default function DepositPage({ onBack, onOpenAuth }) {
             {/* Nagad */}
             <button
               type="button"
-              onClick={() => setMethod('Nagad')}
-              className={`p-2 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer ${
-                method === 'Nagad'
+              disabled={!isNagadActive}
+              onClick={() => isNagadActive && setMethod('Nagad')}
+              className={`p-2 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${
+                !isNagadActive
+                  ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
+                  : method === 'Nagad'
                   ? 'border-[#F7941D] bg-orange-50/60 shadow-xs'
                   : 'border-slate-100 bg-slate-50 hover:bg-slate-100'
               }`}
             >
+              {!isNagadActive && (
+                <span className="absolute -top-1.5 -right-1 bg-rose-500 text-white text-[8px] font-bold px-1 rounded-full">বন্ধ</span>
+              )}
               <div className="w-8 h-8 rounded-full bg-[#F7941D] text-white flex items-center justify-center font-black text-xs shadow-xs mb-1">
                 ন
               </div>
@@ -224,13 +260,19 @@ export default function DepositPage({ onBack, onOpenAuth }) {
             {/* Rocket */}
             <button
               type="button"
-              onClick={() => setMethod('Rocket')}
-              className={`p-2 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer ${
-                method === 'Rocket'
+              disabled={!isRocketActive}
+              onClick={() => isRocketActive && setMethod('Rocket')}
+              className={`p-2 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${
+                !isRocketActive
+                  ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
+                  : method === 'Rocket'
                   ? 'border-[#8C3494] bg-purple-50/60 shadow-xs'
                   : 'border-slate-100 bg-slate-50 hover:bg-slate-100'
               }`}
             >
+              {!isRocketActive && (
+                <span className="absolute -top-1.5 -right-1 bg-rose-500 text-white text-[8px] font-bold px-1 rounded-full">বন্ধ</span>
+              )}
               <div className="w-8 h-8 rounded-full bg-[#8C3494] text-white flex items-center justify-center font-black text-xs shadow-xs mb-1">
                 র
               </div>
@@ -240,13 +282,19 @@ export default function DepositPage({ onBack, onOpenAuth }) {
             {/* USDT */}
             <button
               type="button"
-              onClick={() => setMethod('USDT')}
-              className={`p-2 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer ${
-                method === 'USDT'
+              disabled={!isUsdtActive}
+              onClick={() => isUsdtActive && setMethod('USDT')}
+              className={`p-2 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${
+                !isUsdtActive
+                  ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
+                  : method === 'USDT'
                   ? 'border-[#26A17B] bg-emerald-50/60 shadow-xs'
                   : 'border-slate-100 bg-slate-50 hover:bg-slate-100'
               }`}
             >
+              {!isUsdtActive && (
+                <span className="absolute -top-1.5 -right-1 bg-rose-500 text-white text-[8px] font-bold px-1 rounded-full">বন্ধ</span>
+              )}
               <div className="w-8 h-8 rounded-full bg-[#26A17B] text-white flex items-center justify-center font-black text-xs shadow-xs mb-1">
                 ₮
               </div>

@@ -109,7 +109,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
     }
     const success = claimFaucet();
     if (success) {
-      setFaucetClaimedNotice('🎉 অভিনন্দন! ৳৫০০ ফ্রি ডেমো কয়েন যোগ হয়েছে!');
+      setFaucetClaimedNotice('🎉 অভিনন্দন! আপনার ওয়ালেটে ফ্রি কয়েন যোগ হয়েছে!');
       setTimeout(() => setFaucetClaimedNotice(''), 3500);
     }
   }
@@ -539,7 +539,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               </div>
               <div>
                 <span className="font-bold text-xs text-slate-800">Responsible Gaming Limits</span>
-                <span className="text-[10px] text-slate-400 block">দৈনিক ডেমো বাজি ও সময়সীমা নিয়ন্ত্রণ</span>
+                <span className="text-[10px] text-slate-400 block">দৈনিক বাজি ও সময়সীমা নিয়ন্ত্রণ</span>
               </div>
             </div>
             <ChevronRight className="w-4 h-4 text-slate-400" />
@@ -817,11 +817,11 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               <button onClick={() => setShowResponsibleModal(false)} className="text-slate-400 hover:text-slate-700">✕</button>
             </div>
             <p className="text-[11px] text-slate-600">
-              প্ল্যাটফর্মটি বিনোদনের জন্য। আপনার দৈনিক ডেমো বাজেট ও সেশনের সীমা নির্ধারণ করুন।
+              প্ল্যাটফর্মটিতে দায়িত্বশীলভাবে খেলার জন্য আপনার দৈনিক বাজেট ও সেশনের সীমা নির্ধারণ করুন।
             </p>
             <div className="space-y-3">
               <div>
-                <label className="text-[10px] font-bold text-slate-500 block mb-1">দৈনিক ডেমো বাজি লিমিট (৳):</label>
+                <label className="text-[10px] font-bold text-slate-500 block mb-1">দৈনিক বাজি লিমিট (৳):</label>
                 <input
                   type="number"
                   value={respDailyLimit}

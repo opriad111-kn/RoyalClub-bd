@@ -46,7 +46,7 @@ function generateTrxHash() {
   return hash;
 }
 
-export default function WinGoGame({ onOpenDeposit, onBack, initialMode = '30s' }) {
+export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initialMode = '30s' }) {
   const { user, adjustUserBalance } = useGame();
   const [selectedMode, setSelectedMode] = useState(initialMode);
   const [soundEnabled, setSoundEnabled] = useState(false);
@@ -405,7 +405,7 @@ export default function WinGoGame({ onOpenDeposit, onBack, initialMode = '30s' }
 
           <div className="grid grid-cols-2 gap-3 pt-1">
             <button
-              onClick={onOpenDeposit}
+              onClick={onOpenWithdraw || onOpenDeposit}
               className="w-full py-2.5 rounded-full bg-[#f85656] hover:bg-red-600 text-white font-bold text-xs shadow-sm transition active:scale-95 cursor-pointer"
             >
               Withdraw

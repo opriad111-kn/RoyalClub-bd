@@ -450,6 +450,7 @@ function AppContent() {
           {activeTab === 'wingo' && (
             <WinGoGame 
               onOpenDeposit={() => setActiveTab('deposit')} 
+              onOpenWithdraw={() => setActiveTab('withdraw')}
               onBack={() => setActiveTab('home')}
             />
           )}
@@ -500,8 +501,8 @@ function AppContent() {
         {(activeGame === 'k3' || activeGame === 'k3lottery') && (
           <K3LotteryGame 
             onClose={handleCloseGame} 
-            onOpenDeposit={() => { handleCloseGame(); setActiveTab('wallet'); }}
-            onOpenWithdraw={() => { handleCloseGame(); setActiveTab('wallet'); }}
+            onOpenDeposit={() => { handleCloseGame(); setActiveTab('deposit'); }}
+            onOpenWithdraw={() => { handleCloseGame(); setActiveTab('withdraw'); }}
           />
         )}
         {(activeGame === '5d' || activeGame === '5dlottery') && <FiveDLotteryGame onClose={handleCloseGame} />}
