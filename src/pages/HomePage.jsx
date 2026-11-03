@@ -28,7 +28,7 @@ export default function HomePage({
   const { user, settings } = useGame();
   const { lang, t } = useLanguage();
   
-  // 8 Authentic APK Categories: All, Lottery, Slots, Casino, Sports, PVC, Fishing, MiniGame
+  // 8 Official Categories from KhelV
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
@@ -44,7 +44,7 @@ export default function HomePage({
     return true;
   });
 
-  // Authentic APK Banner Carousel Slides
+  // Authentic APK Carousel Banners
   const banners = [
     {
       id: 'first-deposit',
@@ -75,14 +75,14 @@ export default function HomePage({
     return () => clearInterval(interval);
   }, [banners.length]);
 
-  // 1. JILI Studio Games (Authentic APK 3D Posters)
+  // 1. JILI Studio Games (Official KhelV Live Assets)
   const jiliGames = [
     { 
       id: 'superace', 
       title: 'SUPER ACE', 
       display: 'Super Ace', 
       category: 'Slots',
-      image: '/assets/game_assets/png/804.png', 
+      image: '/assets/official_khelv/game_superace.png', 
       provider: 'JILI'
     },
     { 
@@ -90,7 +90,7 @@ export default function HomePage({
       title: 'FORTUNE GEMS 2', 
       display: 'Fortune Gems 2', 
       category: 'Slots',
-      image: '/assets/game_assets/png/51.png', 
+      image: '/assets/official_khelv/game_fortunegems2.png', 
       provider: 'JILI'
     },
     { 
@@ -98,23 +98,23 @@ export default function HomePage({
       title: 'MONEY COMING', 
       display: 'Money Coming', 
       category: 'Slots',
-      image: '/assets/game_assets/png/223.png', 
+      image: '/assets/official_khelv/game_moneycoming.png', 
       provider: 'JILI'
     },
     { 
-      id: 'crazy777', 
-      title: 'CRAZY 777', 
-      display: 'Crazy 777', 
+      id: 'fortunegems', 
+      title: 'FORTUNE GEMS', 
+      display: 'Fortune Gems', 
       category: 'Slots',
-      image: '/assets/game_assets/png/2-nuTgsQAe.png', 
+      image: '/assets/official_khelv/game_fortunegems.png', 
       provider: 'JILI'
     },
     { 
-      id: 'boxingking', 
-      title: 'BOXING KING', 
-      display: 'Boxing King', 
+      id: 'fortunegems3', 
+      title: 'FORTUNE GEMS 3', 
+      display: 'Fortune Gems 3', 
       category: 'Slots',
-      image: '/assets/game_assets/png/3-Dmm90Z3M.png', 
+      image: '/assets/official_khelv/game_fortunegems3.png', 
       provider: 'JILI'
     },
     { 
@@ -122,28 +122,64 @@ export default function HomePage({
       title: 'GOLDEN EMPIRE', 
       display: 'Golden Empire', 
       category: 'Slots',
-      image: '/assets/game_assets/png/4-D0LcUTfO.png', 
+      image: '/assets/official_khelv/game_goldenempire.png', 
       provider: 'JILI'
     },
     { 
-      id: 'superacedeluxe', 
-      title: 'SUPER ACE DELUXE', 
-      display: 'Super Ace Deluxe', 
+      id: 'crazy777', 
+      title: 'CRAZY 777', 
+      display: 'Crazy 777', 
       category: 'Slots',
-      image: '/assets/game_assets/png/804.png', 
+      image: '/assets/official_khelv/game_crazy777.png', 
       provider: 'JILI'
     },
     { 
-      id: 'jackpotfishing', 
-      title: 'JACKPOT FISHING', 
-      display: 'Jackpot Fishing', 
-      category: 'Fishing',
-      image: '/assets/game_assets/png/fish-D0liGLFa.png', 
+      id: 'boxingking', 
+      title: 'BOXING KING', 
+      display: 'Boxing King', 
+      category: 'Slots',
+      image: '/assets/official_khelv/game_boxingking.png', 
       provider: 'JILI'
     }
   ];
 
-  // 2. Pragmatic Games (Authentic APK 3D Posters)
+  // 2. PG Soft Games (Official KhelV Live Assets)
+  const pgsoftGames = [
+    { 
+      id: 'fortuneox', 
+      title: 'FORTUNE OX', 
+      display: 'Fortune Ox', 
+      category: 'Slots',
+      image: '/assets/official_khelv/game_fortuneox.png', 
+      provider: 'PG SOFT'
+    },
+    { 
+      id: 'wildbounty', 
+      title: 'WILD BOUNTY', 
+      display: 'Wild Bounty Showdown', 
+      category: 'Slots',
+      image: '/assets/official_khelv/game_wildbounty.png', 
+      provider: 'PG SOFT'
+    },
+    { 
+      id: 'aztec', 
+      title: 'TREASURES OF AZTEC', 
+      display: 'Treasures of Aztec', 
+      category: 'Slots',
+      image: '/assets/official_khelv/game_aztec.png', 
+      provider: 'PG SOFT'
+    },
+    { 
+      id: 'mahjongways', 
+      title: 'MAHJONG WAYS 2', 
+      display: 'Mahjong Ways 2', 
+      category: 'Slots',
+      image: '/assets/game_assets/png/7-CyClOlek.png', 
+      provider: 'PG SOFT'
+    }
+  ];
+
+  // 3. Pragmatic Games
   const pragmaticGames = [
     { 
       id: 'gatesofolympus', 
@@ -163,34 +199,14 @@ export default function HomePage({
     }
   ];
 
-  // 3. PG Soft Games (Authentic APK 3D Posters)
-  const pgsoftGames = [
-    { 
-      id: 'mahjongways', 
-      title: 'MAHJONG WAYS 2', 
-      display: 'Mahjong Ways 2', 
-      category: 'Slots',
-      image: '/assets/game_assets/png/7-CyClOlek.png', 
-      provider: 'PG SOFT'
-    },
-    { 
-      id: 'fortunetiger', 
-      title: 'FORTUNE TIGER', 
-      display: 'Fortune Tiger', 
-      category: 'Slots',
-      image: '/assets/game_assets/png/8-DbW9oFTd.png', 
-      provider: 'PG SOFT'
-    }
-  ];
-
-  // 4. Lottery Games (Authentic APK 3D Card Posters)
+  // 4. Lottery Games (Official KhelV 3D Card Posters)
   const lotteryGames = [
     { 
       id: 'wingo', 
-      title: 'TRX WIN GO', 
-      display: 'TRX WinGo', 
+      title: 'WIN GO 30S', 
+      display: 'Win Go 30s', 
       category: 'Lottery',
-      image: '/assets/game_assets/png/icon-wg-CS048diG.png', 
+      image: '/assets/official_khelv/lottery_wingo.png', 
       provider: 'ORIGINAL',
       badge: 'PROVABLY FAIR'
     },
@@ -199,7 +215,7 @@ export default function HomePage({
       title: 'TRX WIN GO 1M', 
       display: 'TRX WinGo 1M', 
       category: 'Lottery',
-      image: '/assets/game_assets/png/trx-DMl7EZCL.png', 
+      image: '/assets/official_khelv/lottery_trx.png', 
       provider: 'TRON BLOCKCHAIN',
       badge: 'BLOCKCHAIN'
     },
@@ -208,7 +224,7 @@ export default function HomePage({
       title: 'K3 LOTTERY', 
       display: 'K3 3D Lottery', 
       category: 'Lottery',
-      image: '/assets/game_assets/png/icon-k3-BkAfVDPq.png', 
+      image: '/assets/official_khelv/lottery_k3.png', 
       provider: 'ORIGINAL',
       badge: '207X WIN'
     },
@@ -217,7 +233,7 @@ export default function HomePage({
       title: '5D LOTTERY', 
       display: '5D Lottery', 
       category: 'Lottery',
-      image: '/assets/game_assets/png/icon-5d-Bfyu8HJa.png', 
+      image: '/assets/official_khelv/lottery_5d.png', 
       provider: 'ORIGINAL'
     }
   ];
@@ -229,7 +245,7 @@ export default function HomePage({
       title: 'AVIATOR CRASH', 
       display: 'Aviator', 
       category: 'Casino',
-      image: '/assets/amarclub/game_aviator.png', 
+      image: '/assets/official_khelv/game_aviator.png', 
       provider: 'SPRIBE',
       badge: 'HOT'
     },
@@ -275,20 +291,20 @@ export default function HomePage({
 
   const miniGames = [
     { 
+      id: 'aviator', 
+      title: 'AVIATOR CRASH', 
+      display: 'Aviator Fast', 
+      category: 'MiniGame',
+      image: '/assets/official_khelv/game_aviator.png', 
+      provider: 'SPRIBE'
+    },
+    { 
       id: 'mines', 
       title: 'MINES GOLD', 
       display: 'Mines Gold', 
       category: 'MiniGame',
       image: '/assets/game_assets/png/1-27ESYDeX.png', 
       provider: 'ORIGINAL'
-    },
-    { 
-      id: 'aviator', 
-      title: 'AVIATOR FAST', 
-      display: 'Aviator', 
-      category: 'MiniGame',
-      image: '/assets/amarclub/game_aviator.png', 
-      provider: 'SPRIBE'
     }
   ];
 
@@ -303,7 +319,7 @@ export default function HomePage({
     }
   ];
 
-  const allSlots = [...jiliGames, ...pragmaticGames, ...pgsoftGames];
+  const allSlots = [...jiliGames, ...pgsoftGames, ...pragmaticGames];
   const allGames = [...lotteryGames, ...allSlots, ...casinoGames, ...pvcGames, ...sportsGames, ...fishingGames];
 
   const currentDisplayGames = searchQuery.trim() !== ''
@@ -397,18 +413,18 @@ export default function HomePage({
         </button>
       </div>
 
-      {/* 3. Authentic APK 8-Category 3D Navigation (Horizontal Scrolling Bar) */}
+      {/* 3. Official KhelV 8-Category 3D Navigation (Horizontal Scrolling Bar) */}
       <div className="bg-[#0f1730] rounded-2xl p-2 shadow-lg border border-slate-800/80 overflow-x-auto no-scrollbar">
         <div className="flex items-center space-x-2 min-w-max">
           {[
-            { id: 'All', label: 'Popular', icon: '/assets/game_assets/png/popular-8_UUQbeo.png' },
-            { id: 'Lottery', label: 'Lottery', icon: '/assets/game_assets/png/lottery-Dbl-eMPh.png' },
-            { id: 'Slots', label: 'Slots', icon: '/assets/game_assets/png/slot-DM52Kkhg.png' },
-            { id: 'Casino', label: 'Casino', icon: '/assets/game_assets/png/video-CepDEnWM.png' },
-            { id: 'Sports', label: 'Sports', icon: '/assets/game_assets/png/sport-CFnl9BGk.png' },
-            { id: 'PVC', label: 'Cards', icon: '/assets/game_assets/png/chess-Dg5bPKcx.png' },
-            { id: 'Fishing', label: 'Fishing', icon: '/assets/game_assets/png/fish-D0liGLFa.png' },
-            { id: 'MiniGame', label: 'Mini Game', icon: '/assets/game_assets/png/flash-DT4CLv66.png' }
+            { id: 'All', label: 'Popular', icon: '/assets/official_khelv/cat_popular.png' },
+            { id: 'Lottery', label: 'Lottery', icon: '/assets/official_khelv/cat_lottery.png' },
+            { id: 'Slots', label: 'Slots', icon: '/assets/official_khelv/cat_slot.png' },
+            { id: 'Casino', label: 'Casino', icon: '/assets/official_khelv/cat_video.png' },
+            { id: 'Sports', label: 'Sports', icon: '/assets/official_khelv/cat_sport.png' },
+            { id: 'PVC', label: 'Cards', icon: '/assets/official_khelv/cat_chess.png' },
+            { id: 'Fishing', label: 'Fishing', icon: '/assets/official_khelv/cat_fish.png' },
+            { id: 'MiniGame', label: 'Mini Game', icon: '/assets/official_khelv/cat_flash.png' }
           ].map(cat => {
             const isActive = selectedCategory === cat.id;
             return (
@@ -418,7 +434,7 @@ export default function HomePage({
                   setSelectedCategory(cat.id);
                   setSearchQuery('');
                 }}
-                className={`flex flex-col items-center justify-center py-2 px-3 rounded-xl transition cursor-pointer min-w-[62px] ${
+                className={`flex flex-col items-center justify-center py-2 px-3 rounded-xl transition cursor-pointer min-w-[65px] ${
                   isActive 
                     ? 'bg-gradient-to-b from-[#1a2b5e] to-[#0f1b3b] text-amber-300 font-black border border-amber-400/50 shadow-[0_0_12px_rgba(245,190,0,0.35)] scale-102' 
                     : 'bg-[#0b1022]/60 text-slate-400 hover:text-white hover:bg-slate-800/50 border border-slate-800/50'
@@ -427,7 +443,7 @@ export default function HomePage({
                 <img 
                   src={cat.icon} 
                   alt={cat.label} 
-                  className="w-9 h-9 object-contain drop-shadow-md mb-1 transform transition group-hover:scale-105" 
+                  className="w-10 h-10 object-contain drop-shadow-md mb-1 transform transition group-hover:scale-105" 
                 />
                 <span className="text-[10px] font-bold tracking-tight whitespace-nowrap">{cat.label}</span>
               </button>
@@ -470,7 +486,7 @@ export default function HomePage({
         </div>
       )}
 
-      {/* 5. 3-Column Dark Luxury Game Cards Grid (Authentic APK 3D Posters) */}
+      {/* 5. 3-Column Dark Luxury Game Cards Grid (Official KhelV Live 3D Posters) */}
       <div className="grid grid-cols-3 gap-2.5">
         {currentDisplayGames.map((game, idx) => {
           return (

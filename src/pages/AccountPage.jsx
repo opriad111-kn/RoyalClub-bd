@@ -31,6 +31,7 @@ import {
   Crown
 } from 'lucide-react';
 import VipModal from '../components/VipModal';
+import KhelvIcon from '../components/KhelvIcon';
 
 export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onOpenDeposit, onOpenWithdraw, onOpenGift }) {
   const { 
@@ -297,138 +298,138 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             </div>
           </div>
 
-          {/* 4 Action Buttons Row: Wallet, Deposit, Withdraw, VIP */}
+          {/* 4 Action Buttons Row: Wallet, Deposit, Withdraw, VIP (Authentic KhelV SVG Icons) */}
           <div className="grid grid-cols-4 gap-2 pt-1">
             <button
               onClick={() => handleAction(onOpenWallet)}
               className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-800/50 transition active:scale-95 cursor-pointer"
             >
-              <div className="w-12 h-12 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center mb-1 shadow-sm">
-                <Wallet className="w-6 h-6 stroke-[2]" />
+              <div className="w-12 h-12 flex items-center justify-center mb-1 drop-shadow-sm">
+                <KhelvIcon name="wallets" className="w-11 h-11" />
               </div>
-              <span className="font-bold text-[11px] text-slate-300">Wallet</span>
+              <span className="font-bold text-[11px] text-white">Wallet</span>
             </button>
 
             <button
               onClick={() => handleAction(onOpenDeposit || onOpenWallet)}
               className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-800/50 transition active:scale-95 cursor-pointer"
             >
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center mb-1 shadow-sm">
-                <ArrowDownLeft className="w-6 h-6 stroke-[2.2]" />
+              <div className="w-12 h-12 flex items-center justify-center mb-1 drop-shadow-sm">
+                <KhelvIcon name="rechargeIcon" className="w-11 h-11" />
               </div>
-              <span className="font-bold text-[11px] text-slate-300">Deposit</span>
+              <span className="font-bold text-[11px] text-white">Deposit</span>
             </button>
 
             <button
               onClick={() => handleAction(onOpenWithdraw || onOpenWallet)}
               className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-800/50 transition active:scale-95 cursor-pointer"
             >
-              <div className="w-12 h-12 rounded-2xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center mb-1 shadow-sm">
-                <CreditCard className="w-6 h-6 stroke-[2]" />
+              <div className="w-12 h-12 flex items-center justify-center mb-1 drop-shadow-sm">
+                <KhelvIcon name="widthdrawBlue" className="w-11 h-11" />
               </div>
-              <span className="font-bold text-[11px] text-slate-300">Withdraw</span>
+              <span className="font-bold text-[11px] text-white">Withdraw</span>
             </button>
 
             <button
               onClick={() => handleAction(() => setShowVipModal(true))}
               className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-800/50 transition active:scale-95 cursor-pointer"
             >
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mb-1 shadow-sm font-black text-base">
-                V
+              <div className="w-12 h-12 flex items-center justify-center mb-1 drop-shadow-sm">
+                <KhelvIcon name="VipIcon" className="w-11 h-11" />
               </div>
-              <span className="font-bold text-[11px] text-slate-300">VIP</span>
+              <span className="font-bold text-[11px] text-white">VIP</span>
             </button>
           </div>
         </div>
 
-        {/* 3. "Safe" Daily Interest Box */}
+        {/* 3. "Safe" Daily Interest Box (Authentic KhelV Vault) */}
         <div 
           onClick={() => handleAction(() => setSafeModalOpen(true))}
-          className="bg-[#0f1730] rounded-2xl text-white p-3.5 border border-slate-800 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md transition active:scale-95"
+          className="bg-[#1C2063] rounded-2xl text-white p-3.5 border border-[#30358B] shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md transition active:scale-95"
         >
           <div className="flex items-center space-x-3">
-            <div className="w-11 h-11 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center text-xl shadow-sm shrink-0">
-              🪙
+            <div className="w-12 h-12 flex items-center justify-center shrink-0">
+              <KhelvIcon name="vault" className="w-11 h-11" />
             </div>
             <div>
               <h4 className="font-black text-white text-sm">Safe Vault</h4>
-              <p className="text-[10px] text-slate-400 mt-0.5 leading-snug max-w-[220px]">
+              <p className="text-[10px] text-slate-300 mt-0.5 leading-snug max-w-[220px]">
                 The daily interest rate is 0.1%, and income is calculated once every 1 minute.
               </p>
             </div>
           </div>
 
-          <div className="bg-amber-400/20 border border-amber-400/40 text-amber-300 font-mono font-bold text-[11px] px-2.5 py-1 rounded-full flex items-center space-x-0.5 shadow-sm shrink-0">
+          <div className="bg-[#3E44A9] border border-[#30358B] text-amber-300 font-mono font-bold text-[11px] px-2.5 py-1 rounded-full flex items-center space-x-0.5 shadow-sm shrink-0">
             <span>৳0.00</span>
-            <ChevronRight className="w-3.5 h-3.5" />
+            <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
           </div>
         </div>
 
-        {/* 4. 2x2 Grid for Game History, Transaction, Deposit, and Withdraw */}
+        {/* 4. 2x2 Grid for Game History, Transaction, Deposit, and Withdraw (Authentic KhelV SVGs) */}
         <div className="grid grid-cols-2 gap-2.5">
           <div 
             onClick={() => handleAction(() => setActiveHistoryModal('game'))}
-            className="bg-[#0f1730] rounded-2xl text-white p-3 border border-slate-800 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
+            className="bg-[#1C2063] rounded-2xl text-white p-3 border border-[#30358B] shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
-            <div className="w-10 h-10 rounded-xl bg-blue-500 text-white flex items-center justify-center shrink-0 shadow-sm shadow-blue-500/20">
-              <Gamepad2 className="w-5 h-5" />
+            <div className="w-11 h-11 flex items-center justify-center shrink-0">
+              <KhelvIcon name="betHistory" className="w-10 h-10" />
             </div>
             <div className="flex-1 overflow-hidden">
               <h5 className="font-black text-white text-xs truncate">Game History</h5>
-              <span className="text-[10px] text-slate-400 block truncate">My game records</span>
+              <span className="text-[10px] text-slate-300 block truncate">My game records</span>
             </div>
           </div>
 
           <div 
             onClick={() => handleAction(() => setActiveHistoryModal('transaction'))}
-            className="bg-[#0f1730] rounded-2xl text-white p-3 border border-slate-800 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
+            className="bg-[#1C2063] rounded-2xl text-white p-3 border border-[#30358B] shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
-            <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm shadow-emerald-500/20">
-              <FileText className="w-5 h-5" />
+            <div className="w-11 h-11 flex items-center justify-center shrink-0">
+              <KhelvIcon name="tradeHistory" className="w-10 h-10" />
             </div>
             <div className="flex-1 overflow-hidden">
               <h5 className="font-black text-white text-xs truncate">Transactions</h5>
-              <span className="text-[10px] text-slate-400 block truncate">Ledger records</span>
+              <span className="text-[10px] text-slate-300 block truncate">Ledger records</span>
             </div>
           </div>
 
           <div 
             onClick={() => handleAction(() => setActiveHistoryModal('deposit'))}
-            className="bg-[#0f1730] rounded-2xl text-white p-3 border border-slate-800 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
+            className="bg-[#1C2063] rounded-2xl text-white p-3 border border-[#30358B] shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
-            <div className="w-10 h-10 rounded-xl bg-rose-400 text-white flex items-center justify-center shrink-0 shadow-sm shadow-rose-400/20">
-              <ArrowDownLeft className="w-5 h-5" />
+            <div className="w-11 h-11 flex items-center justify-center shrink-0">
+              <KhelvIcon name="rechargeHistory" className="w-10 h-10" />
             </div>
             <div className="flex-1 overflow-hidden">
               <h5 className="font-black text-white text-xs truncate">Deposit</h5>
-              <span className="text-[10px] text-slate-400 block truncate">Deposit records</span>
+              <span className="text-[10px] text-slate-300 block truncate">Deposit records</span>
             </div>
           </div>
 
           <div 
             onClick={() => handleAction(() => setActiveHistoryModal('withdraw'))}
-            className="bg-[#0f1730] rounded-2xl text-white p-3 border border-slate-800 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
+            className="bg-[#1C2063] rounded-2xl text-white p-3 border border-[#30358B] shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
-            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm shadow-amber-500/20">
-              <ArrowUpRight className="w-5 h-5" />
+            <div className="w-11 h-11 flex items-center justify-center shrink-0">
+              <KhelvIcon name="myWithdrawHistory" className="w-10 h-10" />
             </div>
             <div className="flex-1 overflow-hidden">
               <h5 className="font-black text-white text-xs truncate">Withdraw</h5>
-              <span className="text-[10px] text-slate-400 block truncate">Withdraw records</span>
+              <span className="text-[10px] text-slate-300 block truncate">Withdraw records</span>
             </div>
           </div>
         </div>
 
-        {/* 5. In-App Notifications Bar */}
+        {/* 5. In-App Notifications Bar (KhelV SVG) */}
         <div 
           onClick={() => setNotificationModalOpen(true)}
-          className="bg-[#0f1730] rounded-2xl text-white p-3.5 border border-slate-800 shadow-sm flex items-center justify-between cursor-pointer hover:bg-[#131b35] transition active:scale-95"
+          className="bg-[#1C2063] rounded-2xl text-white p-3.5 border border-[#30358B] shadow-sm flex items-center justify-between cursor-pointer hover:bg-[#242A75] transition active:scale-95"
         >
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
-              <Mail className="w-5 h-5" />
+            <div className="w-8 h-8 flex items-center justify-center shrink-0">
+              <KhelvIcon name="notification" className="w-7 h-7" />
             </div>
-            <span className="font-bold text-slate-200 text-xs">Notifications</span>
+            <span className="font-bold text-white text-xs">Notifications</span>
           </div>
 
           <div className="flex items-center space-x-1.5">
@@ -441,21 +442,21 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           </div>
         </div>
 
-        {/* 6. Comprehensive Account Services & Settings List */}
-        <div className="bg-[#0f1730] rounded-2xl text-white border border-slate-800 shadow-sm divide-y divide-slate-800/80 overflow-hidden">
+        {/* 6. Comprehensive Account Services & Settings List (Authentic KhelV Palette) */}
+        <div className="bg-[#1C2063] rounded-2xl text-white border border-[#30358B] shadow-sm divide-y divide-[#30358B]/80 overflow-hidden">
           
           {/* Redeem Gift Code */}
           <button
             onClick={() => handleAction(onOpenGift)}
-            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-800/50 transition cursor-pointer"
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-white/5 transition cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 flex items-center justify-center">
-                <Gift className="w-4 h-4" />
+              <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                <KhelvIcon name="gifts" className="w-6 h-6" />
               </div>
               <div>
-                <span className="font-bold text-xs text-slate-200">Gifts & Promo Codes</span>
-                <span className="text-[10px] text-slate-400 block">উপহার রিডেম্পশন কোড দিয়ে বোনাস নিন</span>
+                <span className="font-bold text-xs text-white">Gifts & Promo Codes</span>
+                <span className="text-[10px] text-slate-300 block">উপহার রিডেম্পশন কোড দিয়ে বোনাস নিন</span>
               </div>
             </div>
             <ChevronRight className="w-4 h-4 text-slate-400" />
@@ -464,15 +465,15 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           {/* Customer Support Desk */}
           <button
             onClick={() => handleAction(() => setShowSupportModal(true))}
-            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-800/50 transition cursor-pointer"
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-white/5 transition cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-teal-500/20 text-teal-400 border border-teal-500/30 flex items-center justify-center">
-                <LifeBuoy className="w-4 h-4" />
+              <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                <KhelvIcon name="serviceCenter" className="w-6 h-6" />
               </div>
               <div>
-                <span className="font-bold text-xs text-slate-200">Support Desk & Tickets</span>
-                <span className="text-[10px] text-slate-400 block">সাপোর্ট টিকিট পাঠান এবং উত্তর দেখুন</span>
+                <span className="font-bold text-xs text-white">Support Desk & Tickets</span>
+                <span className="text-[10px] text-slate-300 block">সাপোর্ট টিকিট পাঠান এবং উত্তর দেখুন</span>
               </div>
             </div>
             <div className="flex items-center space-x-1">
@@ -489,15 +490,15 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           {!isGuest && (
             <button
               onClick={() => setShowPasswordModal(true)}
-              className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-800/50 transition cursor-pointer"
+              className="w-full p-3.5 flex justify-between items-center text-left hover:bg-white/5 transition cursor-pointer"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 border border-purple-500/30 flex items-center justify-center">
-                  <KeyRound className="w-4 h-4" />
+                <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                  <KhelvIcon name="privacyIcon" className="w-6 h-6" />
                 </div>
                 <div>
-                  <span className="font-bold text-xs text-slate-200">Change Password</span>
-                  <span className="text-[10px] text-slate-400 block">লগইন পাসওয়ার্ড পরিবর্তন করুন</span>
+                  <span className="font-bold text-xs text-white">Change Password</span>
+                  <span className="text-[10px] text-slate-300 block">লগইন পাসওয়ার্ড পরিবর্তন করুন</span>
                 </div>
               </div>
               <ChevronRight className="w-4 h-4 text-slate-400" />
@@ -507,15 +508,59 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           {/* Responsible Gaming Limits */}
           <button
             onClick={() => setShowResponsibleModal(true)}
-            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-800/50 transition cursor-pointer"
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-white/5 transition cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center">
-                <ShieldCheck className="w-4 h-4" />
+              <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                <KhelvIcon name="riskProtocal" className="w-6 h-6" />
               </div>
               <div>
-                <span className="font-bold text-xs text-slate-200">Responsible Gaming Limits</span>
-                <span className="text-[10px] text-slate-400 block">দৈনিক বাজি ও সময়সীমা নিয়ন্ত্রণ</span>
+                <span className="font-bold text-xs text-white">Responsible Gaming Limits</span>
+                <span className="text-[10px] text-slate-300 block">দৈনিক বাজি ও সময়সীমা নিয়ন্ত্রণ</span>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-400" />
+          </button>
+
+          {/* Beginner Guide */}
+          <button
+            onClick={() => {
+              const event = new CustomEvent('royalclub_show_toast', { 
+                detail: { message: "Royal Club BD গাইড ও নিয়মাবলী দেখতে হেল্প ডেস্কে যোগাযোগ করুন।" } 
+              });
+              window.dispatchEvent(event);
+            }}
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-white/5 transition cursor-pointer"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                <KhelvIcon name="guide" className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="font-bold text-xs text-white">Beginner Guide</span>
+                <span className="text-[10px] text-slate-300 block">গেম খেলার সহজ নির্দেশিকা ও নিয়ম</span>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-400" />
+          </button>
+
+          {/* About Us */}
+          <button
+            onClick={() => {
+              const event = new CustomEvent('royalclub_show_toast', { 
+                detail: { message: "Royal Club BD — বাংলাদেশের #১ বিশ্বস্ত অনলাইন প্ল্যাটফর্ম।" } 
+              });
+              window.dispatchEvent(event);
+            }}
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-white/5 transition cursor-pointer"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                <KhelvIcon name="about" className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="font-bold text-xs text-white">About Us</span>
+                <span className="text-[10px] text-slate-300 block">প্ল্যাটফর্ম পরিচিতি ও লাইসেন্স তথ্য</span>
               </div>
             </div>
             <ChevronRight className="w-4 h-4 text-slate-400" />
@@ -546,15 +591,15 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           {/* Switch / Login Button */}
           <button
             onClick={onOpenAuth}
-            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-800/50 text-slate-200 transition cursor-pointer"
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-white/5 text-slate-200 transition cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center">
-                <User className="w-4 h-4" />
+              <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                <KhelvIcon name="settingCenter" className="w-6 h-6" />
               </div>
               <div>
-                <span className="font-bold text-xs">Login / Register</span>
-                <span className="text-[10px] text-slate-400 block">Switch account or register</span>
+                <span className="font-bold text-xs text-white">Login / Register</span>
+                <span className="text-[10px] text-slate-300 block">Switch account or register</span>
               </div>
             </div>
             <ChevronRight className="w-4 h-4 text-slate-400" />
@@ -563,40 +608,37 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           {/* Language Switcher Setting */}
           <button
             onClick={toggleLang}
-            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-800/50 transition cursor-pointer"
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-white/5 transition cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center justify-center font-bold text-xs">
-                {lang === 'en' ? '🇺🇸' : '🇧🇩'}
+              <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                <KhelvIcon name="language" className="w-6 h-6" />
               </div>
               <div>
-                <span className="font-bold text-xs text-slate-200">{t('language')}</span>
-                <span className="text-[10px] text-slate-400 block">
+                <span className="font-bold text-xs text-white">{t('language')}</span>
+                <span className="text-[10px] text-slate-300 block">
                   {lang === 'en' ? 'English (Click to change to বাংলা)' : 'বাংলা (Click to switch to English)'}
                 </span>
               </div>
             </div>
-            <div className="flex items-center space-x-1 bg-slate-800 border border-slate-700 px-2 py-0.5 rounded-full text-[10px] font-black text-slate-300">
+            <div className="flex items-center space-x-1 bg-[#3E44A9] border border-[#30358B] px-2 py-0.5 rounded-full text-[10px] font-black text-slate-200">
               <span>{lang === 'en' ? 'EN' : 'বাংলা'}</span>
-              <ChevronRight className="w-3 h-3 text-slate-400" />
+              <ChevronRight className="w-3 h-3 text-slate-300" />
             </div>
           </button>
+        </div>
 
-          {/* Logout */}
+        {/* Big Pill Log Out Button (Matching KhelV Exact Style) */}
+        <div className="pt-2">
           <button
             onClick={() => {
               logout();
               if (onOpenAuth) onOpenAuth();
             }}
-            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-red-500/10 text-red-400 transition cursor-pointer"
+            className="w-full py-3.5 rounded-full border border-[#384b7a] text-[#FD565C] bg-[#1C2063]/80 hover:bg-red-500/10 font-bold text-xs flex items-center justify-center space-x-2 transition active:scale-95 cursor-pointer shadow-md uppercase tracking-wider"
           >
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 flex items-center justify-center">
-                <LogOut className="w-4 h-4" />
-              </div>
-              <span className="font-bold text-xs">{isGuest ? 'Log in to Account' : t('logout')}</span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-red-400" />
+            <KhelvIcon name="logout" className="w-4 h-4 text-[#FD565C]" />
+            <span>{isGuest ? 'Log in to Account' : t('logout')}</span>
           </button>
         </div>
 
