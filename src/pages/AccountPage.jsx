@@ -284,7 +284,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           <div className="flex justify-between items-center">
             <div>
               <span className="text-[11px] font-bold text-slate-400 block font-sans">
-                Total balance (Demo Coins)
+                Total Balance (RC Coins)
               </span>
               <div className="flex items-center space-x-2 mt-0.5">
                 <span className="text-2xl font-black font-mono text-slate-900 tracking-tight">
@@ -309,7 +309,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                 className="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-bold text-[10px] px-3 py-1.5 rounded-full flex items-center space-x-1 transition active:scale-95 cursor-pointer shadow-xs"
               >
                 <Coins className="w-3.5 h-3.5 text-amber-600" />
-                <span>+৳৫০০ ফ্রি কয়েন</span>
+                <span>+500 RC Bonus</span>
               </button>
             )}
           </div>
@@ -619,6 +619,16 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             </div>
             <ChevronRight className="w-4 h-4 text-red-400" />
           </button>
+        </div>
+
+        {/* Entertainment Platform Compliance Footnote */}
+        <div className="text-center py-4 px-2 space-y-1 text-[10px] text-slate-400">
+          <p className="font-semibold text-slate-500">
+            RoyalClub BD • Premium Gaming & Entertainment
+          </p>
+          <p className="leading-relaxed max-w-xs mx-auto">
+            প্ল্যাটফর্মের সমস্ত পয়েন্ট ও কয়েন শুধুমাত্র ভার্চুয়াল বিনোদনের উদ্দেশ্যে ব্যবহৃত হয়। এর কোনো বাস্তব আর্থিক বা নগদ রূপান্তরযোগ্য বিনিময় মূল্য নেই।
+          </p>
         </div>
 
       </div>

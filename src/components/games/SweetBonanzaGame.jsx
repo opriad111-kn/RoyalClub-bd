@@ -23,7 +23,7 @@ const CANDIES = [
   { id: 'banana', name: 'Sweet Banana', mult: 2, icon: '🍌', color: 'from-amber-300 to-yellow-500' }
 ];
 
-const CANDY_BOMBS = [2, 5, 10, 20, 50, 100];
+const CANDY_BOMBS = [2, 3, 4, 5];
 
 function generateCandyGrid() {
   const grid = [];
@@ -38,7 +38,7 @@ function generateCandyGrid() {
 }
 
 export default function SweetBonanzaGame({ onClose }) {
-  const { user, adjustUserBalance, recordGameHistory } = useGame();
+  const { user, adjustUserBalance, recordGameHistory, sanitizeGamePayout } = useGame();
   const [grid, setGrid] = useState(generateCandyGrid);
   const [betAmount, setBetAmount] = useState(20);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -110,7 +110,8 @@ export default function SweetBonanzaGame({ onClose }) {
       if (soundEnabled) soundManager.playWin();
     }
 
-    const totalWin = parseFloat((baseWin * multiplier).toFixed(2));
+    const rawWin = baseWin * multiplier;
+    const totalWin = sanitizeGamePayout ? sanitizeGamePayout('sweetbonanza', betAmount, rawWin) : parseFloat(rawWin.toFixed(2));
 
     if (totalWin > 0) {
       adjustUserBalance(user.uid, totalWin);

@@ -7,7 +7,11 @@ import {
   AlertCircle, 
   CheckCircle2,
   Clock,
-  HelpCircle
+  HelpCircle,
+  Sparkles,
+  Lock,
+  TrendingUp,
+  AlertTriangle
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -21,32 +25,56 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
   const [showHistory, setShowHistory] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successToast, setSuccessToast] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const quickAmounts = [200, 500, 1000, 2000, 5000];
 
-  const currentBal = Number(user?.balance !== undefined ? user.balance : 0);
+  const safeUser = user || { username: 'Guest', is_guest: true, balance: 0, uid: '722200' };
+  const safeSettings = settings || {
+    WITHDRAWAL_FEE_PERCENT: 0,
+    MIN_WITHDRAWAL_AMOUNT: 200,
+    DAILY_WITHDRAWAL_LIMIT: 5000
+  };
+
+  const currentBal = Number(safeUser?.balance !== undefined ? safeUser.balance : 0);
   const numAmount = parseFloat(amount) || 0;
-  const feePercent = settings.WITHDRAWAL_FEE_PERCENT || 0;
+  const feePercent = safeSettings.WITHDRAWAL_FEE_PERCENT || 0;
   const feeAmount = (numAmount * feePercent) / 100;
   const netReceive = Math.max(0, numAmount - feeAmount);
 
+  // Turnover / Wagering Requirement Calculation
+  const reqTurnover = Number(safeUser?.turnover_required || 0);
+  const compTurnover = Number(safeUser?.turnover_completed || safeUser?.total_wagered || 0);
+  const turnoverRemaining = Math.max(0, reqTurnover - compTurnover);
+  const turnoverProgress = reqTurnover > 0 ? Math.min(100, Math.round((compTurnover / reqTurnover) * 100)) : 100;
+  const isTurnoverMet = turnoverRemaining <= 0;
+
   async function handleSubmit(e) {
     e.preventDefault();
-    if (user.username === 'Guest' || user.is_guest) {
+    setErrorMessage('');
+
+    if (safeUser.username === 'Guest' || safeUser.is_guest) {
       if (onOpenAuth) onOpenAuth();
       return;
     }
 
-    if (!numAmount || numAmount < (settings.MIN_WITHDRAWAL_AMOUNT || 200)) {
-      alert(`সর্বনিম্ন উইথড্র ৳${settings.MIN_WITHDRAWAL_AMOUNT || 200} টাকা।`);
+    const minAmount = safeSettings.MIN_WITHDRAWAL_AMOUNT || 200;
+    if (!numAmount || numAmount < minAmount) {
+      setErrorMessage(`সর্বনিম্ন উইথড্র ৳${minAmount} টাকা।`);
       return;
     }
     if (numAmount > currentBal) {
-      alert("পর্যাপ্ত ব্যালেন্স নেই!");
+      setErrorMessage("পর্যাপ্ত ব্যালেন্স নেই!");
       return;
     }
     if (!accountNumber.trim()) {
-      alert("টাকা তোলার মোবাইল নম্বর লিখুন।");
+      setErrorMessage("টাকা তোলার মোবাইল নম্বর লিখুন।");
+      return;
+    }
+
+    // Turnover requirement check
+    if (!isTurnoverMet) {
+      setErrorMessage(`আপনার ডিপোজিট টার্নওভার বাকি রয়েছে ৳${turnoverRemaining.toFixed(2)} টাকা। গেম খেলে টার্নওভার সম্পন্ন করে উইথড্র করুন।`);
       return;
     }
 
@@ -63,9 +91,11 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
         confetti({ particleCount: 35, spread: 60, origin: { y: 0.6 } });
         setSuccessToast(`৳${numAmount} টাকা উত্তোলনের রিকোয়েস্ট সফলভাবে জমা হয়েছে! ৩ থেকে ৫ মিনিটের মধ্যে পেমেন্ট সম্পন্ন হবে।`);
         setAccountNumber('');
+      } else {
+        setErrorMessage("উইথড্র রিকোয়েস্ট জমা দিতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
       }
     } catch (err) {
-      alert("উইথড্র রিকোয়েস্ট প্রক্রিয়াকরণে সমস্যা হয়েছে।");
+      setErrorMessage("উইথড্র রিকোয়েস্ট প্রক্রিয়াকরণে সমস্যা হয়েছে।");
     } finally {
       setIsSubmitting(false);
     }
@@ -147,7 +177,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
         </div>
 
         {/* Guest Warning */}
-        {(user?.username === 'Guest' || user?.is_guest) && (
+        {(safeUser.username === 'Guest' || safeUser.is_guest) && (
           <div className="bg-rose-50 border border-rose-200 rounded-2xl p-3 flex items-center justify-between text-rose-800">
             <div>
               <span className="font-black block text-xs">লগইন প্রয়োজন</span>
@@ -162,6 +192,53 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
           </div>
         )}
 
+        {/* Wagering / Turnover Progress Banner */}
+        {reqTurnover > 0 && (
+          <div className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-sm space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center space-x-1.5 font-black text-slate-800">
+                <TrendingUp className="w-4 h-4 text-amber-500" />
+                <span>Turnover Progress (টার্নওভার অগ্রগতি)</span>
+              </div>
+              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                isTurnoverMet ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800'
+              }`}>
+                {isTurnoverMet ? 'COMPLETED' : `${turnoverProgress}%`}
+              </span>
+            </div>
+            
+            <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+              <div 
+                className="bg-gradient-to-r from-amber-400 to-[#F5BE00] h-full transition-all duration-500 rounded-full"
+                style={{ width: `${turnoverProgress}%` }}
+              />
+            </div>
+
+            <div className="flex justify-between text-[10px] font-mono text-slate-500">
+              <span>Wagered: ৳{compTurnover.toFixed(0)}</span>
+              <span>Target: ৳{reqTurnover.toFixed(0)}</span>
+            </div>
+
+            {!isTurnoverMet && (
+              <p className="text-[10px] text-amber-700 font-medium bg-amber-50 rounded-lg p-2 flex items-center space-x-1.5">
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-amber-600" />
+                <span>উইথড্র করার জন্য আরো ৳{turnoverRemaining.toFixed(2)} টাকার টার্নওভার সম্পন্ন করতে হবে।</span>
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Error Message */}
+        {errorMessage && (
+          <div className="bg-rose-50 border border-rose-200 rounded-2xl p-3 text-rose-800 text-xs flex items-start space-x-2">
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <span className="font-bold">{errorMessage}</span>
+            </div>
+            <button onClick={() => setErrorMessage('')} className="text-rose-600 font-bold cursor-pointer">✕</button>
+          </div>
+        )}
+
         {/* Success Banner */}
         {successToast && (
           <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 text-emerald-800 text-xs flex items-start space-x-2">
@@ -169,7 +246,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
             <div className="flex-1">
               <span className="font-bold">{successToast}</span>
             </div>
-            <button onClick={() => setSuccessToast('')} className="text-emerald-600 font-bold">✕</button>
+            <button onClick={() => setSuccessToast('')} className="text-emerald-600 font-bold cursor-pointer">✕</button>
           </div>
         )}
 
@@ -319,7 +396,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isSubmitting || user?.username === 'Guest' || numAmount > currentBal || numAmount < 200}
+            disabled={isSubmitting || safeUser.username === 'Guest' || numAmount > currentBal || numAmount < (safeSettings.MIN_WITHDRAWAL_AMOUNT || 200)}
             className="w-full bg-gradient-to-r from-amber-400 via-[#F5BE00] to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-slate-950 font-black py-3 rounded-full text-xs uppercase tracking-wider shadow-md active:scale-98 transition cursor-pointer disabled:opacity-50"
           >
             {isSubmitting ? 'প্রসেসিং হচ্ছে...' : `উইথড্র রিকোয়েস্ট পাঠান ৳${numAmount || 0}`}

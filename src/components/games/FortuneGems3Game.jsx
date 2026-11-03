@@ -21,7 +21,7 @@ const SYMBOLS = [
 const MULTIPLIERS = [1, 2, 3, 5, 10, 15];
 
 export default function FortuneGems3Game({ onClose }) {
-  const { user, adjustUserBalance, recordGameHistory } = useGame();
+  const { user, adjustUserBalance, recordGameHistory, evaluateGameOutcome, sanitizeGamePayout } = useGame();
   
   // 3x3 Aztec Reels
   const [grid, setGrid] = useState([
@@ -75,8 +75,13 @@ export default function FortuneGems3Game({ onClose }) {
     setIsSpinning(false);
     soundManager.playReelStop();
 
-    // 44% Hit Rate
-    const isWin = Math.random() < 0.44;
+    // House Profit & Win Rate Engine
+    const outcome = evaluateGameOutcome ? evaluateGameOutcome({
+      gameId: 'fortunegems3',
+      betAmount,
+      isMicroAllowed: true
+    }) : { won: Math.random() < 0.20, multiplier: 1.2 };
+    const isWin = outcome.won;
     const chosenMult = MULTIPLIERS[Math.floor(Math.random() * MULTIPLIERS.length)];
     setTopMult(chosenMult);
 
@@ -88,7 +93,8 @@ export default function FortuneGems3Game({ onClose }) {
         [getRandomSym(), luckySym.id, getRandomSym()]
       ]);
 
-      const payout = parseFloat((betAmount * (luckySym.mult / 5) * chosenMult).toFixed(2));
+      const rawPayout = betAmount * (outcome.multiplier || (luckySym.mult / 5) * chosenMult);
+      const payout = sanitizeGamePayout ? sanitizeGamePayout('fortunegems3', betAmount, rawPayout) : parseFloat(rawPayout.toFixed(2));
       adjustUserBalance(user.uid, payout);
       setWinAmount(payout);
       soundManager.playWin();

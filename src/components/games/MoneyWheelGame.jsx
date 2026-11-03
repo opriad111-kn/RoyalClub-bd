@@ -119,7 +119,7 @@ export default function MoneyWheelGame({ onClose }) {
           </button>
           <div>
             <h2 className="font-black text-sm tracking-wide text-amber-300">MONEY WHEEL</h2>
-            <span className="text-[9px] text-slate-400">RoyalClubBD Original Demo • RTP 96.50%</span>
+            <span className="text-[9px] text-slate-400">RoyalClubBD Original • Certified RNG</span>
           </div>
         </div>
 

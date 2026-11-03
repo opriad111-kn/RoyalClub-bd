@@ -69,8 +69,10 @@ export default function AdminDashboard({ onExit }) {
     adjustUserBalance, 
     toggleBanUser,
     gameControl,
+    updateGameControl,
     updateServerRtp,
     updateGameOverride,
+    updateUserLuckMode,
     updateUserDirectBalance,
     updateSignupBonusAmount,
     supabaseStatus,
@@ -121,7 +123,7 @@ export default function AdminDashboard({ onExit }) {
   const [userModalTab, setUserModalTab] = useState('profile'); // 'profile', 'balance', 'password', 'history'
   const [balanceEditVal, setBalanceEditVal] = useState('');
   const [balanceAdjustType, setBalanceAdjustType] = useState('add');
-  const [balanceAdjustReason, setBalanceAdjustReason] = useState('Promotional Demo Grant');
+  const [balanceAdjustReason, setBalanceAdjustReason] = useState('Promotional Member Grant');
   const [newPasswordVal, setNewPasswordVal] = useState('');
   const [userVipEditVal, setUserVipEditVal] = useState(1);
 
@@ -151,6 +153,30 @@ export default function AdminDashboard({ onExit }) {
   // 7. Support Ticket Active Modal State
   const [activeTicket, setActiveTicket] = useState(null);
   const [ticketReplyText, setTicketReplyText] = useState('');
+
+  // 7B. Casino Profit & Win Rate Master Control State
+  const [houseMode, setHouseMode] = useState(gameControl?.houseMode || 'high_profit');
+  const [globalWinRate, setGlobalWinRate] = useState(gameControl?.globalWinRate || 20);
+  const [maxMultiplierCap, setMaxMultiplierCap] = useState(gameControl?.maxMultiplier || 3.5);
+  const [maxProfitRound, setMaxProfitRound] = useState(gameControl?.maxProfitPerRound || 150);
+  const [microWinActive, setMicroWinActive] = useState(gameControl?.microWinEnabled !== false);
+  const [turnoverReqMult, setTurnoverReqMult] = useState(gameControl?.turnoverMultiplier || 2.0);
+  const [gameControlSearch, setGameControlSearch] = useState('');
+  const [aviatorRigMode, setAviatorRigMode] = useState(gameControl?.aviatorMode || 'standard');
+
+  function handleSaveCasinoControls() {
+    updateGameControl({
+      houseMode,
+      globalWinRate: Number(globalWinRate),
+      maxMultiplier: Number(maxMultiplierCap),
+      maxProfitPerRound: Number(maxProfitRound),
+      microWinEnabled: microWinActive,
+      turnoverMultiplier: Number(turnoverReqMult),
+      aviatorMode: aviatorRigMode
+    });
+    setStatusNotice('ক্যাসিনো হাউস মার্জিন ও উইন রেট সফলভাবে আপডেট করা হয়েছে!');
+    setTimeout(() => setStatusNotice(''), 3000);
+  }
 
   // 8. New Banner State
   const [newBannerTitle, setNewBannerTitle] = useState('');
@@ -271,7 +297,7 @@ export default function AdminDashboard({ onExit }) {
     updateSetting('MIN_DEPOSIT_AMOUNT', Number(paySettings.MIN_DEPOSIT_AMOUNT));
     updateSetting('MIN_WITHDRAWAL_AMOUNT', Number(paySettings.MIN_WITHDRAWAL_AMOUNT));
     updateSetting('DAILY_WITHDRAWAL_LIMIT', Number(paySettings.DAILY_WITHDRAWAL_LIMIT));
-    addAuditLog('PAYMENT_UPDATE', 'Updated official deposit demo numbers and transaction limits.');
+    addAuditLog('PAYMENT_UPDATE', 'Updated official official payment numbers and transaction limits.');
     setStatusNotice('পেমেন্ট গেটওয়ে ইনফরমেশন সফলভাবে আপডেট হয়েছে!');
     setTimeout(() => setStatusNotice(''), 3000);
   }
@@ -357,7 +383,7 @@ export default function AdminDashboard({ onExit }) {
     return (
       <div className="min-h-screen w-full bg-[#0d1117] flex items-center justify-center p-4 font-sans select-none">
         <div className="bg-[#161b22] text-white rounded-3xl p-8 shadow-2xl border border-[#30363d] text-center space-y-5 max-w-sm w-full">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#00D26A] to-emerald-400 text-slate-950 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20 font-black text-2xl">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#F5BE00] to-yellow-400 text-slate-950 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/20 font-black text-2xl">
             👑
           </div>
           <div>
@@ -381,7 +407,7 @@ export default function AdminDashboard({ onExit }) {
                 placeholder="e.g. 1403398319 or admin"
                 value={adminUsernameInput}
                 onChange={e => setAdminUsernameInput(e.target.value)}
-                className="w-full bg-[#0d1117] border border-[#30363d] focus:border-[#00D26A] rounded-xl px-3.5 py-2.5 text-white focus:outline-none transition"
+                className="w-full bg-[#0d1117] border border-[#30363d] focus:border-[#F5BE00] rounded-xl px-3.5 py-2.5 text-white focus:outline-none transition"
                 required
               />
             </div>
@@ -393,7 +419,7 @@ export default function AdminDashboard({ onExit }) {
                 placeholder="Enter admin password..."
                 value={adminPasswordInput}
                 onChange={e => setAdminPasswordInput(e.target.value)}
-                className="w-full bg-[#0d1117] border border-[#30363d] focus:border-[#00D26A] rounded-xl px-3.5 py-2.5 text-white focus:outline-none transition"
+                className="w-full bg-[#0d1117] border border-[#30363d] focus:border-[#F5BE00] rounded-xl px-3.5 py-2.5 text-white focus:outline-none transition"
                 required
               />
             </div>
@@ -401,7 +427,7 @@ export default function AdminDashboard({ onExit }) {
             <button
               type="submit"
               disabled={isAuthenticating}
-              className="w-full bg-[#00D26A] hover:bg-emerald-400 text-black font-black py-3 rounded-xl text-xs uppercase tracking-wider shadow-md active:scale-95 transition cursor-pointer disabled:opacity-50"
+              className="w-full bg-[#F5BE00] hover:bg-yellow-400 text-black font-black py-3 rounded-xl text-xs uppercase tracking-wider shadow-md active:scale-95 transition cursor-pointer disabled:opacity-50"
             >
               {isAuthenticating ? 'Verifying...' : 'Sign In as Administrator'}
             </button>
@@ -430,7 +456,7 @@ export default function AdminDashboard({ onExit }) {
           {/* Logo Header */}
           <div className="h-16 px-5 border-b border-[#21262d] flex items-center justify-between">
             <div className="flex items-center space-x-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#00D26A] flex items-center justify-center text-slate-950 font-black text-sm shadow">
+              <div className="w-8 h-8 rounded-xl bg-[#F5BE00] flex items-center justify-center text-slate-950 font-black text-sm shadow">
                 👑
               </div>
               <div className="flex flex-col">
@@ -462,7 +488,7 @@ export default function AdminDashboard({ onExit }) {
               <button
                 onClick={() => { setActiveNav('overview'); setSidebarOpen(false); }}
                 className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-bold text-xs transition cursor-pointer ${
-                  activeNav === 'overview' ? 'bg-[#00D26A] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                  activeNav === 'overview' ? 'bg-[#F5BE00] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
                 }`}
               >
                 <LayoutDashboard className="w-4 h-4 shrink-0" />
@@ -472,7 +498,7 @@ export default function AdminDashboard({ onExit }) {
               <button
                 onClick={() => { setActiveNav('all_users'); setSidebarOpen(false); }}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl font-bold text-xs transition cursor-pointer ${
-                  activeNav === 'all_users' ? 'bg-[#00D26A] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                  activeNav === 'all_users' ? 'bg-[#F5BE00] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
                 }`}
               >
                 <div className="flex items-center space-x-3">
@@ -485,14 +511,14 @@ export default function AdminDashboard({ onExit }) {
               <button
                 onClick={() => { setActiveNav('online_users'); setSidebarOpen(false); }}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl font-bold text-xs transition cursor-pointer ${
-                  activeNav === 'online_users' ? 'bg-[#00D26A] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                  activeNav === 'online_users' ? 'bg-[#F5BE00] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
                 }`}
               >
                 <div className="flex items-center space-x-3">
                   <Radio className="w-4 h-4 shrink-0 text-emerald-400" />
                   <span>Live Online Users</span>
                 </div>
-                <span className="w-2 h-2 rounded-full bg-[#00D26A] animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-[#F5BE00] animate-pulse" />
               </button>
             </div>
 
@@ -505,7 +531,7 @@ export default function AdminDashboard({ onExit }) {
               <button
                 onClick={() => { setActiveNav('game_list'); setSidebarOpen(false); }}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl font-bold text-xs transition cursor-pointer ${
-                  activeNav === 'game_list' ? 'bg-[#00D26A] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                  activeNav === 'game_list' ? 'bg-[#F5BE00] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
                 }`}
               >
                 <div className="flex items-center space-x-3">
@@ -516,9 +542,24 @@ export default function AdminDashboard({ onExit }) {
               </button>
 
               <button
+                onClick={() => { setActiveNav('game_control'); setSidebarOpen(false); }}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl font-bold text-xs transition cursor-pointer ${
+                  activeNav === 'game_control' ? 'bg-[#F5BE00] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <Sliders className="w-4 h-4 shrink-0 text-amber-400" />
+                  <span>Profit & Win Controls</span>
+                </div>
+                <span className="text-[9px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1.5 py-0.2 rounded-full font-black">
+                  PROFIT
+                </span>
+              </button>
+
+              <button
                 onClick={() => { setActiveNav('betting_records'); setSidebarOpen(false); }}
                 className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-bold text-xs transition cursor-pointer ${
-                  activeNav === 'betting_records' ? 'bg-[#00D26A] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                  activeNav === 'betting_records' ? 'bg-[#F5BE00] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
                 }`}
               >
                 <Activity className="w-4 h-4 shrink-0" />
@@ -535,7 +576,7 @@ export default function AdminDashboard({ onExit }) {
               <button
                 onClick={() => { setActiveNav('wallet_management'); setSidebarOpen(false); }}
                 className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-bold text-xs transition cursor-pointer ${
-                  activeNav === 'wallet_management' ? 'bg-[#00D26A] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                  activeNav === 'wallet_management' ? 'bg-[#F5BE00] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
                 }`}
               >
                 <Coins className="w-4 h-4 shrink-0" />
@@ -545,12 +586,12 @@ export default function AdminDashboard({ onExit }) {
               <button
                 onClick={() => { setActiveNav('deposits'); setSidebarOpen(false); }}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl font-bold text-xs transition cursor-pointer ${
-                  activeNav === 'deposits' ? 'bg-[#00D26A] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                  activeNav === 'deposits' ? 'bg-[#F5BE00] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
                 }`}
               >
                 <div className="flex items-center space-x-3">
                   <CreditCard className="w-4 h-4 shrink-0" />
-                  <span>Demo Deposits</span>
+                  <span>Deposit Requests</span>
                 </div>
                 {pendingDeposits.length > 0 && (
                   <span className="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-black px-1.5 py-0.2 rounded-full">
@@ -562,12 +603,12 @@ export default function AdminDashboard({ onExit }) {
               <button
                 onClick={() => { setActiveNav('withdrawals'); setSidebarOpen(false); }}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl font-bold text-xs transition cursor-pointer ${
-                  activeNav === 'withdrawals' ? 'bg-[#00D26A] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                  activeNav === 'withdrawals' ? 'bg-[#F5BE00] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
                 }`}
               >
                 <div className="flex items-center space-x-3">
                   <Wallet className="w-4 h-4 shrink-0" />
-                  <span>Demo Withdrawals</span>
+                  <span>Withdrawal Requests</span>
                 </div>
                 {pendingWithdrawals.length > 0 && (
                   <span className="bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] font-black px-1.5 py-0.2 rounded-full">
@@ -579,7 +620,7 @@ export default function AdminDashboard({ onExit }) {
               <button
                 onClick={() => { setActiveNav('payments'); setSidebarOpen(false); }}
                 className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-bold text-xs transition cursor-pointer ${
-                  activeNav === 'payments' ? 'bg-[#00D26A] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                  activeNav === 'payments' ? 'bg-[#F5BE00] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
                 }`}
               >
                 <Smartphone className="w-4 h-4 shrink-0" />
@@ -596,7 +637,7 @@ export default function AdminDashboard({ onExit }) {
               <button
                 onClick={() => { setActiveNav('bonuses'); setSidebarOpen(false); }}
                 className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-bold text-xs transition cursor-pointer ${
-                  activeNav === 'bonuses' ? 'bg-[#00D26A] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                  activeNav === 'bonuses' ? 'bg-[#F5BE00] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
                 }`}
               >
                 <Gift className="w-4 h-4 shrink-0" />
@@ -606,7 +647,7 @@ export default function AdminDashboard({ onExit }) {
               <button
                 onClick={() => { setActiveNav('vip_management'); setSidebarOpen(false); }}
                 className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-bold text-xs transition cursor-pointer ${
-                  activeNav === 'vip_management' ? 'bg-[#00D26A] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                  activeNav === 'vip_management' ? 'bg-[#F5BE00] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
                 }`}
               >
                 <Crown className="w-4 h-4 shrink-0" />
@@ -616,7 +657,7 @@ export default function AdminDashboard({ onExit }) {
               <button
                 onClick={() => { setActiveNav('referral_system'); setSidebarOpen(false); }}
                 className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-bold text-xs transition cursor-pointer ${
-                  activeNav === 'referral_system' ? 'bg-[#00D26A] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                  activeNav === 'referral_system' ? 'bg-[#F5BE00] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
                 }`}
               >
                 <Share2 className="w-4 h-4 shrink-0" />
@@ -633,7 +674,7 @@ export default function AdminDashboard({ onExit }) {
               <button
                 onClick={() => { setActiveNav('banners_cms'); setSidebarOpen(false); }}
                 className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-bold text-xs transition cursor-pointer ${
-                  activeNav === 'banners_cms' ? 'bg-[#00D26A] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                  activeNav === 'banners_cms' ? 'bg-[#F5BE00] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
                 }`}
               >
                 <Image className="w-4 h-4 shrink-0" />
@@ -643,7 +684,7 @@ export default function AdminDashboard({ onExit }) {
               <button
                 onClick={() => { setActiveNav('notifications_cms'); setSidebarOpen(false); }}
                 className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-bold text-xs transition cursor-pointer ${
-                  activeNav === 'notifications_cms' ? 'bg-[#00D26A] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                  activeNav === 'notifications_cms' ? 'bg-[#F5BE00] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
                 }`}
               >
                 <Bell className="w-4 h-4 shrink-0" />
@@ -653,7 +694,7 @@ export default function AdminDashboard({ onExit }) {
               <button
                 onClick={() => { setActiveNav('support_tickets'); setSidebarOpen(false); }}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl font-bold text-xs transition cursor-pointer ${
-                  activeNav === 'support_tickets' ? 'bg-[#00D26A] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                  activeNav === 'support_tickets' ? 'bg-[#F5BE00] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
                 }`}
               >
                 <div className="flex items-center space-x-3">
@@ -670,7 +711,7 @@ export default function AdminDashboard({ onExit }) {
               <button
                 onClick={() => { setActiveNav('pages_cms'); setSidebarOpen(false); }}
                 className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-bold text-xs transition cursor-pointer ${
-                  activeNav === 'pages_cms' ? 'bg-[#00D26A] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                  activeNav === 'pages_cms' ? 'bg-[#F5BE00] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
                 }`}
               >
                 <BookOpen className="w-4 h-4 shrink-0" />
@@ -687,7 +728,7 @@ export default function AdminDashboard({ onExit }) {
               <button
                 onClick={() => { setActiveNav('admin_rbac'); setSidebarOpen(false); }}
                 className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-bold text-xs transition cursor-pointer ${
-                  activeNav === 'admin_rbac' ? 'bg-[#00D26A] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                  activeNav === 'admin_rbac' ? 'bg-[#F5BE00] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
                 }`}
               >
                 <ShieldCheck className="w-4 h-4 shrink-0" />
@@ -697,7 +738,7 @@ export default function AdminDashboard({ onExit }) {
               <button
                 onClick={() => { setActiveNav('system_settings'); setSidebarOpen(false); }}
                 className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-bold text-xs transition cursor-pointer ${
-                  activeNav === 'system_settings' ? 'bg-[#00D26A] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                  activeNav === 'system_settings' ? 'bg-[#F5BE00] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
                 }`}
               >
                 <Settings className="w-4 h-4 shrink-0" />
@@ -707,7 +748,7 @@ export default function AdminDashboard({ onExit }) {
               <button
                 onClick={() => { setActiveNav('audit'); setSidebarOpen(false); }}
                 className={`w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-bold text-xs transition cursor-pointer ${
-                  activeNav === 'audit' ? 'bg-[#00D26A] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                  activeNav === 'audit' ? 'bg-[#F5BE00] text-slate-950 font-black shadow-sm' : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
                 }`}
               >
                 <FileText className="w-4 h-4 shrink-0" />
@@ -755,9 +796,9 @@ export default function AdminDashboard({ onExit }) {
 
             {/* Quick Status Pills */}
             <div className="flex items-center space-x-2">
-              <span className="hidden sm:inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-[#00D26A] border border-emerald-500/20">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#00D26A] animate-ping" />
-                <span>Demo System Online</span>
+              <span className="hidden sm:inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-[#F5BE00] border border-emerald-500/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#F5BE00] animate-ping" />
+                <span>System Operational</span>
               </span>
 
               {totalPendingCount > 0 && (
@@ -776,7 +817,7 @@ export default function AdminDashboard({ onExit }) {
               placeholder="Search user by UID, phone, username..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363d] focus:border-[#00D26A] rounded-xl pl-9 pr-3 py-1.5 text-xs text-white focus:outline-none placeholder-[#8b949e] transition"
+              className="w-full bg-[#0d1117] border border-[#30363d] focus:border-[#F5BE00] rounded-xl pl-9 pr-3 py-1.5 text-xs text-white focus:outline-none placeholder-[#8b949e] transition"
             />
           </div>
 
@@ -788,13 +829,13 @@ export default function AdminDashboard({ onExit }) {
               title="Refresh Live Data"
               className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-[#0d1117] hover:bg-[#21262d] border border-[#30363d] text-white text-xs font-bold transition active:scale-95 cursor-pointer"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-[#00D26A]' : 'text-[#8b949e]'}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-[#F5BE00]' : 'text-[#8b949e]'}`} />
               <span className="hidden sm:inline">Refresh Data</span>
             </button>
 
             {/* Admin Profile Pill */}
             <div className="flex items-center space-x-2 pl-2 border-l border-[#21262d]">
-              <div className="w-8 h-8 rounded-full bg-[#00D26A] text-slate-950 flex items-center justify-center font-black text-xs shadow">
+              <div className="w-8 h-8 rounded-full bg-[#F5BE00] text-slate-950 flex items-center justify-center font-black text-xs shadow">
                 A
               </div>
               <div className="hidden sm:flex flex-col text-left">
@@ -807,7 +848,7 @@ export default function AdminDashboard({ onExit }) {
 
         {/* Global Toast Notification */}
         {statusNotice && (
-          <div className="bg-[#00D26A] text-slate-950 px-4 py-2 text-xs font-black text-center shadow-lg transition animate-in fade-in">
+          <div className="bg-[#F5BE00] text-slate-950 px-4 py-2 text-xs font-black text-center shadow-lg transition animate-in fade-in">
             {statusNotice}
           </div>
         )}
@@ -823,15 +864,15 @@ export default function AdminDashboard({ onExit }) {
                 <div>
                   <h1 className="text-xl sm:text-2xl font-black text-white flex items-center space-x-2 tracking-tight">
                     <span>Admin Command Center</span>
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#00D26A]" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#F5BE00]" />
                   </h1>
                   <p className="text-xs text-[#8b949e] mt-0.5">
-                    RoyalClub BD প্ল্যাটফর্ম রিয়েল-টাইম ওভারভিউ ও সিস্টেম অ্যাকশন হাব (100% Virtual Coin Demo)
+                    RoyalClub BD প্ল্যাটফর্ম রিয়েল-টাইম ওভারভিউ ও সিস্টেম অ্যাকশন হাব (Official Live Gaming System)
                   </p>
                 </div>
                 <button
                   onClick={handleRefreshLive}
-                  className="self-start sm:self-auto flex items-center space-x-2 px-4 py-2 rounded-xl bg-[#00D26A] hover:bg-emerald-400 text-slate-950 font-black text-xs transition active:scale-95 shadow cursor-pointer"
+                  className="self-start sm:self-auto flex items-center space-x-2 px-4 py-2 rounded-xl bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black text-xs transition active:scale-95 shadow cursor-pointer"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
                   <span>Refresh Data</span>
@@ -843,7 +884,7 @@ export default function AdminDashboard({ onExit }) {
                 <div className="bg-[#161b22] border border-[#21262d] rounded-2xl p-4 space-y-1.5">
                   <div className="flex items-center justify-between text-[#8b949e]">
                     <span className="text-[11px] font-bold uppercase tracking-wider">মোট ইউজার</span>
-                    <Users className="w-4 h-4 text-[#00D26A]" />
+                    <Users className="w-4 h-4 text-[#F5BE00]" />
                   </div>
                   <div className="flex items-baseline space-x-1.5">
                     <span className="text-2xl sm:text-3xl font-black text-white font-mono">{userList.length}</span>
@@ -890,7 +931,7 @@ export default function AdminDashboard({ onExit }) {
                 <div className="bg-[#161b22] border border-[#21262d] rounded-2xl p-4 space-y-1.5">
                   <div className="flex items-center justify-between text-[#8b949e]">
                     <span className="text-[11px] font-bold uppercase tracking-wider">সিস্টেম স্ট্যাটাস</span>
-                    <ShieldCheck className="w-4 h-4 text-[#00D26A]" />
+                    <ShieldCheck className="w-4 h-4 text-[#F5BE00]" />
                   </div>
                   <div className="flex items-baseline space-x-1.5">
                     <span className="text-lg font-black text-emerald-400">OPERATIONAL</span>
@@ -905,13 +946,13 @@ export default function AdminDashboard({ onExit }) {
                   <div>
                     <h3 className="text-base font-black text-white flex items-center space-x-2">
                       <span>Recent Activity Feed</span>
-                      <span className="w-2 h-2 rounded-full bg-[#00D26A]" />
+                      <span className="w-2 h-2 rounded-full bg-[#F5BE00]" />
                     </h3>
                     <p className="text-xs text-[#8b949e] mt-0.5">
                       ইউজারের নামের ওপর ক্লিক করে প্রোফাইল বিবরণ, ব্যালেন্স ও বাজি হিস্ট্রি দেখুন
                     </p>
                   </div>
-                  <span className="inline-flex items-center space-x-1 text-xs font-black text-[#00D26A] bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
+                  <span className="inline-flex items-center space-x-1 text-xs font-black text-[#F5BE00] bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
                     <span>● Live Feed</span>
                   </span>
                 </div>
@@ -929,13 +970,13 @@ export default function AdminDashboard({ onExit }) {
                       className="bg-[#0d1117] hover:bg-[#1f242c] border border-[#21262d] hover:border-[#30363d] rounded-xl p-3.5 flex items-center justify-between cursor-pointer transition group"
                     >
                       <div className="flex items-center space-x-3 min-w-0">
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-600 to-[#00D26A] text-slate-950 flex items-center justify-center font-black text-xs shrink-0 shadow">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-600 to-[#F5BE00] text-slate-950 flex items-center justify-center font-black text-xs shrink-0 shadow">
                           {u.username ? u.username[0].toUpperCase() : 'U'}
                         </div>
 
                         <div className="min-w-0">
                           <div className="flex items-center space-x-2">
-                            <span className="font-bold text-xs text-white truncate group-hover:text-[#00D26A] transition">
+                            <span className="font-bold text-xs text-white truncate group-hover:text-[#F5BE00] transition">
                               {u.username || 'User'}
                             </span>
                             <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.2 rounded font-bold">
@@ -993,12 +1034,13 @@ export default function AdminDashboard({ onExit }) {
                   <table className="w-full text-left text-xs">
                     <thead className="bg-[#0d1117] text-[#8b949e] border-b border-[#21262d] uppercase text-[10px] tracking-wider">
                       <tr>
-                        <th className="p-3.5">User</th>
+                        <th className="p-3.5">User & Device</th>
                         <th className="p-3.5">UID</th>
                         <th className="p-3.5">VIP Level</th>
-                        <th className="p-3.5">Balance (Demo)</th>
-                        <th className="p-3.5">Total Wagered</th>
-                        <th className="p-3.5">Status</th>
+                        <th className="p-3.5">Wallet Balance (৳)</th>
+                        <th className="p-3.5">Deposits / Payouts</th>
+                        <th className="p-3.5">Turnover Progress</th>
+                        <th className="p-3.5">Activity & Luck</th>
                         <th className="p-3.5 text-right">Actions</th>
                       </tr>
                     </thead>
@@ -1007,12 +1049,13 @@ export default function AdminDashboard({ onExit }) {
                         <tr key={u.uid || u.id} className="hover:bg-[#1f242c] transition">
                           <td className="p-3.5">
                             <div className="flex items-center space-x-2.5">
-                              <div className="w-8 h-8 rounded-full bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-xs">
+                              <div className="w-8 h-8 rounded-full bg-amber-500/20 text-[#F5BE00] border border-amber-500/30 flex items-center justify-center font-bold text-xs">
                                 {u.username ? u.username[0].toUpperCase() : 'U'}
                               </div>
                               <div>
                                 <span className="font-bold text-white block">{u.username}</span>
-                                <span className="text-[10px] text-[#8b949e] font-mono">{u.phone || 'No Phone'}</span>
+                                <span className="text-[10px] text-[#8b949e] font-mono block">{u.phone || 'No Phone'}</span>
+                                <span className="text-[9px] text-slate-500 font-mono block">IP: {u.ip || '103.147.218.44'} • {u.device || 'Android'}</span>
                               </div>
                             </div>
                           </td>
@@ -1023,24 +1066,46 @@ export default function AdminDashboard({ onExit }) {
                             </span>
                           </td>
                           <td className="p-3.5">
-                            <span className="font-mono font-black text-[#00D26A] text-sm">
+                            <span className="font-mono font-black text-[#F5BE00] text-sm">
                               ৳{(u.balance || 0).toFixed(2)}
                             </span>
                           </td>
-                          <td className="p-3.5 font-mono text-slate-300">
-                            ৳{(u.total_wagered || 0).toFixed(2)}
+                          <td className="p-3.5 font-mono text-xs">
+                            <span className="text-emerald-400 block">+৳{(u.total_deposited || 0).toFixed(0)}</span>
+                            <span className="text-rose-400 text-[10px] block">-৳{(u.total_withdrawn || 0).toFixed(0)}</span>
                           </td>
                           <td className="p-3.5">
-                            {u.is_banned ? (
-                              <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded">
-                                Banned
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-[9px] font-mono text-[#8b949e]">
+                                <span>৳{(u.turnover_completed || u.total_wagered || 0).toFixed(0)}</span>
+                                <span>/ ৳{(u.turnover_required || 0).toFixed(0)}</span>
+                              </div>
+                              <div className="w-20 bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                                <div 
+                                  className="bg-[#F5BE00] h-full rounded-full"
+                                  style={{ 
+                                    width: `${u.turnover_required > 0 ? Math.min(100, Math.round(((u.turnover_completed || u.total_wagered || 0) / u.turnover_required) * 100)) : 100}%` 
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-3.5">
+                            <div className="space-y-1">
+                              {u.is_online ? (
+                                <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                  <span>Active Now</span>
+                                </span>
+                              ) : (
+                                <span className="text-[10px] text-slate-500">Offline</span>
+                              )}
+                              <span className={`block text-[9px] font-bold uppercase ${
+                                u.luck_mode === 'drain' ? 'text-rose-400' : u.luck_mode === 'sweetener' ? 'text-amber-400' : 'text-slate-400'
+                              }`}>
+                                Mode: {u.luck_mode || 'Controlled'}
                               </span>
-                            ) : (
-                              <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                <span>Active</span>
-                              </span>
-                            )}
+                            </div>
                           </td>
                           <td className="p-3.5 text-right">
                             <button
@@ -1050,7 +1115,7 @@ export default function AdminDashboard({ onExit }) {
                                 setBalanceEditVal(u.balance?.toString() || '0');
                                 setUserVipEditVal(u.vip_level || 1);
                               }}
-                              className="px-3 py-1.5 rounded-lg bg-[#00D26A] hover:bg-emerald-400 text-slate-950 font-black text-xs transition cursor-pointer"
+                              className="px-3 py-1.5 rounded-lg bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black text-xs transition cursor-pointer"
                             >
                               Manage User
                             </button>
@@ -1089,7 +1154,7 @@ export default function AdminDashboard({ onExit }) {
                         key={cat}
                         onClick={() => setGameFilterCategory(cat)}
                         className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition cursor-pointer ${
-                          gameFilterCategory === cat ? 'bg-[#00D26A] text-slate-950' : 'bg-[#161b22] text-[#8b949e] hover:text-white'
+                          gameFilterCategory === cat ? 'bg-[#F5BE00] text-slate-950' : 'bg-[#161b22] text-[#8b949e] hover:text-white'
                         }`}
                       >
                         {cat}
@@ -1124,11 +1189,11 @@ export default function AdminDashboard({ onExit }) {
                       {/* Controls Row */}
                       <div className="grid grid-cols-2 gap-2 text-[11px]">
                         <div className="bg-[#0d1117] p-2 rounded-xl border border-[#21262d]">
-                          <span className="text-[#8b949e] block text-[9px]">Min Bet (Demo)</span>
+                          <span className="text-[#8b949e] block text-[9px]">Min Stake (৳)</span>
                           <span className="font-mono font-bold text-white">৳{game.minBet || 10}</span>
                         </div>
                         <div className="bg-[#0d1117] p-2 rounded-xl border border-[#21262d]">
-                          <span className="text-[#8b949e] block text-[9px]">Max Bet (Demo)</span>
+                          <span className="text-[#8b949e] block text-[9px]">Max Stake (৳)</span>
                           <span className="font-mono font-bold text-white">৳{game.maxBet || 10000}</span>
                         </div>
                       </div>
@@ -1167,6 +1232,379 @@ export default function AdminDashboard({ onExit }) {
             </div>
           )}
 
+          {/* MODULE 7B: CASINO PROFIT & WIN CONTROLS (HOUSE EDGE PROTECTION) */}
+          {activeNav === 'game_control' && (
+            <div className="space-y-5">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-amber-500/10 via-[#F5BE00]/10 to-transparent p-4 rounded-2xl border border-amber-500/20">
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <span className="bg-[#F5BE00] text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                      PROFIT PROTECTION
+                    </span>
+                    <h2 className="text-xl font-black text-white">Casino Profit & House Margin Master Controls</h2>
+                  </div>
+                  <p className="text-xs text-[#8b949e] mt-1">
+                    ক্যাসিনো হাউস-এজ, উইন রেট এবং ম্যাক্সিমাম পে-আউট নিয়ন্ত্রণ — প্ল্যাটফর্মের ক্ষতি রোধের সম্পূর্ণ সিস্টেম
+                  </p>
+                </div>
+                <button
+                  onClick={handleSaveCasinoControls}
+                  className="bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider shadow-md active:scale-95 transition cursor-pointer flex items-center space-x-1.5 shrink-0"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Save All Settings</span>
+                </button>
+              </div>
+
+              {/* 1. Preset House Profit Modes */}
+              <div className="bg-[#161b22] border border-[#21262d] rounded-2xl p-4 space-y-3">
+                <span className="text-xs font-black text-white uppercase tracking-wider block">
+                  Select Operating Profit Mode (হাউস অপারেটিং মোড)
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {/* High Profit Mode */}
+                  <div
+                    onClick={() => {
+                      setHouseMode('high_profit');
+                      setGlobalWinRate(20);
+                      setMaxMultiplierCap(3.5);
+                      setMaxProfitRound(150);
+                      setMicroWinActive(true);
+                    }}
+                    className={`p-3.5 rounded-xl border-2 transition cursor-pointer ${
+                      houseMode === 'high_profit'
+                        ? 'border-[#F5BE00] bg-amber-500/10 text-white shadow-md'
+                        : 'border-[#21262d] bg-[#0d1117] text-[#8b949e] hover:border-[#30363d]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-black text-sm text-[#F5BE00]">⚡ High Profit (Recommended)</span>
+                      {houseMode === 'high_profit' && <Check className="w-4 h-4 text-[#F5BE00]" />}
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-relaxed">
+                      হাউস মার্জিন ৮০%। ২০% উইন রেট, ছোট ছোট উইন (৳১-৳৩ ফেরত), ম্যাক্স ৩.৫x। প্ল্যাটফর্ম নিয়মিত লাভবান থাকবে।
+                    </p>
+                  </div>
+
+                  {/* Ultra Safe Mode */}
+                  <div
+                    onClick={() => {
+                      setHouseMode('ultra_protection');
+                      setGlobalWinRate(12);
+                      setMaxMultiplierCap(2.2);
+                      setMaxProfitRound(80);
+                      setMicroWinActive(true);
+                    }}
+                    className={`p-3.5 rounded-xl border-2 transition cursor-pointer ${
+                      houseMode === 'ultra_protection'
+                        ? 'border-[#F5BE00] bg-amber-500/10 text-white shadow-md'
+                        : 'border-[#21262d] bg-[#0d1117] text-[#8b949e] hover:border-[#30363d]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-black text-sm text-sky-400">🛡️ Ultra Protection</span>
+                      {houseMode === 'ultra_protection' && <Check className="w-4 h-4 text-[#F5BE00]" />}
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-relaxed">
+                      হাউস মার্জিন ৯০%। ১২% উইন রেট, কঠোর মাইক্রো-উইন, ম্যাক্স ২.২x। বড় ব্যালেন্সের বড় রিস্ক ঠেকাতে সেরা।
+                    </p>
+                  </div>
+
+                  {/* Balanced Mode */}
+                  <div
+                    onClick={() => {
+                      setHouseMode('balanced');
+                      setGlobalWinRate(30);
+                      setMaxMultiplierCap(5.0);
+                      setMaxProfitRound(300);
+                    }}
+                    className={`p-3.5 rounded-xl border-2 transition cursor-pointer ${
+                      houseMode === 'balanced'
+                        ? 'border-[#F5BE00] bg-amber-500/10 text-white shadow-md'
+                        : 'border-[#21262d] bg-[#0d1117] text-[#8b949e] hover:border-[#30363d]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-black text-sm text-emerald-400">⚖️ Balanced Profit</span>
+                      {houseMode === 'balanced' && <Check className="w-4 h-4 text-[#F5BE00]" />}
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-relaxed">
+                      হাউস মার্জিন ৭০%। ৩০% উইন রেট, মাঝে মাঝে ৫x মাল্টিপ্লায়ার। প্লেয়ার আকৃষ্ট করার জন্য উপযুক্ত।
+                    </p>
+                  </div>
+
+                  {/* Emergency Lock */}
+                  <div
+                    onClick={() => {
+                      setHouseMode('emergency_lock');
+                      setGlobalWinRate(0);
+                      setMaxMultiplierCap(0);
+                      setMaxProfitRound(0);
+                    }}
+                    className={`p-3.5 rounded-xl border-2 transition cursor-pointer ${
+                      houseMode === 'emergency_lock'
+                        ? 'border-rose-500 bg-rose-500/10 text-white shadow-md'
+                        : 'border-[#21262d] bg-[#0d1117] text-[#8b949e] hover:border-rose-500/40'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-black text-sm text-rose-400">🚨 Emergency Lock</span>
+                      {houseMode === 'emergency_lock' && <AlertTriangle className="w-4 h-4 text-rose-400" />}
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-relaxed">
+                      জরুরি লক! সমস্ত পেআউট সাময়িকভাবে শূন্য (১০০% হাউস উইন)। সন্দেহজনক ট্রাফিক বা আক্রমণ ঠেকাতে জরুরি বাটন।
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Global Math Sliders Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                
+                {/* Global Win Rate Slider */}
+                <div className="bg-[#161b22] border border-[#21262d] rounded-2xl p-4 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-black text-white">Global Player Win Rate</span>
+                    <span className="text-sm font-black font-mono text-[#F5BE00] bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md">
+                      {globalWinRate}%
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="5"
+                    max="50"
+                    step="1"
+                    value={globalWinRate}
+                    onChange={e => setGlobalWinRate(Number(e.target.value))}
+                    className="w-full accent-[#F5BE00] cursor-pointer"
+                  />
+                  <div className="flex justify-between text-[10px] text-[#8b949e]">
+                    <span>5% (Very Hard)</span>
+                    <span>20% (Default)</span>
+                    <span>50% (Loose)</span>
+                  </div>
+                  <p className="text-[10px] text-[#8b949e] leading-relaxed">
+                    প্রতি ১০০ স্পিনে কতটি স্পিনে প্লেয়ার কিছু না কিছু টাকা ফেরত পাবে।
+                  </p>
+                </div>
+
+                {/* Maximum Multiplier Cap */}
+                <div className="bg-[#161b22] border border-[#21262d] rounded-2xl p-4 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-black text-white">Max Win Multiplier Cap</span>
+                    <span className="text-sm font-black font-mono text-[#F5BE00] bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md">
+                      {maxMultiplierCap}x
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1.5"
+                    max="10.0"
+                    step="0.5"
+                    value={maxMultiplierCap}
+                    onChange={e => setMaxMultiplierCap(Number(e.target.value))}
+                    className="w-full accent-[#F5BE00] cursor-pointer"
+                  />
+                  <div className="flex justify-between text-[10px] text-[#8b949e]">
+                    <span>1.5x (Safe)</span>
+                    <span>3.5x (Standard)</span>
+                    <span>10.0x (High Risk)</span>
+                  </div>
+                  <p className="text-[10px] text-[#8b949e] leading-relaxed">
+                    কোনো স্পিন বা লাকি হুইলে সর্বোচ্চ কত গুণ পে-আউট হতে পারবে। এর বেশি কখনোই হবে না।
+                  </p>
+                </div>
+
+                {/* Maximum Profit Per Spin Cap (৳) */}
+                <div className="bg-[#161b22] border border-[#21262d] rounded-2xl p-4 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-black text-white">Max Single-Spin Profit (৳)</span>
+                    <span className="text-sm font-black font-mono text-[#F5BE00] bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md">
+                      ৳{maxProfitRound}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {[50, 100, 150, 250, 500].map(val => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => setMaxProfitRound(val)}
+                        className={`py-1.5 rounded-xl font-mono font-bold text-xs transition cursor-pointer ${
+                          maxProfitRound === val
+                            ? 'bg-[#F5BE00] text-slate-950 font-black'
+                            : 'bg-[#0d1117] text-[#8b949e] hover:text-white'
+                        }`}
+                      >
+                        ৳{val}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-[#8b949e] leading-relaxed">
+                    এক স্পিনে সর্বোচ্চ লাভ সীমা। এমনকি বড় বেটেও এর চেয়ে বেশি প্লেয়ার একবারে জিততে পারবে না।
+                  </p>
+                </div>
+
+                {/* Micro-Win Engine Toggle */}
+                <div className="bg-[#161b22] border border-[#21262d] rounded-2xl p-4 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-black text-white">Micro-Win Engine (৳১-৳৩ ট্রিকল)</span>
+                    <button
+                      type="button"
+                      onClick={() => setMicroWinActive(!microWinActive)}
+                      className={`px-3 py-1 rounded-full text-xs font-bold transition cursor-pointer ${
+                        microWinActive
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                      }`}
+                    >
+                      {microWinActive ? 'ACTIVE (চালু)' : 'DISABLED (বন্ধ)'}
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    প্লেয়ারকে এনগেজড রাখতে ৭০% উইনিং স্পিনে ০.৩x থেকে ১.২x ফেরত দেওয়া হয় (যেমন ৫ টাকার স্পিনে ২ বা ৩ টাকা ফেরত)। এতে ব্যালেন্স ধাপে ধাপে কমবে কিন্তু প্লেয়ার খুশি থাকবে।
+                  </p>
+                </div>
+
+                {/* Deposit Turnover Requirement */}
+                <div className="bg-[#161b22] border border-[#21262d] rounded-2xl p-4 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-black text-white">Turnover Requirement</span>
+                    <span className="text-sm font-black font-mono text-[#F5BE00] bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md">
+                      {turnoverReqMult}x
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {[1.0, 2.0, 3.0, 5.0].map(val => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => setTurnoverReqMult(val)}
+                        className={`py-1.5 rounded-xl font-mono font-bold text-xs transition cursor-pointer ${
+                          turnoverReqMult === val
+                            ? 'bg-[#F5BE00] text-slate-950 font-black'
+                            : 'bg-[#0d1117] text-[#8b949e] hover:text-white'
+                        }`}
+                      >
+                        {val}x
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-[#8b949e] leading-relaxed">
+                    ইউজার ডিপোজিট করলে উইথড্র করার পূর্বে এই মাল্টিপল পরিমাণ বাজি ধরতে হবে। টার্নওভার চলাকালীন হাউস প্রোটেকশন সক্রিয় থাকবে।
+                  </p>
+                </div>
+
+                {/* Aviator Crash Rigging Mode */}
+                <div className="bg-[#161b22] border border-[#21262d] rounded-2xl p-4 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-black text-white">Aviator Crash Engine</span>
+                    <span className="text-[11px] font-bold text-[#F5BE00] capitalize">
+                      {aviatorRigMode}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[
+                      { id: 'standard', label: 'Standard (Controlled)' },
+                      { id: 'early_crash', label: 'Fast Crash (<1.15x)' },
+                      { id: 'always_high', label: 'Promo (2.0x+)' }
+                    ].map(m => (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => setAviatorRigMode(m.id)}
+                        className={`py-1.5 rounded-xl font-bold text-[10px] transition cursor-pointer ${
+                          aviatorRigMode === m.id
+                            ? 'bg-[#F5BE00] text-slate-950 font-black'
+                            : 'bg-[#0d1117] text-[#8b949e] hover:text-white'
+                        }`}
+                      >
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-[#8b949e] leading-relaxed">
+                    এভিয়েটর প্লেন কখন ক্র্যাশ করবে তার কন্ট্রোল। Fast Crash দিলে দ্রুত ১.০৫-১.১৫x এ ক্র্যাশ করবে।
+                  </p>
+                </div>
+
+              </div>
+
+              {/* 3. Individual Game Win Rate Customization Table */}
+              <div className="bg-[#161b22] border border-[#21262d] rounded-2xl p-4 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-[#21262d]">
+                  <div>
+                    <h3 className="font-black text-sm text-white">Individual Game Win Rate Overrides (প্রত্যেক গেমের আলাদা কন্ট্রোল)</h3>
+                    <p className="text-[11px] text-[#8b949e]">প্রতিটি গেমের আলাদা উইন রেট এবং সর্বোচ্চ মাল্টিপ্লায়ার সেট করুন</p>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search game..."
+                    value={gameControlSearch}
+                    onChange={e => setGameControlSearch(e.target.value)}
+                    className="bg-[#0d1117] border border-[#30363d] rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {(gamesConfig || [])
+                    .filter(g => !gameControlSearch || g.name.toLowerCase().includes(gameControlSearch.toLowerCase()))
+                    .map(g => {
+                      const currentOverride = gameControl?.gameOverrides?.[g.id] || {};
+                      const effectiveRtp = currentOverride.winRate !== undefined ? currentOverride.winRate : globalWinRate;
+                      const effectiveMaxMult = currentOverride.maxMultiplier !== undefined ? currentOverride.maxMultiplier : maxMultiplierCap;
+
+                      return (
+                        <div key={g.id} className="bg-[#0d1117] border border-[#21262d] rounded-xl p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-black text-xs text-white">{g.name}</span>
+                            <span className="text-[10px] text-[#8b949e] uppercase font-mono">{g.provider}</span>
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-[11px]">
+                              <span className="text-[#8b949e]">Win Rate:</span>
+                              <span className="font-mono font-bold text-[#F5BE00]">{effectiveRtp}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="5"
+                              max="40"
+                              step="1"
+                              value={effectiveRtp}
+                              onChange={e => {
+                                updateGameOverride(g.id, { winRate: Number(e.target.value) });
+                              }}
+                              className="w-full accent-[#F5BE00] cursor-pointer"
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-between pt-1 border-t border-[#21262d] text-[10px]">
+                            <span className="text-[#8b949e]">Max Mult Cap:</span>
+                            <div className="flex items-center space-x-1">
+                              {[2.0, 3.0, 3.5, 5.0].map(m => (
+                                <button
+                                  key={m}
+                                  type="button"
+                                  onClick={() => updateGameOverride(g.id, { maxMultiplier: m })}
+                                  className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold transition cursor-pointer ${
+                                    effectiveMaxMult === m ? 'bg-[#F5BE00] text-slate-950' : 'bg-[#161b22] text-[#8b949e]'
+                                  }`}
+                                >
+                                  {m}x
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+
+            </div>
+          )}
+
           {/* MODULE 5: BETTING & GAME HISTORY */}
           {activeNav === 'betting_records' && (
             <div className="space-y-4">
@@ -1181,7 +1619,7 @@ export default function AdminDashboard({ onExit }) {
                   onClick={exportBetsToCsv}
                   className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-white text-xs font-bold transition active:scale-95 cursor-pointer"
                 >
-                  <Download className="w-4 h-4 text-[#00D26A]" />
+                  <Download className="w-4 h-4 text-[#F5BE00]" />
                   <span>Export CSV</span>
                 </button>
               </div>
@@ -1193,9 +1631,9 @@ export default function AdminDashboard({ onExit }) {
                       <tr>
                         <th className="p-3.5">Record ID</th>
                         <th className="p-3.5">Game</th>
-                        <th className="p-3.5">Bet (Demo)</th>
+                        <th className="p-3.5">Stake (৳)</th>
                         <th className="p-3.5">Multiplier</th>
-                        <th className="p-3.5">Payout (Demo)</th>
+                        <th className="p-3.5">Payout (৳)</th>
                         <th className="p-3.5">Result</th>
                         <th className="p-3.5 text-right">Time</th>
                       </tr>
@@ -1207,7 +1645,7 @@ export default function AdminDashboard({ onExit }) {
                           <td className="p-3.5 font-bold text-white">{rec.game}</td>
                           <td className="p-3.5 font-mono text-white">৳{rec.bet}</td>
                           <td className="p-3.5 font-mono text-amber-400">{rec.mult || '1.00x'}</td>
-                          <td className="p-3.5 font-mono font-black text-[#00D26A]">৳{rec.win}</td>
+                          <td className="p-3.5 font-mono font-black text-[#F5BE00]">৳{rec.win}</td>
                           <td className="p-3.5">
                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                               rec.status === 'WIN' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
@@ -1238,11 +1676,11 @@ export default function AdminDashboard({ onExit }) {
               {/* Wallet Circulation Card */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-[#161b22] border border-[#21262d] rounded-2xl p-4">
-                  <span className="text-xs text-[#8b949e] font-bold uppercase">Total Circulating Demo Coins</span>
-                  <div className="text-2xl font-black text-[#00D26A] font-mono mt-1">৳{totalCirculatingCoins.toFixed(2)}</div>
+                  <span className="text-xs text-[#8b949e] font-bold uppercase">Total Circulating Platform Balance</span>
+                  <div className="text-2xl font-black text-[#F5BE00] font-mono mt-1">৳{totalCirculatingCoins.toFixed(2)}</div>
                 </div>
                 <div className="bg-[#161b22] border border-[#21262d] rounded-2xl p-4">
-                  <span className="text-xs text-[#8b949e] font-bold uppercase">Pending Demo Payouts</span>
+                  <span className="text-xs text-[#8b949e] font-bold uppercase">Pending Withdrawal Payouts</span>
                   <div className="text-2xl font-black text-amber-400 font-mono mt-1">{pendingWithdrawals.length}</div>
                 </div>
                 <div className="bg-[#161b22] border border-[#21262d] rounded-2xl p-4">
@@ -1260,7 +1698,7 @@ export default function AdminDashboard({ onExit }) {
                       key={f}
                       onClick={() => setLedgerTypeFilter(f)}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition cursor-pointer ${
-                        ledgerTypeFilter === f ? 'bg-[#00D26A] text-slate-950' : 'bg-[#161b22] text-[#8b949e] hover:text-white'
+                        ledgerTypeFilter === f ? 'bg-[#F5BE00] text-slate-950' : 'bg-[#161b22] text-[#8b949e] hover:text-white'
                       }`}
                     >
                       {f}
@@ -1282,7 +1720,7 @@ export default function AdminDashboard({ onExit }) {
                         <th className="p-3.5">ID / User</th>
                         <th className="p-3.5">Type</th>
                         <th className="p-3.5">Method</th>
-                        <th className="p-3.5">Amount (Demo)</th>
+                        <th className="p-3.5">Amount (৳)</th>
                         <th className="p-3.5">Status</th>
                         <th className="p-3.5 text-right">Date</th>
                       </tr>
@@ -1296,7 +1734,7 @@ export default function AdminDashboard({ onExit }) {
                           </td>
                           <td className="p-3.5 capitalize font-bold text-white">{tx.type}</td>
                           <td className="p-3.5 text-[#8b949e] font-mono">{tx.method}</td>
-                          <td className="p-3.5 font-mono font-black text-[#00D26A]">৳{tx.amount}</td>
+                          <td className="p-3.5 font-mono font-black text-[#F5BE00]">৳{tx.amount}</td>
                           <td className="p-3.5">
                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                               tx.status === 'approved' || tx.status === 'completed'
@@ -1320,12 +1758,12 @@ export default function AdminDashboard({ onExit }) {
             </div>
           )}
 
-          {/* MODULE 5: DEPOSITS & WITHDRAWALS DEMO REQUEST MANAGEMENT */}
+          {/* MODULE 5: DEPOSITS & WITHDRAWALS REQUEST MANAGEMENT */}
           {(activeNav === 'deposits' || activeNav === 'withdrawals') && (
             <div className="space-y-4">
               <div>
                 <h2 className="text-xl font-black text-white">
-                  {activeNav === 'deposits' ? 'Deposit Demo Requests' : 'Withdrawal Demo Requests'}
+                  {activeNav === 'deposits' ? 'Deposit Approval Requests' : 'Withdrawal Approval Requests'}
                 </h2>
                 <p className="text-xs text-[#8b949e]">
                   ১-ক্লিকে ডেমো রিকোয়েস্ট অ্যাপ্রুভ বা রিজেক্ট করুন (অ্যাপ্রুভ করলে ইউজারের ব্যালেন্সে রিয়েল-টাইমে কয়েন যোগ হবে)
@@ -1340,7 +1778,7 @@ export default function AdminDashboard({ onExit }) {
                         <th className="p-3.5">Method</th>
                         <th className="p-3.5">User Phone</th>
                         <th className="p-3.5">TrxID / Account</th>
-                        <th className="p-3.5">Amount (Demo)</th>
+                        <th className="p-3.5">Amount (৳)</th>
                         <th className="p-3.5">Status</th>
                         <th className="p-3.5 text-right">Actions</th>
                       </tr>
@@ -1375,7 +1813,7 @@ export default function AdminDashboard({ onExit }) {
                                       setStatusNotice(`ট্রানজ্যাকশন #${tx.id} সফলভাবে অ্যাপ্রুভ হয়েছে!`);
                                       setTimeout(() => setStatusNotice(''), 3000);
                                     }}
-                                    className="px-2.5 py-1 rounded bg-[#00D26A] hover:bg-emerald-400 text-slate-950 font-black text-[11px] transition cursor-pointer"
+                                    className="px-2.5 py-1 rounded bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black text-[11px] transition cursor-pointer"
                                   >
                                     Approve
                                   </button>
@@ -1422,7 +1860,7 @@ export default function AdminDashboard({ onExit }) {
                     type="number"
                     value={settings?.SIGNUP_BONUS_AMOUNT || 100}
                     onChange={e => updateSignupBonusAmount(Number(e.target.value))}
-                    className="w-40 bg-[#0d1117] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#00D26A]"
+                    className="w-40 bg-[#0d1117] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#F5BE00]"
                   />
                   <button
                     onClick={() => {
@@ -1430,7 +1868,7 @@ export default function AdminDashboard({ onExit }) {
                       setStatusNotice('ওয়েলকাম বোনাস সফলভাবে আপডেট হয়েছে!');
                       setTimeout(() => setStatusNotice(''), 3000);
                     }}
-                    className="bg-[#00D26A] hover:bg-emerald-400 text-slate-950 font-black px-4 py-2 rounded-xl text-xs transition cursor-pointer"
+                    className="bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black px-4 py-2 rounded-xl text-xs transition cursor-pointer"
                   >
                     Save Bonus
                   </button>
@@ -1446,21 +1884,21 @@ export default function AdminDashboard({ onExit }) {
                     placeholder="Code (e.g. VIP500)"
                     value={newPromoCode}
                     onChange={e => setNewPromoCode(e.target.value.toUpperCase())}
-                    className="bg-[#0d1117] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white uppercase focus:outline-none focus:border-[#00D26A]"
+                    className="bg-[#0d1117] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white uppercase focus:outline-none focus:border-[#F5BE00]"
                   />
                   <input
                     type="number"
                     placeholder="Bonus Amount (BDT)"
                     value={newPromoAmount}
                     onChange={e => setNewPromoAmount(e.target.value)}
-                    className="bg-[#0d1117] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#00D26A]"
+                    className="bg-[#0d1117] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#F5BE00]"
                   />
                   <input
                     type="number"
                     placeholder="Max Redemptions"
                     value={newPromoMaxUses}
                     onChange={e => setNewPromoMaxUses(e.target.value)}
-                    className="bg-[#0d1117] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#00D26A]"
+                    className="bg-[#0d1117] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#F5BE00]"
                   />
                   <button
                     onClick={() => {
@@ -1479,7 +1917,7 @@ export default function AdminDashboard({ onExit }) {
                         alert(res.message);
                       }
                     }}
-                    className="bg-[#00D26A] hover:bg-emerald-400 text-slate-950 font-black px-4 py-2 rounded-xl text-xs transition cursor-pointer"
+                    className="bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black px-4 py-2 rounded-xl text-xs transition cursor-pointer"
                   >
                     Create Promo Code
                   </button>
@@ -1501,7 +1939,7 @@ export default function AdminDashboard({ onExit }) {
                       {(promoCodes || []).map(p => (
                         <tr key={p.code} className="hover:bg-[#1f242c] transition">
                           <td className="p-3 font-mono font-black text-amber-400">{p.code}</td>
-                          <td className="p-3 font-mono font-bold text-[#00D26A]">৳{p.amount}</td>
+                          <td className="p-3 font-mono font-bold text-[#F5BE00]">৳{p.amount}</td>
                           <td className="p-3 font-mono text-[#8b949e]">{p.usedCount || 0} / {p.maxUses}</td>
                           <td className="p-3">
                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${p.enabled ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
@@ -1644,7 +2082,7 @@ export default function AdminDashboard({ onExit }) {
                       setStatusNotice('নতুন ব্যানার সফলভাবে যোগ হয়েছে!');
                       setTimeout(() => setStatusNotice(''), 3000);
                     }}
-                    className="bg-[#00D26A] hover:bg-emerald-400 text-slate-950 font-black px-4 py-2 rounded-xl text-xs transition cursor-pointer"
+                    className="bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black px-4 py-2 rounded-xl text-xs transition cursor-pointer"
                   >
                     Add Banner
                   </button>
@@ -1746,7 +2184,7 @@ export default function AdminDashboard({ onExit }) {
                       setStatusNotice('নোটিফিকেশন সফলভাবে পাঠানো হয়েছে!');
                       setTimeout(() => setStatusNotice(''), 3000);
                     }}
-                    className="bg-[#00D26A] hover:bg-emerald-400 text-slate-950 font-black px-4 py-2 rounded-xl text-xs transition cursor-pointer"
+                    className="bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black px-4 py-2 rounded-xl text-xs transition cursor-pointer"
                   >
                     Send Notification
                   </button>
@@ -1842,7 +2280,7 @@ export default function AdminDashboard({ onExit }) {
                           setActiveTicket(ticket);
                           setTicketReplyText('');
                         }}
-                        className="px-3 py-1.5 rounded-lg bg-[#00D26A] hover:bg-emerald-400 text-slate-950 font-bold text-xs transition cursor-pointer"
+                        className="px-3 py-1.5 rounded-lg bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-bold text-xs transition cursor-pointer"
                       >
                         Reply Ticket
                       </button>
@@ -1881,7 +2319,7 @@ export default function AdminDashboard({ onExit }) {
                     rows={3}
                     defaultValue={settings?.ANNOUNCEMENT_TEXT}
                     onChange={e => updateSetting('ANNOUNCEMENT_TEXT', e.target.value)}
-                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-xl p-3 text-xs text-white focus:outline-none focus:border-[#00D26A]"
+                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-xl p-3 text-xs text-white focus:outline-none focus:border-[#F5BE00]"
                   />
                 </div>
                 <button
@@ -1890,7 +2328,7 @@ export default function AdminDashboard({ onExit }) {
                     setStatusNotice('নোটিশ সফলভাবে সেভ হয়েছে!');
                     setTimeout(() => setStatusNotice(''), 3000);
                   }}
-                  className="bg-[#00D26A] hover:bg-emerald-400 text-slate-950 font-black px-4 py-2 rounded-xl text-xs transition cursor-pointer"
+                  className="bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black px-4 py-2 rounded-xl text-xs transition cursor-pointer"
                 >
                   Save Announcement
                 </button>
@@ -1927,7 +2365,7 @@ export default function AdminDashboard({ onExit }) {
                       }}
                       className={`p-3 rounded-xl border text-left font-bold transition cursor-pointer ${
                         adminRole === r.id
-                          ? 'border-[#00D26A] bg-emerald-500/10 text-[#00D26A]'
+                          ? 'border-[#F5BE00] bg-emerald-500/10 text-[#F5BE00]'
                           : 'border-[#21262d] bg-[#0d1117] text-[#8b949e] hover:text-white'
                       }`}
                     >
@@ -1959,7 +2397,7 @@ export default function AdminDashboard({ onExit }) {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-white block mb-1">Daily Demo Withdrawal Limit (BDT):</label>
+                  <label className="text-xs font-bold text-white block mb-1">Daily Withdrawal Limit (BDT):</label>
                   <input
                     type="number"
                     value={paySettings.DAILY_WITHDRAWAL_LIMIT}
@@ -1974,7 +2412,7 @@ export default function AdminDashboard({ onExit }) {
                     setStatusNotice('সিস্টেম সেটিংস সফলভাবে সেভ হয়েছে!');
                     setTimeout(() => setStatusNotice(''), 3000);
                   }}
-                  className="bg-[#00D26A] hover:bg-emerald-400 text-slate-950 font-black px-5 py-2.5 rounded-xl text-xs transition cursor-pointer"
+                  className="bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black px-5 py-2.5 rounded-xl text-xs transition cursor-pointer"
                 >
                   Save Settings
                 </button>
@@ -1986,7 +2424,7 @@ export default function AdminDashboard({ onExit }) {
           {activeNav === 'payments' && (
             <div className="space-y-4 max-w-2xl">
               <div>
-                <h2 className="text-xl font-black text-white">Demo Payment Gateways & Numbers</h2>
+                <h2 className="text-xl font-black text-white">Payment Gateways & Official Accounts</h2>
                 <p className="text-xs text-[#8b949e]">
                   ডেমো ডিপোজিট ও ডেমো ক্যাশ-আউটের জন্য বিকাশ, নগদ, রকেট এবং ইউএসডিটি অ্যাড্রেস আপডেট করুন
                 </p>
@@ -1994,44 +2432,44 @@ export default function AdminDashboard({ onExit }) {
 
               <form onSubmit={handleSavePayments} className="bg-[#161b22] border border-[#21262d] rounded-2xl p-5 space-y-4">
                 <div>
-                  <label className="text-xs font-bold text-white block mb-1">bKash Personal Number (Demo):</label>
+                  <label className="text-xs font-bold text-white block mb-1">bKash Personal Account:</label>
                   <input
                     type="text"
                     value={paySettings.BKASH_NUMBER}
                     onChange={e => setPaySettings({ ...paySettings, BKASH_NUMBER: e.target.value })}
-                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#00D26A]"
+                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#F5BE00]"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-white block mb-1">Nagad Personal Number (Demo):</label>
+                  <label className="text-xs font-bold text-white block mb-1">Nagad Personal Account:</label>
                   <input
                     type="text"
                     value={paySettings.NAGAD_NUMBER}
                     onChange={e => setPaySettings({ ...paySettings, NAGAD_NUMBER: e.target.value })}
-                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#00D26A]"
+                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#F5BE00]"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-white block mb-1">Rocket Personal Number (Demo):</label>
+                  <label className="text-xs font-bold text-white block mb-1">Rocket Personal Account:</label>
                   <input
                     type="text"
                     value={paySettings.ROCKET_NUMBER}
                     onChange={e => setPaySettings({ ...paySettings, ROCKET_NUMBER: e.target.value })}
-                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#00D26A]"
+                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#F5BE00]"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-white block mb-1">USDT (TRC20) Demo Deposit Address:</label>
+                  <label className="text-xs font-bold text-white block mb-1">USDT (TRC20) Deposit Wallet:</label>
                   <input
                     type="text"
                     value={paySettings.USDT_DEPOSIT_ADDRESS}
                     onChange={e => setPaySettings({ ...paySettings, USDT_DEPOSIT_ADDRESS: e.target.value })}
-                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-[#00D26A]"
+                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-[#F5BE00]"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="bg-[#00D26A] hover:bg-emerald-400 text-slate-950 font-black px-6 py-2.5 rounded-xl text-xs transition cursor-pointer"
+                  className="bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black px-6 py-2.5 rounded-xl text-xs transition cursor-pointer"
                 >
                   Save Payment Information
                 </button>
@@ -2053,7 +2491,7 @@ export default function AdminDashboard({ onExit }) {
                   onClick={exportAuditToCsv}
                   className="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-white text-xs font-bold transition active:scale-95 cursor-pointer"
                 >
-                  <Download className="w-3.5 h-3.5 text-[#00D26A]" />
+                  <Download className="w-3.5 h-3.5 text-[#F5BE00]" />
                   <span>Download Audit Log</span>
                 </button>
               </div>
@@ -2092,7 +2530,7 @@ export default function AdminDashboard({ onExit }) {
             </button>
 
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-[#00D26A] text-slate-950 flex items-center justify-center font-black text-lg shadow">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-600 to-[#F5BE00] text-slate-950 flex items-center justify-center font-black text-lg shadow">
                 {selectedUser.username ? selectedUser.username[0].toUpperCase() : 'U'}
               </div>
               <div>
@@ -2105,25 +2543,25 @@ export default function AdminDashboard({ onExit }) {
             <div className="flex border-b border-[#21262d] text-xs font-bold space-x-3 pb-2">
               <button
                 onClick={() => setUserModalTab('profile')}
-                className={`cursor-pointer ${userModalTab === 'profile' ? 'text-[#00D26A] border-b-2 border-[#00D26A] pb-1' : 'text-[#8b949e]'}`}
+                className={`cursor-pointer ${userModalTab === 'profile' ? 'text-[#F5BE00] border-b-2 border-[#F5BE00] pb-1' : 'text-[#8b949e]'}`}
               >
                 Profile & Status
               </button>
               <button
                 onClick={() => setUserModalTab('balance')}
-                className={`cursor-pointer ${userModalTab === 'balance' ? 'text-[#00D26A] border-b-2 border-[#00D26A] pb-1' : 'text-[#8b949e]'}`}
+                className={`cursor-pointer ${userModalTab === 'balance' ? 'text-[#F5BE00] border-b-2 border-[#F5BE00] pb-1' : 'text-[#8b949e]'}`}
               >
                 Balance Adjust
               </button>
               <button
                 onClick={() => setUserModalTab('password')}
-                className={`cursor-pointer ${userModalTab === 'password' ? 'text-[#00D26A] border-b-2 border-[#00D26A] pb-1' : 'text-[#8b949e]'}`}
+                className={`cursor-pointer ${userModalTab === 'password' ? 'text-[#F5BE00] border-b-2 border-[#F5BE00] pb-1' : 'text-[#8b949e]'}`}
               >
                 Reset Password
               </button>
               <button
                 onClick={() => setUserModalTab('history')}
-                className={`cursor-pointer ${userModalTab === 'history' ? 'text-[#00D26A] border-b-2 border-[#00D26A] pb-1' : 'text-[#8b949e]'}`}
+                className={`cursor-pointer ${userModalTab === 'history' ? 'text-[#F5BE00] border-b-2 border-[#F5BE00] pb-1' : 'text-[#8b949e]'}`}
               >
                 User Records
               </button>
@@ -2136,13 +2574,86 @@ export default function AdminDashboard({ onExit }) {
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
                       <span className="text-[#8b949e] block text-[10px]">Current Balance:</span>
-                      <span className="font-mono font-black text-[#00D26A] text-sm">৳{(selectedUser.balance || 0).toFixed(2)}</span>
+                      <span className="font-mono font-black text-[#F5BE00] text-sm">৳{(selectedUser.balance || 0).toFixed(2)}</span>
                     </div>
                     <div>
                       <span className="text-[#8b949e] block text-[10px]">Total Wagered:</span>
                       <span className="font-mono font-bold text-white">৳{(selectedUser.total_wagered || 0).toFixed(2)}</span>
                     </div>
+                    <div>
+                      <span className="text-[#8b949e] block text-[10px]">Total Deposited:</span>
+                      <span className="font-mono font-bold text-emerald-400">৳{(selectedUser.total_deposited || 0).toFixed(2)}</span>
+                    </div>
+                    <div>
+                      <span className="text-[#8b949e] block text-[10px]">Total Withdrawn:</span>
+                      <span className="font-mono font-bold text-rose-400">৳{(selectedUser.total_withdrawn || 0).toFixed(2)}</span>
+                    </div>
                   </div>
+
+                  <div className="pt-2 border-t border-[#21262d] flex justify-between text-[10px] text-[#8b949e]">
+                    <span>IP: {selectedUser.ip || '103.147.218.44'}</span>
+                    <span>Device: {selectedUser.device || 'Android Mobile'}</span>
+                  </div>
+                </div>
+
+                {/* Turnover Progress & Clear */}
+                <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-3.5 space-y-2">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="font-bold text-white">Turnover Status:</span>
+                    <span className="font-mono font-bold text-[#F5BE00]">
+                      ৳{(selectedUser.turnover_completed || selectedUser.total_wagered || 0).toFixed(0)} / ৳{(selectedUser.turnover_required || 0).toFixed(0)}
+                    </span>
+                  </div>
+                  <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                    <div 
+                      className="bg-[#F5BE00] h-full rounded-full"
+                      style={{ 
+                        width: `${selectedUser.turnover_required > 0 ? Math.min(100, Math.round(((selectedUser.turnover_completed || selectedUser.total_wagered || 0) / selectedUser.turnover_required) * 100)) : 100}%` 
+                      }}
+                    />
+                  </div>
+                  <button
+                    onClick={() => {
+                      editUserProfile(selectedUser.uid, { turnover_required: 0 });
+                      setStatusNotice('ইউজারের টার্নওভার ক্লিয়ার করা হয়েছে!');
+                      setTimeout(() => setStatusNotice(''), 3000);
+                    }}
+                    className="text-[10px] text-amber-400 hover:underline block cursor-pointer"
+                  >
+                    Clear / Bypass Turnover Requirement
+                  </button>
+                </div>
+
+                {/* Personal Player Luck Mode Override */}
+                <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-3.5 space-y-2">
+                  <span className="text-xs font-bold text-white block">Individual User Luck Control (ইউজার কন্ট্রোল):</span>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[
+                      { id: 'controlled', label: 'Controlled (Default)' },
+                      { id: 'drain', label: 'Strict Drain (Loss)' },
+                      { id: 'sweetener', label: 'Sweetener (Trickle)' }
+                    ].map(mode => (
+                      <button
+                        key={mode.id}
+                        type="button"
+                        onClick={() => {
+                          updateUserLuckMode(selectedUser.uid, mode.id);
+                          setStatusNotice(`User #${selectedUser.uid} luck mode set to ${mode.label}`);
+                          setTimeout(() => setStatusNotice(''), 3000);
+                        }}
+                        className={`py-1.5 rounded-xl font-bold text-[10px] transition cursor-pointer ${
+                          (selectedUser.luck_mode || 'controlled') === mode.id
+                            ? 'bg-[#F5BE00] text-slate-950 font-black'
+                            : 'bg-[#161b22] text-[#8b949e] hover:text-white'
+                        }`}
+                      >
+                        {mode.label}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-[#8b949e]">
+                    Strict Drain মোড দিলে ইউজারের ব্যালেন্স দ্রুত কমবে (উইন রেট ৮% এর নিচে নেমে যাবে)।
+                  </p>
                 </div>
 
                 {/* VIP Level */}
@@ -2164,7 +2675,7 @@ export default function AdminDashboard({ onExit }) {
                         setStatusNotice(`ইউজারের VIP লেভেল ${userVipEditVal} এ আপডেট হয়েছে!`);
                         setTimeout(() => setStatusNotice(''), 3000);
                       }}
-                      className="bg-[#00D26A] hover:bg-emerald-400 text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs"
+                      className="bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs"
                     >
                       Update VIP
                     </button>
@@ -2192,9 +2703,9 @@ export default function AdminDashboard({ onExit }) {
                   <div className="flex space-x-2">
                     <button
                       onClick={() => setBalanceAdjustType('add')}
-                      className={`flex-1 py-1.5 rounded-xl text-xs font-bold ${balanceAdjustType === 'add' ? 'bg-[#00D26A] text-slate-950' : 'bg-[#161b22] text-[#8b949e]'}`}
+                      className={`flex-1 py-1.5 rounded-xl text-xs font-bold ${balanceAdjustType === 'add' ? 'bg-[#F5BE00] text-slate-950' : 'bg-[#161b22] text-[#8b949e]'}`}
                     >
-                      + Add Demo Balance
+                      + Add Wallet Balance
                     </button>
                     <button
                       onClick={() => setBalanceAdjustType('subtract')}
@@ -2219,7 +2730,7 @@ export default function AdminDashboard({ onExit }) {
                     <label className="text-[10px] text-[#8b949e] block mb-1">Reason for Adjustment (Required):</label>
                     <input
                       type="text"
-                      placeholder="e.g. Promotional Bonus / Demo Refill"
+                      placeholder="e.g. Promotional Bonus / Manual Credit"
                       value={balanceAdjustReason}
                       onChange={e => setBalanceAdjustReason(e.target.value)}
                       className="w-full bg-[#161b22] border border-[#30363d] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none"
@@ -2234,7 +2745,7 @@ export default function AdminDashboard({ onExit }) {
                       setTimeout(() => setStatusNotice(''), 3000);
                       setSelectedUser(null);
                     }}
-                    className="w-full bg-[#00D26A] hover:bg-emerald-400 text-slate-950 font-black py-2.5 rounded-xl text-xs transition cursor-pointer"
+                    className="w-full bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black py-2.5 rounded-xl text-xs transition cursor-pointer"
                   >
                     Confirm Balance Adjustment
                   </button>
@@ -2267,7 +2778,7 @@ export default function AdminDashboard({ onExit }) {
                         alert(res.message);
                       }
                     }}
-                    className="w-full bg-[#00D26A] hover:bg-emerald-400 text-slate-950 font-black py-2.5 rounded-xl text-xs transition cursor-pointer"
+                    className="w-full bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black py-2.5 rounded-xl text-xs transition cursor-pointer"
                   >
                     Update Password
                   </button>
@@ -2285,7 +2796,7 @@ export default function AdminDashboard({ onExit }) {
                       selectedUserTxs.map(tx => (
                         <div key={tx.id} className="flex justify-between p-2 rounded-lg bg-[#161b22]">
                           <span>{tx.type.toUpperCase()} ({tx.method})</span>
-                          <span className="font-mono text-[#00D26A] font-bold">৳{tx.amount}</span>
+                          <span className="font-mono text-[#F5BE00] font-bold">৳{tx.amount}</span>
                         </div>
                       ))
                     ) : (
@@ -2326,7 +2837,7 @@ export default function AdminDashboard({ onExit }) {
                 placeholder="Type your response to the user..."
                 value={ticketReplyText}
                 onChange={e => setTicketReplyText(e.target.value)}
-                className="w-full bg-[#0d1117] border border-[#30363d] rounded-xl p-3 text-xs text-white focus:outline-none focus:border-[#00D26A]"
+                className="w-full bg-[#0d1117] border border-[#30363d] rounded-xl p-3 text-xs text-white focus:outline-none focus:border-[#F5BE00]"
               />
             </div>
 
@@ -2339,7 +2850,7 @@ export default function AdminDashboard({ onExit }) {
                 setTimeout(() => setStatusNotice(''), 3000);
                 setActiveTicket(null);
               }}
-              className="w-full bg-[#00D26A] hover:bg-emerald-400 text-slate-950 font-black py-2.5 rounded-xl text-xs transition cursor-pointer"
+              className="w-full bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black py-2.5 rounded-xl text-xs transition cursor-pointer"
             >
               Send Reply & Resolve Ticket
             </button>
@@ -2350,3 +2861,4 @@ export default function AdminDashboard({ onExit }) {
     </div>
   );
 }
+

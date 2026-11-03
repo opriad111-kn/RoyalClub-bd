@@ -42,7 +42,7 @@ const VAULT_WHEEL_SLICES = [
 ];
 
 export default function MoneyComingGame({ onClose }) {
-  const { user, adjustUserBalance, recordGameHistory } = useGame();
+  const { user, adjustUserBalance, recordGameHistory, sanitizeGamePayout, evaluateGameOutcome } = useGame();
 
   // 3 Numeric Cash Reels + 1 Feature Multiplier Reel (3 rows per reel)
   const [reels, setReels] = useState([
@@ -214,14 +214,15 @@ export default function MoneyComingGame({ onClose }) {
 
       setTimeout(() => {
         setWheelSpinning(false);
-        const superPayout = parseFloat((betAmount * chosen.val).toFixed(2));
+        const rawPayout = betAmount * (chosen.val > 10 ? (chosen.val / 20) : chosen.val);
+        const superPayout = sanitizeGamePayout ? sanitizeGamePayout('moneycoming', betAmount, rawPayout) : parseFloat(rawPayout.toFixed(2));
         adjustUserBalance(user.uid, superPayout);
         setWinAmount(superPayout);
         setBigWinBanner(`VAULT JACKPOT ${chosen.label}! ৳${superPayout}`);
         setWheelWinResult(`WON ${chosen.label}`);
         if (soundOn) soundManager.playWin();
         confetti({ particleCount: 160, spread: 90, origin: { y: 0.5 } });
-        logRound('SUPER WHEEL', betAmount, superPayout, chosen.label);
+        logRound('SUPER WHEEL', betAmount, superPayout, `${(superPayout / betAmount).toFixed(1)}x`);
       }, 3500);
       return;
     }
@@ -242,7 +243,8 @@ export default function MoneyComingGame({ onClose }) {
 
       const baseValue = parseInt(d1) * (d2 === '00' ? 10 : 2);
       const mult = typeof centerFeature.val === 'number' ? centerFeature.val : 2;
-      const payout = parseFloat((betAmount * (baseValue / 15) * mult).toFixed(2));
+      const rawPayout = betAmount * (baseValue / 15) * mult;
+      const payout = sanitizeGamePayout ? sanitizeGamePayout('moneycoming', betAmount, rawPayout) : parseFloat(rawPayout.toFixed(2));
 
       adjustUserBalance(user.uid, payout);
       setWinAmount(payout);

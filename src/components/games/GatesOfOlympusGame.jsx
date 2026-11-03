@@ -26,7 +26,7 @@ const SYMBOLS = [
   { id: 'blue_gem', name: 'Blue Gem', mult: 2, icon: '🔷', color: 'from-cyan-400 to-blue-600' }
 ];
 
-const MULTIPLIER_ORBS = [2, 3, 5, 10, 15, 25, 50, 100, 250, 500];
+const MULTIPLIER_ORBS = [2, 3, 4, 5];
 
 function generateGrid() {
   const grid = [];
@@ -41,7 +41,7 @@ function generateGrid() {
 }
 
 export default function GatesOfOlympusGame({ onClose }) {
-  const { user, adjustUserBalance, recordGameHistory } = useGame();
+  const { user, adjustUserBalance, recordGameHistory, sanitizeGamePayout } = useGame();
   const [grid, setGrid] = useState(generateGrid);
   const [betAmount, setBetAmount] = useState(20);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -120,7 +120,8 @@ export default function GatesOfOlympusGame({ onClose }) {
       if (soundEnabled) soundManager.playWin();
     }
 
-    const totalWin = parseFloat((baseWin * multiplier).toFixed(2));
+    const rawWin = baseWin * multiplier;
+    const totalWin = sanitizeGamePayout ? sanitizeGamePayout('gatesofolympus', betAmount, rawWin) : parseFloat(rawWin.toFixed(2));
 
     if (totalWin > 0) {
       adjustUserBalance(user.uid, totalWin);

@@ -5,7 +5,7 @@ import confetti from 'canvas-confetti';
 import { Bomb, Gem, X, Shuffle, ArrowRight } from 'lucide-react';
 
 export default function MinesGame({ onClose }) {
-  const { user, adjustUserBalance } = useGame();
+  const { user, adjustUserBalance, sanitizeGamePayout } = useGame();
   const [mineCount, setMineCount] = useState(3);
   const [betAmount, setBetAmount] = useState(50);
   const [gameState, setGameState] = useState('idle'); // 'idle', 'playing', 'cashed', 'busted'
@@ -89,7 +89,8 @@ export default function MinesGame({ onClose }) {
     if (count === 0 || gameState !== 'playing') return;
 
     const mult = parseFloat((1 + count * (mineCount * 0.18)).toFixed(2));
-    const win = parseFloat((betAmount * mult).toFixed(2));
+    const rawWin = parseFloat((betAmount * mult).toFixed(2));
+    const win = sanitizeGamePayout ? sanitizeGamePayout('mines', betAmount, rawWin) : rawWin;
 
     adjustUserBalance(user.uid, win);
     setGameState('cashed');

@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 export default function LimboGame({ onClose }) {
-  const { user, adjustUserBalance } = useGame();
+  const { user, adjustUserBalance, sanitizeGamePayout, gameControl } = useGame();
   const [betAmount, setBetAmount] = useState(10);
   const [targetMultiplier, setTargetMultiplier] = useState(2.00);
   const [isLaunching, setIsLaunching] = useState(false);
@@ -57,19 +57,21 @@ export default function LimboGame({ onClose }) {
     if (soundEnabled) soundManager.playBet();
 
     setTimeout(() => {
-      // 98% RTP Provably Fair Limbo Formula
+      // House Profit & Win Rate Controlled Limbo Formula
+      const maxMult = gameControl?.maxMultiplier || 3.5;
+      const targetWin = Math.min(targetMultiplier, maxMult);
       const rand = Math.random();
-      // Multiplier distribution
-      const rawMult = 0.98 / (1 - rand);
-      const outcome = parseFloat(Math.min(1000, Math.max(1.00, rawMult)).toFixed(2));
-      const won = outcome >= targetMultiplier;
+      const rawMult = 0.85 / (1 - rand);
+      const outcome = parseFloat(Math.min(maxMult, Math.max(1.00, rawMult)).toFixed(2));
+      const won = outcome >= targetMultiplier && Math.random() < 0.25;
 
       setResultMultiplier(outcome);
       setHasWon(won);
       setIsLaunching(false);
 
       if (won) {
-        const payout = parseFloat((betAmount * targetMultiplier).toFixed(2));
+        const rawPayout = betAmount * targetWin;
+        const payout = sanitizeGamePayout ? sanitizeGamePayout('limbo', betAmount, rawPayout) : parseFloat(rawPayout.toFixed(2));
         adjustUserBalance(user.uid, payout);
         if (soundEnabled) soundManager.playWin();
         if (targetMultiplier >= 5) {

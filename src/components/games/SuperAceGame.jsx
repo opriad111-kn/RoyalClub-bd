@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useGame } from '../../context/GameContext';
 import { soundManager } from '../../lib/audio';
 import confetti from 'canvas-confetti';
@@ -7,7 +7,7 @@ import { Sparkles, X, RotateCw, Trophy } from 'lucide-react';
 const CARDS = ['A♠', 'K♥', 'Q♦', 'J♣', '10♠', '★JOKER'];
 
 export default function SuperAceGame({ onClose }) {
-  const { user, adjustUserBalance } = useGame();
+  const { user, adjustUserBalance, evaluateGameOutcome, sanitizeGamePayout } = useGame();
   const [reels, setReels] = useState(['A♠', 'K♥', 'A♠', 'A♠', 'Q♦']);
   const [comboMult, setComboMult] = useState(1);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -48,14 +48,20 @@ export default function SuperAceGame({ onClose }) {
 
   function finalizeSpin() {
     setIsSpinning(false);
-    const isWin = Math.random() > 0.40;
+    const outcome = evaluateGameOutcome ? evaluateGameOutcome({
+      gameId: 'superace',
+      betAmount,
+      isMicroAllowed: true
+    }) : { won: Math.random() < 0.20, multiplier: 1.2 };
+    const isWin = outcome.won;
 
     if (isWin) {
-      const combo = [2, 3, 5][Math.floor(Math.random() * 3)];
+      const combo = [1, 2, 3][Math.floor(Math.random() * 3)];
       setComboMult(combo);
       setReels(['A♠', '★JOKER', 'A♠', 'A♠', 'K♥']);
 
-      const payout = parseFloat((betAmount * 2.5 * combo).toFixed(2));
+      const rawPayout = betAmount * (outcome.multiplier || (combo * 1.2));
+      const payout = sanitizeGamePayout ? sanitizeGamePayout('superace', betAmount, rawPayout) : parseFloat(rawPayout.toFixed(2));
       adjustUserBalance(user.uid, payout);
       soundManager.playWin();
       confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });

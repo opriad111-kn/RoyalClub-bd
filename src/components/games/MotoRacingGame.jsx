@@ -209,7 +209,7 @@ export default function MotoRacingGame({ onBack, onClose }) {
                 MOTO RACING
               </span>
               <span className="text-[9px] bg-rose-950 text-rose-300 px-1.5 py-0.5 rounded border border-rose-800 font-bold uppercase tracking-wider">
-                Original Demo
+                RC Original
               </span>
             </div>
             <span className="text-[10px] text-slate-400">

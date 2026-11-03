@@ -13,7 +13,7 @@ const SYMBOLS = [
 ];
 
 export default function BoxingKingGame({ onClose }) {
-  const { user, adjustUserBalance, recordGameHistory, gameControl } = useGame();
+  const { user, adjustUserBalance, recordGameHistory, gameControl, evaluateGameOutcome, sanitizeGamePayout } = useGame();
   const [grid, setGrid] = useState([
     [SYMBOLS[0], SYMBOLS[1], SYMBOLS[2]],
     [SYMBOLS[1], SYMBOLS[1], SYMBOLS[1]], // Payline
@@ -61,15 +61,13 @@ export default function BoxingKingGame({ onClose }) {
   function finalizeSpin() {
     setIsSpinning(false);
     
-    // Check win condition (Respecting Admin Rigging Controls)
-    let isWin = false;
-    if (gameControl?.slotMode === 'always_win') {
-      isWin = true;
-    } else if (gameControl?.slotMode === 'always_loss') {
-      isWin = false;
-    } else {
-      isWin = Math.random() > 0.45; // ~55% win rate
-    }
+    // Check win condition (Respecting Casino Profit Controls)
+    const outcome = evaluateGameOutcome ? evaluateGameOutcome({
+      gameId: 'boxingking',
+      betAmount,
+      isMicroAllowed: true
+    }) : { won: Math.random() < 0.20, multiplier: 1.2 };
+    const isWin = outcome.won;
 
     if (isWin) {
       const winningSym = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
@@ -79,7 +77,8 @@ export default function BoxingKingGame({ onClose }) {
         [getRandomSym(), getRandomSym(), getRandomSym()]
       ]);
 
-      const payout = parseFloat((betAmount * winningSym.mult).toFixed(2));
+      const rawPayout = betAmount * (outcome.multiplier || winningSym.mult);
+      const payout = sanitizeGamePayout ? sanitizeGamePayout('boxingking', betAmount, rawPayout) : parseFloat(rawPayout.toFixed(2));
       adjustUserBalance(user.uid, payout);
       setWinAmount(payout);
       setBigWinText(`KNOCKOUT WIN! ৳${payout}`);

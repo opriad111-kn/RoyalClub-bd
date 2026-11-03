@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useGame } from '../../context/GameContext';
 import { soundManager } from '../../lib/audio';
 import confetti from 'canvas-confetti';
@@ -8,7 +8,7 @@ const SEVEN_SYMBOLS = ['7', '77', '777', 'BAR', '🍒'];
 const REEL_MULTS = [1, 2, 5, 10];
 
 export default function Crazy777Game({ onClose }) {
-  const { user, adjustUserBalance } = useGame();
+  const { user, adjustUserBalance, evaluateGameOutcome, sanitizeGamePayout } = useGame();
   const [reels, setReels] = useState(['777', '777', '777']);
   const [bonusMult, setBonusMult] = useState(5);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -47,17 +47,23 @@ export default function Crazy777Game({ onClose }) {
 
   function finalizeSpin() {
     setIsSpinning(false);
-    const isWin = Math.random() > 0.40;
+    const outcome = evaluateGameOutcome ? evaluateGameOutcome({
+      gameId: 'crazy777',
+      betAmount,
+      isMicroAllowed: true
+    }) : { won: Math.random() < 0.20, multiplier: 1.2 };
+    const isWin = outcome.won;
     const finalMult = REEL_MULTS[Math.floor(Math.random() * REEL_MULTS.length)];
     setBonusMult(finalMult);
 
     if (isWin) {
       setReels(['777', '777', '777']);
-      const payout = parseFloat((betAmount * 5 * finalMult).toFixed(2));
+      const rawPayout = betAmount * (outcome.multiplier || 1.5);
+      const payout = sanitizeGamePayout ? sanitizeGamePayout('crazy777', betAmount, rawPayout) : parseFloat(rawPayout.toFixed(2));
       adjustUserBalance(user.uid, payout);
       soundManager.playWin();
       confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
-      setWinMsg(`🔥 JACKPOT 777! ৳${payout} (${finalMult}X)`);
+      setWinMsg(`🔥 JACKPOT 777! ৳${payout} (${(payout / betAmount).toFixed(1)}X)`);
     } else {
       setReels(['BAR', '7', '🍒']);
       soundManager.playLoss();

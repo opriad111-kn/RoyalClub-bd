@@ -84,17 +84,26 @@ export default function AviatorGame({ onClose }) {
 
   // Determine Next Crash Point (with Admin Rigging Controls)
   function calculateCrashPoint() {
+    const maxMult = gameControl?.gameOverrides?.aviator?.maxMultiplier || gameControl?.maxMultiplier || 3.0;
+    const houseMode = gameControl?.houseMode || 'high_profit';
+
+    if (gameControl?.aviatorMode === 'early_crash' || houseMode === 'emergency_lock') {
+      return parseFloat((1.01 + Math.random() * 0.12).toFixed(2));
+    }
     if (gameControl?.aviatorMode === 'always_high') {
-      return parseFloat((4.50 + Math.random() * 15.0).toFixed(2));
+      return parseFloat((2.00 + Math.random() * 1.5).toFixed(2));
     }
-    if (gameControl?.aviatorMode === 'early_crash') {
-      return parseFloat((1.02 + Math.random() * 0.15).toFixed(2));
-    }
+
+    // Default High-Profit / Controlled House Margin:
+    // 25% crash immediately between 1.01 and 1.15
+    // 50% crash between 1.16 and 1.95 (micro multiplier cashouts)
+    // 20% crash between 1.96 and 2.80
+    // 5% reach max allowed multiplier (up to maxMult)
     const r = Math.random();
-    if (r < 0.08) return parseFloat((1.01 + Math.random() * 0.12).toFixed(2)); // instant crash
-    if (r < 0.55) return parseFloat((1.15 + Math.random() * 1.85).toFixed(2)); // 1.15 - 3.00
-    if (r < 0.85) return parseFloat((3.00 + Math.random() * 4.50).toFixed(2)); // 3.00 - 7.50
-    return parseFloat((7.50 + Math.random() * 22.5).toFixed(2)); // 7.50 - 30.00 Mega
+    if (r < 0.25) return parseFloat((1.01 + Math.random() * 0.14).toFixed(2));
+    if (r < 0.75) return parseFloat((1.16 + Math.random() * 0.75).toFixed(2));
+    if (r < 0.95) return parseFloat((1.95 + Math.random() * 0.85).toFixed(2));
+    return parseFloat(Math.min(maxMult, 2.80 + Math.random() * 0.7).toFixed(2));
   }
 
   // Cash Out Panel 1
@@ -102,7 +111,9 @@ export default function AviatorGame({ onClose }) {
     if (!isInRound1 || cashed1 || gameState !== 'flying') return;
     setCashed1(true);
     const m = multiplier;
-    const payout = parseFloat((bet1 * m).toFixed(2));
+    const maxProfit = gameControl?.maxProfitPerRound || 150;
+    const rawPayout = bet1 * m;
+    const payout = parseFloat(Math.min(rawPayout, bet1 + maxProfit).toFixed(2));
     setWin1(payout);
     adjustUserBalance(user.uid, payout);
     if (recordGameHistory) {
@@ -117,7 +128,9 @@ export default function AviatorGame({ onClose }) {
     if (!isInRound2 || cashed2 || gameState !== 'flying') return;
     setCashed2(true);
     const m = multiplier;
-    const payout = parseFloat((bet2 * m).toFixed(2));
+    const maxProfit = gameControl?.maxProfitPerRound || 150;
+    const rawPayout = bet2 * m;
+    const payout = parseFloat(Math.min(rawPayout, bet2 + maxProfit).toFixed(2));
     setWin2(payout);
     adjustUserBalance(user.uid, payout);
     if (recordGameHistory) {

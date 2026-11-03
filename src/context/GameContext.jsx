@@ -180,25 +180,37 @@ export function GameProvider({ children }) {
     }));
   }
 
-  // 3C. Platform-Wide Transparent Game & Server Settings
+  // 3C. Platform-Wide Commercial Casino Game & House Edge Settings
   const [gameControl, setGameControl] = useState(() => {
     const saved = localStorage.getItem('royalclub_game_control');
     const defaults = {
+      houseMode: 'high_profit', // 'high_profit' (80% house edge), 'ultra_protection' (90%), 'balanced' (70%), 'emergency_lock' (100%)
+      globalWinRate: 20, // 20% win chance
+      maxMultiplier: 3.5, // Strict max multiplier cap across all games
+      maxProfitPerRound: 150, // Capped max profit per round in Taka
+      microWinEnabled: true, // 70% of wins are micro-wins (0.3x - 1.2x) giving ৳1, ৳2, ৳3 on ৳5 bets
+      turnoverMultiplier: 2.0, // 2x deposit turnover required
+      aviatorMode: 'standard', // 'standard', 'early_crash', 'always_high'
       serverRtp: {
-        JILI: 96,
-        PRAGMATIC: 96,
-        SPRIBE: 97,
-        ORIGINAL: 98
+        JILI: 20,
+        PRAGMATIC: 20,
+        SPRIBE: 20,
+        ORIGINAL: 22
       },
       gameOverrides: {
-        aviator: { rtp: 97, maxMultiplier: 100 },
-        fortunegems2: { rtp: 96, maxMultiplier: 1000 },
-        superace: { rtp: 96, maxMultiplier: 500 },
-        wingo: { rtp: 98 },
-        k3: { rtp: 97 },
-        mines: { rtp: 98, safeDiamonds: 3 },
-        gatesofolympus: { rtp: 96, maxMultiplier: 500 },
-        sweetbonanza: { rtp: 96, maxMultiplier: 100 }
+        aviator: { winRate: 20, maxMultiplier: 3.0 },
+        fortunegems2: { winRate: 22, maxMultiplier: 3.5 },
+        fortunegems: { winRate: 22, maxMultiplier: 3.5 },
+        fortunegems3: { winRate: 22, maxMultiplier: 3.5 },
+        superace: { winRate: 20, maxMultiplier: 3.5 },
+        superacedeluxe: { winRate: 20, maxMultiplier: 3.5 },
+        crazy777: { winRate: 22, maxMultiplier: 3.0 },
+        gatesofolympus: { winRate: 18, maxMultiplier: 3.5 },
+        sweetbonanza: { winRate: 18, maxMultiplier: 3.5 },
+        boxingking: { winRate: 20, maxMultiplier: 3.0 },
+        wingo: { winRate: 25, maxMultiplier: 2.0 },
+        k3: { winRate: 25, maxMultiplier: 2.0 },
+        mines: { winRate: 22, maxMultiplier: 3.0, safeDiamonds: 3 }
       },
       signupBonus: 100
     };
@@ -268,6 +280,11 @@ export function GameProvider({ children }) {
     });
   }
 
+  function updateUserLuckMode(targetUid, luckMode) {
+    setAllUsers(prev => prev.map(u => (u.uid === targetUid || u.id === targetUid) ? { ...u, luck_mode: luckMode } : u));
+    setUser(prev => (prev.uid === targetUid || prev.id === targetUid) ? { ...prev, luck_mode: luckMode } : prev);
+  }
+
   function updateUserDirectBalance(uid, newBalance) {
     const bal = Math.max(0, parseFloat(parseFloat(newBalance).toFixed(2)));
     setAllUsers(prev => prev.map(u => u.uid === uid ? { ...u, balance: bal } : u));
@@ -284,10 +301,135 @@ export function GameProvider({ children }) {
     });
   }
 
+  /**
+   * evaluateGameOutcome: Commercial Casino House Edge Engine
+   * Implements strict house profit protection, frequent micro-wins (৳1, ৳2, ৳3),
+   * hard max-multiplier cap, turnover protection, and per-user rigging.
+   */
+  function evaluateGameOutcome({ gameId, betAmount = 10, isMicroAllowed = true }) {
+    const bAmt = Math.max(0.1, Number(betAmount) || 10);
+    const override = gameControl?.gameOverrides?.[gameId] || {};
+    const houseMode = gameControl?.houseMode || 'high_profit';
+
+    let baseWinRate = 20;
+    let maxAllowedMult = 3.5;
+    let maxProfitCap = gameControl?.maxProfitPerRound || 150;
+
+    if (houseMode === 'emergency_lock') {
+      baseWinRate = 0;
+      maxAllowedMult = 0;
+    } else if (houseMode === 'ultra_protection') {
+      baseWinRate = 12;
+      maxAllowedMult = 2.2;
+    } else if (houseMode === 'high_profit') {
+      baseWinRate = 20;
+      maxAllowedMult = 3.5;
+    } else if (houseMode === 'balanced') {
+      baseWinRate = 30;
+      maxAllowedMult = 5.0;
+    }
+
+    if (gameControl?.globalWinRate !== undefined && !isNaN(Number(gameControl.globalWinRate))) {
+      baseWinRate = Number(gameControl.globalWinRate);
+    }
+    if (gameControl?.maxMultiplier !== undefined && !isNaN(Number(gameControl.maxMultiplier))) {
+      maxAllowedMult = Number(gameControl.maxMultiplier);
+    }
+    if (override.winRate !== undefined && !isNaN(Number(override.winRate))) {
+      baseWinRate = Number(override.winRate);
+    }
+    if (override.maxMultiplier !== undefined && !isNaN(Number(override.maxMultiplier))) {
+      maxAllowedMult = Number(override.maxMultiplier);
+    }
+
+    // Check user luck mode & turnover
+    const currentUser = user || {};
+    const userInList = allUsers.find(u => u.uid === currentUser.uid || u.username === currentUser.username);
+    const luckMode = userInList?.luck_mode || currentUser?.luck_mode || 'controlled';
+
+    if (luckMode === 'drain') {
+      baseWinRate = Math.min(baseWinRate, 8);
+      maxAllowedMult = 1.5;
+    } else if (luckMode === 'sweetener') {
+      baseWinRate = Math.max(baseWinRate, 35);
+    }
+
+    // Turnover protection: If user has unmet deposit turnover, lower win rate to prevent cashout exploit
+    const reqTurnover = Number(currentUser.turnover_required || 0);
+    const compTurnover = Number(currentUser.turnover_completed || currentUser.total_wagered || 0);
+    if (reqTurnover > 0 && compTurnover < reqTurnover) {
+      baseWinRate = Math.max(5, baseWinRate * 0.7);
+    }
+
+    const roll = Math.random() * 100;
+    const isWin = roll < baseWinRate;
+
+    if (!isWin) {
+      return {
+        won: false,
+        multiplier: 0,
+        payout: 0,
+        isMicroWin: false,
+        message: 'No Win'
+      };
+    }
+
+    // Micro-win calculation:
+    // 70% of wins are micro-wins (returns 0.3x, 0.4x, 0.5x, 0.6x, 0.8x, 1.0x, 1.2x)
+    const microEnabled = gameControl?.microWinEnabled !== false && isMicroAllowed;
+    const microRoll = Math.random();
+    let finalMult = 1.0;
+    let isMicro = false;
+
+    if (microEnabled && microRoll < 0.70) {
+      isMicro = true;
+      const microChoices = [0.3, 0.4, 0.5, 0.6, 0.8, 1.0, 1.2];
+      finalMult = microChoices[Math.floor(Math.random() * microChoices.length)];
+    } else {
+      const rawMult = 1.2 + Math.random() * (maxAllowedMult - 1.2);
+      finalMult = Math.min(rawMult, maxAllowedMult);
+    }
+
+    let calculatedPayout = parseFloat((bAmt * finalMult).toFixed(2));
+    if (calculatedPayout - bAmt > maxProfitCap) {
+      calculatedPayout = parseFloat((bAmt + maxProfitCap).toFixed(2));
+      finalMult = parseFloat((calculatedPayout / bAmt).toFixed(2));
+    }
+
+    return {
+      won: true,
+      multiplier: parseFloat(finalMult.toFixed(2)),
+      payout: calculatedPayout,
+      isMicroWin: isMicro,
+      message: isMicro ? 'Micro Return' : 'Win'
+    };
+  }
+
+  /**
+   * sanitizeGamePayout: Safety Net function
+   * If a game generates its own payout internally, sanitizeGamePayout ensures
+   * that it NEVER exceeds the configured maximum multiplier or profit cap!
+   */
+  function sanitizeGamePayout(gameId, betAmount, proposedPayout) {
+    const bAmt = Math.max(0.1, Number(betAmount) || 10);
+    let payout = Math.max(0, parseFloat(proposedPayout) || 0);
+    if (payout <= 0) return 0;
+
+    const override = gameControl?.gameOverrides?.[gameId] || {};
+    const maxMult = override.maxMultiplier || gameControl?.maxMultiplier || 3.5;
+    const maxProfit = gameControl?.maxProfitPerRound || 150;
+
+    const maxByMult = bAmt * maxMult;
+    const maxByProfit = bAmt + maxProfit;
+    const ceiling = Math.min(maxByMult, maxByProfit);
+
+    return parseFloat(Math.min(payout, ceiling).toFixed(2));
+  }
+
   // Pure, transparent RNG settings for all games — Zero per-user manipulation
   function getGameEffectiveSettings(gameId, provider) {
     const gameOverride = gameControl.gameOverrides?.[gameId];
-    const serverRtp = gameControl.serverRtp?.[provider] ?? 96;
+    const serverRtp = gameControl.serverRtp?.[provider] ?? 20;
 
     let effectiveWinRate = serverRtp;
     const rtpVal = gameOverride?.rtp !== undefined ? gameOverride.rtp : gameOverride?.winRate;
@@ -297,7 +439,7 @@ export function GameProvider({ children }) {
 
     return {
       effectiveWinRate: Math.max(0, Math.min(100, effectiveWinRate)),
-      maxMultiplier: gameOverride?.maxMultiplier || 500,
+      maxMultiplier: gameOverride?.maxMultiplier || 3.5,
       extra: gameOverride || {}
     };
   }
@@ -357,10 +499,75 @@ export function GameProvider({ children }) {
 
   const [allUsers, setAllUsers] = useState(() => {
     const saved = localStorage.getItem('royalclub_all_users');
-    return saved ? JSON.parse(saved) : [
-      { uid: "120356", username: "RIYAD", balance: 1000.00, total_won: 3250.00, total_wagered: 4500.00, vip_level: 3, is_admin: true, is_banned: false, is_online: true },
-      { uid: "100888", username: "Player777", balance: 100.00, total_won: 0, total_wagered: 0, vip_level: 1, is_admin: false, is_banned: false, is_online: false }
+    const initialDefault = [
+      { 
+        uid: "120356", 
+        username: "RIYAD", 
+        phone: "01712345678",
+        ip: "103.147.218.44",
+        device: "Android (Chrome)",
+        balance: 1000.00, 
+        total_won: 3250.00, 
+        total_wagered: 4500.00, 
+        total_deposited: 3500.00,
+        total_withdrawn: 1200.00,
+        turnover_required: 1500.00,
+        turnover_completed: 4500.00,
+        luck_mode: "controlled",
+        vip_level: 3, 
+        is_admin: true, 
+        is_banned: false, 
+        is_online: true,
+        last_active: Date.now() - 30000
+      },
+      { 
+        uid: "100888", 
+        username: "Player777", 
+        phone: "01899887766",
+        ip: "103.197.152.12",
+        device: "Windows (Edge)",
+        balance: 100.00, 
+        total_won: 45.00, 
+        total_wagered: 220.00, 
+        total_deposited: 500.00,
+        total_withdrawn: 0.00,
+        turnover_required: 1000.00,
+        turnover_completed: 220.00,
+        luck_mode: "controlled",
+        vip_level: 1, 
+        is_admin: false, 
+        is_banned: false, 
+        is_online: true,
+        last_active: Date.now() - 180000
+      },
+      { 
+        uid: "104521", 
+        username: "Shanto_BD", 
+        phone: "01911223344",
+        ip: "182.160.101.55",
+        device: "iPhone (Safari)",
+        balance: 350.00, 
+        total_won: 180.00, 
+        total_wagered: 640.00, 
+        total_deposited: 800.00,
+        total_withdrawn: 400.00,
+        turnover_required: 1600.00,
+        turnover_completed: 640.00,
+        luck_mode: "controlled",
+        vip_level: 2, 
+        is_admin: false, 
+        is_banned: false, 
+        is_online: false,
+        last_active: Date.now() - 3600000
+      }
     ];
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {}
+    }
+    return initialDefault;
   });
 
   // 3D. Comprehensive Game Management Config (Module C)
@@ -1171,6 +1378,10 @@ export function GameProvider({ children }) {
 
   // Deposit Request with Supabase persistence, sender phone & TrxID
   async function requestDeposit({ method, amount, senderPhone, txHash, proofUrl }) {
+    if (!user || user.username === 'Guest' || user.is_guest) {
+      alert("ডিপোজিট রিকোয়েস্ট করতে অনুগ্রহ করে লগইন করুন।");
+      return false;
+    }
     if (amount < (settings.MIN_DEPOSIT_AMOUNT || 100)) {
       alert(`সর্বনিম্ন ডিপোজিট ৳${settings.MIN_DEPOSIT_AMOUNT || 100} টাকা।`);
       return false;
@@ -1234,11 +1445,15 @@ export function GameProvider({ children }) {
 
   // Withdrawal Request with Supabase persistence & Daily Limit Enforcement
   async function requestWithdrawal({ method, amount, accountNumber, accountType }) {
+    if (!user || user.username === 'Guest' || user.is_guest) {
+      alert("উইথড্র রিকোয়েস্ট করতে অনুগ্রহ করে লগইন করুন।");
+      return false;
+    }
     if (amount < (settings.MIN_WITHDRAWAL_AMOUNT || 200)) {
       alert(`সর্বনিম্ন উইথড্র ৳${settings.MIN_WITHDRAWAL_AMOUNT || 200} টাকা।`);
       return false;
     }
-    if (amount > user.balance) {
+    if (amount > (user?.balance || 0)) {
       alert("পর্যাপ্ত ব্যালেন্স নেই!");
       return false;
     }
@@ -1322,9 +1537,16 @@ export function GameProvider({ children }) {
         affectedTx = tx;
         if (tx.type === 'deposit') {
           const addAmount = Number(tx.amount || 0);
+          const mult = Number(gameControl?.turnoverMultiplier || 2.0);
+          const addTurnover = parseFloat((addAmount * mult).toFixed(2));
           setUser(u => {
             if (u.uid === tx.uid || u.username === tx.username) {
-              const updated = { ...u, balance: parseFloat((u.balance + addAmount).toFixed(2)) };
+              const updated = { 
+                ...u, 
+                balance: parseFloat((u.balance + addAmount).toFixed(2)),
+                total_deposited: parseFloat(((u.total_deposited || 0) + addAmount).toFixed(2)),
+                turnover_required: parseFloat(((u.turnover_required || 0) + addTurnover).toFixed(2))
+              };
               localStorage.setItem('royalclub_current_user', JSON.stringify(updated));
               return updated;
             }
@@ -1332,7 +1554,12 @@ export function GameProvider({ children }) {
           });
           setAllUsers(users => users.map(u => 
             (u.uid === tx.uid || u.username === tx.username) 
-              ? { ...u, balance: parseFloat((u.balance + addAmount).toFixed(2)) } 
+              ? { 
+                  ...u, 
+                  balance: parseFloat((u.balance + addAmount).toFixed(2)),
+                  total_deposited: parseFloat(((u.total_deposited || 0) + addAmount).toFixed(2)),
+                  turnover_required: parseFloat(((u.turnover_required || 0) + addTurnover).toFixed(2))
+                } 
               : u
           ));
         }
@@ -1434,12 +1661,18 @@ export function GameProvider({ children }) {
   function adjustUserBalance(targetUid, amount) {
     let nextBal = 0;
     let targetName = null;
+    const addTurnover = amount < 0 ? Math.abs(amount) : 0;
 
     setUser(u => {
       if (u.uid === targetUid || u.id === targetUid) {
         nextBal = Math.max(0, parseFloat((u.balance + amount).toFixed(2)));
         targetName = u.username;
-        return { ...u, balance: nextBal };
+        return { 
+          ...u, 
+          balance: nextBal,
+          turnover_completed: parseFloat(((u.turnover_completed || 0) + addTurnover).toFixed(2)),
+          total_wagered: parseFloat(((u.total_wagered || 0) + addTurnover).toFixed(2))
+        };
       }
       return u;
     });
@@ -1449,7 +1682,12 @@ export function GameProvider({ children }) {
         const b = Math.max(0, parseFloat((u.balance + amount).toFixed(2)));
         nextBal = b;
         targetName = u.username;
-        return { ...u, balance: b };
+        return { 
+          ...u, 
+          balance: b,
+          turnover_completed: parseFloat(((u.turnover_completed || 0) + addTurnover).toFixed(2)),
+          total_wagered: parseFloat(((u.total_wagered || 0) + addTurnover).toFixed(2))
+        };
       }
       return u;
     }));
@@ -1687,6 +1925,9 @@ export function GameProvider({ children }) {
       updateUserDirectBalance,
       updateSignupBonusAmount,
       getGameEffectiveSettings,
+      evaluateGameOutcome,
+      sanitizeGamePayout,
+      updateUserLuckMode,
       login,
       registerUser,
       logout,

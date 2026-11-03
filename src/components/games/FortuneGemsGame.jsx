@@ -62,7 +62,7 @@ const LUCKY_WHEEL_SLICES = [
 const BET_OPTIONS = [0.3, 0.6, 0.9, 1.5, 3, 5, 10, 20, 50, 100];
 
 export default function FortuneGemsGame({ onClose }) {
-  const { user, adjustUserBalance } = useGame();
+  const { user, adjustUserBalance, evaluateGameOutcome, sanitizeGamePayout, gameControl } = useGame();
   
   // Game Board: 3 Reels x 3 Rows
   const [reels, setReels] = useState([
@@ -207,13 +207,17 @@ export default function FortuneGemsGame({ onClose }) {
   function finalizeGameOutcome() {
     setIsSpinning(false);
 
-    // High RTP: 97.46%. Extra Bet boosts multiplier wheel & triggers
-    const winChance = extraBet ? 0.54 : 0.46;
-    const isWin = Math.random() < winChance;
+    // House Profit & Win Rate Engine
+    const outcome = evaluateGameOutcome ? evaluateGameOutcome({
+      gameId: 'fortunegems',
+      betAmount: effectiveBet,
+      isMicroAllowed: true
+    }) : { won: Math.random() < 0.20, multiplier: 1.2 };
+    const isWin = outcome.won;
 
     // Center payline feature
     let centerFeature = SPECIAL_WHEEL_ITEMS[Math.floor(Math.random() * (SPECIAL_WHEEL_ITEMS.length - 1))];
-    const triggerWheel = Math.random() < (extraBet ? 0.18 : 0.10);
+    const triggerWheel = isWin && Math.random() < (extraBet ? 0.08 : 0.04);
     if (triggerWheel) {
       centerFeature = SPECIAL_WHEEL_ITEMS.find(s => s.val === 'WHEEL');
     }
@@ -233,7 +237,16 @@ export default function FortuneGemsGame({ onClose }) {
     // Check Grand Lucky Wheel Trigger
     if (centerFeature.val === 'WHEEL') {
       setWheelActive(true);
-      const chosenSlice = LUCKY_WHEEL_SLICES[Math.floor(Math.random() * LUCKY_WHEEL_SLICES.length)];
+      // Safe Slice Selection to prevent runaway payouts
+      const safeSlices = [
+        LUCKY_WHEEL_SLICES[1], // 45
+        LUCKY_WHEEL_SLICES[3], // 9
+        LUCKY_WHEEL_SLICES[7], // 50
+        LUCKY_WHEEL_SLICES[9], // 30
+        LUCKY_WHEEL_SLICES[10], // 12
+        LUCKY_WHEEL_SLICES[11]  // 8
+      ];
+      const chosenSlice = safeSlices[Math.floor(Math.random() * safeSlices.length)];
       const sliceAngle = 360 / LUCKY_WHEEL_SLICES.length;
       const targetSliceIndex = LUCKY_WHEEL_SLICES.findIndex(s => s.val === chosenSlice.val);
       const spins = 1440 + (targetSliceIndex * sliceAngle);
@@ -241,14 +254,15 @@ export default function FortuneGemsGame({ onClose }) {
 
       setTimeout(() => {
         setWheelActive(false);
-        const payout = parseFloat((effectiveBet * chosenSlice.val).toFixed(2));
+        const rawPayout = effectiveBet * (chosenSlice.val > 15 ? (chosenSlice.val / 15) : chosenSlice.val);
+        const payout = sanitizeGamePayout ? sanitizeGamePayout('fortunegems', effectiveBet, rawPayout) : parseFloat(rawPayout.toFixed(2));
         adjustUserBalance(user.uid, payout);
         setWinAmount(payout);
         setBigWinOverlay(`LUCKY WHEEL ${chosenSlice.label}! +৳${payout.toLocaleString()}`);
         setWheelResult(chosenSlice);
         if (soundOn) soundManager.playWin();
         confetti({ particleCount: 160, spread: 90, origin: { y: 0.5 } });
-        logRound('LUCKY WHEEL', effectiveBet, payout, `${chosenSlice.label}x`);
+        logRound('LUCKY WHEEL', effectiveBet, payout, `${(payout / effectiveBet).toFixed(1)}x`);
       }, 3200);
 
       setReels(finalGrid);
@@ -271,7 +285,9 @@ export default function FortuneGemsGame({ onClose }) {
 
       const baseMult = SYMBOLS[winSym]?.payout || 10;
       const wheelMult = typeof centerFeature.val === 'number' ? centerFeature.val : 1;
-      const totalPayout = parseFloat((effectiveBet * (baseMult / 5) * wheelMult * winRows.length).toFixed(2));
+      const calculatedMult = outcome.multiplier || (baseMult / 5) * wheelMult * winRows.length;
+      const rawPayout = effectiveBet * calculatedMult;
+      const totalPayout = sanitizeGamePayout ? sanitizeGamePayout('fortunegems', effectiveBet, rawPayout) : parseFloat(rawPayout.toFixed(2));
 
       setReels(finalGrid);
       adjustUserBalance(user.uid, totalPayout);

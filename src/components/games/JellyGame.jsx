@@ -223,7 +223,7 @@ export default function JellyGame({ onBack, onClose }) {
                 JELLY BONANZA
               </span>
               <span className="text-[9px] bg-pink-950 text-pink-300 px-1.5 py-0.5 rounded border border-pink-800 font-bold uppercase tracking-wider">
-                Original Demo
+                RC Original
               </span>
             </div>
             <span className="text-[10px] text-purple-300">
