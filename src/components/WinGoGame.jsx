@@ -12,16 +12,14 @@ import {
   Clock, 
   CheckCircle2, 
   HelpCircle,
-  Link as LinkIcon,
+  ExternalLink,
   Copy,
-  Sparkles,
   Zap,
-  TrendingUp,
-  History,
-  Info,
   X,
   Plus,
-  Minus
+  Minus,
+  Trophy,
+  ShieldCheck
 } from 'lucide-react';
 
 const MODE_CONFIGS = {
@@ -49,7 +47,7 @@ function generateTrxHash() {
   return hash;
 }
 
-// 3D Glass Lottery Ball Badge
+// 3D Glass Lottery Ball Badge (Royal Club BD authentic style)
 export function LotteryBall({ num, size = 'md', className = '' }) {
   let bgStyle = '';
   
@@ -81,15 +79,9 @@ export function LotteryBall({ num, size = 'md', className = '' }) {
   );
 }
 
-// 60FPS Vertical Lottery Ball Roller Component
-function LotteryBallRoller({ isRolling, revealedResult, lastResult }) {
-  const displayNum = isRolling ? null : (revealedResult?.num ?? lastResult?.num ?? 7);
-
-  // Strip of numbers to roll through
-  const rollStrip = useMemo(() => [
-    3, 8, 1, 6, 9, 2, 7, 4, 0, 5, 8, 3, 1, 6, 9, 2, 7, 4, 0, 5,
-    (revealedResult?.num ?? 7)
-  ], [revealedResult]);
+// 60FPS Lottery Ball Roller with Fast Random Shuffle during lockout
+function LotteryBallRoller({ isRolling, fastScrambleNum, revealedResult, lastResult }) {
+  const displayNum = isRolling ? (fastScrambleNum ?? 7) : (revealedResult?.num ?? lastResult?.num ?? 7);
 
   return (
     <div className="relative flex flex-col items-center justify-center">
@@ -107,26 +99,16 @@ function LotteryBallRoller({ isRolling, revealedResult, lastResult }) {
         {/* Shimmer Lens Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/40 pointer-events-none z-20" />
 
-        {isRolling ? (
-          <div className="flex flex-col items-center space-y-4 animate-ball-roll py-2 will-change-transform">
-            {rollStrip.map((n, idx) => (
-              <div key={idx} className="shrink-0 transform scale-90">
-                <LotteryBall num={n} size="lg" />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="animate-reveal-bounce transform">
-            <LotteryBall num={displayNum} size="lg" />
-          </div>
-        )}
+        <div className={`transform transition-all ${isRolling ? 'scale-110 animate-bounce' : 'animate-reveal-bounce'}`}>
+          <LotteryBall num={displayNum} size="lg" />
+        </div>
       </div>
 
       {/* Status Label */}
       <div className="mt-1.5 flex items-center space-x-1">
         {isRolling ? (
           <span className="text-[10px] font-black tracking-widest text-amber-300 animate-pulse uppercase">
-            ⚡ রিল ঘুরছে...
+            ⚡ ড্র চলছে...
           </span>
         ) : (
           <span className="text-[10px] font-bold text-slate-400">
@@ -141,18 +123,24 @@ function LotteryBallRoller({ isRolling, revealedResult, lastResult }) {
 export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initialMode = '30s' }) {
   const { user, adjustUserBalance, recordGameHistory } = useGame();
   const [selectedMode, setSelectedMode] = useState(initialMode);
-  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(() => soundManager.isSoundEnabled());
   const [showRules, setShowRules] = useState(false);
   const [copiedHash, setCopiedHash] = useState(false);
+
+  // Fast Scramble State during 5s Lockout
+  const [fastScrambleNum, setFastScrambleNum] = useState(0);
 
   // Instant Bet Mode Switch & Active Quick Chip
   const [instantBetEnabled, setInstantBetEnabled] = useState(false);
   const [quickChip, setQuickChip] = useState(10);
   const [quickMultiplier, setQuickMultiplier] = useState(1);
 
-  // Live TronGrid Blockchain State
+  // Winning Result Modal (Royal Club BD WinningTips Dialog)
+  const [winningModal, setWinningModal] = useState(null); // { show: true, isWin: true, winAmount, period, num, color, size }
+
+  // Live TronGrid Blockchain State for TRX WinGo
   const [liveTrxBlock, setLiveTrxBlock] = useState({
-    height: 87637762,
+    height: 87637820,
     hash: '0000000005393e79bbaaa383d428824a0f94e318d5eee4ade73c586d45e5c46c',
     isLive: true,
     lastChecked: Date.now()
@@ -185,7 +173,7 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
 
   useEffect(() => {
     fetchTronGridBlock();
-    const trxInterval = setInterval(fetchTronGridBlock, 6000);
+    const trxInterval = setInterval(fetchTronGridBlock, 5000);
     return () => clearInterval(trxInterval);
   }, []);
 
@@ -214,8 +202,8 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
       { period: '202611033000097', num: 5, size: 'Big', color: 'violet-green' }
     ],
     'trx': [
-      { period: '20261103TRX0485', num: 2, size: 'Small', color: 'red', blockHeight: 87637762, hash: '0000000005393e79bbaaa383d428824a0f94e318d5eee4ade73c586d45e5c46c' },
-      { period: '20261103TRX0484', num: 9, size: 'Big', color: 'green', blockHeight: 87637761, hash: '0000000005393e78bbaaa383d428824a0f94e318d5eee4ade73c586d45e5c469' }
+      { period: '20261103TRX0485', num: 2, size: 'Small', color: 'red', blockHeight: 87637820, hash: '0000000005393e79bbaaa383d428824a0f94e318d5eee4ade73c586d45e5c462' },
+      { period: '20261103TRX0484', num: 9, size: 'Big', color: 'green', blockHeight: 87637819, hash: '0000000005393e78bbaaa383d428824a0f94e318d5eee4ade73c586d45e5c469' }
     ]
   });
 
@@ -234,24 +222,37 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
     revealedResult: null
   });
 
-  // High-precision clock synchronizer (200ms sub-second sampling prevents timer drift)
+  // High-precision clock synchronizer
   const [currentEpochSec, setCurrentEpochSec] = useState(() => Math.floor(Date.now() / 1000));
   const lastResolvedPeriodRef = useRef({});
+  const lastPlayedTickSec = useRef(-1);
 
-  // Betting Sheet Modal State
+  // Betting Sheet Modal State (Royal Club BD contract drawer style)
   const [betModal, setBetModal] = useState(null); // { type, value, label, color, mult }
+  const [betContractUnit, setBetContractUnit] = useState(10); // 1, 10, 100, 1000
   const [betMultiplier, setBetMultiplier] = useState(1);
-  const [baseUnit, setBaseUnit] = useState(10);
+  const [betQuantity, setBetQuantity] = useState(1); // Stepper count
   const [betSuccessBanner, setBetSuccessBanner] = useState(null);
   const [activeTab, setActiveTab] = useState('history'); // 'history' | 'chart' | 'my_history'
 
-  // Master Synchronized Clock Loop
+  // Master Synchronized Clock Loop with Authentic Audio Cues
   useEffect(() => {
     const clockInterval = setInterval(() => {
       const nowMs = Date.now();
       const nowSec = Math.floor(nowMs / 1000);
       setCurrentEpochSec(nowSec);
 
+      // Check current mode countdown
+      const currentCfg = MODE_CONFIGS[selectedMode] || MODE_CONFIGS['30s'];
+      const currentRem = currentCfg.duration - (nowSec % currentCfg.duration);
+
+      // Play authentic di1 countdown tick for 5, 4, 3, 2, 1
+      if (currentRem <= 5 && currentRem > 0 && lastPlayedTickSec.current !== nowSec) {
+        lastPlayedTickSec.current = nowSec;
+        soundManager.playTick();
+      }
+
+      // Check turnovers for all modes
       Object.entries(MODE_CONFIGS).forEach(([modeKey, cfg]) => {
         const rem = cfg.duration - (nowSec % cfg.duration);
         const pId = generatePeriodId(cfg.duration, cfg.code, nowMs);
@@ -260,6 +261,9 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
         if (rem === cfg.duration || rem === 1) {
           if (!lastResolvedPeriodRef.current[modeKey] || lastResolvedPeriodRef.current[modeKey] !== pId) {
             lastResolvedPeriodRef.current[modeKey] = pId;
+            if (selectedMode === modeKey) {
+              soundManager.playBuzzer();
+            }
             executeBallDraw(modeKey, pId);
           }
         }
@@ -267,12 +271,32 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
     }, 200);
 
     return () => clearInterval(clockInterval);
-  }, [user, betsByMode, liveTrxBlock, soundEnabled]);
+  }, [user, betsByMode, liveTrxBlock, selectedMode]);
+
+  // Fast 60ms Scramble during 5s Lockout (authentic Royal Club BD interval)
+  const activeCfg = MODE_CONFIGS[selectedMode] || MODE_CONFIGS['30s'];
+  const activeTimeLeft = activeCfg.duration - (currentEpochSec % activeCfg.duration);
+  const activePeriodId = generatePeriodId(activeCfg.duration, activeCfg.code);
+  const activeHistory = histories[selectedMode] || [];
+  const activeBets = betsByMode[selectedMode] || [];
+  const lastResult = activeHistory[0];
+
+  useEffect(() => {
+    let scrambleTimer = null;
+    if (activeTimeLeft <= 5 || rollingState.isRolling) {
+      scrambleTimer = setInterval(() => {
+        setFastScrambleNum(Math.floor(Math.random() * 10));
+      }, 60);
+    }
+    return () => {
+      if (scrambleTimer) clearInterval(scrambleTimer);
+    };
+  }, [activeTimeLeft, rollingState.isRolling]);
 
   // Execute Ball Draw with 60FPS Roller Animation
   function executeBallDraw(modeKey, pId) {
     let winningNum = Math.floor(Math.random() * 10);
-    let blockHeight = 87637765 + Math.floor(Math.random() * 20);
+    let blockHeight = 87637820 + Math.floor(Math.random() * 20);
     let blockHash = generateTrxHash();
     let isLive = false;
 
@@ -323,10 +347,9 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
     // If currently visible mode, start rolling animation
     if (selectedMode === modeKey) {
       setRollingState({ isRolling: true, revealedResult: newResult });
-      if (soundEnabled) soundManager.playBet();
     }
 
-    // 2.2-second 60fps spin reel duration
+    // 2-second roll settlement
     setTimeout(() => {
       setHistories(prev => ({
         ...prev,
@@ -340,11 +363,13 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
       // Settle Bets
       let totalWinPayout = 0;
       let totalWager = 0;
+      let hadPendingBets = false;
 
       setBetsByMode(prev => {
         const modeBets = prev[modeKey] || [];
         const updated = modeBets.map(b => {
           if (b.period === pId && b.status === 'pending') {
+            hadPendingBets = true;
             totalWager += b.amount;
             let won = false;
             if (b.type === 'color') {
@@ -377,26 +402,38 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
           mult: (totalWinPayout / (totalWager || 1)).toFixed(2) + 'x'
         });
 
-        if (soundEnabled && selectedMode === modeKey) {
+        if (selectedMode === modeKey) {
           soundManager.playWin();
           confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 } });
+          setWinningModal({
+            show: true,
+            isWin: true,
+            winAmount: totalWinPayout,
+            period: pId,
+            num: winningNum,
+            color,
+            size
+          });
         }
+      } else if (hadPendingBets && selectedMode === modeKey) {
+        soundManager.playLoss();
+        setWinningModal({
+          show: true,
+          isWin: false,
+          winAmount: 0,
+          period: pId,
+          num: winningNum,
+          color,
+          size
+        });
       }
-    }, 2200);
+    }, 2000);
   }
-
-  // Active Mode Specs
-  const activeCfg = MODE_CONFIGS[selectedMode] || MODE_CONFIGS['30s'];
-  const activeTimeLeft = activeCfg.duration - (currentEpochSec % activeCfg.duration);
-  const activePeriodId = generatePeriodId(activeCfg.duration, activeCfg.code);
-  const activeHistory = histories[selectedMode] || [];
-  const activeBets = betsByMode[selectedMode] || [];
-  const lastResult = activeHistory[0];
 
   const mins = String(Math.floor(activeTimeLeft / 60)).padStart(2, '0');
   const secs = String(activeTimeLeft % 60).padStart(2, '0');
 
-  // Place Bet Function (Supports both Instant 1-Tap & Modal flow)
+  // Place Bet Function (Instant or Drawer)
   const placeBet = (type, value, label, color, mult) => {
     if (activeTimeLeft <= 5) {
       alert('বর্তমান রাউন্ডের বেটিং শেষ হয়েছে! ড্র হওয়া পর্যন্ত অপেক্ষা করুন।');
@@ -404,7 +441,6 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
     }
 
     if (instantBetEnabled) {
-      // Instant Bet Execution
       const totalAmt = quickChip * quickMultiplier;
       if (user.balance < totalAmt) {
         alert('অপর্যাপ্ত ব্যালেন্স! দয়া করে ডিপোজিট করুন।');
@@ -430,26 +466,26 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
         [selectedMode]: [newBetEntry, ...(prev[selectedMode] || [])]
       }));
 
-      if (soundEnabled) soundManager.playBet();
-      setBetSuccessBanner(`⚡ ইনস্ট্যান্ট বাজি সফল! ৳${totalAmt} (${label})`);
+      soundManager.playBet();
+      setBetSuccessBanner(`⚡ বাজি সফল! ৳${totalAmt} (${label})`);
       setTimeout(() => setBetSuccessBanner(null), 2500);
     } else {
-      // Open Detailed Modal
       setBetModal({ type, value, label, color, mult });
+      setBetContractUnit(quickChip);
       setBetMultiplier(quickMultiplier);
-      setBaseUnit(quickChip);
+      setBetQuantity(1);
     }
   };
 
   const handleConfirmModalBet = () => {
     if (!betModal) return;
     if (activeTimeLeft <= 5) {
-      alert('বেটিং সময় শেষ! অনুগ্রহ করে পরবর্তী রাউন্ডের অপেক্ষা করুন।');
+      alert('বেটিং সময় শেষ! পরবর্তী রাউন্ডের অপেক্ষা করুন।');
       setBetModal(null);
       return;
     }
 
-    const totalBet = baseUnit * betMultiplier;
+    const totalBet = betContractUnit * betMultiplier * betQuantity;
     if (user.balance < totalBet) {
       alert('অপর্যাপ্ত ব্যালেন্স! দয়া করে রিচার্জ করুন।');
       return;
@@ -474,16 +510,27 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
       [selectedMode]: [newBetEntry, ...(prev[selectedMode] || [])]
     }));
 
-    if (soundEnabled) soundManager.playBet();
+    soundManager.playBet();
     setBetSuccessBanner(`সফল বাজি! ৳${totalBet} বাজি ধরা হয়েছে (${betModal.label})`);
     setTimeout(() => setBetSuccessBanner(null), 3000);
     setBetModal(null);
   };
 
+  // Tron Block Hash Display Split (Last 5 characters)
+  const last5TrxChars = useMemo(() => {
+    const hash = liveTrxBlock.hash || '0000000005393e79bbaaa383d428824a0f94e318d5eee4ade73c586d45e5c46c';
+    return hash.slice(-5).toUpperCase().split('');
+  }, [liveTrxBlock.hash]);
+
+  const winningTronDigit = useMemo(() => {
+    const hex = liveTrxBlock.hash ? liveTrxBlock.hash.slice(-1) : '7';
+    return parseInt(hex, 16) % 10;
+  }, [liveTrxBlock.hash]);
+
   return (
     <div className="fixed inset-0 w-screen h-screen bg-[#090d16] text-slate-100 flex flex-col z-[100] select-none overflow-y-auto font-sans pb-16">
       
-      {/* 1. Header (Deep obsidian with neon emerald / ruby trim) */}
+      {/* 1. Authentic Royal Club BD Header */}
       <div className="bg-gradient-to-r from-[#0d1527] via-[#111c35] to-[#0d1527] border-b border-emerald-500/20 px-4 pt-3 pb-4 text-white relative shadow-xl shrink-0">
         <div className="flex items-center justify-between max-w-lg mx-auto">
           <button 
@@ -498,7 +545,7 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
             <span className="text-2xl drop-shadow-[0_0_8px_rgba(234,179,8,0.6)]">👑</span>
             <div className="flex flex-col items-center">
               <h1 className="font-black text-lg tracking-wider font-mono text-amber-300">
-                ROYAL<span className="text-white">CLUB</span>
+                ROYAL CLUB BD
               </h1>
               <span className="text-[9px] font-bold tracking-widest text-emerald-400 uppercase">
                 {activeCfg.isTrx ? 'TRX TRON BLOCKCHAIN' : 'COLOR PREDICTION CASINO'}
@@ -515,7 +562,10 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
               <Headphones className="w-4 h-4" />
             </button>
             <button 
-              onClick={() => setSoundEnabled(!soundEnabled)} 
+              onClick={() => {
+                const next = soundManager.toggleSound();
+                setSoundEnabled(next);
+              }} 
               className="w-9 h-9 rounded-full bg-slate-800/80 border border-slate-700 flex items-center justify-center hover:bg-slate-700 active:scale-95 cursor-pointer"
               title="Sound"
             >
@@ -614,7 +664,7 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
           <div className="bg-gradient-to-br from-[#1a1128] via-[#120a1f] to-[#0a0614] border border-red-500/40 rounded-2xl p-3.5 text-white shadow-xl space-y-2.5">
             <div className="flex justify-between items-center border-b border-red-900/40 pb-2">
               <div className="flex items-center space-x-2">
-                <LinkIcon className="w-4 h-4 text-red-400 animate-pulse" />
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
                 <div>
                   <span className="text-xs font-black text-red-400 tracking-wider uppercase block">
                     TRON PUBLIC BLOCKCHAIN
@@ -624,26 +674,45 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
                   </span>
                 </div>
               </div>
-              <span className={`text-[9px] font-mono px-2 py-0.5 rounded font-bold ${
-                liveTrxBlock.isLive ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-amber-500/20 text-amber-300'
-              }`}>
-                {liveTrxBlock.isLive ? '● Live Block Node' : 'Simulated Hash'}
-              </span>
+              <a 
+                href={`https://tronscan.org/#/block/${liveTrxBlock.height}`} 
+                target="_blank" 
+                rel="noreferrer"
+                className="text-[9px] font-mono px-2 py-0.5 rounded font-bold bg-red-900/40 text-red-300 border border-red-500/40 hover:bg-red-800/50 flex items-center space-x-1"
+              >
+                <span>TronScan</span>
+                <ExternalLink className="w-2.5 h-2.5" />
+              </a>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="bg-black/50 border border-red-900/30 rounded-xl p-2">
-                <span className="text-[9px] text-slate-400 block font-bold">CURRENT BLOCK</span>
-                <span className="font-mono font-black text-xs text-yellow-300">
-                  #{liveTrxBlock.height}
-                </span>
+            {/* Block Number & 5-Character Hash Box (Royal Club BD authentic design) */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-[10px] text-slate-400">ব্লক নম্বর: <strong className="text-amber-300 font-mono">#{liveTrxBlock.height}</strong></span>
+                <span className="text-[10px] text-emerald-400 font-bold">শেষ ডিজিট: {winningTronDigit} ({winningTronDigit >= 5 ? 'Big' : 'Small'})</span>
               </div>
-              <div className="bg-black/50 border border-red-900/30 rounded-xl p-2">
-                <span className="text-[9px] text-slate-400 block font-bold">BLOCK DIGIT</span>
-                <span className="font-mono font-black text-xs text-emerald-400">
-                  Last Char: {liveTrxBlock.hash.slice(-1)} ({parseInt(liveTrxBlock.hash.slice(-1), 16) % 10})
-                </span>
+
+              {/* 5 Distinct Hex Monospace Boxes */}
+              <div className="flex items-center justify-center space-x-2 pt-1">
+                {last5TrxChars.map((ch, idx) => {
+                  const isLast = idx === last5TrxChars.length - 1;
+                  return (
+                    <div 
+                      key={idx}
+                      className={`w-9 h-11 rounded-lg flex items-center justify-center font-mono font-black text-lg border shadow-inner ${
+                        isLast 
+                          ? 'bg-gradient-to-b from-amber-500 to-amber-600 text-slate-950 border-amber-300 shadow-[0_0_12px_rgba(234,179,8,0.6)] scale-110 animate-pulse' 
+                          : 'bg-black/60 text-slate-300 border-slate-700'
+                      }`}
+                    >
+                      {ch}
+                    </div>
+                  );
+                })}
               </div>
+              <span className="text-[9px] text-center text-slate-400 block pt-0.5">
+                ব্লক হ্যাশের সর্বশেষ সংখ্যাটি ফলাফল নির্ধারণ করে (প্রুভ্যাবলি ফেয়ার)
+              </span>
             </div>
 
             <div className="bg-black/60 rounded-xl p-2 border border-slate-800 flex items-center justify-between text-[9px] font-mono">
@@ -730,7 +799,8 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
           {/* Central 60FPS Lottery Ball Roller Display */}
           <div className="mt-4 pt-3 border-t border-white/10 flex justify-center">
             <LotteryBallRoller 
-              isRolling={rollingState.isRolling} 
+              isRolling={rollingState.isRolling || activeTimeLeft <= 5} 
+              fastScrambleNum={fastScrambleNum}
               revealedResult={rollingState.revealedResult}
               lastResult={lastResult}
             />
@@ -841,7 +911,7 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
             </div>
           </div>
 
-          {/* Quick Multipliers (X1, X5, X10, X20, X50, X100) */}
+          {/* Quick Multipliers (Random, X1, X5, X10, X20, X50, X100) */}
           <div className="flex items-center justify-between overflow-x-auto py-1 space-x-1.5 scrollbar-none">
             {['Random', 'X1', 'X5', 'X10', 'X20', 'X50', 'X100'].map((chip, idx) => (
               <button
@@ -995,7 +1065,7 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
 
       </div>
 
-      {/* 8. Bottom Drawer: Detailed Bet Confirmation Modal */}
+      {/* 8. Bottom Drawer: Detailed Bet Confirmation Modal (Royal Club BD Contract Stepper Style) */}
       {betModal && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-end justify-center p-0">
           <div className="bg-[#111827] text-white border-t-2 border-emerald-500/40 w-full max-w-lg rounded-t-3xl p-5 space-y-4 shadow-2xl animate-in slide-in-from-bottom duration-200">
@@ -1011,16 +1081,16 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
               </button>
             </div>
 
-            {/* Base Unit Selection */}
+            {/* Base Unit Selection (1, 10, 100, 1000) */}
             <div>
-              <span className="text-xs font-bold text-slate-400 block mb-1.5">বেস বাজি (টাকা)</span>
+              <span className="text-xs font-bold text-slate-400 block mb-1.5">কনট্রাক্ট মানি (টাকা)</span>
               <div className="grid grid-cols-4 gap-2">
-                {[1, 10, 50, 100, 500, 1000].map(amt => (
+                {[1, 10, 100, 1000].map(amt => (
                   <button
                     key={amt}
-                    onClick={() => setBaseUnit(amt)}
+                    onClick={() => setBetContractUnit(amt)}
                     className={`py-2 rounded-xl text-xs font-mono font-black border transition cursor-pointer ${
-                      baseUnit === amt 
+                      betContractUnit === amt 
                         ? 'bg-amber-400 text-slate-950 border-amber-300 shadow' 
                         : 'bg-slate-800 border-slate-700 text-slate-300'
                     }`}
@@ -1051,12 +1121,32 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
               </div>
             </div>
 
+            {/* Quantity Stepper (Royal Club BD Style) */}
+            <div className="flex items-center justify-between bg-black/40 p-2.5 rounded-xl border border-slate-800">
+              <span className="text-xs font-bold text-slate-300">সংখ্যা (Quantity):</span>
+              <div className="flex items-center space-x-3">
+                <button 
+                  onClick={() => setBetQuantity(Math.max(1, betQuantity - 1))}
+                  className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-white active:scale-95"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                </button>
+                <span className="font-mono font-black text-base w-8 text-center text-amber-300">{betQuantity}</span>
+                <button 
+                  onClick={() => setBetQuantity(betQuantity + 1)}
+                  className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-white active:scale-95"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
             {/* Total Bet Summary & Confirm Action */}
             <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
               <div>
                 <span className="text-[10px] text-slate-400 block">মোট বাজির পরিমাণ:</span>
                 <span className="text-xl font-mono font-black text-amber-400">
-                  ৳{(baseUnit * betMultiplier).toFixed(2)}
+                  ৳{(betContractUnit * betMultiplier * betQuantity).toFixed(2)}
                 </span>
               </div>
 
@@ -1080,12 +1170,97 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
         </div>
       )}
 
-      {/* 9. How to Play Rules Modal */}
+      {/* 9. Authentic Royal Club BD Winning / Loss Dialog (WinningTips.vue) */}
+      {winningModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="relative w-full max-w-sm rounded-3xl p-6 text-center space-y-4 shadow-2xl border bg-gradient-to-b from-[#111c35] via-[#0d1527] to-[#070b14] border-amber-400/50 animate-in zoom-in-95 duration-200">
+            
+            {/* Top Close Button */}
+            <button 
+              onClick={() => setWinningModal(null)} 
+              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Trophy or Crest */}
+            <div className="flex justify-center">
+              {winningModal.isWin ? (
+                <div className="w-16 h-16 rounded-full bg-amber-400/20 border-2 border-amber-300 flex items-center justify-center shadow-[0_0_20px_rgba(234,179,8,0.5)] animate-bounce">
+                  <Trophy className="w-9 h-9 text-amber-300" />
+                </div>
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-rose-500/20 border-2 border-rose-400 flex items-center justify-center">
+                  <span className="text-3xl">💔</span>
+                </div>
+              )}
+            </div>
+
+            {/* Header Title */}
+            <div>
+              <h3 className={`text-xl font-black uppercase tracking-wider ${
+                winningModal.isWin ? 'text-amber-300 drop-shadow-[0_2px_8px_rgba(234,179,8,0.5)]' : 'text-slate-300'
+              }`}>
+                {winningModal.isWin ? 'অভিনন্দন! আপনি জিতেছেন' : 'পরবর্তী রাউন্ডে চেষ্টা করুন'}
+              </h3>
+              <span className="text-[10px] text-slate-400 font-mono mt-0.5 block">
+                পিরিয়ড: {winningModal.period}
+              </span>
+            </div>
+
+            {/* Result Ball & Specs */}
+            <div className="bg-black/40 border border-slate-800 rounded-2xl p-3 flex items-center justify-around">
+              <div className="flex flex-col items-center">
+                <span className="text-[9px] text-slate-400 mb-1">লটারি বল</span>
+                <LotteryBall num={winningModal.num} size="md" />
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-[9px] text-slate-400 mb-1">সাইজ</span>
+                <span className="font-bold text-sm text-cyan-400">{winningModal.size}</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-[9px] text-slate-400 mb-1">কালার</span>
+                <div className={`w-5 h-5 rounded-full ${
+                  winningModal.color === 'violet-red' 
+                    ? 'bg-gradient-to-r from-purple-500 to-red-500' 
+                    : winningModal.color === 'violet-green' 
+                      ? 'bg-gradient-to-r from-purple-500 to-emerald-500' 
+                      : winningModal.color === 'green' ? 'bg-emerald-500' : 'bg-red-500'
+                }`} />
+              </div>
+            </div>
+
+            {/* Bonus Amount Display */}
+            {winningModal.isWin ? (
+              <div className="bg-emerald-950/60 border border-emerald-500/40 rounded-2xl p-3">
+                <span className="text-[10px] text-emerald-400 block font-bold">মোট উইনিং বোনাস:</span>
+                <span className="text-3xl font-black font-mono text-amber-300 drop-shadow-[0_2px_10px_rgba(234,179,8,0.6)]">
+                  +৳{winningModal.winAmount.toFixed(2)}
+                </span>
+              </div>
+            ) : (
+              <div className="text-xs text-rose-400 font-semibold py-1">
+                এই রাউন্ডে আপনার অনুমান মেলেনি
+              </div>
+            )}
+
+            {/* Action Button */}
+            <button
+              onClick={() => setWinningModal(null)}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm shadow-lg transition active:scale-95 cursor-pointer uppercase tracking-wider"
+            >
+              কনফার্ম করুন
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 10. How to Play Rules Modal */}
       {showRules && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-[#111827] border border-slate-700 max-w-sm w-full rounded-2xl p-5 space-y-3 text-xs text-slate-300 shadow-2xl">
             <div className="flex justify-between items-center border-b border-slate-700 pb-2">
-              <span className="font-bold text-white text-sm">গেমের নিয়মাবলী (How to play)</span>
+              <span className="font-bold text-white text-sm">গেমের নিয়মাবলী - Royal Club BD</span>
               <button onClick={() => setShowRules(false)} className="text-slate-400 hover:text-white p-1">
                 <X className="w-4 h-4" />
               </button>
@@ -1096,7 +1271,8 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
               <p>৩. <strong>বেগুনী (Violet)</strong>: ০ অথবা ৫ আসলে ৪.৫ গুণ লাভ।</p>
               <p>৪. <strong>সঠিক নম্বর (0-9)</strong>: যেকোনো নম্বরে সরাসরি ৯ গুণ লাভ!</p>
               <p>৫. <strong>Big / Small</strong>: ৫ থেকে ৯ হলো Big (২ গুণ), ০ থেকে ৪ হলো Small (২ গুণ)।</p>
-              <p>৬. প্রতি রাউন্ডের শেষ ৫ সেকেন্ডে বেটিং লক থাকে।</p>
+              <p>৬. <strong>TRX WinGo</strong>: Tron পাবলিক ব্লকচেইনের রিয়েল-টাইম হ্যাশের শেষ হেক্সাডেসিমাল ডিজিট দ্বারা ফলাফল নির্ধারিত হয়, যা TronScan-এ ১০০% যাচাইযোগ্য।</p>
+              <p>৭. প্রতি রাউন্ডের শেষ ৫ সেকেন্ডে বেটিং লক থাকে।</p>
             </div>
             <button
               onClick={() => setShowRules(false)}

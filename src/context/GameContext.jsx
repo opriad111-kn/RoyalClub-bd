@@ -763,7 +763,8 @@ export function GameProvider({ children }) {
     }
     return [
       { code: 'ROYAL100', amount: 100, maxUses: 1000, usedCount: 14, expiresAt: '2026-12-31', enabled: true },
-      { code: 'AMARCLUB', amount: 150, maxUses: 500, usedCount: 8, expiresAt: '2026-12-31', enabled: true },
+      { code: 'ROYALCLUB', amount: 150, maxUses: 500, usedCount: 8, expiresAt: '2026-12-31', enabled: true },
+      { code: 'ROYALCLUBBD', amount: 250, maxUses: 500, usedCount: 5, expiresAt: '2026-12-31', enabled: true },
       { code: 'VIP2026', amount: 200, maxUses: 200, usedCount: 3, expiresAt: '2026-12-31', enabled: true },
       { code: 'WELCOME50', amount: 50, maxUses: 2000, usedCount: 42, expiresAt: '2026-12-31', enabled: true }
     ];

@@ -469,7 +469,7 @@ function AppContent() {
           )}
         </main>
 
-        {/* 5-Tab AmarClub Style Bottom Navigation (Hidden in Admin, Game, WinGo, Deposit, Withdraw) */}
+        {/* 5-Tab Royal Club BD Bottom Navigation (Hidden in Admin, Game, WinGo, Deposit, Withdraw) */}
         {!activeGame && activeTab !== 'admin' && activeTab !== 'wingo' && activeTab !== 'deposit' && activeTab !== 'withdraw' && (
           <AmarBottomNav
             activeTab={activeTab}

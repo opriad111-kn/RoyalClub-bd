@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '../../context/GameContext';
 import { soundManager } from '../../lib/audio';
 import confetti from 'canvas-confetti';
@@ -6,7 +6,7 @@ import {
   ChevronLeft, 
   Volume2, 
   VolumeX, 
-  Headphones,
+  Headphones, 
   RotateCw, 
   Clock, 
   Wallet,
@@ -15,10 +15,11 @@ import {
   Info,
   X,
   Plus,
-  Minus
+  Minus,
+  Trophy
 } from 'lucide-react';
 
-// Exact Amar Club K3 Multipliers
+// Exact Royal Club BD K3 Multipliers
 const SUM_BALLS = [
   { num: 3, mult: '207.36X', color: 'red' },
   { num: 4, mult: '69.12X', color: 'green' },
@@ -56,7 +57,9 @@ export default function K3LotteryGame({ onClose, onOpenDeposit, onOpenWithdraw }
   // Current Rolled Red Casino Dice [1-6, 1-6, 1-6]
   const [dice, setDice] = useState([5, 6, 5]);
   const [isRolling, setIsRolling] = useState(false);
-  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(() => soundManager.isSoundEnabled());
+  const [winningModal, setWinningModal] = useState(null);
+  const lastTickSec = useRef(-1);
 
   // Active Category Tab: 'total', '2same', '3same', 'different'
   const [activeTab, setActiveTab] = useState('total');
@@ -86,7 +89,7 @@ export default function K3LotteryGame({ onClose, onOpenDeposit, onOpenWithdraw }
   ]);
   const [myBets, setMyBets] = useState([]);
 
-  // Wall-Clock Countdown Timer
+  // Wall-Clock Countdown Timer with Authentic Audio
   useEffect(() => {
     const durationSec = selectedDuration === '1m' ? 60 : selectedDuration === '3m' ? 180 : selectedDuration === '5m' ? 300 : 600;
     const interval = setInterval(() => {
@@ -94,17 +97,23 @@ export default function K3LotteryGame({ onClose, onOpenDeposit, onOpenWithdraw }
       const rem = durationSec - (nowSec % durationSec);
       setTimeLeft(rem);
 
+      if (rem <= 5 && rem > 0 && lastTickSec.current !== nowSec) {
+        lastTickSec.current = nowSec;
+        soundManager.playTick();
+      }
+
       if (rem === 1) {
+        soundManager.playBuzzer();
         rollRound();
       }
-    }, 1000);
+    }, 500);
 
     return () => clearInterval(interval);
   }, [selectedDuration, periodId, myBets, user.balance]);
 
   function rollRound() {
     setIsRolling(true);
-    if (soundEnabled) soundManager.playRoll();
+    soundManager.playRoll();
 
     setTimeout(() => {
       const eff = getGameEffectiveSettings ? getGameEffectiveSettings('k3', 'ORIGINAL', user) : { mode: 'auto' };
@@ -159,8 +168,10 @@ export default function K3LotteryGame({ onClose, onOpenDeposit, onOpenWithdraw }
 
       // Check user bets
       let winPayout = 0;
+      let hadPendingBets = false;
       setMyBets(prev => prev.map(b => {
         if (b.period === periodId && b.status === 'pending') {
+          hadPendingBets = true;
           let won = false;
           if (b.type === 'sum' && b.value === sum) won = true;
           if (b.type === 'size' && b.value === (sum >= 11 ? 'Big' : 'Small') && !isTriple) won = true;
@@ -182,8 +193,26 @@ export default function K3LotteryGame({ onClose, onOpenDeposit, onOpenWithdraw }
 
       if (winPayout > 0) {
         adjustUserBalance(user.uid, winPayout);
-        if (soundEnabled) soundManager.playWin();
+        soundManager.playWin();
         confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+        setWinningModal({
+          show: true,
+          isWin: true,
+          winAmount: winPayout,
+          period: periodId,
+          dice: newDice,
+          sum
+        });
+      } else if (hadPendingBets) {
+        soundManager.playLoss();
+        setWinningModal({
+          show: true,
+          isWin: false,
+          winAmount: 0,
+          period: periodId,
+          dice: newDice,
+          sum
+        });
       }
     }, 1500);
   }
@@ -233,7 +262,7 @@ export default function K3LotteryGame({ onClose, onOpenDeposit, onOpenWithdraw }
     setBetDrawer(null);
   }
 
-  // 3D Red Casino Die with Yellow & White Dots (Amar Club Reference)
+  // 3D Red Casino Die with Yellow & White Dots (Royal Club BD Style)
   function renderRedCasinoDie(val, size = 'lg') {
     const dim = size === 'sm' ? 22 : size === 'md' ? 36 : 56;
     const pipRadius = size === 'sm' ? 2.5 : size === 'md' ? 4 : 5.5;
@@ -300,10 +329,10 @@ export default function K3LotteryGame({ onClose, onOpenDeposit, onOpenWithdraw }
     <div className="fixed inset-0 z-[999] bg-[#F4F5F8] text-slate-800 flex justify-center overflow-y-auto font-sans select-none pb-16">
       <div className="w-full max-w-[420px] min-h-screen bg-[#F4F5F8] flex flex-col justify-between relative shadow-2xl">
         
-        {/* 1. Curved Emerald Top Banner with Amar Club Crown Header */}
+        {/* 1. Curved Emerald Top Banner with Royal Club BD Crown Header */}
         <div className="bg-gradient-to-b from-[#10b981] via-[#059669] to-[#047857] pb-14 px-3.5 pt-3 rounded-b-[30px] relative shadow-md">
           
-          {/* Top Bar: Back, AMAR CLUB, CS, Sound */}
+          {/* Top Bar: Back, ROYAL CLUB BD, CS, Sound */}
           <div className="flex justify-between items-center text-white mb-3">
             <button 
               onClick={onClose} 
@@ -313,11 +342,11 @@ export default function K3LotteryGame({ onClose, onOpenDeposit, onOpenWithdraw }
               <ChevronLeft className="w-5 h-5" />
             </button>
 
-            {/* Amar Club Crown Logo */}
+            {/* Royal Club BD Crown Logo */}
             <div className="flex flex-col items-center">
               <div className="flex items-center space-x-1">
                 <span className="text-xl">👑</span>
-                <span className="font-black text-lg tracking-wider font-serif">AMAR CLUB</span>
+                <span className="font-black text-lg tracking-wider font-serif">ROYAL CLUB BD</span>
               </div>
             </div>
 
@@ -385,7 +414,7 @@ export default function K3LotteryGame({ onClose, onOpenDeposit, onOpenWithdraw }
             <div className="flex items-center space-x-2 flex-1 overflow-hidden">
               <span className="text-base text-emerald-600">📢</span>
               <p className="text-[11px] text-slate-700 font-medium truncate">
-                1. Welcome to become a member of the AMAR CLUB family. We sincerely invite you...
+                1. Welcome to become a member of the ROYAL CLUB BD family. We sincerely invite you...
               </p>
             </div>
             <button 
@@ -471,7 +500,7 @@ export default function K3LotteryGame({ onClose, onOpenDeposit, onOpenWithdraw }
             </div>
           </div>
 
-          {/* 3-Dice Recessed Tray Box (Exact Amar Club Style) */}
+          {/* 3-Dice Recessed Tray Box (Exact Royal Club BD Style) */}
           <div className="bg-[#0f3d24] border-4 border-[#092616] rounded-2xl p-4 shadow-[inset_0_4px_16px_rgba(0,0,0,0.8)] flex items-center justify-center space-x-4">
             {dice.map((dVal, idx) => (
               <div 
@@ -822,16 +851,86 @@ export default function K3LotteryGame({ onClose, onOpenDeposit, onOpenWithdraw }
       {showRules && (
         <div className="fixed inset-0 z-[1000] bg-black/70 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-5 max-w-sm w-full space-y-3 text-xs text-slate-700 shadow-2xl">
-            <h3 className="font-black text-sm text-slate-900">K3 LOTTERY RULES</h3>
+            <h3 className="font-black text-sm text-slate-900">K3 LOTTERY RULES - ROYAL CLUB BD</h3>
             <p>1. তিনটি ডাইসের ড্র ফলাফলের ওপর নির্ভর করে খেলা পরিচালিত হয়।</p>
             <p>2. Total Sum: ৩ থেকে ১৮ পর্যন্ত নির্দিষ্ট যোগফল ধরলে সর্বোচ্চ ২০৭.৩৬X পর্যন্ত পেআউট পাওয়া যায়।</p>
             <p>3. Small (৩-১০) এবং Big (১১-১৮) দ্বিগুণ পেআউট (২X) প্রদান করে।</p>
             <p>4. শেষ ৫ সেকেন্ড নতুন কোনো বাজি গ্রহণ করা হয় না।</p>
             <button 
               onClick={() => setShowRules(false)}
-              className="w-full bg-[#10b981] text-white font-black py-2 rounded-xl mt-2"
+              className="w-full bg-[#10b981] text-white font-black py-2 rounded-xl mt-2 cursor-pointer"
             >
               ঠিক আছে
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* WinningTips Modal (Authentic K3 Winning Result Dialog) */}
+      {winningModal && (
+        <div className="fixed inset-0 z-[1000] bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="relative w-full max-w-sm rounded-3xl p-6 text-center space-y-4 shadow-2xl border bg-gradient-to-b from-[#111c35] via-[#0d1527] to-[#070b14] border-amber-400/50 animate-in zoom-in-95 duration-200">
+            <button 
+              onClick={() => setWinningModal(null)} 
+              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex justify-center">
+              {winningModal.isWin ? (
+                <div className="w-16 h-16 rounded-full bg-amber-400/20 border-2 border-amber-300 flex items-center justify-center shadow-[0_0_20px_rgba(234,179,8,0.5)] animate-bounce">
+                  <Trophy className="w-9 h-9 text-amber-300" />
+                </div>
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-rose-500/20 border-2 border-rose-400 flex items-center justify-center">
+                  <span className="text-3xl">🎲</span>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <h3 className={`text-xl font-black uppercase tracking-wider ${
+                winningModal.isWin ? 'text-amber-300 drop-shadow-[0_2px_8px_rgba(234,179,8,0.5)]' : 'text-slate-300'
+              }`}>
+                {winningModal.isWin ? 'অভিনন্দন! আপনি জিতেছেন' : 'পরবর্তী রাউন্ডে চেষ্টা করুন'}
+              </h3>
+              <span className="text-[10px] text-slate-400 font-mono mt-0.5 block">
+                পিরিয়ড: {winningModal.period}
+              </span>
+            </div>
+
+            {/* 3 Dice & Sum */}
+            <div className="bg-black/40 border border-slate-800 rounded-2xl p-3 flex items-center justify-around">
+              <div className="flex items-center space-x-2">
+                {winningModal.dice?.map((d, i) => (
+                  <div key={i}>{renderRedCasinoDie(d, 'sm')}</div>
+                ))}
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-[9px] text-slate-400">মোট যোগফল</span>
+                <span className="font-mono font-black text-lg text-amber-300">{winningModal.sum}</span>
+              </div>
+            </div>
+
+            {winningModal.isWin ? (
+              <div className="bg-emerald-950/60 border border-emerald-500/40 rounded-2xl p-3">
+                <span className="text-[10px] text-emerald-400 block font-bold">মোট উইনিং বোনাস:</span>
+                <span className="text-3xl font-black font-mono text-amber-300 drop-shadow-[0_2px_10px_rgba(234,179,8,0.6)]">
+                  +৳{winningModal.winAmount.toFixed(2)}
+                </span>
+              </div>
+            ) : (
+              <div className="text-xs text-rose-400 font-semibold py-1">
+                এই রাউন্ডে কোনো জয় মেলেনি
+              </div>
+            )}
+
+            <button
+              onClick={() => setWinningModal(null)}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm shadow-lg transition active:scale-95 cursor-pointer uppercase tracking-wider"
+            >
+              কনফার্ম করুন
             </button>
           </div>
         </div>
