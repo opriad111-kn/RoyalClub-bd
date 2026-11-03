@@ -38,10 +38,10 @@ export default function PromotionPage({ onOpenAuth }) {
   ];
 
   return (
-    <div className="space-y-3.5 pb-24 text-xs select-none -mx-3.5 -mt-3.5 font-sans bg-[#14122E] min-h-screen text-white">
+    <div className="space-y-3.5 pb-24 text-xs select-none -mx-3.5 -mt-3.5 font-sans bg-[#070b19] min-h-screen text-white">
       
       {/* 1. Header Bar */}
-      <div className="bg-[#1C2063] px-4 py-3 flex items-center justify-between border-b border-[#30358B]/60 shadow-md">
+      <div className="bg-[#0f1730] px-4 py-3 flex items-center justify-between border-b border-slate-800/60 shadow-md">
         <span className="font-black text-sm tracking-wide text-white uppercase">
           Promotion (প্রমোশন)
         </span>
@@ -67,7 +67,7 @@ export default function PromotionPage({ onOpenAuth }) {
           className="relative px-3.5 pt-4 pb-6 bg-cover bg-center"
           style={{ backgroundImage: `url('/assets/official_khelv/promotionbg.png')` }}
         >
-          <div className="bg-[#1C2063] rounded-2xl p-5 border border-[#30358B] shadow-2xl text-center space-y-3">
+          <div className="bg-[#0f1730] rounded-2xl p-5 border border-slate-800/80 shadow-2xl text-center space-y-3">
             <div className="w-14 h-14 rounded-full bg-gradient-to-r from-red-600 via-purple-600 to-blue-600 flex items-center justify-center mx-auto shadow-lg">
               <KhelvIcon name="team_partner" className="w-8 h-8 text-white" />
             </div>
@@ -95,7 +95,7 @@ export default function PromotionPage({ onOpenAuth }) {
         <div className="px-3.5 pt-2 space-y-3">
           
           {/* Hero Yesterday Total Commission Box */}
-          <div className="bg-[#1C2063] rounded-2xl p-4 border border-[#30358B] shadow-lg text-center space-y-1">
+          <div className="bg-[#0f1730] rounded-2xl p-4 border border-slate-800/80 shadow-lg text-center space-y-1">
             <span className="text-3xl font-black font-mono text-amber-400 tracking-tight block">
               ৳0.00
             </span>
@@ -107,9 +107,9 @@ export default function PromotionPage({ onOpenAuth }) {
             </span>
 
             {/* Direct vs Team Stats 2-Column Grid */}
-            <div className="grid grid-cols-2 gap-2 pt-3 mt-2 border-t border-[#30358B]/80 text-left">
-              <div className="bg-[#14122E] rounded-xl p-2.5 border border-[#30358B]">
-                <h5 className="font-black text-[11px] text-amber-300 mb-1 border-b border-[#30358B]/60 pb-1">
+            <div className="grid grid-cols-2 gap-2 pt-3 mt-2 border-t border-slate-800/80 text-left">
+              <div className="bg-[#070b19] rounded-xl p-2.5 border border-slate-800/80">
+                <h5 className="font-black text-[11px] text-amber-300 mb-1 border-b border-slate-800/60 pb-1">
                   Direct Subordinates
                 </h5>
                 <div className="space-y-0.5 text-[10px] text-[#D4E8FF]">
@@ -128,8 +128,8 @@ export default function PromotionPage({ onOpenAuth }) {
                 </div>
               </div>
 
-              <div className="bg-[#14122E] rounded-xl p-2.5 border border-[#30358B]">
-                <h5 className="font-black text-[11px] text-cyan-300 mb-1 border-b border-[#30358B]/60 pb-1">
+              <div className="bg-[#070b19] rounded-xl p-2.5 border border-slate-800/80">
+                <h5 className="font-black text-[11px] text-cyan-300 mb-1 border-b border-slate-800/60 pb-1">
                   Team Subordinates
                 </h5>
                 <div className="space-y-0.5 text-[10px] text-[#D4E8FF]">
@@ -166,7 +166,7 @@ export default function PromotionPage({ onOpenAuth }) {
             {/* Copy Invitation Code */}
             <div 
               onClick={() => handleCopy(inviteCode)}
-              className="bg-[#1C2063] rounded-2xl p-3.5 border border-[#30358B] shadow-sm flex items-center justify-between cursor-pointer hover:bg-[#242A75] transition active:scale-95"
+              className="bg-[#0f1730] rounded-2xl p-3.5 border border-slate-800/80 shadow-sm flex items-center justify-between cursor-pointer hover:bg-[#141d3d] transition active:scale-95"
             >
               <div className="flex items-center space-x-3">
                 <KhelvIcon name="copy_Code" className="w-7 h-7" />
@@ -181,7 +181,7 @@ export default function PromotionPage({ onOpenAuth }) {
             {/* Subordinate Data */}
             <div 
               onClick={() => setSubordinateModalOpen(true)}
-              className="bg-[#1C2063] rounded-2xl p-3.5 border border-[#30358B] shadow-sm flex items-center justify-between cursor-pointer hover:bg-[#242A75] transition active:scale-95"
+              className="bg-[#0f1730] rounded-2xl p-3.5 border border-slate-800/80 shadow-sm flex items-center justify-between cursor-pointer hover:bg-[#141d3d] transition active:scale-95"
             >
               <div className="flex items-center space-x-3">
                 <KhelvIcon name="team_port" className="w-7 h-7" />
@@ -196,7 +196,7 @@ export default function PromotionPage({ onOpenAuth }) {
                 const event = new CustomEvent('royalclub_show_toast', { detail: { message: "কমিশন প্রতিদিন রাত ০১:০০ টায় সরাসরি মেইন ওয়ালেটে যোগ হবে।" } });
                 window.dispatchEvent(event);
               }}
-              className="bg-[#1C2063] rounded-2xl p-3.5 border border-[#30358B] shadow-sm flex items-center justify-between cursor-pointer hover:bg-[#242A75] transition active:scale-95"
+              className="bg-[#0f1730] rounded-2xl p-3.5 border border-slate-800/80 shadow-sm flex items-center justify-between cursor-pointer hover:bg-[#141d3d] transition active:scale-95"
             >
               <div className="flex items-center space-x-3">
                 <KhelvIcon name="commission" className="w-7 h-7" />
@@ -208,7 +208,7 @@ export default function PromotionPage({ onOpenAuth }) {
             {/* Invitation Rules */}
             <div 
               onClick={() => setActiveRuleTab(prev => !prev)}
-              className="bg-[#1C2063] rounded-2xl p-3.5 border border-[#30358B] shadow-sm flex items-center justify-between cursor-pointer hover:bg-[#242A75] transition active:scale-95"
+              className="bg-[#0f1730] rounded-2xl p-3.5 border border-slate-800/80 shadow-sm flex items-center justify-between cursor-pointer hover:bg-[#141d3d] transition active:scale-95"
             >
               <div className="flex items-center space-x-3">
                 <KhelvIcon name="invite_reg" className="w-7 h-7" />
@@ -220,7 +220,7 @@ export default function PromotionPage({ onOpenAuth }) {
             {/* Rebate Ratio */}
             <div 
               onClick={() => setActiveRuleTab(true)}
-              className="bg-[#1C2063] rounded-2xl p-3.5 border border-[#30358B] shadow-sm flex items-center justify-between cursor-pointer hover:bg-[#242A75] transition active:scale-95"
+              className="bg-[#0f1730] rounded-2xl p-3.5 border border-slate-800/80 shadow-sm flex items-center justify-between cursor-pointer hover:bg-[#141d3d] transition active:scale-95"
             >
               <div className="flex items-center space-x-3">
                 <KhelvIcon name="rebateRatio" className="w-7 h-7" />
@@ -235,7 +235,7 @@ export default function PromotionPage({ onOpenAuth }) {
                 const event = new CustomEvent('royalclub_show_toast', { detail: { message: "এজেন্ট সাপোর্ট টেলিগ্রাম: @ROYALCLUB_Support" } });
                 window.dispatchEvent(event);
               }}
-              className="bg-[#1C2063] rounded-2xl p-3.5 border border-[#30358B] shadow-sm flex items-center justify-between cursor-pointer hover:bg-[#242A75] transition active:scale-95"
+              className="bg-[#0f1730] rounded-2xl p-3.5 border border-slate-800/80 shadow-sm flex items-center justify-between cursor-pointer hover:bg-[#141d3d] transition active:scale-95"
             >
               <div className="flex items-center space-x-3">
                 <KhelvIcon name="server" className="w-7 h-7" />
@@ -246,26 +246,26 @@ export default function PromotionPage({ onOpenAuth }) {
           </div>
 
           {/* Promotion Data Card */}
-          <div className="bg-[#1C2063] rounded-2xl p-4 border border-[#30358B] shadow-lg space-y-3">
-            <div className="flex items-center space-x-2 font-bold text-xs text-white border-b border-[#30358B] pb-2">
+          <div className="bg-[#0f1730] rounded-2xl p-4 border border-slate-800/80 shadow-lg space-y-3">
+            <div className="flex items-center space-x-2 font-bold text-xs text-white border-b border-slate-800/80 pb-2">
               <KhelvIcon name="promotionData" className="w-5 h-5" />
               <span>Promotion Data</span>
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-center">
-              <div className="bg-[#14122E] p-2.5 rounded-xl border border-[#30358B]">
+              <div className="bg-[#070b19] p-2.5 rounded-xl border border-slate-800/80">
                 <span className="text-sm font-black font-mono text-amber-400 block">৳0.00</span>
                 <span className="text-[10px] text-[#7098C5] block mt-0.5">Direct Gross Commission</span>
               </div>
-              <div className="bg-[#14122E] p-2.5 rounded-xl border border-[#30358B]">
+              <div className="bg-[#070b19] p-2.5 rounded-xl border border-slate-800/80">
                 <span className="text-sm font-black font-mono text-cyan-400 block">৳0.00</span>
                 <span className="text-[10px] text-[#7098C5] block mt-0.5">Team Gross Commission</span>
               </div>
-              <div className="bg-[#14122E] p-2.5 rounded-xl border border-[#30358B]">
+              <div className="bg-[#070b19] p-2.5 rounded-xl border border-slate-800/80">
                 <span className="text-sm font-black font-mono text-white block">{safeUser.referral_count || 0}</span>
                 <span className="text-[10px] text-[#7098C5] block mt-0.5">Direct Subordinates</span>
               </div>
-              <div className="bg-[#14122E] p-2.5 rounded-xl border border-[#30358B]">
+              <div className="bg-[#070b19] p-2.5 rounded-xl border border-slate-800/80">
                 <span className="text-sm font-black font-mono text-white block">{safeUser.referral_count || 0}</span>
                 <span className="text-[10px] text-[#7098C5] block mt-0.5">Total Subordinates</span>
               </div>
@@ -277,14 +277,14 @@ export default function PromotionPage({ onOpenAuth }) {
 
       {/* 3. Official KhelV 6-Tier Rules & Rebate Table (RuleContent) */}
       <div className="px-3.5 space-y-3 pt-2">
-        <div className="bg-[#1C2063] rounded-2xl p-4 border border-[#30358B] shadow-lg space-y-3">
-          <div className="border-b border-[#30358B] pb-2">
+        <div className="bg-[#0f1730] rounded-2xl p-4 border border-slate-800/80 shadow-lg space-y-3">
+          <div className="border-b border-slate-800/80 pb-2">
             <h4 className="font-black text-sm text-white">Promotion Partner & Rebate Ratio</h4>
             <span className="text-[10px] text-[#7098C5]">Activity valid for long time • Multi-level rewards</span>
           </div>
 
           {/* Rebate Table */}
-          <div className="overflow-x-auto rounded-xl border border-[#30358B] bg-[#14122E]">
+          <div className="overflow-x-auto rounded-xl border border-slate-800/80 bg-[#070b19]">
             <table className="w-full text-left text-[10px]">
               <thead className="bg-[#3E44A9] text-[#D4E8FF] uppercase font-bold">
                 <tr>
@@ -307,15 +307,15 @@ export default function PromotionPage({ onOpenAuth }) {
 
           {/* 5 Rules Points (Exact KhelV Rules) */}
           <div className="space-y-2 text-[10.5px] text-[#D4E8FF] leading-relaxed pt-1">
-            <div className="p-2 rounded-xl bg-[#14122E] border border-[#30358B] flex items-start space-x-2">
+            <div className="p-2 rounded-xl bg-[#070b19] border border-slate-800/80 flex items-start space-x-2">
               <span className="bg-amber-400 text-slate-950 font-black px-1.5 py-0.2 rounded text-[9px] shrink-0">01</span>
               <p>The agency system uses a 6-tier hierarchical rebate model. You earn commissions on every valid bet placed by direct and team players.</p>
             </div>
-            <div className="p-2 rounded-xl bg-[#14122E] border border-[#30358B] flex items-start space-x-2">
+            <div className="p-2 rounded-xl bg-[#070b19] border border-slate-800/80 flex items-start space-x-2">
               <span className="bg-amber-400 text-slate-950 font-black px-1.5 py-0.2 rounded text-[9px] shrink-0">02</span>
               <p>Turnover and valid betting are calculated in real time across WinGo, TRX Lottery, Slots, and Live Casino.</p>
             </div>
-            <div className="p-2 rounded-xl bg-[#14122E] border border-[#30358B] flex items-start space-x-2">
+            <div className="p-2 rounded-xl bg-[#070b19] border border-slate-800/80 flex items-start space-x-2">
               <span className="bg-amber-400 text-slate-950 font-black px-1.5 py-0.2 rounded text-[9px] shrink-0">03</span>
               <p>Daily commissions are settled automatically at 01:00 AM every morning and credited directly into your wallet with 0 rollover required.</p>
             </div>
@@ -326,7 +326,7 @@ export default function PromotionPage({ onOpenAuth }) {
       {/* Share Modal (QR Code & Link) */}
       {shareModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[#1C2063] border border-[#30358B] rounded-3xl w-full max-w-sm p-5 text-white space-y-4 shadow-2xl relative">
+          <div className="bg-[#0f1730] border border-slate-800/80 rounded-3xl w-full max-w-sm p-5 text-white space-y-4 shadow-2xl relative">
             <button 
               onClick={() => setShareModalOpen(false)}
               className="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white"
@@ -350,7 +350,7 @@ export default function PromotionPage({ onOpenAuth }) {
 
             {/* Invite Code & Link Copy */}
             <div className="space-y-2 text-xs">
-              <div className="p-2.5 rounded-xl bg-[#14122E] border border-[#30358B] flex justify-between items-center">
+              <div className="p-2.5 rounded-xl bg-[#070b19] border border-slate-800/80 flex justify-between items-center">
                 <span className="text-[#7098C5]">Invite code: <strong className="text-white font-mono">{inviteCode}</strong></span>
                 <button
                   onClick={() => handleCopy(inviteCode)}
@@ -360,7 +360,7 @@ export default function PromotionPage({ onOpenAuth }) {
                 </button>
               </div>
 
-              <div className="p-2.5 rounded-xl bg-[#14122E] border border-[#30358B] flex justify-between items-center">
+              <div className="p-2.5 rounded-xl bg-[#070b19] border border-slate-800/80 flex justify-between items-center">
                 <span className="text-white font-mono text-[10px] truncate max-w-[200px]">{inviteLink}</span>
                 <button
                   onClick={() => {
@@ -380,8 +380,8 @@ export default function PromotionPage({ onOpenAuth }) {
       {/* Subordinates Modal */}
       {subordinateModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[#1C2063] border border-[#30358B] rounded-3xl w-full max-w-sm p-4 text-white space-y-3 shadow-2xl">
-            <div className="flex justify-between items-center border-b border-[#30358B] pb-2">
+          <div className="bg-[#0f1730] border border-slate-800/80 rounded-3xl w-full max-w-sm p-4 text-white space-y-3 shadow-2xl">
+            <div className="flex justify-between items-center border-b border-slate-800/80 pb-2">
               <h3 className="font-black text-sm">Team Subordinates Report</h3>
               <button onClick={() => setSubordinateModalOpen(false)} className="text-slate-400 hover:text-white p-1">
                 ✕

@@ -880,36 +880,72 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
           {/* Tab Content */}
           <div className="p-3">
             {activeTab === 'history' && (
-              <div className="divide-y divide-slate-800/60 font-mono text-xs">
-                <div className="grid grid-cols-4 pb-2 text-[10px] font-bold text-slate-400 uppercase">
-                  <span>Period</span>
-                  <span className="text-center">Number</span>
-                  <span className="text-center">Size</span>
-                  <span className="text-right">Color</span>
+              activeCfg.isTrx ? (
+                <div className="divide-y divide-slate-800/60 font-mono text-xs">
+                  <div className="grid grid-cols-4 pb-2 text-[10px] font-bold text-slate-400 uppercase">
+                    <span>Period</span>
+                    <span className="text-center">Block</span>
+                    <span className="text-center">Hash</span>
+                    <span className="text-right">Result</span>
+                  </div>
+                  {activeHistory.slice(0, 15).map((row, idx) => {
+                    const hashStr = row.hash || '0000000005393e79bbaaa383d428824a0f94e318d5eee4ade73c586d45e5c462';
+                    const last5 = hashStr.slice(-5).toUpperCase();
+                    return (
+                      <div key={idx} className="grid grid-cols-4 py-2 items-center">
+                        <span className="text-slate-300 font-bold truncate pr-1 text-[11px]">{row.period}</span>
+                        <span className="text-center text-[10.5px] text-slate-400 font-mono">{row.blockHeight || 87637820}</span>
+                        <span className="text-center font-mono font-bold text-amber-300 text-[11px] truncate">
+                          **{last5}
+                        </span>
+                        <div className="flex justify-end items-center space-x-1.5">
+                          <div className="w-5 h-5 rounded-full flex items-center justify-center">
+                            <img 
+                              src={BALL_PNGS[row.num] || BALL_PNGS[0]} 
+                              alt={`${row.num}`} 
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                          <span className={`text-[10px] font-black ${row.size === 'Big' ? 'text-amber-400' : 'text-blue-400'}`}>
+                            {row.size}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                {activeHistory.slice(0, 15).map((row, idx) => (
-                  <div key={idx} className="grid grid-cols-4 py-2 items-center">
-                    <span className="text-slate-300 font-bold truncate pr-1">{row.period}</span>
-                    <div className="flex justify-center">
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center">
-                        <img 
-                          src={BALL_PNGS[row.num] || BALL_PNGS[0]} 
-                          alt={`${row.num}`} 
-                          className="w-full h-full object-contain"
-                        />
+              ) : (
+                <div className="divide-y divide-slate-800/60 font-mono text-xs">
+                  <div className="grid grid-cols-4 pb-2 text-[10px] font-bold text-slate-400 uppercase">
+                    <span>Period</span>
+                    <span className="text-center">Number</span>
+                    <span className="text-center">Size</span>
+                    <span className="text-right">Color</span>
+                  </div>
+                  {activeHistory.slice(0, 15).map((row, idx) => (
+                    <div key={idx} className="grid grid-cols-4 py-2 items-center">
+                      <span className="text-slate-300 font-bold truncate pr-1">{row.period}</span>
+                      <div className="flex justify-center">
+                        <div className="w-6 h-6 rounded-full flex items-center justify-center">
+                          <img 
+                            src={BALL_PNGS[row.num] || BALL_PNGS[0]} 
+                            alt={`${row.num}`} 
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                      </div>
+                      <span className={`text-center font-bold ${row.size === 'Big' ? 'text-amber-400' : 'text-blue-400'}`}>
+                        {row.size}
+                      </span>
+                      <div className="flex justify-end items-center space-x-1">
+                        <span className={`w-3 h-3 rounded-full ${
+                          row.color === 'green' ? 'bg-[#00b977]' : row.color === 'red' ? 'bg-[#eb3737]' : 'bg-[#b620e0]'
+                        }`} />
                       </div>
                     </div>
-                    <span className={`text-center font-bold ${row.size === 'Big' ? 'text-amber-400' : 'text-blue-400'}`}>
-                      {row.size}
-                    </span>
-                    <div className="flex justify-end items-center space-x-1">
-                      <span className={`w-3 h-3 rounded-full ${
-                        row.color === 'green' ? 'bg-[#00b977]' : row.color === 'red' ? 'bg-[#eb3737]' : 'bg-[#b620e0]'
-                      }`} />
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )
             )}
 
             {activeTab === 'my_history' && (

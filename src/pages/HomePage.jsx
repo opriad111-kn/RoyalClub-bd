@@ -184,27 +184,11 @@ export default function HomePage({
   // 2. SLOTS GAMES (100% Unique, Real KhelV Games)
   const slotsGamesList = [
     { 
-      id: 'crazy777', 
-      title: 'CRAZY 777', 
-      display: 'Crazy 777', 
+      id: 'fortunegems3', 
+      title: 'FORTUNE GEMS 3', 
+      display: 'Fortune Gems 3', 
       category: 'Slots',
-      image: '/assets/official_khelv/game_crazy777.png', 
-      provider: 'JILI'
-    },
-    { 
-      id: 'goldenempire', 
-      title: 'GOLDEN EMPIRE', 
-      display: 'Golden Empire', 
-      category: 'Slots',
-      image: '/assets/official_khelv/game_goldenempire.png', 
-      provider: 'JILI'
-    },
-    { 
-      id: 'boxingking', 
-      title: 'BOXING KING', 
-      display: 'Boxing King', 
-      category: 'Slots',
-      image: '/assets/official_khelv/game_boxingking.png', 
+      image: '/assets/official_khelv/game_fortunegems3.png', 
       provider: 'JILI'
     },
     { 
@@ -216,73 +200,89 @@ export default function HomePage({
       provider: 'JILI'
     },
     { 
+      id: 'boom', 
+      title: 'BOOM EXPLODE', 
+      display: 'Boom Explode', 
+      category: 'Slots',
+      image: '/assets/official_khelv/game_boom.png', 
+      provider: 'JILI'
+    },
+    { 
+      id: 'crazy777', 
+      title: 'CRAZY 777 DELUXE', 
+      display: 'Crazy 777 Deluxe', 
+      category: 'Slots',
+      image: '/assets/official_khelv/game_crazy777.png', 
+      provider: 'JILI'
+    },
+    { 
+      id: 'goldenempire', 
+      title: 'GOLDEN EMPIRE MAX', 
+      display: 'Golden Empire Max', 
+      category: 'Slots',
+      image: '/assets/official_khelv/game_goldenempire.png', 
+      provider: 'JILI'
+    },
+    { 
+      id: 'boxingking', 
+      title: 'BOXING CHAMPION', 
+      display: 'Boxing Champion', 
+      category: 'Slots',
+      image: '/assets/official_khelv/game_boxingking.png', 
+      provider: 'JILI'
+    },
+    // Page 2
+    { 
       id: 'moneycoming', 
-      title: 'MONEY COMING', 
-      display: 'Money Coming', 
+      title: 'MONEY COMING PRO', 
+      display: 'Money Coming Pro', 
       category: 'Slots',
       image: '/assets/official_khelv/game_moneycoming.png', 
       provider: 'JILI'
     },
     { 
-      id: 'fortuneox', 
-      title: 'FORTUNE OX', 
-      display: 'Fortune Ox', 
-      category: 'Slots',
-      image: '/assets/official_khelv/game_fortuneox.png', 
-      provider: 'PG SOFT'
-    },
-    // Page 2
-    { 
       id: 'superace', 
-      title: 'SUPER ACE', 
-      display: 'Super Ace', 
+      title: 'SUPER ACE DELUXE', 
+      display: 'Super Ace Deluxe', 
       category: 'Slots',
       image: '/assets/official_khelv/game_superace.png', 
       provider: 'JILI'
     },
     { 
-      id: 'megaace', 
-      title: 'MEGA ACE', 
-      display: 'Mega Ace', 
+      id: 'fortuneox', 
+      title: 'FORTUNE OX GOLD', 
+      display: 'Fortune Ox Gold', 
       category: 'Slots',
-      image: '/assets/official_khelv/game_megaace.png', 
-      provider: 'JILI'
-    },
-    { 
-      id: 'fortunegems3', 
-      title: 'FORTUNE GEMS 3', 
-      display: 'Fortune Gems 3', 
-      category: 'Slots',
-      image: '/assets/official_khelv/game_fortunegems3.png', 
-      provider: 'JILI'
+      image: '/assets/official_khelv/game_fortuneox.png', 
+      provider: 'PG SOFT'
     },
     { 
       id: 'wildbounty', 
-      title: 'WILD BOUNTY', 
-      display: 'Wild Bounty', 
+      title: 'WILD BOUNTY SHOWDOWN', 
+      display: 'Wild Bounty Showdown', 
       category: 'Slots',
       image: '/assets/official_khelv/game_wildbounty.png', 
       provider: 'PG SOFT'
     },
     { 
       id: 'aztec', 
-      title: 'TREASURES OF AZTEC', 
-      display: 'Aztec', 
+      title: 'TREASURES OF AZTEC 3D', 
+      display: 'Treasures of Aztec 3D', 
       category: 'Slots',
       image: '/assets/official_khelv/game_aztec.png', 
       provider: 'PG SOFT'
     },
     { 
-      id: 'fortunegems', 
-      title: 'FORTUNE GEMS', 
-      display: 'Fortune Gems', 
+      id: 'megaace', 
+      title: 'MEGA ACE JUMBO', 
+      display: 'Mega Ace Jumbo', 
       category: 'Slots',
-      image: '/assets/official_khelv/game_fortunegems.png', 
+      image: '/assets/official_khelv/game_megaace.png', 
       provider: 'JILI'
     }
   ];
 
-  // 3. LOTTERY GAMES
+  // 3. LOTTERY GAMES (100% Unique Modes, Distinct Posters)
   const lotteryGamesList = [
     { 
       id: 'wingo', 
@@ -317,24 +317,24 @@ export default function HomePage({
       provider: 'ORIGINAL'
     },
     { 
-      id: 'wingo', 
-      title: 'WIN GO 1 MIN', 
-      display: 'Win Go 1M', 
+      id: 'motoracing', 
+      title: 'MOTO RACING PK10', 
+      display: 'Moto Racing', 
       category: 'Lottery',
-      image: '/assets/official_khelv/lottery_wingo.png', 
+      image: '/assets/official_khelv/moto-CEkWKW6j.png', 
       provider: 'ORIGINAL'
     },
     { 
-      id: 'wingo', 
-      title: 'WIN GO 3 MIN', 
-      display: 'Win Go 3M', 
+      id: 'tierx', 
+      title: 'TRON BLOCK LOTTERY', 
+      display: 'Tron Block', 
       category: 'Lottery',
-      image: '/assets/official_khelv/lottery_wingo.png', 
-      provider: 'ORIGINAL'
+      image: '/assets/official_khelv/icon-5d-Bfyu8HJa.png', 
+      provider: 'TRON'
     }
   ];
 
-  // 4. ORIGINAL / FLASH GAMES
+  // 4. ORIGINAL / FLASH GAMES (100% Unique Crash & Originals)
   const originalGamesList = [
     { 
       id: 'mines', 
@@ -346,7 +346,7 @@ export default function HomePage({
     },
     { 
       id: 'aviator', 
-      title: 'AVIATOR CRASH', 
+      title: 'AVIATOR SPRIBE', 
       display: 'Aviator', 
       category: 'Original',
       image: '/assets/official_khelv/game_aviator_spribe.png', 
@@ -361,41 +361,41 @@ export default function HomePage({
       provider: 'ORIGINAL'
     },
     { 
-      id: 'dice', 
-      title: 'DICE CLASSIC', 
-      display: 'Dice', 
-      category: 'Original',
-      image: '/assets/game_assets/png/1-27ESYDeX.png', 
-      provider: 'ORIGINAL'
-    },
-    { 
-      id: 'plinko', 
-      title: 'PLINKO MASTER', 
-      display: 'Plinko', 
-      category: 'Original',
-      image: '/assets/game_assets/png/7-CyClOlek.png', 
-      provider: 'ORIGINAL'
-    },
-    { 
       id: 'chickenroad', 
       title: 'CHICKEN ROAD', 
       display: 'Chicken Road', 
       category: 'Original',
       image: '/assets/official_khelv/act_chicken_road.png', 
       provider: 'ORIGINAL'
+    },
+    { 
+      id: 'limbo', 
+      title: 'LIMBO ROCKET', 
+      display: 'Limbo Rocket', 
+      category: 'Original',
+      image: '/assets/official_khelv/game_aviator_red.png', 
+      provider: 'ORIGINAL'
+    },
+    { 
+      id: 'dice', 
+      title: 'DICE CLASSIC', 
+      display: 'Dice Classic', 
+      category: 'Original',
+      image: '/assets/official_khelv/lottery_k3.png', 
+      provider: 'ORIGINAL'
     }
   ];
 
   // 8 Official 3D Category Items (Matching Screenshot 10 1:1)
   const categoryTabs = [
-    { id: 'Popular', label: 'Popular', icon: '/assets/official_khelv/cat_3d_popular.png' },
-    { id: 'Slots', label: 'Slots', icon: '/assets/official_khelv/cat_3d_slot.png' },
-    { id: 'Lottery', label: 'Lottery', icon: '/assets/official_khelv/cat_3d_lottery.png' },
-    { id: 'Original', label: 'Original', icon: '/assets/official_khelv/cat_3d_flash.png' },
-    { id: 'Casino', label: 'Casino', icon: '/assets/official_khelv/cat_3d_video.png' },
-    { id: 'Sports', label: 'Sports', icon: '/assets/official_khelv/cat_3d_sport.png' },
-    { id: 'Rummy', label: 'Rummy', icon: '/assets/official_khelv/cat_3d_chess.png' },
-    { id: 'Fishing', label: 'Fishing', icon: '/assets/official_khelv/cat_3d_fish.png' }
+    { id: 'Popular', label: 'Popular', icon: '/assets/official_khelv/popular-8_UUQbeo.png' },
+    { id: 'Slots', label: 'Slots', icon: '/assets/official_khelv/slot-DM52Kkhg.png' },
+    { id: 'Lottery', label: 'Lottery', icon: '/assets/official_khelv/lottery-Dbl-eMPh.png' },
+    { id: 'Original', label: 'Original', icon: '/assets/official_khelv/flash-DT4CLv66.png' },
+    { id: 'Casino', label: 'Casino', icon: '/assets/official_khelv/video-CepDEnWM.png' },
+    { id: 'Sports', label: 'Sports', icon: '/assets/official_khelv/sport-CFnl9BGk.png' },
+    { id: 'Rummy', label: 'Rummy', icon: '/assets/official_khelv/chess-Dg5bPKcx.png' },
+    { id: 'Fishing', label: 'Fishing', icon: '/assets/official_khelv/fish-D0liGLFa.png' }
   ];
 
   // Helper to slice 6 cards for 3x2 grid
@@ -683,65 +683,71 @@ export default function HomePage({
         </div>
       )}
 
-      {/* 5. FLOATING RIGHT ACTION STACK */}
-      <aside aria-label="Floating Actions" className="fixed right-2 bottom-24 z-40 flex flex-col space-y-2 pointer-events-auto">
-        {/* 1. Gift / Activity Button */}
+      {/* 5. FLOATING RIGHT ACTION STACK (Matching Screenshot 10 1:1) */}
+      <aside aria-label="Floating Actions" className="fixed right-2 bottom-20 z-40 flex flex-col space-y-2 pointer-events-auto">
+        {/* 1. Gift Box */}
         <button
           onClick={() => onOpenGift && onOpenGift()}
           title="Daily Gift Code"
-          className="w-11 h-11 rounded-full bg-gradient-to-tr from-rose-500 via-red-600 to-amber-500 p-0.5 shadow-2xl flex items-center justify-center transition active:scale-90 cursor-pointer animate-bounce group"
+          className="w-11 h-11 flex items-center justify-center transition active:scale-90 cursor-pointer drop-shadow-xl hover:scale-105"
         >
-          <div className="w-full h-full rounded-full bg-[#14122e] flex items-center justify-center">
-            <img 
-              src="/assets/official_khelv/turntableFg-B.png" 
-              alt="Gift" 
-              className="w-7 h-7 object-contain drop-shadow-md group-hover:scale-110 transition"
-            />
-          </div>
+          <img 
+            src="/assets/official_khelv/gift-CowApwMN.png" 
+            alt="Gift" 
+            className="w-full h-full object-contain animate-bounce"
+          />
         </button>
 
-        {/* 2. Turntable Spin Wheel Button */}
+        {/* 2. Lucky Turntable Spin Wheel */}
         <button
           onClick={() => onOpenWheel && onOpenWheel()}
           title="Lucky Wheel"
-          className="w-11 h-11 rounded-full bg-gradient-to-tr from-amber-400 via-yellow-500 to-amber-600 p-0.5 shadow-2xl flex items-center justify-center transition active:scale-90 cursor-pointer group"
+          className="w-11 h-11 flex items-center justify-center transition active:scale-90 cursor-pointer drop-shadow-xl hover:scale-105"
         >
-          <div className="w-full h-full rounded-full bg-[#14122e] flex items-center justify-center overflow-hidden">
-            <span className="text-xl group-hover:rotate-45 transition duration-300">🎡</span>
-          </div>
+          <img 
+            src="/assets/official_khelv/turntable_icon-BEB6XBBJ.png" 
+            alt="Lucky Wheel" 
+            className="w-full h-full object-contain"
+          />
         </button>
 
-        {/* 3. Telegram Airplane Button */}
+        {/* 3. Telegram Airplane */}
         <button
           onClick={() => window.open('https://t.me/ROYALCLUB_Support', '_blank')}
           title="Official Telegram"
-          className="w-11 h-11 rounded-full bg-[#2AABEE] shadow-2xl flex items-center justify-center text-white transition active:scale-90 cursor-pointer group"
+          className="w-11 h-11 flex items-center justify-center transition active:scale-90 cursor-pointer drop-shadow-xl hover:scale-105"
         >
-          <svg className="w-5 h-5 fill-current group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
-          </svg>
+          <img 
+            src="/assets/official_khelv/telegram-i-2nefHz.png" 
+            alt="Telegram" 
+            className="w-full h-full object-contain"
+          />
         </button>
 
-        {/* 4. Partner Rewards / VIP Button */}
+        {/* 4. VIP Rewards */}
         <button
           onClick={() => onOpenPartnerReward && onOpenPartnerReward()}
           title="VIP Rewards"
-          className="w-11 h-11 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 p-0.5 shadow-2xl flex items-center justify-center transition active:scale-90 cursor-pointer group"
+          className="w-11 h-11 flex items-center justify-center transition active:scale-90 cursor-pointer drop-shadow-xl hover:scale-105"
         >
-          <div className="w-full h-full rounded-full bg-[#14122e] flex items-center justify-center">
-            <span className="text-lg">🐉</span>
-          </div>
+          <img 
+            src="/assets/official_khelv/crown1-CW-EnqsM.png" 
+            alt="VIP" 
+            className="w-full h-full object-contain"
+          />
         </button>
 
-        {/* 5. Customer Service Robot Button */}
+        {/* 5. Customer Service Robot */}
         <button
           onClick={() => window.open('https://t.me/ROYALCLUB_Support', '_blank')}
           title="Customer Service"
-          className="w-11 h-11 rounded-full bg-gradient-to-tr from-cyan-400 to-blue-600 p-0.5 shadow-2xl flex items-center justify-center transition active:scale-90 cursor-pointer group"
+          className="w-11 h-11 flex items-center justify-center transition active:scale-90 cursor-pointer drop-shadow-xl hover:scale-105"
         >
-          <div className="w-full h-full rounded-full bg-[#14122e] flex items-center justify-center">
-            <Headphones className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition" />
-          </div>
+          <img 
+            src="/assets/official_khelv/kefu-CWn8Xwlr.png" 
+            alt="Customer Support" 
+            className="w-full h-full object-contain"
+          />
         </button>
       </aside>
 

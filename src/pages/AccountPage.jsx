@@ -350,7 +350,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
         {/* 3. "Safe" Daily Interest Box (Authentic KhelV Vault) */}
         <div 
           onClick={() => handleAction(() => setSafeModalOpen(true))}
-          className="bg-[#1C2063] rounded-2xl text-white p-3.5 border border-[#30358B] shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md transition active:scale-95"
+          className="bg-[#0f1730] rounded-2xl text-white p-3.5 border border-slate-800/80 shadow-md flex items-center justify-between cursor-pointer hover:bg-[#141d3d] transition active:scale-95"
         >
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 flex items-center justify-center shrink-0">
@@ -364,7 +364,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             </div>
           </div>
 
-          <div className="bg-[#3E44A9] border border-[#30358B] text-amber-300 font-mono font-bold text-[11px] px-2.5 py-1 rounded-full flex items-center space-x-0.5 shadow-sm shrink-0">
+          <div className="bg-[#1b2550] border border-blue-900/60 text-amber-300 font-mono font-bold text-[11px] px-2.5 py-1 rounded-full flex items-center space-x-0.5 shadow-sm shrink-0">
             <span>৳0.00</span>
             <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
           </div>
@@ -374,53 +374,53 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
         <div className="grid grid-cols-2 gap-2.5">
           <div 
             onClick={() => handleAction(() => setActiveHistoryModal('game'))}
-            className="bg-[#1C2063] rounded-2xl text-white p-3 border border-[#30358B] shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
+            className="bg-[#0f1730] rounded-2xl text-white p-3 border border-slate-800/80 shadow-md hover:bg-[#141d3d] cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
             <div className="w-11 h-11 flex items-center justify-center shrink-0">
               <KhelvIcon name="betHistory" className="w-10 h-10" />
             </div>
             <div className="flex-1 overflow-hidden">
               <h5 className="font-black text-white text-xs truncate">Game History</h5>
-              <span className="text-[10px] text-slate-300 block truncate">My game records</span>
+              <span className="text-[10px] text-slate-400 block truncate">My game records</span>
             </div>
           </div>
 
           <div 
             onClick={() => handleAction(() => setActiveHistoryModal('transaction'))}
-            className="bg-[#1C2063] rounded-2xl text-white p-3 border border-[#30358B] shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
+            className="bg-[#0f1730] rounded-2xl text-white p-3 border border-slate-800/80 shadow-md hover:bg-[#141d3d] cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
             <div className="w-11 h-11 flex items-center justify-center shrink-0">
               <KhelvIcon name="tradeHistory" className="w-10 h-10" />
             </div>
             <div className="flex-1 overflow-hidden">
               <h5 className="font-black text-white text-xs truncate">Transactions</h5>
-              <span className="text-[10px] text-slate-300 block truncate">Ledger records</span>
+              <span className="text-[10px] text-slate-400 block truncate">Ledger records</span>
             </div>
           </div>
 
           <div 
             onClick={() => handleAction(() => setActiveHistoryModal('deposit'))}
-            className="bg-[#1C2063] rounded-2xl text-white p-3 border border-[#30358B] shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
+            className="bg-[#0f1730] rounded-2xl text-white p-3 border border-slate-800/80 shadow-md hover:bg-[#141d3d] cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
             <div className="w-11 h-11 flex items-center justify-center shrink-0">
               <KhelvIcon name="rechargeHistory" className="w-10 h-10" />
             </div>
             <div className="flex-1 overflow-hidden">
               <h5 className="font-black text-white text-xs truncate">Deposit</h5>
-              <span className="text-[10px] text-slate-300 block truncate">Deposit records</span>
+              <span className="text-[10px] text-slate-400 block truncate">Deposit records</span>
             </div>
           </div>
 
           <div 
             onClick={() => handleAction(() => setActiveHistoryModal('withdraw'))}
-            className="bg-[#1C2063] rounded-2xl text-white p-3 border border-[#30358B] shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
+            className="bg-[#0f1730] rounded-2xl text-white p-3 border border-slate-800/80 shadow-md hover:bg-[#141d3d] cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
             <div className="w-11 h-11 flex items-center justify-center shrink-0">
               <KhelvIcon name="myWithdrawHistory" className="w-10 h-10" />
             </div>
             <div className="flex-1 overflow-hidden">
               <h5 className="font-black text-white text-xs truncate">Withdraw</h5>
-              <span className="text-[10px] text-slate-300 block truncate">Withdraw records</span>
+              <span className="text-[10px] text-slate-400 block truncate">Withdraw records</span>
             </div>
           </div>
         </div>
@@ -428,7 +428,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
         {/* 5. In-App Notifications Bar (KhelV SVG) */}
         <div 
           onClick={() => setNotificationModalOpen(true)}
-          className="bg-[#1C2063] rounded-2xl text-white p-3.5 border border-[#30358B] shadow-sm flex items-center justify-between cursor-pointer hover:bg-[#242A75] transition active:scale-95"
+          className="bg-[#0f1730] rounded-2xl text-white p-3.5 border border-slate-800/80 shadow-md flex items-center justify-between cursor-pointer hover:bg-[#141d3d] transition active:scale-95"
         >
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 flex items-center justify-center shrink-0">
@@ -448,7 +448,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
         </div>
 
         {/* 6. Comprehensive Account Services & Settings List (Authentic KhelV Palette) */}
-        <div className="bg-[#1C2063] rounded-2xl text-white border border-[#30358B] shadow-sm divide-y divide-[#30358B]/80 overflow-hidden">
+        <div className="bg-[#0f1730] rounded-2xl text-white border border-slate-800/80 shadow-md divide-y divide-slate-800/80 overflow-hidden">
           
           {/* Redeem Gift Code */}
           <button
@@ -626,7 +626,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                 </span>
               </div>
             </div>
-            <div className="flex items-center space-x-1 bg-[#3E44A9] border border-[#30358B] px-2 py-0.5 rounded-full text-[10px] font-black text-slate-200">
+            <div className="flex items-center space-x-1 bg-[#182348] border border-slate-700 px-2 py-0.5 rounded-full text-[10px] font-black text-slate-200">
               <span>{lang === 'en' ? 'EN' : 'বাংলা'}</span>
               <ChevronRight className="w-3 h-3 text-slate-300" />
             </div>
@@ -640,7 +640,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               logout();
               if (onOpenAuth) onOpenAuth();
             }}
-            className="w-full py-3.5 rounded-full border border-[#384b7a] text-[#FD565C] bg-[#1C2063]/80 hover:bg-red-500/10 font-bold text-xs flex items-center justify-center space-x-2 transition active:scale-95 cursor-pointer shadow-md uppercase tracking-wider"
+            className="w-full py-3.5 rounded-full border border-slate-700 text-[#FD565C] bg-[#0f1730] hover:bg-red-500/10 font-bold text-xs flex items-center justify-center space-x-2 transition active:scale-95 cursor-pointer shadow-md uppercase tracking-wider"
           >
             <KhelvIcon name="logout" className="w-4 h-4 text-[#FD565C]" />
             <span>{isGuest ? 'Log in to Account' : t('logout')}</span>

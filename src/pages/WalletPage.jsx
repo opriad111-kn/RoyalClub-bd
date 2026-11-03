@@ -33,10 +33,10 @@ export default function WalletPage({ onOpenDeposit, onOpenWithdraw, onOpenAuth }
   const withdrawRecords = (transactions || []).filter(t => t.type === 'withdrawal' || t.type === 'withdraw');
 
   return (
-    <div className="space-y-3.5 pb-24 text-xs select-none -mx-3.5 -mt-3.5 font-sans bg-[#14122E] min-h-screen text-white">
+    <div className="space-y-3.5 pb-24 text-xs select-none -mx-3.5 -mt-3.5 font-sans bg-[#070b19] min-h-screen text-white">
       
       {/* 1. Header Bar */}
-      <div className="bg-[#1C2063] px-4 py-3 flex items-center justify-between border-b border-[#30358B]/60 shadow-md">
+      <div className="bg-[#0f1730] px-4 py-3 flex items-center justify-between border-b border-slate-800/60 shadow-md">
         <span className="font-black text-sm tracking-wide text-white uppercase">
           Wallet (ওয়ালেট)
         </span>
@@ -52,12 +52,12 @@ export default function WalletPage({ onOpenDeposit, onOpenWithdraw, onOpenAuth }
       <div className="px-3.5 space-y-3.5">
         
         {/* 2. Total Balance Card */}
-        <div className="bg-[#1C2063] rounded-2xl p-4 border border-[#30358B] shadow-lg relative overflow-hidden">
+        <div className="bg-[#0f1730] rounded-2xl p-4 border border-slate-800/80 shadow-lg relative overflow-hidden">
           <div className="flex justify-between items-center mb-1">
             <span className="text-[11px] font-bold text-[#D4E8FF]">
               মোট ব্যালেন্স (Total Balance)
             </span>
-            <div className="bg-[#3E44A9] border border-[#30358B] text-amber-300 text-[10px] font-black px-2.5 py-0.5 rounded-full">
+            <div className="bg-[#3E44A9] border border-slate-800/80 text-amber-300 text-[10px] font-black px-2.5 py-0.5 rounded-full">
               Main Wallet
             </div>
           </div>
@@ -69,7 +69,7 @@ export default function WalletPage({ onOpenDeposit, onOpenWithdraw, onOpenAuth }
           </div>
 
           {/* Progress / Ratio Bar */}
-          <div className="pt-2 border-t border-[#30358B]/80 flex justify-between text-[10px] text-[#7098C5]">
+          <div className="pt-2 border-t border-slate-800/80 flex justify-between text-[10px] text-[#7098C5]">
             <span>Main Balance: 100%</span>
             <span>3rd Party Saas: 0%</span>
           </div>
@@ -80,7 +80,7 @@ export default function WalletPage({ onOpenDeposit, onOpenWithdraw, onOpenAuth }
           {/* Deposit */}
           <div 
             onClick={() => handleAction(onOpenDeposit)}
-            className="bg-[#1C2063] rounded-2xl p-3.5 border border-[#30358B] shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
+            className="bg-[#0f1730] rounded-2xl p-3.5 border border-slate-800/80 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
             <div className="w-11 h-11 flex items-center justify-center shrink-0">
               <KhelvIcon name="rechargeIcon" className="w-10 h-10" />
@@ -94,7 +94,7 @@ export default function WalletPage({ onOpenDeposit, onOpenWithdraw, onOpenAuth }
           {/* Withdraw */}
           <div 
             onClick={() => handleAction(onOpenWithdraw)}
-            className="bg-[#1C2063] rounded-2xl p-3.5 border border-[#30358B] shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
+            className="bg-[#0f1730] rounded-2xl p-3.5 border border-slate-800/80 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
             <div className="w-11 h-11 flex items-center justify-center shrink-0">
               <KhelvIcon name="widthdrawBlue" className="w-10 h-10" />
@@ -108,7 +108,7 @@ export default function WalletPage({ onOpenDeposit, onOpenWithdraw, onOpenAuth }
           {/* Deposit Records */}
           <div 
             onClick={() => handleAction(() => setActiveHistory('deposit'))}
-            className="bg-[#1C2063] rounded-2xl p-3.5 border border-[#30358B] shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
+            className="bg-[#0f1730] rounded-2xl p-3.5 border border-slate-800/80 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
             <div className="w-11 h-11 flex items-center justify-center shrink-0">
               <KhelvIcon name="rechargeHistory" className="w-10 h-10" />
@@ -122,7 +122,7 @@ export default function WalletPage({ onOpenDeposit, onOpenWithdraw, onOpenAuth }
           {/* Withdraw Records */}
           <div 
             onClick={() => handleAction(() => setActiveHistory('withdraw'))}
-            className="bg-[#1C2063] rounded-2xl p-3.5 border border-[#30358B] shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
+            className="bg-[#0f1730] rounded-2xl p-3.5 border border-slate-800/80 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
             <div className="w-11 h-11 flex items-center justify-center shrink-0">
               <KhelvIcon name="myWithdrawHistory" className="w-10 h-10" />
@@ -135,7 +135,7 @@ export default function WalletPage({ onOpenDeposit, onOpenWithdraw, onOpenAuth }
         </div>
 
         {/* 4. Third-Party Game Balances List */}
-        <div className="bg-[#1C2063] rounded-2xl border border-[#30358B] shadow-sm p-3.5 space-y-2.5">
+        <div className="bg-[#0f1730] rounded-2xl border border-slate-800/80 shadow-sm p-3.5 space-y-2.5">
           <h4 className="text-xs font-black text-white uppercase tracking-wider mb-2 flex items-center justify-between">
             <span>Game Vendor Accounts</span>
             <span className="text-[10px] text-emerald-400 font-bold">Auto Transfer ON</span>
@@ -183,8 +183,8 @@ export default function WalletPage({ onOpenDeposit, onOpenWithdraw, onOpenAuth }
       {/* History Modal */}
       {activeHistory && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl w-full max-w-sm p-4 text-white space-y-3">
-            <div className="flex justify-between items-center border-b border-[#30358B] pb-2">
+          <div className="bg-[#0f1730] border border-slate-800/80 rounded-2xl w-full max-w-sm p-4 text-white space-y-3">
+            <div className="flex justify-between items-center border-b border-slate-800/80 pb-2">
               <h3 className="font-black text-sm">
                 {activeHistory === 'deposit' ? 'Deposit History' : 'Withdraw History'}
               </h3>
@@ -200,7 +200,7 @@ export default function WalletPage({ onOpenDeposit, onOpenWithdraw, onOpenAuth }
                 </div>
               ) : (
                 (activeHistory === 'deposit' ? depositRecords : withdrawRecords).map((r, i) => (
-                  <div key={i} className="p-2.5 rounded-xl bg-[#14122E] border border-[#30358B] flex justify-between items-center">
+                  <div key={i} className="p-2.5 rounded-xl bg-[#070b19] border border-slate-800/80 flex justify-between items-center">
                     <div>
                       <span className="font-bold block text-white">{r.channel || r.type}</span>
                       <span className="text-[10px] text-slate-400">{r.created_at || 'Just now'}</span>
