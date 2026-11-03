@@ -119,7 +119,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
               }
               setBonusDetailsOpen(true);
             }}
-            className="bg-white hover:bg-[#0b1023] text-amber-500 font-black text-xs px-6 py-1.5 rounded-full shadow-sm transition active:scale-95 border border-amber-200 cursor-pointer"
+            className="bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black font-black text-xs px-6 py-1.5 rounded-full shadow-sm transition active:scale-95 border border-amber-200 cursor-pointer"
           >
             Bonus details
           </button>
@@ -291,7 +291,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
       {/* 1. In-App Modal: Activity Award */}
       {activityAwardOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-800 space-y-3.5">
+          <div className="bg-[#0d142d] rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-700 text-white space-y-3.5">
             <div className="flex justify-between items-center pb-2 border-b border-slate-800">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-500 flex items-center justify-center">
@@ -366,7 +366,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
       {/* 2. In-App Modal: Betting Rebate */}
       {bettingRebateOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-800 space-y-3.5">
+          <div className="bg-[#0d142d] rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-700 text-white space-y-3.5">
             <div className="flex justify-between items-center pb-2 border-b border-slate-800">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center">
@@ -445,7 +445,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
       {/* 3. In-App Modal: Super Jackpot */}
       {superJackpotOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-800 space-y-3.5">
+          <div className="bg-[#0d142d] rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-700 text-white space-y-3.5">
             <div className="flex justify-between items-center pb-2 border-b border-slate-800">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 rounded-xl bg-teal-100 text-teal-600 flex items-center justify-center">
@@ -504,7 +504,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
       {/* 4. In-App Modal: Bonus Details */}
       {bonusDetailsOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-800 space-y-3.5">
+          <div className="bg-[#0d142d] rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-700 text-white space-y-3.5">
             <div className="flex justify-between items-center pb-2 border-b border-slate-800">
               <h3 className="font-black text-sm text-white font-sans">Bonus System Details</h3>
               <button 

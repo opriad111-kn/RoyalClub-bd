@@ -164,7 +164,7 @@ export default function PromotionPage({ onOpenAuth }) {
             </span>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-xs rounded-xl p-3 space-y-2 border border-white/60 text-white">
+          <div className="bg-[#0f1730] rounded-xl p-3 space-y-2 border border-slate-700 text-white">
             <p className="text-[11px] leading-relaxed font-bold">
               • আপনার লিংকে বন্ধু একাউন্ট খুলে ৭ দিনের মধ্যে <strong>৳৩০০ ডিপোজিট</strong> এবং <strong>৳১,৫০০ বেটিং টার্নওভার</strong> করলেই আপনি পাবেন <strong>৳১০০ নগদ ক্যাশ বোনাস</strong>!
             </p>

@@ -51,6 +51,7 @@ import AuthModal from './components/AuthModal';
 import FairnessModal from './components/FairnessModal';
 import PartnerRewardsModal from './components/PartnerRewardsModal';
 import UsdtBonusModal from './components/UsdtBonusModal';
+import SplashScreen from './components/SplashScreen';
 
 const VALID_TABS = ['home', 'activity', 'promotion', 'account', 'deposit', 'withdraw', 'wallet', 'admin', 'wingo'];
 
@@ -100,6 +101,12 @@ function AppContent() {
   const [isFairnessOpen, setIsFairnessOpen] = useState(false);
   const [isPartnerRewardOpen, setIsPartnerRewardOpen] = useState(false);
   const [isUsdtBonusOpen, setIsUsdtBonusOpen] = useState(false);
+  const [showSplash, setShowSplash] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !sessionStorage.getItem('royalclub_splash_visited');
+    }
+    return true;
+  });
   const [toast, setToast] = useState({ show: false, message: '' });
 
   // Intercept all native alerts to guarantee smooth in-app toasts (Zero browser alerts)
@@ -265,7 +272,17 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F5F8] sm:bg-[#0f172a] text-slate-800 flex justify-center items-start selection:bg-amber-400 selection:text-slate-900 relative overflow-x-hidden font-sans">
+    <div className="min-h-screen bg-[#070b19] text-white flex justify-center items-start selection:bg-amber-400 selection:text-slate-900 relative overflow-x-hidden font-sans">
+      
+      {/* Exact APK Splash Screen on Initial Load (Screenshot 2 Match) */}
+      {showSplash && (
+        <SplashScreen 
+          onFinish={() => {
+            setShowSplash(false);
+            sessionStorage.setItem('royalclub_splash_visited', 'true');
+          }} 
+        />
+      )}
       
       {/* Universal In-App Toast Alert (Zero Native Browser Alerts) */}
       {toast.show && (

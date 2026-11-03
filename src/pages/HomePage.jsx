@@ -376,12 +376,12 @@ export default function HomePage({
       <div className="bg-[#0f1730] rounded-2xl p-2 shadow-md border border-slate-800">
         <div className="grid grid-cols-6 gap-1">
           {[
-            { id: 'All', label: 'All', icon: <CircleDot className="w-5 h-5 text-amber-400" /> },
-            { id: 'Slots', label: 'Slots', icon: <Gamepad2 className="w-5 h-5 text-emerald-400" /> },
-            { id: 'Lottery', label: 'Lottery', icon: <span className="w-5 h-5 rounded-full bg-red-600 text-white flex items-center justify-center text-[10px] font-bold">18</span> },
-            { id: 'Sports', label: 'Sports', icon: <span className="text-base">⚽</span> },
-            { id: 'Casino', label: 'Casino', icon: <Tv className="w-5 h-5 text-cyan-400" /> },
-            { id: 'PVC', label: 'PVC', icon: <Dices className="w-5 h-5 text-purple-400" /> }
+            { id: 'All', label: 'All', icon: <img src="/assets/game_assets/svg/iconMiniGame-BvV07ZXq.svg" alt="All" className="w-5 h-5 object-contain" /> },
+            { id: 'Slots', label: 'Slots', icon: <img src="/assets/game_assets/svg/iconSlots-CCOXC10J.svg" alt="Slots" className="w-5 h-5 object-contain" /> },
+            { id: 'Lottery', label: 'Lottery', icon: <img src="/assets/game_assets/svg/iconLottery-DvMeF7Lu.svg" alt="Lottery" className="w-5 h-5 object-contain" /> },
+            { id: 'Sports', label: 'Sports', icon: <img src="/assets/game_assets/svg/iconPhysics-DxXDZaxt.svg" alt="Sports" className="w-5 h-5 object-contain" /> },
+            { id: 'Casino', label: 'Casino', icon: <img src="/assets/game_assets/svg/iconRealPerson-CgGu5NPf.svg" alt="Casino" className="w-5 h-5 object-contain" /> },
+            { id: 'PVC', label: 'PVC', icon: <img src="/assets/game_assets/svg/iconChess-DrGPlCLi.svg" alt="PVC" className="w-5 h-5 object-contain" /> }
           ].map(cat => {
             const isActive = selectedCategory === cat.id;
             return (
@@ -605,15 +605,13 @@ export default function HomePage({
             {/* Golden 3D Chest & Reward Table */}
             <div className="p-4 space-y-3 bg-gradient-to-b from-[#0d142d] via-[#090e24] to-[#060918]">
               
-              {/* Golden Chest Graphic Badge */}
-              <div className="rounded-2xl bg-gradient-to-b from-amber-500/20 via-yellow-600/10 to-transparent p-3 border border-amber-400/40 text-center flex flex-col items-center">
-                <span className="text-3xl filter drop-shadow-[0_0_12px_rgba(245,190,0,0.8)]">👑</span>
-                <span className="text-xs font-black text-amber-300 tracking-wider uppercase mt-1">
-                  FIRST DEPOSIT BONUS
-                </span>
-                <span className="text-2xl font-black font-mono text-yellow-300 drop-shadow-[0_2px_8px_rgba(234,179,8,0.7)] mt-0.5">
-                  +৳10,000
-                </span>
+              {/* Golden 3D Chest Graphic from APK (Screenshot 5 Match) */}
+              <div className="flex flex-col items-center justify-center -my-1">
+                <img 
+                  src="/assets/game_assets/png/gift-Q7IYrFBN.png" 
+                  alt="First Deposit Bonus"
+                  className="w-48 max-w-[210px] h-auto object-contain drop-shadow-[0_6px_20px_rgba(245,190,0,0.5)] animate-in zoom-in-95 duration-300"
+                />
               </div>
 
               {/* Tiered Deposit Reward Table (Exact Screenshot 5 Values) */}

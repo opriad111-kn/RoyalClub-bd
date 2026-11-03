@@ -186,7 +186,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
         <div className="bg-gradient-to-tr from-amber-500 via-[#F5BE00] to-yellow-400 rounded-2xl p-4 text-slate-950 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-[11px] font-bold text-slate-900/80 uppercase tracking-wide block">
+              <span className="text-[11px] font-bold text-white/80 uppercase tracking-wide block">
                 Total Balance
               </span>
               <div className="flex items-baseline space-x-1 mt-0.5">
@@ -196,13 +196,13 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
               </div>
             </div>
             <div className="bg-slate-950/10 border border-slate-950/20 px-3 py-1 rounded-full text-right">
-              <span className="text-[10px] font-black uppercase text-slate-900">
+              <span className="text-[10px] font-black uppercase text-white">
                 Withdrawable: ৳{currentBal.toFixed(2)}
               </span>
             </div>
           </div>
 
-          <div className="pt-2 border-t border-slate-950/10 flex justify-between items-center text-[11px] font-medium text-slate-900">
+          <div className="pt-2 border-t border-slate-950/10 flex justify-between items-center text-[11px] font-medium text-white">
             <span>Daily Withdrawal Limit</span>
             <span className="font-mono font-black">৳5,000.00</span>
           </div>
@@ -239,9 +239,9 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
 
         {/* Wagering / Turnover Progress Banner */}
         {reqTurnover > 0 && (
-          <div className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-sm space-y-2">
+          <div className="bg-[#0f1730] rounded-2xl p-3.5 border border-slate-800 shadow-md space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center space-x-1.5 font-black text-slate-800">
+              <div className="flex items-center space-x-1.5 font-black text-slate-200">
                 <TrendingUp className="w-4 h-4 text-amber-500" />
                 <span>Turnover Progress (টার্নওভার অগ্রগতি)</span>
               </div>
@@ -296,8 +296,8 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
         )}
 
         {/* 3. Payout Method Selector (bKash, Nagad, Rocket) */}
-        <div className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-sm space-y-2.5">
-          <label className="text-xs font-black text-slate-800 block uppercase tracking-wider">
+        <div className="bg-[#0f1730] rounded-2xl p-3.5 border border-slate-800 shadow-md space-y-2.5">
+          <label className="text-xs font-black text-slate-200 block uppercase tracking-wider">
             Select Withdrawal Channel
           </label>
           <div className="grid grid-cols-3 gap-2.5">
@@ -309,10 +309,10 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
               onClick={() => isBkashActive && setMethod('bKash')}
               className={`p-2.5 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${
                 !isBkashActive
-                  ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
+                  ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-700 text-slate-400'
                   : method === 'bKash'
                   ? 'border-[#E2136E] bg-pink-50/60 shadow-xs'
-                  : 'border-slate-100 bg-slate-50 hover:bg-slate-100'
+                  : 'border-slate-800 bg-[#131b35] hover:bg-[#192446]'
               }`}
             >
               {!isBkashActive && (
@@ -321,7 +321,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
               <div className="w-9 h-9 rounded-full bg-[#E2136E] text-white flex items-center justify-center font-black text-sm shadow-xs mb-1">
                 ব
               </div>
-              <span className="text-xs font-black text-slate-900">bKash</span>
+              <span className="text-xs font-black text-white">bKash</span>
               <span className="text-[9px] text-slate-400 font-bold mt-0.5">{isBkashActive ? '3-5 mins' : 'সাময়িক বন্ধ'}</span>
             </button>
 
@@ -332,10 +332,10 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
               onClick={() => isNagadActive && setMethod('Nagad')}
               className={`p-2.5 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${
                 !isNagadActive
-                  ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
+                  ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-700 text-slate-400'
                   : method === 'Nagad'
                   ? 'border-[#F7941D] bg-orange-50/60 shadow-xs'
-                  : 'border-slate-100 bg-slate-50 hover:bg-slate-100'
+                  : 'border-slate-800 bg-[#131b35] hover:bg-[#192446]'
               }`}
             >
               {!isNagadActive && (
@@ -344,7 +344,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
               <div className="w-9 h-9 rounded-full bg-[#F7941D] text-white flex items-center justify-center font-black text-sm shadow-xs mb-1">
                 ন
               </div>
-              <span className="text-xs font-black text-slate-900">Nagad</span>
+              <span className="text-xs font-black text-white">Nagad</span>
               <span className="text-[9px] text-slate-400 font-bold mt-0.5">{isNagadActive ? '3-5 mins' : 'সাময়িক বন্ধ'}</span>
             </button>
 
@@ -355,10 +355,10 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
               onClick={() => isRocketActive && setMethod('Rocket')}
               className={`p-2.5 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${
                 !isRocketActive
-                  ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
+                  ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-700 text-slate-400'
                   : method === 'Rocket'
                   ? 'border-[#8C3494] bg-purple-50/60 shadow-xs'
-                  : 'border-slate-100 bg-slate-50 hover:bg-slate-100'
+                  : 'border-slate-800 bg-[#131b35] hover:bg-[#192446]'
               }`}
             >
               {!isRocketActive && (
@@ -367,7 +367,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
               <div className="w-9 h-9 rounded-full bg-[#8C3494] text-white flex items-center justify-center font-black text-sm shadow-xs mb-1">
                 র
               </div>
-              <span className="text-xs font-black text-slate-900">Rocket</span>
+              <span className="text-xs font-black text-white">Rocket</span>
               <span className="text-[9px] text-slate-400 font-bold mt-0.5">{isRocketActive ? '3-5 mins' : 'সাময়িক বন্ধ'}</span>
             </button>
 
@@ -375,12 +375,12 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
         </div>
 
         {/* 4. Withdrawal Form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-3.5">
+        <form onSubmit={handleSubmit} className="bg-[#0f1730] rounded-2xl p-4 border border-slate-800 shadow-md space-y-3.5">
           
           {/* Quick Amounts */}
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="text-xs font-black text-slate-800 block">
+              <label className="text-xs font-black text-slate-200 block">
                 Withdrawal Amount (৳)
               </label>
               <button
@@ -401,7 +401,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
                   className={`py-2 rounded-xl font-mono font-black text-xs transition active:scale-95 cursor-pointer ${
                     amount === val.toString()
                       ? 'bg-[#F5BE00] text-slate-950 shadow-xs ring-2 ring-yellow-400'
-                      : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200/60'
+                      : 'bg-[#131b35] text-slate-300 hover:bg-[#192446] border border-slate-700'
                   }`}
                 >
                   ৳{val}
@@ -421,7 +421,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
                 value={amount}
                 onChange={e => setAmount(e.target.value)}
                 placeholder="Custom Amount (Min ৳200)"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-3 py-2.5 text-sm font-mono font-black text-slate-900 focus:outline-none focus:border-[#F5BE00] focus:ring-1 focus:ring-[#F5BE00]"
+                className="w-full bg-[#131b35] border border-slate-700 rounded-xl pl-8 pr-3 py-2.5 text-sm font-mono font-black text-white focus:outline-none focus:border-[#F5BE00] focus:ring-1 focus:ring-[#F5BE00]"
                 required
               />
             </div>
@@ -429,7 +429,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
 
           {/* Account Number */}
           <div>
-            <label className="text-xs font-black text-slate-800 block mb-1">
+            <label className="text-xs font-black text-slate-200 block mb-1">
               {method} Account Number (টাকা পাওয়ার নম্বর)
             </label>
             <input
@@ -437,19 +437,19 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
               value={accountNumber}
               onChange={e => setAccountNumber(e.target.value)}
               placeholder="e.g. 01XXXXXXXXX"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold text-slate-900 focus:outline-none focus:border-[#F5BE00] focus:ring-1 focus:ring-[#F5BE00]"
+              className="w-full bg-[#131b35] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold text-white focus:outline-none focus:border-[#F5BE00] focus:ring-1 focus:ring-[#F5BE00]"
               required
             />
           </div>
 
           {/* Fee & Receive Breakdown */}
-          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-1 text-slate-600 font-medium">
+          <div className="bg-[#131b35] border border-slate-800 rounded-xl p-3 space-y-1 text-slate-400 font-medium">
             <div className="flex justify-between items-center text-[11px]">
               <span>Handling Fee:</span>
-              <span className="font-mono font-bold text-slate-800">৳0.00 (0%)</span>
+              <span className="font-mono font-bold text-slate-200">৳0.00 (0%)</span>
             </div>
-            <div className="flex justify-between items-center text-xs font-bold pt-1 border-t border-slate-200/60">
-              <span className="text-slate-900">Actual Received:</span>
+            <div className="flex justify-between items-center text-xs font-bold pt-1 border-t border-slate-700">
+              <span className="text-white">Actual Received:</span>
               <span className="font-mono font-black text-emerald-600 text-sm">
                 ৳{netReceive.toFixed(2)}
               </span>
@@ -467,8 +467,8 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
         </form>
 
         {/* 5. Withdrawal Rules Card */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-2 text-slate-600">
-          <div className="flex items-center space-x-1.5 text-slate-900 font-black text-xs">
+        <div className="bg-[#0f1730] rounded-2xl p-4 border border-slate-800 shadow-md space-y-2 text-slate-400">
+          <div className="flex items-center space-x-1.5 text-white font-black text-xs">
             <ShieldCheck className="w-4 h-4 text-amber-500" />
             <span>উইথড্র নির্দেশনা ও নিয়মাবলী</span>
           </div>
@@ -485,14 +485,14 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
       {/* Withdrawal History Records Modal */}
       {showHistory && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-100 relative">
-            <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-              <h3 className="font-black text-slate-900 text-sm">
+          <div className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-800 relative">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-800">
+              <h3 className="font-black text-white text-sm">
                 Withdrawal Records
               </h3>
               <button 
                 onClick={() => setShowHistory(false)}
-                className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 hover:text-slate-900 flex items-center justify-center font-bold text-xs"
+                className="w-7 h-7 rounded-full bg-slate-100 text-slate-400 hover:text-white flex items-center justify-center font-bold text-xs"
               >
                 ✕
               </button>
@@ -501,9 +501,9 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
             <div className="py-3 max-h-72 overflow-y-auto space-y-2 no-scrollbar">
               {withdrawList && withdrawList.length > 0 ? (
                 withdrawList.map((item, idx) => (
-                  <div key={idx} className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex items-center justify-between text-left">
+                  <div key={idx} className="bg-[#131b35] p-2.5 rounded-xl border border-slate-800 flex items-center justify-between text-left">
                     <div>
-                      <span className="font-black text-slate-800 text-xs">{item.method} Payout</span>
+                      <span className="font-black text-slate-200 text-xs">{item.method} Payout</span>
                       <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
                         A/C: {item.account_number || item.accountNo || '***'}
                       </span>

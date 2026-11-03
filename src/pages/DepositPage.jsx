@@ -172,7 +172,7 @@ export default function DepositPage({ onBack, onOpenAuth }) {
         {/* 2. Total Balance Card */}
         <div className="bg-gradient-to-tr from-amber-500 via-[#F5BE00] to-yellow-400 rounded-2xl p-4 text-slate-950 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-bold text-slate-900/80 uppercase tracking-wide block">
+            <span className="text-[11px] font-bold text-white/80 uppercase tracking-wide block">
               Balance
             </span>
             <div className="flex items-baseline space-x-1 mt-0.5">
@@ -182,7 +182,7 @@ export default function DepositPage({ onBack, onOpenAuth }) {
             </div>
           </div>
           <div className="bg-slate-950/10 border border-slate-950/20 px-3 py-1 rounded-full text-right">
-            <span className="text-[10px] font-black uppercase text-slate-900">
+            <span className="text-[10px] font-black uppercase text-white">
               VIP{user?.vip_level || 1} Member
             </span>
           </div>
@@ -216,8 +216,8 @@ export default function DepositPage({ onBack, onOpenAuth }) {
         )}
 
         {/* 3. Deposit Channel Selector (bKash, Nagad, Rocket, USDT) */}
-        <div className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-sm space-y-2.5">
-          <label className="text-xs font-black text-slate-800 block uppercase tracking-wider">
+        <div className="bg-[#0f1730] rounded-2xl p-3.5 border border-slate-800 shadow-md space-y-2.5">
+          <label className="text-xs font-black text-slate-200 block uppercase tracking-wider">
             Select Payment Channel
           </label>
           <div className="grid grid-cols-4 gap-2">
@@ -228,10 +228,10 @@ export default function DepositPage({ onBack, onOpenAuth }) {
               disabled={!isBkashActive}
               onClick={() => isBkashActive && setMethod('bKash')}
               className={`p-2 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${!isBkashActive
-                ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
+                ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-700 text-slate-400'
                 : method === 'bKash'
                   ? 'border-[#E2136E] bg-pink-50/60 shadow-xs'
-                  : 'border-slate-100 bg-slate-50 hover:bg-slate-100'
+                  : 'border-slate-800 bg-[#131b35] hover:bg-[#192446]'
                 }`}
             >
               {!isBkashActive && (
@@ -240,7 +240,7 @@ export default function DepositPage({ onBack, onOpenAuth }) {
               <div className="w-8 h-8 rounded-full bg-[#E2136E] text-white flex items-center justify-center font-black text-xs shadow-xs mb-1">
                 ব
               </div>
-              <span className="text-[11px] font-black text-slate-900">bKash</span>
+              <span className="text-[11px] font-black text-white">bKash</span>
             </button>
 
             {/* Nagad */}
@@ -249,10 +249,10 @@ export default function DepositPage({ onBack, onOpenAuth }) {
               disabled={!isNagadActive}
               onClick={() => isNagadActive && setMethod('Nagad')}
               className={`p-2 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${!isNagadActive
-                ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
+                ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-700 text-slate-400'
                 : method === 'Nagad'
                   ? 'border-[#F7941D] bg-orange-50/60 shadow-xs'
-                  : 'border-slate-100 bg-slate-50 hover:bg-slate-100'
+                  : 'border-slate-800 bg-[#131b35] hover:bg-[#192446]'
                 }`}
             >
               {!isNagadActive && (
@@ -261,7 +261,7 @@ export default function DepositPage({ onBack, onOpenAuth }) {
               <div className="w-8 h-8 rounded-full bg-[#F7941D] text-white flex items-center justify-center font-black text-xs shadow-xs mb-1">
                 ন
               </div>
-              <span className="text-[11px] font-black text-slate-900">Nagad</span>
+              <span className="text-[11px] font-black text-white">Nagad</span>
             </button>
 
             {/* Rocket */}
@@ -270,10 +270,10 @@ export default function DepositPage({ onBack, onOpenAuth }) {
               disabled={!isRocketActive}
               onClick={() => isRocketActive && setMethod('Rocket')}
               className={`p-2 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${!isRocketActive
-                ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
+                ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-700 text-slate-400'
                 : method === 'Rocket'
                   ? 'border-[#8C3494] bg-purple-50/60 shadow-xs'
-                  : 'border-slate-100 bg-slate-50 hover:bg-slate-100'
+                  : 'border-slate-800 bg-[#131b35] hover:bg-[#192446]'
                 }`}
             >
               {!isRocketActive && (
@@ -282,7 +282,7 @@ export default function DepositPage({ onBack, onOpenAuth }) {
               <div className="w-8 h-8 rounded-full bg-[#8C3494] text-white flex items-center justify-center font-black text-xs shadow-xs mb-1">
                 র
               </div>
-              <span className="text-[11px] font-black text-slate-900">Rocket</span>
+              <span className="text-[11px] font-black text-white">Rocket</span>
             </button>
 
             {/* USDT */}
@@ -291,10 +291,10 @@ export default function DepositPage({ onBack, onOpenAuth }) {
               disabled={!isUsdtActive}
               onClick={() => isUsdtActive && setMethod('USDT')}
               className={`p-2 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${!isUsdtActive
-                ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
+                ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-700 text-slate-400'
                 : method === 'USDT'
                   ? 'border-[#26A17B] bg-emerald-50/60 shadow-xs'
-                  : 'border-slate-100 bg-slate-50 hover:bg-slate-100'
+                  : 'border-slate-800 bg-[#131b35] hover:bg-[#192446]'
                 }`}
             >
               {!isUsdtActive && (
@@ -303,16 +303,16 @@ export default function DepositPage({ onBack, onOpenAuth }) {
               <div className="w-8 h-8 rounded-full bg-[#26A17B] text-white flex items-center justify-center font-black text-xs shadow-xs mb-1">
                 ₮
               </div>
-              <span className="text-[11px] font-black text-slate-900">USDT</span>
+              <span className="text-[11px] font-black text-white">USDT</span>
             </button>
 
           </div>
         </div>
 
         {/* 4. Official Number Card with Instant Copy */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-2">
+        <div className="bg-[#0f1730] rounded-2xl p-4 border border-slate-800 shadow-md space-y-2">
           <div className="flex justify-between items-center">
-            <span className="text-xs font-black text-slate-800">
+            <span className="text-xs font-black text-slate-200">
               Official {method} {method === 'USDT' ? 'Address' : 'Number'}
             </span>
             <span className="bg-amber-100 text-amber-800 text-[9px] font-black px-2 py-0.5 rounded-full">
@@ -320,8 +320,8 @@ export default function DepositPage({ onBack, onOpenAuth }) {
             </span>
           </div>
 
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between">
-            <span className="font-mono font-black text-sm text-slate-900 select-all break-all">
+          <div className="bg-[#131b35] border border-slate-700 rounded-xl p-3 flex items-center justify-between">
+            <span className="font-mono font-black text-sm text-white select-all break-all">
               {currentPayNumber}
             </span>
             <button
@@ -349,11 +349,11 @@ export default function DepositPage({ onBack, onOpenAuth }) {
         </div>
 
         {/* 5. Deposit Form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-3.5">
+        <form onSubmit={handleSubmit} className="bg-[#0f1730] rounded-2xl p-4 border border-slate-800 shadow-md space-y-3.5">
 
           {/* Quick Amounts */}
           <div>
-            <label className="text-xs font-black text-slate-800 block mb-2">
+            <label className="text-xs font-black text-slate-200 block mb-2">
               Deposit Amount (৳)
             </label>
             <div className="grid grid-cols-4 gap-2 mb-3">
@@ -364,7 +364,7 @@ export default function DepositPage({ onBack, onOpenAuth }) {
                   onClick={() => setAmount(val.toString())}
                   className={`py-2 rounded-xl font-mono font-black text-xs transition active:scale-95 cursor-pointer ${amount === val.toString()
                     ? 'bg-[#F5BE00] text-slate-950 shadow-xs ring-2 ring-yellow-400'
-                    : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200/60'
+                    : 'bg-[#131b35] text-slate-300 hover:bg-[#192446] border border-slate-700'
                     }`}
                 >
                   ৳{val}
@@ -383,7 +383,7 @@ export default function DepositPage({ onBack, onOpenAuth }) {
                 value={amount}
                 onChange={e => setAmount(e.target.value)}
                 placeholder="Custom Amount"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-3 py-2.5 text-sm font-mono font-black text-slate-900 focus:outline-none focus:border-[#F5BE00] focus:ring-1 focus:ring-[#F5BE00]"
+                className="w-full bg-[#131b35] border border-slate-700 rounded-xl pl-8 pr-3 py-2.5 text-sm font-mono font-black text-white focus:outline-none focus:border-[#F5BE00] focus:ring-1 focus:ring-[#F5BE00]"
                 required
               />
             </div>
@@ -391,7 +391,7 @@ export default function DepositPage({ onBack, onOpenAuth }) {
 
           {/* Sender Phone */}
           <div>
-            <label className="text-xs font-black text-slate-800 block mb-1">
+            <label className="text-xs font-black text-slate-200 block mb-1">
               Sender Mobile / Wallet Number
             </label>
             <input
@@ -399,14 +399,14 @@ export default function DepositPage({ onBack, onOpenAuth }) {
               value={senderPhone}
               onChange={e => setSenderPhone(e.target.value)}
               placeholder="e.g. 017XXXXXXXX"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold text-slate-900 focus:outline-none focus:border-[#F5BE00] focus:ring-1 focus:ring-[#F5BE00]"
+              className="w-full bg-[#131b35] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold text-white focus:outline-none focus:border-[#F5BE00] focus:ring-1 focus:ring-[#F5BE00]"
               required
             />
           </div>
 
           {/* Transaction ID */}
           <div>
-            <label className="text-xs font-black text-slate-800 block mb-1">
+            <label className="text-xs font-black text-slate-200 block mb-1">
               Transaction ID (TrxID)
             </label>
             <input
@@ -414,7 +414,7 @@ export default function DepositPage({ onBack, onOpenAuth }) {
               value={txHash}
               onChange={e => setTxHash(e.target.value)}
               placeholder="e.g. BL991KAA2"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold uppercase text-slate-900 focus:outline-none focus:border-[#F5BE00] focus:ring-1 focus:ring-[#F5BE00]"
+              className="w-full bg-[#131b35] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold uppercase text-white focus:outline-none focus:border-[#F5BE00] focus:ring-1 focus:ring-[#F5BE00]"
               required
             />
           </div>
@@ -434,14 +434,14 @@ export default function DepositPage({ onBack, onOpenAuth }) {
       {/* Deposit History Records Modal */}
       {showHistory && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-100 relative">
-            <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-              <h3 className="font-black text-slate-900 text-sm">
+          <div className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-800 relative">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-800">
+              <h3 className="font-black text-white text-sm">
                 Deposit Records
               </h3>
               <button
                 onClick={() => setShowHistory(false)}
-                className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 hover:text-slate-900 flex items-center justify-center font-bold text-xs"
+                className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 hover:text-white flex items-center justify-center font-bold text-xs"
               >
                 ✕
               </button>
@@ -450,9 +450,9 @@ export default function DepositPage({ onBack, onOpenAuth }) {
             <div className="py-3 max-h-72 overflow-y-auto space-y-2 no-scrollbar">
               {depositList && depositList.length > 0 ? (
                 depositList.map((item, idx) => (
-                  <div key={idx} className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex items-center justify-between text-left">
+                  <div key={idx} className="bg-[#131b35] p-2.5 rounded-xl border border-slate-800 flex items-center justify-between text-left">
                     <div>
-                      <span className="font-black text-slate-800 text-xs">{item.method} Deposit</span>
+                      <span className="font-black text-slate-200 text-xs">{item.method} Deposit</span>
                       <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
                         TrxID: {item.trx_id || item.tx_hash || 'PENDING'}
                       </span>

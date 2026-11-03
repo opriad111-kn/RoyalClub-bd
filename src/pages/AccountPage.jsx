@@ -618,7 +618,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
       {/* EDIT PROFILE MODAL */}
       {showProfileModal && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-5 max-w-xs w-full text-left space-y-4 shadow-2xl text-white">
+          <div className="bg-[#0d142d] rounded-3xl p-5 max-w-xs w-full text-left space-y-4 shadow-2xl border border-slate-700 text-white">
             <div className="flex justify-between items-center pb-2 border-b border-slate-800">
               <h4 className="font-black text-sm text-white">প্রোফাইল এডিট</h4>
               <button onClick={() => setShowProfileModal(false)} className="text-slate-400 hover:text-slate-300">✕</button>
@@ -656,7 +656,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
       {/* CHANGE PASSWORD MODAL */}
       {showPasswordModal && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-5 max-w-xs w-full text-left space-y-4 shadow-2xl text-white">
+          <div className="bg-[#0d142d] rounded-3xl p-5 max-w-xs w-full text-left space-y-4 shadow-2xl border border-slate-700 text-white">
             <div className="flex justify-between items-center pb-2 border-b border-slate-800">
               <h4 className="font-black text-sm text-white">পাসওয়ার্ড পরিবর্তন</h4>
               <button onClick={() => setShowPasswordModal(false)} className="text-slate-400 hover:text-slate-300">✕</button>
@@ -703,7 +703,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
       {/* SUPPORT TICKETS DRAWER */}
       {showSupportModal && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-5 max-w-sm w-full text-left space-y-4 shadow-2xl text-white max-h-[85vh] overflow-y-auto">
+          <div className="bg-[#0d142d] rounded-3xl p-5 max-w-sm w-full text-left space-y-4 shadow-2xl border border-slate-700 text-white max-h-[85vh] overflow-y-auto">
             <div className="flex justify-between items-center pb-2 border-b border-slate-800">
               <h4 className="font-black text-sm text-white">কাস্টমার সাপোর্ট ডেস্ক</h4>
               <button onClick={() => setShowSupportModal(false)} className="text-slate-400 hover:text-slate-300">✕</button>
@@ -724,12 +724,12 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                   placeholder="বিষয় (Subject)..."
                   value={ticketSubject}
                   onChange={e => setTicketSubject(e.target.value)}
-                  className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-200"
+                  className="flex-1 bg-[#131b35] border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white"
                 />
                 <select
                   value={ticketCategory}
                   onChange={e => setTicketCategory(e.target.value)}
-                  className="bg-white border border-slate-200 rounded-xl px-2 py-1.5 text-xs text-slate-200"
+                  className="bg-[#131b35] border border-slate-700 rounded-xl px-2 py-1.5 text-xs text-white"
                 >
                   <option value="Deposit">Deposit</option>
                   <option value="Withdrawal">Withdraw</option>
@@ -742,7 +742,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                 placeholder="বিস্তারিত সমস্যা লিখুন..."
                 value={ticketMessage}
                 onChange={e => setTicketMessage(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-200"
+                className="w-full bg-[#131b35] border border-slate-700 rounded-xl p-2.5 text-xs text-white"
               />
               <button
                 type="submit"
@@ -790,7 +790,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
       {/* RESPONSIBLE GAMING LIMITS MODAL */}
       {showResponsibleModal && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-5 max-w-xs w-full text-left space-y-4 shadow-2xl text-white">
+          <div className="bg-[#0d142d] rounded-3xl p-5 max-w-xs w-full text-left space-y-4 shadow-2xl border border-slate-700 text-white">
             <div className="flex justify-between items-center pb-2 border-b border-slate-800">
               <h4 className="font-black text-sm text-white">Responsible Gaming</h4>
               <button onClick={() => setShowResponsibleModal(false)} className="text-slate-400 hover:text-slate-300">✕</button>
