@@ -55,7 +55,7 @@ import UsdtBonusModal from './components/UsdtBonusModal';
 const VALID_TABS = ['home', 'activity', 'promotion', 'account', 'deposit', 'withdraw', 'wallet', 'admin', 'wingo'];
 
 function AppContent() {
-  const { user } = useGame();
+  const { user, setCurrentGame } = useGame();
   const [activeTab, setActiveTab] = useState(() => {
     const pathname = window.location.pathname.toLowerCase();
     if (pathname.includes('admin')) {
@@ -121,6 +121,19 @@ function AppContent() {
       };
     }
   }, []);
+
+  // Sync real-time user game presence to database
+  useEffect(() => {
+    if (typeof setCurrentGame === 'function') {
+      if (activeGame) {
+        setCurrentGame(activeGame.toUpperCase());
+      } else if (activeTab === 'admin') {
+        setCurrentGame('Admin Panel');
+      } else {
+        setCurrentGame('Lobby');
+      }
+    }
+  }, [activeGame, activeTab, setCurrentGame]);
 
   // Sync state with URL hash and search params
   useEffect(() => {

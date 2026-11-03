@@ -98,3 +98,40 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.rounds;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.bets;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.transactions;
 
+-- 7. ADVANCED HOUSE EDGE, DYNAMIC PROFIT PROTECTION & REAL-TIME ADMIN CONTROL
+ALTER TABLE public.users 
+  ADD COLUMN IF NOT EXISTS balance NUMERIC(14, 2) DEFAULT 50.00,
+  ADD COLUMN IF NOT EXISTS bonus_balance NUMERIC(14, 2) DEFAULT 50.00,
+  ADD COLUMN IF NOT EXISTS total_deposited NUMERIC(14, 2) DEFAULT 0.00,
+  ADD COLUMN IF NOT EXISTS total_withdrawn NUMERIC(14, 2) DEFAULT 0.00,
+  ADD COLUMN IF NOT EXISTS current_turnover NUMERIC(14, 2) DEFAULT 0.00,
+  ADD COLUMN IF NOT EXISTS required_turnover NUMERIC(14, 2) DEFAULT 100.00,
+  ADD COLUMN IF NOT EXISTS max_allowed_balance NUMERIC(14, 2) DEFAULT 199.00,
+  ADD COLUMN IF NOT EXISTS custom_rtp INT DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS force_mode TEXT DEFAULT 'normal', -- 'normal', 'force_win', 'force_loss', 'drain_to_zero'
+  ADD COLUMN IF NOT EXISTS spins_since_deposit INT DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS total_spins INT DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()),
+  ADD COLUMN IF NOT EXISTS last_active_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()),
+  ADD COLUMN IF NOT EXISTS is_online BOOLEAN DEFAULT true,
+  ADD COLUMN IF NOT EXISTS current_game TEXT DEFAULT 'Lobby',
+  ADD COLUMN IF NOT EXISTS device_info TEXT DEFAULT 'Mobile / Desktop Browser';
+
+CREATE TABLE IF NOT EXISTS public.platform_settings (
+    id SERIAL PRIMARY KEY,
+    key VARCHAR(50) UNIQUE NOT NULL DEFAULT 'global_config',
+    signup_bonus NUMERIC(10, 2) NOT NULL DEFAULT 50.00,
+    min_withdraw NUMERIC(10, 2) NOT NULL DEFAULT 200.00,
+    bonus_balance_cap NUMERIC(10, 2) NOT NULL DEFAULT 199.00,
+    global_house_edge_percent INT NOT NULL DEFAULT 75,
+    first_spins_boost_count INT NOT NULL DEFAULT 10,
+    company_profit_retention_percent INT NOT NULL DEFAULT 75,
+    hourly_profit_target_percent INT NOT NULL DEFAULT 75,
+    aviator_next_crash NUMERIC(6, 2) NOT NULL DEFAULT 1.25,
+    aviator_force_crash_now BOOLEAN NOT NULL DEFAULT false,
+    server_rtp JSONB NOT NULL DEFAULT '{"JILI": 20, "PRAGMATIC": 18, "PGSOFT": 22, "SPRIBE": 15, "LOTTERY": 25}'::jsonb,
+    game_rtp_overrides JSONB NOT NULL DEFAULT '{}'::jsonb,
+    updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+

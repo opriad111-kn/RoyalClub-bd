@@ -63,11 +63,13 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
   const netReceive = Math.max(0, numAmount - feeAmount);
 
   // Turnover / Wagering Requirement Calculation
-  const reqTurnover = Number(safeUser?.turnover_required || 0);
-  const compTurnover = Number(safeUser?.turnover_completed || safeUser?.total_wagered || 0);
+  const minWithdrawLimit = safeSettings.MIN_WITHDRAWAL_AMOUNT || 200;
+  const reqTurnover = Number(safeUser?.required_turnover !== undefined ? safeUser.required_turnover : (safeUser?.turnover_required || 0));
+  const compTurnover = Number(safeUser?.current_turnover !== undefined ? safeUser.current_turnover : (safeUser?.turnover_completed || safeUser?.total_wagered || 0));
   const turnoverRemaining = Math.max(0, reqTurnover - compTurnover);
   const turnoverProgress = reqTurnover > 0 ? Math.min(100, Math.round((compTurnover / reqTurnover) * 100)) : 100;
   const isTurnoverMet = turnoverRemaining <= 0;
+  const isBalanceSufficient = currentBal >= minWithdrawLimit;
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -84,6 +86,11 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
     }
 
     const minAmount = safeSettings.MIN_WITHDRAWAL_AMOUNT || 200;
+    if (currentBal < minAmount) {
+      setErrorMessage(`উইথড্র করার জন্য আপনার অ্যাকাউন্টে সর্বনিম্ন ৳${minAmount} ব্যালেন্স থাকা আবশ্যক। আপনার বর্তমান ব্যালেন্স ৳${currentBal.toFixed(2)} টাকা।`);
+      return;
+    }
+
     if (!numAmount || numAmount < minAmount) {
       setErrorMessage(`সর্বনিম্ন উইথড্র ৳${minAmount} টাকা।`);
       return;
@@ -214,6 +221,19 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
             >
               লগইন করুন
             </button>
+          </div>
+        )}
+
+        {/* Minimum Balance Lock Notice */}
+        {!isBalanceSufficient && (
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 flex items-start space-x-2.5 text-amber-900 shadow-sm">
+            <Lock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <div className="flex-1 space-y-1">
+              <span className="font-black text-xs block">উইথড্রয়াল লক রয়েছে (মিনিমাম ব্যালেন্স অপূর্ণ)</span>
+              <p className="text-[11px] leading-relaxed">
+                উইথড্র করার জন্য আপনার ওয়ালেটে সর্বনিম্ন <strong>৳{minWithdrawLimit}</strong> ব্যালেন্স থাকা আবশ্যক। আপনার বর্তমান ব্যালেন্স <strong>৳{currentBal.toFixed(2)}</strong>।
+              </p>
+            </div>
           </div>
         )}
 
@@ -439,10 +459,10 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isSubmitting || safeUser.username === 'Guest' || numAmount > currentBal || numAmount < (safeSettings.MIN_WITHDRAWAL_AMOUNT || 200)}
+            disabled={isSubmitting || safeUser.username === 'Guest' || !isBalanceSufficient || !isTurnoverMet || numAmount > currentBal || numAmount < minWithdrawLimit}
             className="w-full bg-gradient-to-r from-amber-400 via-[#F5BE00] to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-slate-950 font-black py-3 rounded-full text-xs uppercase tracking-wider shadow-md active:scale-98 transition cursor-pointer disabled:opacity-50"
           >
-            {isSubmitting ? 'প্রসেসিং হচ্ছে...' : `উইথড্র রিকোয়েস্ট পাঠান ৳${numAmount || 0}`}
+            {isSubmitting ? 'প্রসেসিং হচ্ছে...' : !isBalanceSufficient ? `সর্বনিম্ন ব্যালেন্স ৳${minWithdrawLimit} প্রয়োজন` : !isTurnoverMet ? `টার্নওভার অসম্পূর্ণ (আরও ৳${turnoverRemaining.toFixed(0)})` : `উইথড্র রিকোয়েস্ট পাঠান ৳${numAmount || 0}`}
           </button>
         </form>
 

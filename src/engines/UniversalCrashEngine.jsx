@@ -87,7 +87,7 @@ const LIVE_PLAYERS = [
 
 export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
   const theme = CRASH_THEMES[gameId] || CRASH_THEMES.aviator;
-  const { user, adjustUserBalance, recordGameHistory, getGameEffectiveSettings } = useGame();
+  const { user, adjustUserBalance, recordGameHistory, getGameEffectiveSettings, settings, calculateOutcome } = useGame();
 
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -185,8 +185,30 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
     }
   }, [gameState]);
 
-  // Transparent mathematical crash point calculation based on uniform statistical curve
+  // Transparent mathematical crash point calculation based on uniform statistical curve & profit engine
   function generateCrashPoint() {
+    // 1. Emergency Admin Crash Override
+    if (settings?.AVIATOR_FORCE_CRASH_NOW) {
+      return 1.01;
+    }
+
+    // 2. Pre-set Crash Multiplier from Admin Controller
+    if (settings?.AVIATOR_NEXT_CRASH && Number(settings.AVIATOR_NEXT_CRASH) > 1.0) {
+      return parseFloat(Number(settings.AVIATOR_NEXT_CRASH).toFixed(2));
+    }
+
+    // 3. Centralized Dynamic Profit Engine (calculateOutcome)
+    if (typeof calculateOutcome === 'function') {
+      const activeBet = (bet1Active ? bet1 : 0) + (bet2Active ? bet2 : 0) || 50;
+      const outcome = calculateOutcome(user, gameId, activeBet, settings);
+      if (outcome.forceCrash || !outcome.isWin || outcome.multiplier <= 1.08) {
+        return parseFloat((1.01 + Math.random() * 0.05).toFixed(2));
+      }
+      if (outcome.isWin && outcome.multiplier > 1.0) {
+        return parseFloat(outcome.multiplier.toFixed(2));
+      }
+    }
+
     // Standard crash formula: E = 100 / (100 - r) with 3% transparent house edge
     // r is uniform random [0, 97)
     const r = Math.random() * 97;
