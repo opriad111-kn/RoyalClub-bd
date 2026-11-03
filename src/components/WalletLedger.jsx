@@ -23,8 +23,7 @@ export default function WalletLedger() {
     transactions, 
     requestDeposit, 
     requestWithdrawal,
-    adjustUserBalance,
-    claimFaucet
+    adjustUserBalance
   } = useGame();
 
   const [activeTab, setActiveTab] = useState('deposit'); // 'deposit', 'withdraw', 'ledger'
@@ -150,18 +149,9 @@ export default function WalletLedger() {
           <span className="text-xl">💳</span>
           <div>
             <span className="font-black block text-amber-950">রয়েল ক্লাব অফিশিয়াল ওয়ালেট</span>
-            <span className="text-[10px] text-amber-800">bKash, Nagad ও Rocket-এ তাৎক্ষণিক ডিপোজিট ও নিরাপদ উইথড্র সুবিধা।</span>
+            <span className="text-[10px] text-amber-800">bKash ও Nagad-এ তাৎক্ষণিক ডিপোজিট ও নিরাপদ উইথড্র সুবিধা।</span>
           </div>
         </div>
-
-        {userBalance < 50 && (
-          <button
-            onClick={() => claimFaucet()}
-            className="bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black text-[11px] px-3 py-1.5 rounded-full shadow-sm active:scale-95 transition cursor-pointer"
-          >
-            ফ্রি ৫০০ কয়েন
-          </button>
-        )}
       </div>
 
       {/* 1. DKWIN11 Style Balance Card */}
@@ -175,7 +165,7 @@ export default function WalletLedger() {
               <span className="text-3xl font-black font-mono text-slate-950">
                 ৳{userBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
-              <span className="text-xs text-slate-800 font-bold">COINS</span>
+              <span className="text-xs text-slate-800 font-bold">BDT</span>
             </div>
           </div>
 

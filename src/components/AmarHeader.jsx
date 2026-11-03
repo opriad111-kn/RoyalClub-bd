@@ -103,8 +103,8 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenDeposit, on
               <Download className="w-3.5 h-3.5" />
             </button>
 
-            {/* Master Admin Panel Button (Strictly restricted to Admin users) */}
-            {user?.is_admin && (
+            {/* Master Admin Panel Button (Restricted to Admin/Owner) */}
+            {(user?.is_admin || user?.phone === '1403398319' || user?.phone === '01403398319' || user?.username === 'u398319' || user?.username === 'admin') && (
               <button
                 onClick={onOpenAdmin}
                 title="Master Admin Panel"

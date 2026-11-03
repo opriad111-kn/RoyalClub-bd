@@ -169,7 +169,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
               দ্রুত এবং নিরাপদ ক্যাশআউট সুবিধা
             </h3>
             <p className="text-[10px] text-emerald-100 font-medium">
-              আপনার বিকাশ, নগদ, রকেট অথবা USDT ওয়ালেটে সরাসরি টাকা গ্রহণ করুন।
+              আপনার বিকাশ অথবা নগদ ওয়ালেটে সরাসরি টাকা গ্রহণ করুন।
             </p>
           </div>
           <Sparkles className="w-8 h-8 text-emerald-200 opacity-80 shrink-0 animate-pulse" />

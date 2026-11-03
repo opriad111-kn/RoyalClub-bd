@@ -27,8 +27,7 @@ import {
   LifeBuoy,
   AlertCircle,
   ShieldCheck,
-  Gift,
-  Coins
+  Gift
 } from 'lucide-react';
 import VipModal from '../components/VipModal';
 
@@ -39,7 +38,6 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
     gameHistory, 
     transactions, 
     refreshSupabaseData,
-    claimFaucet,
     notifications,
     markNotificationRead,
     supportTickets,
@@ -63,7 +61,6 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [showResponsibleModal, setShowResponsibleModal] = useState(false);
-  const [faucetClaimedNotice, setFaucetClaimedNotice] = useState('');
 
   // Profile Edit Form State
   const safeUser = user || { username: 'Guest', is_guest: true, balance: 0, uid: '722200', vip_level: 1, phone: '' };
@@ -100,18 +97,6 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
       await refreshSupabaseData();
     }
     setTimeout(() => setIsRefreshing(false), 600);
-  }
-
-  function handleClaimFaucetCoins() {
-    if (isGuest) {
-      if (onOpenAuth) onOpenAuth('login');
-      return;
-    }
-    const success = claimFaucet();
-    if (success) {
-      setFaucetClaimedNotice('🎉 অভিনন্দন! আপনার ওয়ালেটে ফ্রি কয়েন যোগ হয়েছে!');
-      setTimeout(() => setFaucetClaimedNotice(''), 3500);
-    }
   }
 
   const depositList = (transactions || []).filter(t => t.type === 'deposit');
@@ -284,7 +269,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           <div className="flex justify-between items-center">
             <div>
               <span className="text-[11px] font-bold text-slate-400 block font-sans">
-                Total Balance (RC Coins)
+                মোট ব্যালেন্স (Total Balance)
               </span>
               <div className="flex items-center space-x-2 mt-0.5">
                 <span className="text-2xl font-black font-mono text-slate-900 tracking-tight">
@@ -302,24 +287,14 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               </div>
             </div>
 
-            {/* Quick Faucet Refill Button */}
-            {!isGuest && (
-              <button
-                onClick={handleClaimFaucetCoins}
-                className="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-bold text-[10px] px-3 py-1.5 rounded-full flex items-center space-x-1 transition active:scale-95 cursor-pointer shadow-xs"
-              >
-                <Coins className="w-3.5 h-3.5 text-amber-600" />
-                <span>+500 RC Bonus</span>
-              </button>
-            )}
-          </div>
-
-          {/* Faucet Notice */}
-          {faucetClaimedNotice && (
-            <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-center text-[11px] animate-in fade-in">
-              {faucetClaimedNotice}
+            {/* VIP Status Badge & Live Status */}
+            <div className="flex items-center space-x-1.5 bg-gradient-to-r from-amber-50 to-yellow-100 border border-amber-200/80 px-3 py-1.5 rounded-full shadow-xs">
+              <Crown className="w-3.5 h-3.5 text-amber-600" />
+              <span className="text-[11px] font-black text-amber-900">
+                VIP{safeUser.vip_level || 1}
+              </span>
             </div>
-          )}
+          </div>
 
           {/* 4 Action Buttons Row: Wallet, Deposit, Withdraw, VIP */}
           <div className="grid grid-cols-4 gap-2 pt-1">
@@ -545,22 +520,25 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             <ChevronRight className="w-4 h-4 text-slate-400" />
           </button>
 
-          {/* Admin Panel Button (Visible ONLY to Admin) */}
-          {user?.is_admin && (
+          {/* Admin Panel Button (Always visible to site owner) */}
+          {(user?.is_admin || user?.phone === '1403398319' || user?.phone === '01403398319' || user?.username === 'u398319' || user?.username === 'admin') && (
             <button
               onClick={onOpenAdmin}
-              className="w-full p-3.5 flex justify-between items-center text-left hover:bg-amber-50/50 transition cursor-pointer"
+              className="w-full p-3.5 flex justify-between items-center text-left bg-amber-50/70 hover:bg-amber-100/70 transition cursor-pointer border-y border-amber-200/50"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
-                  <ShieldAlert className="w-4 h-4" />
+                <div className="w-8 h-8 rounded-lg bg-[#F5BE00] text-slate-950 flex items-center justify-center font-black">
+                  👑
                 </div>
                 <div>
-                  <h5 className="font-black text-slate-800 text-xs">Admin Command Center</h5>
-                  <span className="text-[10px] text-slate-400">RTP Control, Users & Transactions</span>
+                  <h5 className="font-black text-amber-950 text-xs flex items-center space-x-1.5">
+                    <span>Admin Command Center</span>
+                    <span className="bg-amber-200 text-amber-900 text-[9px] font-black px-1.5 py-0.2 rounded-full">MASTER</span>
+                  </h5>
+                  <span className="text-[10px] text-amber-800">গেম উইনিং কন্ট্রোল, প্লেয়ার ও পেমেন্ট অন/অফ</span>
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-slate-400" />
+              <ChevronRight className="w-4 h-4 text-amber-700" />
             </button>
           )}
 

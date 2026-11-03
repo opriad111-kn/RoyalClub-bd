@@ -1013,15 +1013,36 @@ export function GameProvider({ children }) {
           }
 
           if (liveMatch) {
+            const localSaved = localStorage.getItem('royalclub_current_user');
+            let localBal = null;
+            if (localSaved) {
+              try {
+                const parsed = JSON.parse(localSaved);
+                if (parsed.balance !== undefined && !isNaN(parsed.balance)) {
+                  localBal = Number(parsed.balance);
+                }
+              } catch (e) {}
+            }
+
+            const finalBal = (localBal !== null && localBal < Number(liveMatch.balance))
+              ? localBal
+              : Number(liveMatch.balance ?? 0.00);
+
             const updatedUser = {
               ...liveMatch,
-              balance: Number(liveMatch.balance ?? 0.00),
+              balance: finalBal,
               vip_level: Number(liveMatch.vip_level ?? 1),
               custom_win_rate: Number(liveMatch.custom_win_rate ?? 96),
               is_online: true
             };
             setUser(updatedUser);
             localStorage.setItem('royalclub_current_user', JSON.stringify(updatedUser));
+            if (finalBal !== Number(liveMatch.balance)) {
+              try {
+                if (liveMatch.phone) await supabase.from('users').update({ balance: finalBal }).eq('phone', liveMatch.phone);
+                else if (liveMatch.username) await supabase.from('users').update({ balance: finalBal }).eq('username', liveMatch.username);
+              } catch (e) {}
+            }
           }
         } else {
           setSupabaseStatus('connected');
@@ -1133,15 +1154,36 @@ export function GameProvider({ children }) {
             (u.uid && user.uid && u.uid === user.uid)
           );
           if (match) {
+            const localSaved = localStorage.getItem('royalclub_current_user');
+            let localBal = null;
+            if (localSaved) {
+              try {
+                const parsed = JSON.parse(localSaved);
+                if (parsed.balance !== undefined && !isNaN(parsed.balance)) {
+                  localBal = Number(parsed.balance);
+                }
+              } catch (e) {}
+            }
+
+            const finalBal = (localBal !== null && localBal < Number(match.balance))
+              ? localBal
+              : Number(match.balance ?? 0.00);
+
             const updatedUser = {
               ...match,
-              balance: Number(match.balance ?? 0.00),
+              balance: finalBal,
               vip_level: Number(match.vip_level ?? 1),
               custom_win_rate: Number(match.custom_win_rate ?? 96),
               is_online: true
             };
             setUser(updatedUser);
             localStorage.setItem('royalclub_current_user', JSON.stringify(updatedUser));
+            if (finalBal !== Number(match.balance)) {
+              try {
+                if (match.phone) await supabase.from('users').update({ balance: finalBal }).eq('phone', match.phone);
+                else if (match.username) await supabase.from('users').update({ balance: finalBal }).eq('username', match.username);
+              } catch (e) {}
+            }
           }
         }
       }
@@ -1386,44 +1428,9 @@ export function GameProvider({ children }) {
     return true;
   }
 
-  // Faucet & Low-Balance Rescue (500 Free Coins when balance < 50)
+  // Faucet disabled per casino owner requirements - NO free money giveaways
   function claimFaucet() {
-    const isLowBalance = user.balance < 50;
-    const now = Date.now();
-    const cooldownMs = (settings.FAUCET_COOLDOWN_HOURS || 4) * 3600 * 1000;
-
-    if (!isLowBalance && user.last_faucet_claim) {
-      const elapsed = now - new Date(user.last_faucet_claim).getTime();
-      if (elapsed < cooldownMs) {
-        const remainingMinutes = Math.ceil((cooldownMs - elapsed) / 60000);
-        alert(`ফ্রি ফসেট অপেক্ষমান! অনুগ্রহ করে ${remainingMinutes} মিনিট পর আবার ট্রাই করুন। অথবা ব্যালেন্স ৫০-এর নিচে নামলে তৎক্ষণাৎ ক্লেইম করতে পারবেন।`);
-        return false;
-      }
-    }
-
-    const faucetAmount = isLowBalance ? 500 : (settings.FAUCET_AMOUNT || 500);
-    soundManager.playWin();
-    confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
-
-    setUser(prev => ({
-      ...prev,
-      balance: parseFloat((prev.balance + faucetAmount).toFixed(2)),
-      last_faucet_claim: new Date().toISOString()
-    }));
-
-    const faucetTx = {
-      id: Date.now(),
-      uid: user.uid,
-      type: "faucet",
-      amount: faucetAmount,
-      fee: 0,
-      method: isLowBalance ? "Emergency Low-Balance Faucet (500 Coins)" : "Daily Free Faucet",
-      tx_hash: `FAUCET-${Date.now().toString().slice(-6)}`,
-      status: "completed",
-      created_at: new Date().toISOString()
-    };
-    setTransactions(prev => [faucetTx, ...prev]);
-    return true;
+    return false;
   }
 
   // Deposit Request with Supabase persistence, sender phone & TrxID
@@ -1496,7 +1503,7 @@ export function GameProvider({ children }) {
       } catch (e) {}
       return updated;
     });
-    alert("আপনার ডিপোজিট রিকোয়েস্ট সফলভাবে জমা হয়েছে (Pending)! অ্যাডমিন প্যানেল থেকে অনুমোদনের পর ব্যালেন্সে কয়েন যোগ হবে।");
+    alert("আপনার ডিপোজিট রিকোয়েস্ট সফলভাবে জমা হয়েছে (Pending)! অ্যাডমিন প্যানেল থেকে অনুমোদনের পর ব্যালেন্সে টাকা যোগ হবে।");
     return true;
   }
 
@@ -1527,7 +1534,7 @@ export function GameProvider({ children }) {
     const dailyLimit = settings.DAILY_WITHDRAWAL_LIMIT || 5000;
     if (todayWithdrawals + amount > dailyLimit) {
       const remainingLimit = Math.max(0, dailyLimit - todayWithdrawals);
-      alert(`দৈনিক উইথড্র লিমিট ৫,০০০ কয়েন অতিক্রম করেছে! আজকের অবশিষ্ট লিমিট: ৳${remainingLimit} টাকা।`);
+      alert(`দৈনিক উইথড্র লিমিট ৫,০০০ টাকা অতিক্রম করেছে! আজকের অবশিষ্ট লিমিট: ৳${remainingLimit} টাকা।`);
       return false;
     }
 
@@ -1537,17 +1544,33 @@ export function GameProvider({ children }) {
 
     // Deduct immediately in state & localStorage
     setUser(prev => {
-      const updated = { ...prev, balance: nextUserBal };
+      const updated = { 
+        ...prev, 
+        balance: nextUserBal,
+        total_withdrawn: parseFloat(((prev.total_withdrawn || 0) + amount).toFixed(2))
+      };
       localStorage.setItem('royalclub_current_user', JSON.stringify(updated));
       return updated;
     });
 
+    setAllUsers(users => users.map(u => 
+      (u.uid === user.uid || u.username === user.username) 
+        ? { ...u, balance: nextUserBal, total_withdrawn: parseFloat(((u.total_withdrawn || 0) + amount).toFixed(2)) }
+        : u
+    ));
+
     // Sync balance deduction to Supabase users table
-    if (user.username) {
-      try {
+    try {
+      if (user.phone) {
+        await supabase.from('users').update({ balance: nextUserBal }).eq('phone', user.phone);
+      }
+      if (user.username) {
         await supabase.from('users').update({ balance: nextUserBal }).eq('username', user.username);
-      } catch (e) {}
-    }
+      }
+      if (user.uid) {
+        await supabase.from('users').update({ balance: nextUserBal }).eq('id', user.uid);
+      }
+    } catch (e) {}
 
     let insertedId = Date.now();
     try {

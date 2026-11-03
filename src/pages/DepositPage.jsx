@@ -154,7 +154,7 @@ export default function DepositPage({ onBack, onOpenAuth }) {
               প্রথম ডিপোজিটে ১০০% ওয়েলকাম ক্যাশব্যাক বোনাস!
             </h3>
             <p className="text-[10px] text-yellow-100 font-medium">
-              bKash, Nagad, Rocket ও USDT-তে ২৪/৭ অটোমেটিক পেমেন্ট ভেরিফিকেশন ও দ্রুত ব্যালেন্স যুক্তকরণ।
+              bKash ও Nagad-এ ২৪/৭ দ্রুত পেমেন্ট ভেরিফিকেশন ও ব্যালেন্স যুক্তকরণ।
             </p>
           </div>
           <Sparkles className="w-8 h-8 text-yellow-300 opacity-80 shrink-0 animate-pulse" />
