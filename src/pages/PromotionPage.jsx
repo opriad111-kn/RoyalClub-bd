@@ -44,7 +44,7 @@ export default function PromotionPage({ onOpenAuth }) {
     <div className="space-y-3.5 pb-20 text-xs select-none -mx-3.5 -mt-3.5">
       
       {/* 1. Curved Yellow Header (DKWIN11 Style) */}
-      <div className="bg-[#F5BE00] text-slate-900 px-5 pt-6 pb-6 rounded-b-[32px] shadow-sm relative">
+      <div className="bg-gradient-to-b from-[#0c1224] via-[#101932] to-[#070b19] text-white border-b border-slate-800 px-5 pt-6 pb-6 rounded-b-[32px] shadow-sm relative">
         <div className="flex justify-center mb-2">
           <span className="bg-white/20 border border-white/40 px-3 py-0.5 rounded-full text-[10px] font-black tracking-wider uppercase">
             Agency Promotion Center
@@ -52,10 +52,10 @@ export default function PromotionPage({ onOpenAuth }) {
         </div>
 
         <div className="text-center space-y-0.5">
-          <span className="text-[11px] font-bold text-slate-800/80 block">
+          <span className="text-[11px] font-bold text-slate-200/80 block">
             Total Rebate Bonus (Agent Commission)
           </span>
-          <span className="text-3xl font-black font-mono text-slate-900 tracking-tight block">
+          <span className="text-3xl font-black font-mono text-white tracking-tight block">
             ৳0.00
           </span>
           <span className="text-[10px] text-amber-900 font-bold block">
@@ -66,14 +66,14 @@ export default function PromotionPage({ onOpenAuth }) {
         {/* 2 Stats Chips in Header */}
         <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-yellow-400 text-center">
           <div className="bg-white/30 rounded-xl p-2">
-            <span className="text-[10px] text-slate-800 block font-bold">Direct Referrals:</span>
-            <span className="text-sm font-black font-mono text-slate-900">
+            <span className="text-[10px] text-slate-200 block font-bold">Direct Referrals:</span>
+            <span className="text-sm font-black font-mono text-white">
               {isGuest ? '0 Players' : `${safeUser.referral_count || 0} Players`}
             </span>
           </div>
           <div className="bg-white/30 rounded-xl p-2">
-            <span className="text-[10px] text-slate-800 block font-bold">Total Team Turnover:</span>
-            <span className="text-sm font-black font-mono text-slate-900">৳0.00</span>
+            <span className="text-[10px] text-slate-200 block font-bold">Total Team Turnover:</span>
+            <span className="text-sm font-black font-mono text-white">৳0.00</span>
           </div>
         </div>
       </div>
@@ -83,12 +83,12 @@ export default function PromotionPage({ onOpenAuth }) {
 
         {/* 2. Invitation Link & Code Card */}
         {isGuest ? (
-          <div className="bg-white rounded-2xl p-5 border border-amber-200 shadow-sm text-center space-y-3">
+          <div className="bg-[#0f1730] rounded-2xl text-white p-5 border border-amber-200 shadow-sm text-center space-y-3">
             <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-600">
               <Share2 className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-black text-slate-900 text-sm">
+              <h4 className="font-black text-white text-sm">
                 রেফারেল লিঙ্ক পেতে আগে লগইন করুন
               </h4>
               <p className="text-[11px] text-slate-500 mt-1 max-w-[280px] mx-auto leading-relaxed">
@@ -103,9 +103,9 @@ export default function PromotionPage({ onOpenAuth }) {
             </button>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-3">
+          <div className="bg-[#0f1730] rounded-2xl text-white p-4 border border-slate-800 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="font-black text-slate-900 text-xs flex items-center">
+              <h4 className="font-black text-white text-xs flex items-center">
                 <Share2 className="w-4 h-4 text-amber-500 mr-1.5" />
                 <span>Your Exclusive Invitation</span>
               </h4>
@@ -115,10 +115,10 @@ export default function PromotionPage({ onOpenAuth }) {
             </div>
 
             {/* Invitation Code */}
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 flex justify-between items-center">
+            <div className="bg-[#0b1023] border border-slate-200 rounded-xl p-2.5 flex justify-between items-center">
               <div>
                 <span className="text-[10px] text-slate-400 block font-bold">Invitation Code:</span>
-                <span className="font-mono text-base font-black text-slate-900 tracking-wider">
+                <span className="font-mono text-base font-black text-white tracking-wider">
                   {inviteCode}
                 </span>
               </div>
@@ -139,7 +139,7 @@ export default function PromotionPage({ onOpenAuth }) {
                   type="text"
                   readOnly
                   value={inviteLink}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[11px] font-mono text-slate-700 truncate"
+                  className="w-full bg-[#0b1023] border border-slate-200 rounded-xl px-3 py-2 text-[11px] font-mono text-slate-300 truncate"
                 />
                 <button
                   onClick={() => handleCopy(inviteLink)}
@@ -164,7 +164,7 @@ export default function PromotionPage({ onOpenAuth }) {
             </span>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-xs rounded-xl p-3 space-y-2 border border-white/60 text-slate-900">
+          <div className="bg-white/80 backdrop-blur-xs rounded-xl p-3 space-y-2 border border-white/60 text-white">
             <p className="text-[11px] leading-relaxed font-bold">
               • আপনার লিংকে বন্ধু একাউন্ট খুলে ৭ দিনের মধ্যে <strong>৳৩০০ ডিপোজিট</strong> এবং <strong>৳১,৫০০ বেটিং টার্নওভার</strong> করলেই আপনি পাবেন <strong>৳১০০ নগদ ক্যাশ বোনাস</strong>!
             </p>
@@ -178,9 +178,9 @@ export default function PromotionPage({ onOpenAuth }) {
         </div>
 
         {/* 3. Agency Commission Tier Breakdown */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <h4 className="font-black text-slate-900 text-xs flex items-center">
+        <div className="bg-[#0f1730] rounded-2xl text-white p-4 border border-slate-800 shadow-sm space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+            <h4 className="font-black text-white text-xs flex items-center">
               <TrendingUp className="w-4 h-4 text-emerald-500 mr-1.5" />
               <span>Multi-Tier Commission Structure</span>
             </h4>
@@ -189,9 +189,9 @@ export default function PromotionPage({ onOpenAuth }) {
 
           <div className="space-y-2">
             {commissionTiers.map((t, idx) => (
-              <div key={idx} className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex items-center justify-between">
+              <div key={idx} className="bg-[#0b1023] p-2.5 rounded-xl border border-slate-800 flex items-center justify-between">
                 <div>
-                  <h5 className="font-black text-slate-800 text-xs">{t.tier}</h5>
+                  <h5 className="font-black text-slate-200 text-xs">{t.tier}</h5>
                   <span className="text-[10px] text-slate-400 block">{t.rebate}</span>
                 </div>
                 <div className="text-right">
@@ -204,8 +204,8 @@ export default function PromotionPage({ onOpenAuth }) {
         </div>
 
         {/* 4. Agent Rules & Benefits */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-2">
-          <h4 className="font-black text-slate-900 text-xs flex items-center">
+        <div className="bg-[#0f1730] rounded-2xl text-white p-4 border border-slate-800 shadow-sm space-y-2">
+          <h4 className="font-black text-white text-xs flex items-center">
             <ShieldCheck className="w-4 h-4 text-amber-500 mr-1.5" />
             <span>Agent Guidelines</span>
           </h4>

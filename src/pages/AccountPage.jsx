@@ -170,20 +170,20 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
     <div className="space-y-3.5 pb-20 text-xs select-none -mx-3.5 -mt-3.5 font-sans">
       
       {/* 1. Curved Golden Gradient Header (Matching DK WIN / 91 Club) */}
-      <div className="bg-gradient-to-b from-[#F5BE00] via-[#F5BE00] to-[#E2A600] text-slate-900 px-5 pt-6 pb-12 rounded-b-[32px] relative shadow-sm">
+      <div className="bg-gradient-to-b from-[#0c1224] via-[#101932] to-[#070b19] text-white border-b border-slate-800 px-5 pt-6 pb-12 rounded-b-[32px] relative shadow-sm">
         {isGuest ? (
           <div className="flex items-center space-x-3.5 relative z-10">
             <div className="w-16 h-16 rounded-full bg-white/40 border-2 border-white p-0.5 shadow-md flex items-center justify-center overflow-hidden shrink-0">
-              <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-200 to-yellow-100 flex items-center justify-center text-slate-800">
+              <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-200 to-yellow-100 flex items-center justify-center text-slate-200">
                 <User className="w-8 h-8 stroke-[2.2]" />
               </div>
             </div>
             <div className="flex-1 space-y-2 text-left">
               <div>
-                <h3 className="font-black text-base tracking-tight text-slate-900 font-sans">
+                <h3 className="font-black text-base tracking-tight text-white font-sans">
                   {t('welcomeGuest')}
                 </h3>
-                <span className="text-[10px] text-slate-800/80 block mt-0.5">
+                <span className="text-[10px] text-slate-200/80 block mt-0.5">
                   {t('guestSubtitle')}
                 </span>
               </div>
@@ -196,7 +196,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                 </button>
                 <button
                   onClick={() => onOpenAuth('register')}
-                  className="bg-white hover:bg-slate-50 text-slate-900 font-bold text-xs px-4 py-1.5 rounded-full shadow-sm border border-slate-300 active:scale-95 transition cursor-pointer"
+                  className="bg-white hover:bg-slate-800/50 text-white font-bold text-xs px-4 py-1.5 rounded-full shadow-sm border border-slate-300 active:scale-95 transition cursor-pointer"
                 >
                   {t('register')}
                 </button>
@@ -207,7 +207,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           <div className="flex items-center space-x-3.5 relative z-10">
             <div className="relative">
               <div className="w-16 h-16 rounded-full bg-white/40 border-2 border-white p-0.5 shadow-md flex items-center justify-center overflow-hidden">
-                <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-200 to-yellow-100 flex items-center justify-center text-slate-800 font-black text-xl">
+                <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-200 to-yellow-100 flex items-center justify-center text-slate-200 font-black text-xl">
                   {safeUser.username ? safeUser.username[0].toUpperCase() : 'U'}
                 </div>
               </div>
@@ -215,7 +215,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
 
             <div className="flex-1 space-y-1">
               <div className="flex items-center space-x-2">
-                <h3 className="font-black text-lg tracking-tight text-slate-900 font-sans">
+                <h3 className="font-black text-lg tracking-tight text-white font-sans">
                   {safeUser.username || 'Player'}
                 </h3>
                 <button 
@@ -230,7 +230,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                     setEditPhone(safeUser.phone || '');
                     setShowProfileModal(true);
                   }}
-                  className="w-6 h-6 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center text-slate-900 transition"
+                  className="w-6 h-6 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center text-white transition"
                   title="প্রোফাইল এডিট"
                 >
                   <Edit2 className="w-3 h-3" />
@@ -243,18 +243,18 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                   onClick={handleCopyUid}
                   className="inline-flex items-center space-x-1.5 bg-white/30 hover:bg-white/40 border border-white/40 px-2.5 py-0.5 rounded-full cursor-pointer transition active:scale-95"
                 >
-                  <span className="text-slate-800 font-mono text-[11px] font-bold">
+                  <span className="text-slate-200 font-mono text-[11px] font-bold">
                     UID | {safeUser.uid || '722200'}
                   </span>
                   {copied ? (
-                    <Check className="w-3 h-3 text-slate-900 font-bold" />
+                    <Check className="w-3 h-3 text-white font-bold" />
                   ) : (
-                    <Copy className="w-3 h-3 text-slate-800" />
+                    <Copy className="w-3 h-3 text-slate-200" />
                   )}
                 </div>
               </div>
 
-              <div className="text-[10px] text-slate-800/80 font-medium">
+              <div className="text-[10px] text-slate-200/80 font-medium">
                 {safeUser.phone ? `Phone: ${safeUser.phone}` : 'Account Status: Active'}
               </div>
             </div>
@@ -266,14 +266,14 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
       <div className="px-3.5 space-y-3.5 -mt-9 relative z-20">
 
         {/* 2. Floating Total Balance Card with 4 Pastel Buttons */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-3">
+        <div className="bg-[#0f1730] rounded-2xl text-white p-4 shadow-sm border border-slate-800 space-y-3">
           <div className="flex justify-between items-center">
             <div>
               <span className="text-[11px] font-bold text-slate-400 block font-sans">
                 মোট ব্যালেন্স (Total Balance)
               </span>
               <div className="flex items-center space-x-2 mt-0.5">
-                <span className="text-2xl font-black font-mono text-slate-900 tracking-tight">
+                <span className="text-2xl font-black font-mono text-white tracking-tight">
                   ৳{(safeUser.balance !== undefined ? safeUser.balance : 0.00).toFixed(2)}
                 </span>
                 <button 
@@ -301,42 +301,42 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           <div className="grid grid-cols-4 gap-2 pt-1">
             <button
               onClick={() => handleAction(onOpenWallet)}
-              className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 transition active:scale-95 cursor-pointer"
+              className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-800/50 transition active:scale-95 cursor-pointer"
             >
               <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 text-rose-500 flex items-center justify-center mb-1 shadow-sm">
                 <Wallet className="w-6 h-6 stroke-[2]" />
               </div>
-              <span className="font-bold text-[11px] text-slate-700">Wallet</span>
+              <span className="font-bold text-[11px] text-slate-300">Wallet</span>
             </button>
 
             <button
               onClick={() => handleAction(onOpenDeposit || onOpenWallet)}
-              className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 transition active:scale-95 cursor-pointer"
+              className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-800/50 transition active:scale-95 cursor-pointer"
             >
               <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 text-amber-500 flex items-center justify-center mb-1 shadow-sm">
                 <ArrowDownLeft className="w-6 h-6 stroke-[2.2]" />
               </div>
-              <span className="font-bold text-[11px] text-slate-700">Deposit</span>
+              <span className="font-bold text-[11px] text-slate-300">Deposit</span>
             </button>
 
             <button
               onClick={() => handleAction(onOpenWithdraw || onOpenWallet)}
-              className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 transition active:scale-95 cursor-pointer"
+              className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-800/50 transition active:scale-95 cursor-pointer"
             >
               <div className="w-12 h-12 rounded-2xl bg-sky-50 border border-sky-100 text-sky-500 flex items-center justify-center mb-1 shadow-sm">
                 <CreditCard className="w-6 h-6 stroke-[2]" />
               </div>
-              <span className="font-bold text-[11px] text-slate-700">Withdraw</span>
+              <span className="font-bold text-[11px] text-slate-300">Withdraw</span>
             </button>
 
             <button
               onClick={() => handleAction(() => setShowVipModal(true))}
-              className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 transition active:scale-95 cursor-pointer"
+              className="flex flex-col items-center p-2 rounded-2xl hover:bg-slate-800/50 transition active:scale-95 cursor-pointer"
             >
               <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-100 text-teal-600 flex items-center justify-center mb-1 shadow-sm font-black text-base">
                 V
               </div>
-              <span className="font-bold text-[11px] text-slate-700">VIP</span>
+              <span className="font-bold text-[11px] text-slate-300">VIP</span>
             </button>
           </div>
         </div>
@@ -344,14 +344,14 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
         {/* 3. "Safe" Daily Interest Box */}
         <div 
           onClick={() => handleAction(() => setSafeModalOpen(true))}
-          className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md transition active:scale-95"
+          className="bg-[#0f1730] rounded-2xl text-white p-3.5 border border-slate-800 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md transition active:scale-95"
         >
           <div className="flex items-center space-x-3">
             <div className="w-11 h-11 rounded-xl bg-amber-100 border border-amber-200 text-amber-600 flex items-center justify-center text-xl shadow-sm shrink-0">
               🪙
             </div>
             <div>
-              <h4 className="font-black text-slate-900 text-sm">Safe Vault</h4>
+              <h4 className="font-black text-white text-sm">Safe Vault</h4>
               <p className="text-[10px] text-slate-400 mt-0.5 leading-snug max-w-[220px]">
                 The daily interest rate is 0.1%, and income is calculated once every 1 minute.
               </p>
@@ -368,52 +368,52 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
         <div className="grid grid-cols-2 gap-2.5">
           <div 
             onClick={() => handleAction(() => setActiveHistoryModal('game'))}
-            className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
+            className="bg-[#0f1730] rounded-2xl text-white p-3 border border-slate-800 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
             <div className="w-10 h-10 rounded-xl bg-blue-500 text-white flex items-center justify-center shrink-0 shadow-sm shadow-blue-500/20">
               <Gamepad2 className="w-5 h-5" />
             </div>
             <div className="flex-1 overflow-hidden">
-              <h5 className="font-black text-slate-900 text-xs truncate">Game History</h5>
+              <h5 className="font-black text-white text-xs truncate">Game History</h5>
               <span className="text-[10px] text-slate-400 block truncate">My game records</span>
             </div>
           </div>
 
           <div 
             onClick={() => handleAction(() => setActiveHistoryModal('transaction'))}
-            className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
+            className="bg-[#0f1730] rounded-2xl text-white p-3 border border-slate-800 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
             <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm shadow-emerald-500/20">
               <FileText className="w-5 h-5" />
             </div>
             <div className="flex-1 overflow-hidden">
-              <h5 className="font-black text-slate-900 text-xs truncate">Transactions</h5>
+              <h5 className="font-black text-white text-xs truncate">Transactions</h5>
               <span className="text-[10px] text-slate-400 block truncate">Ledger records</span>
             </div>
           </div>
 
           <div 
             onClick={() => handleAction(() => setActiveHistoryModal('deposit'))}
-            className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
+            className="bg-[#0f1730] rounded-2xl text-white p-3 border border-slate-800 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
             <div className="w-10 h-10 rounded-xl bg-rose-400 text-white flex items-center justify-center shrink-0 shadow-sm shadow-rose-400/20">
               <ArrowDownLeft className="w-5 h-5" />
             </div>
             <div className="flex-1 overflow-hidden">
-              <h5 className="font-black text-slate-900 text-xs truncate">Deposit</h5>
+              <h5 className="font-black text-white text-xs truncate">Deposit</h5>
               <span className="text-[10px] text-slate-400 block truncate">Deposit records</span>
             </div>
           </div>
 
           <div 
             onClick={() => handleAction(() => setActiveHistoryModal('withdraw'))}
-            className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
+            className="bg-[#0f1730] rounded-2xl text-white p-3 border border-slate-800 shadow-sm hover:shadow-md cursor-pointer transition active:scale-95 flex items-center space-x-3"
           >
             <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm shadow-amber-500/20">
               <ArrowUpRight className="w-5 h-5" />
             </div>
             <div className="flex-1 overflow-hidden">
-              <h5 className="font-black text-slate-900 text-xs truncate">Withdraw</h5>
+              <h5 className="font-black text-white text-xs truncate">Withdraw</h5>
               <span className="text-[10px] text-slate-400 block truncate">Withdraw records</span>
             </div>
           </div>
@@ -422,13 +422,13 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
         {/* 5. In-App Notifications Bar */}
         <div 
           onClick={() => setNotificationModalOpen(true)}
-          className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md transition active:scale-95"
+          className="bg-[#0f1730] rounded-2xl text-white p-3.5 border border-slate-800 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md transition active:scale-95"
         >
           <div className="flex items-center space-x-3">
             <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
               <Mail className="w-5 h-5" />
             </div>
-            <span className="font-bold text-slate-800 text-xs">Notifications</span>
+            <span className="font-bold text-slate-200 text-xs">Notifications</span>
           </div>
 
           <div className="flex items-center space-x-1.5">
@@ -442,19 +442,19 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
         </div>
 
         {/* 6. Comprehensive Account Services & Settings List */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-100 overflow-hidden">
+        <div className="bg-[#0f1730] rounded-2xl text-white border border-slate-800 shadow-sm divide-y divide-slate-800 overflow-hidden">
           
           {/* Redeem Gift Code */}
           <button
             onClick={() => handleAction(onOpenGift)}
-            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-50 transition cursor-pointer"
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-800/50 transition cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
                 <Gift className="w-4 h-4" />
               </div>
               <div>
-                <span className="font-bold text-xs text-slate-800">Gifts & Promo Codes</span>
+                <span className="font-bold text-xs text-slate-200">Gifts & Promo Codes</span>
                 <span className="text-[10px] text-slate-400 block">উপহার রিডেম্পশন কোড দিয়ে বোনাস নিন</span>
               </div>
             </div>
@@ -464,14 +464,14 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           {/* Customer Support Desk */}
           <button
             onClick={() => handleAction(() => setShowSupportModal(true))}
-            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-50 transition cursor-pointer"
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-800/50 transition cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center">
                 <LifeBuoy className="w-4 h-4" />
               </div>
               <div>
-                <span className="font-bold text-xs text-slate-800">Support Desk & Tickets</span>
+                <span className="font-bold text-xs text-slate-200">Support Desk & Tickets</span>
                 <span className="text-[10px] text-slate-400 block">সাপোর্ট টিকিট পাঠান এবং উত্তর দেখুন</span>
               </div>
             </div>
@@ -489,14 +489,14 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           {!isGuest && (
             <button
               onClick={() => setShowPasswordModal(true)}
-              className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-50 transition cursor-pointer"
+              className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-800/50 transition cursor-pointer"
             >
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
                   <KeyRound className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="font-bold text-xs text-slate-800">Change Password</span>
+                  <span className="font-bold text-xs text-slate-200">Change Password</span>
                   <span className="text-[10px] text-slate-400 block">লগইন পাসওয়ার্ড পরিবর্তন করুন</span>
                 </div>
               </div>
@@ -507,14 +507,14 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           {/* Responsible Gaming Limits */}
           <button
             onClick={() => setShowResponsibleModal(true)}
-            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-50 transition cursor-pointer"
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-800/50 transition cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
                 <ShieldCheck className="w-4 h-4" />
               </div>
               <div>
-                <span className="font-bold text-xs text-slate-800">Responsible Gaming Limits</span>
+                <span className="font-bold text-xs text-slate-200">Responsible Gaming Limits</span>
                 <span className="text-[10px] text-slate-400 block">দৈনিক বাজি ও সময়সীমা নিয়ন্ত্রণ</span>
               </div>
             </div>
@@ -546,7 +546,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           {/* Switch / Login Button */}
           <button
             onClick={onOpenAuth}
-            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-amber-50/50 text-slate-800 transition cursor-pointer"
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-amber-50/50 text-slate-200 transition cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 rounded-lg bg-amber-100 text-[#FFC107] flex items-center justify-center">
@@ -563,20 +563,20 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
           {/* Language Switcher Setting */}
           <button
             onClick={toggleLang}
-            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-50 transition cursor-pointer"
+            className="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-800/50 transition cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
                 {lang === 'en' ? '🇺🇸' : '🇧🇩'}
               </div>
               <div>
-                <span className="font-bold text-xs text-slate-800">{t('language')}</span>
+                <span className="font-bold text-xs text-slate-200">{t('language')}</span>
                 <span className="text-[10px] text-slate-400 block">
                   {lang === 'en' ? 'English (Click to change to বাংলা)' : 'বাংলা (Click to switch to English)'}
                 </span>
               </div>
             </div>
-            <div className="flex items-center space-x-1 bg-slate-100 px-2 py-0.5 rounded-full text-[10px] font-black text-slate-700">
+            <div className="flex items-center space-x-1 bg-slate-100 px-2 py-0.5 rounded-full text-[10px] font-black text-slate-300">
               <span>{lang === 'en' ? 'EN' : 'বাংলা'}</span>
               <ChevronRight className="w-3 h-3 text-slate-400" />
             </div>
@@ -618,10 +618,10 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
       {/* EDIT PROFILE MODAL */}
       {showProfileModal && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-5 max-w-xs w-full text-left space-y-4 shadow-2xl text-slate-900">
-            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-              <h4 className="font-black text-sm text-slate-900">প্রোফাইল এডিট</h4>
-              <button onClick={() => setShowProfileModal(false)} className="text-slate-400 hover:text-slate-700">✕</button>
+          <div className="bg-white rounded-3xl p-5 max-w-xs w-full text-left space-y-4 shadow-2xl text-white">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-800">
+              <h4 className="font-black text-sm text-white">প্রোফাইল এডিট</h4>
+              <button onClick={() => setShowProfileModal(false)} className="text-slate-400 hover:text-slate-300">✕</button>
             </div>
             <form onSubmit={handleSaveProfile} className="space-y-3">
               <div>
@@ -630,7 +630,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                   type="text"
                   value={editUsername}
                   onChange={e => setEditUsername(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-200"
                 />
               </div>
               <div>
@@ -639,7 +639,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                   type="text"
                   value={editPhone}
                   onChange={e => setEditPhone(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono text-slate-800"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono text-slate-200"
                 />
               </div>
               <button
@@ -656,10 +656,10 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
       {/* CHANGE PASSWORD MODAL */}
       {showPasswordModal && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-5 max-w-xs w-full text-left space-y-4 shadow-2xl text-slate-900">
-            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-              <h4 className="font-black text-sm text-slate-900">পাসওয়ার্ড পরিবর্তন</h4>
-              <button onClick={() => setShowPasswordModal(false)} className="text-slate-400 hover:text-slate-700">✕</button>
+          <div className="bg-white rounded-3xl p-5 max-w-xs w-full text-left space-y-4 shadow-2xl text-white">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-800">
+              <h4 className="font-black text-sm text-white">পাসওয়ার্ড পরিবর্তন</h4>
+              <button onClick={() => setShowPasswordModal(false)} className="text-slate-400 hover:text-slate-300">✕</button>
             </div>
             {passwordNotice.text && (
               <div className={`p-2 rounded-xl text-xs font-bold text-center ${
@@ -703,10 +703,10 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
       {/* SUPPORT TICKETS DRAWER */}
       {showSupportModal && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-5 max-w-sm w-full text-left space-y-4 shadow-2xl text-slate-900 max-h-[85vh] overflow-y-auto">
-            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-              <h4 className="font-black text-sm text-slate-900">কাস্টমার সাপোর্ট ডেস্ক</h4>
-              <button onClick={() => setShowSupportModal(false)} className="text-slate-400 hover:text-slate-700">✕</button>
+          <div className="bg-white rounded-3xl p-5 max-w-sm w-full text-left space-y-4 shadow-2xl text-white max-h-[85vh] overflow-y-auto">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-800">
+              <h4 className="font-black text-sm text-white">কাস্টমার সাপোর্ট ডেস্ক</h4>
+              <button onClick={() => setShowSupportModal(false)} className="text-slate-400 hover:text-slate-300">✕</button>
             </div>
 
             {ticketNotice && (
@@ -716,20 +716,20 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
             )}
 
             {/* Submit New Ticket */}
-            <form onSubmit={handleCreateTicket} className="space-y-2.5 bg-slate-50 p-3 rounded-2xl border border-slate-100">
-              <span className="font-bold text-xs text-slate-800 block">নতুন অভিযোগ / টিকিট পাঠান:</span>
+            <form onSubmit={handleCreateTicket} className="space-y-2.5 bg-slate-50 p-3 rounded-2xl border border-slate-800">
+              <span className="font-bold text-xs text-slate-200 block">নতুন অভিযোগ / টিকিট পাঠান:</span>
               <div className="flex space-x-2">
                 <input
                   type="text"
                   placeholder="বিষয় (Subject)..."
                   value={ticketSubject}
                   onChange={e => setTicketSubject(e.target.value)}
-                  className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800"
+                  className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-200"
                 />
                 <select
                   value={ticketCategory}
                   onChange={e => setTicketCategory(e.target.value)}
-                  className="bg-white border border-slate-200 rounded-xl px-2 py-1.5 text-xs text-slate-800"
+                  className="bg-white border border-slate-200 rounded-xl px-2 py-1.5 text-xs text-slate-200"
                 >
                   <option value="Deposit">Deposit</option>
                   <option value="Withdrawal">Withdraw</option>
@@ -742,7 +742,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                 placeholder="বিস্তারিত সমস্যা লিখুন..."
                 value={ticketMessage}
                 onChange={e => setTicketMessage(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800"
+                className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-200"
               />
               <button
                 type="submit"
@@ -754,12 +754,12 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
 
             {/* My Tickets List */}
             <div className="space-y-2">
-              <span className="font-bold text-xs text-slate-700 block">আমার টিকিট হিস্ট্রি:</span>
+              <span className="font-bold text-xs text-slate-300 block">আমার টিকিট হিস্ট্রি:</span>
               {userTickets.length > 0 ? (
                 userTickets.map(t => (
-                  <div key={t.id} className="p-3 bg-slate-50 border border-slate-100 rounded-2xl space-y-1.5">
+                  <div key={t.id} className="p-3 bg-slate-50 border border-slate-800 rounded-2xl space-y-1.5">
                     <div className="flex justify-between items-center">
-                      <span className="font-bold text-xs text-slate-900">{t.subject}</span>
+                      <span className="font-bold text-xs text-white">{t.subject}</span>
                       <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
                         t.status === 'open' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
                       }`}>
@@ -772,7 +772,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                         {t.adminReplies.map((r, i) => (
                           <div key={i} className="text-[10px] text-emerald-800 font-bold">
                             <span>অ্যাডমিন: </span>
-                            <span className="text-slate-700 font-normal">{r.text}</span>
+                            <span className="text-slate-300 font-normal">{r.text}</span>
                           </div>
                         ))}
                       </div>
@@ -790,10 +790,10 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
       {/* RESPONSIBLE GAMING LIMITS MODAL */}
       {showResponsibleModal && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-5 max-w-xs w-full text-left space-y-4 shadow-2xl text-slate-900">
-            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-              <h4 className="font-black text-sm text-slate-900">Responsible Gaming</h4>
-              <button onClick={() => setShowResponsibleModal(false)} className="text-slate-400 hover:text-slate-700">✕</button>
+          <div className="bg-white rounded-3xl p-5 max-w-xs w-full text-left space-y-4 shadow-2xl text-white">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-800">
+              <h4 className="font-black text-sm text-white">Responsible Gaming</h4>
+              <button onClick={() => setShowResponsibleModal(false)} className="text-slate-400 hover:text-slate-300">✕</button>
             </div>
             <p className="text-[11px] text-slate-600">
               প্ল্যাটফর্মটিতে দায়িত্বশীলভাবে খেলার জন্য আপনার দৈনিক বাজেট ও সেশনের সীমা নির্ধারণ করুন।
@@ -834,10 +834,10 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
       {/* Notification In-App Modal */}
       {notificationModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-5 max-w-sm w-full text-left space-y-3 shadow-2xl text-slate-900 max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-              <h4 className="font-black text-sm text-slate-900">ইন-অ্যাপ নোটিফিকেশন</h4>
-              <button onClick={() => setNotificationModalOpen(false)} className="text-slate-400 hover:text-slate-700">✕</button>
+          <div className="bg-white rounded-3xl p-5 max-w-sm w-full text-left space-y-3 shadow-2xl text-white max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-800">
+              <h4 className="font-black text-sm text-white">ইন-অ্যাপ নোটিফিকেশন</h4>
+              <button onClick={() => setNotificationModalOpen(false)} className="text-slate-400 hover:text-slate-300">✕</button>
             </div>
             <div className="space-y-2 text-xs">
               {userNotifications.length > 0 ? (
@@ -846,11 +846,11 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                     key={n.id} 
                     onClick={() => markNotificationRead(n.id)}
                     className={`p-3 rounded-2xl border transition cursor-pointer ${
-                      n.isRead ? 'bg-slate-50 border-slate-100' : 'bg-amber-50/70 border-amber-200 shadow-xs'
+                      n.isRead ? 'bg-slate-50 border-slate-800' : 'bg-amber-50/70 border-amber-200 shadow-xs'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-black text-slate-900 block">{n.title}</span>
+                      <span className="font-black text-white block">{n.title}</span>
                       {!n.isRead && (
                         <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
                       )}
@@ -875,11 +875,11 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
       {/* Safe Vault Modal */}
       {safeModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-5 max-w-xs w-full text-center space-y-3 shadow-2xl text-slate-900">
+          <div className="bg-white rounded-3xl p-5 max-w-xs w-full text-center space-y-3 shadow-2xl text-white">
             <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-2xl mx-auto">
               🪙
             </div>
-            <h4 className="font-black text-sm text-slate-900">RoyalClub Safe Vault</h4>
+            <h4 className="font-black text-sm text-white">RoyalClub Safe Vault</h4>
             <p className="text-[11px] text-slate-600 leading-relaxed">
               Safe-এ ব্যালেন্স জমা রাখলে আপনি দৈনিক ০.১% হারে নির্দিষ্ট লভ্যাংশ পাবেন। যেকোনো সময় সম্পূর্ণ ব্যালেন্স মূল অ্যাকাউন্টে স্থানান্তর করা যায়।
             </p>
@@ -899,16 +899,16 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
       {/* History Records Detail Modal */}
       {activeHistoryModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-100 relative">
-            <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-              <h3 className="font-black text-slate-900 text-sm capitalize">
+          <div className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-800 relative">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-800">
+              <h3 className="font-black text-white text-sm capitalize">
                 {activeHistoryModal === 'game' ? 'Game History' :
                  activeHistoryModal === 'transaction' ? 'Transaction Statement' :
                  activeHistoryModal === 'deposit' ? 'Deposit Records' : 'Withdrawal Records'}
               </h3>
               <button 
                 onClick={() => setActiveHistoryModal(null)}
-                className="w-6 h-6 rounded-full bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center font-bold text-xs"
+                className="w-6 h-6 rounded-full bg-slate-100 text-slate-500 hover:text-slate-200 flex items-center justify-center font-bold text-xs"
               >
                 ✕
               </button>
@@ -918,11 +918,11 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               {activeHistoryModal === 'game' && (
                 gameHistory && gameHistory.length > 0 ? (
                   gameHistory.map((item, idx) => (
-                    <div key={idx} className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex items-center justify-between text-left">
+                    <div key={idx} className="bg-slate-50 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between text-left">
                       <div>
                         <div className="flex items-center space-x-1.5">
-                          <span className="font-black text-slate-800 text-xs">{item.game}</span>
-                          <span className="bg-slate-200 text-slate-700 text-[9px] font-mono px-1 rounded font-bold">
+                          <span className="font-black text-slate-200 text-xs">{item.game}</span>
+                          <span className="bg-slate-200 text-slate-300 text-[9px] font-mono px-1 rounded font-bold">
                             {item.mult}
                           </span>
                         </div>
@@ -952,9 +952,9 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               {activeHistoryModal === 'deposit' && (
                 depositList && depositList.length > 0 ? (
                   depositList.map((item, idx) => (
-                    <div key={idx} className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex items-center justify-between text-left">
+                    <div key={idx} className="bg-slate-50 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between text-left">
                       <div>
-                        <span className="font-black text-slate-800 text-xs">{item.method} Deposit</span>
+                        <span className="font-black text-slate-200 text-xs">{item.method} Deposit</span>
                         <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
                           TrxID: {item.trx_id || item.txHash || 'PENDING'}
                         </span>
@@ -979,9 +979,9 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               {activeHistoryModal === 'withdraw' && (
                 withdrawList && withdrawList.length > 0 ? (
                   withdrawList.map((item, idx) => (
-                    <div key={idx} className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex items-center justify-between text-left">
+                    <div key={idx} className="bg-slate-50 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between text-left">
                       <div>
-                        <span className="font-black text-slate-800 text-xs">{item.method} Payout</span>
+                        <span className="font-black text-slate-200 text-xs">{item.method} Payout</span>
                         <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
                           A/C: {item.account_number || item.senderPhone || '***'}
                         </span>
@@ -1006,9 +1006,9 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
               {activeHistoryModal === 'transaction' && (
                 transactions && transactions.length > 0 ? (
                   transactions.map((item, idx) => (
-                    <div key={idx} className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex items-center justify-between text-left">
+                    <div key={idx} className="bg-slate-50 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between text-left">
                       <div>
-                        <span className="font-black text-slate-800 text-xs capitalize">{item.type} ({item.method})</span>
+                        <span className="font-black text-slate-200 text-xs capitalize">{item.type} ({item.method})</span>
                         <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
                           {new Date(item.created_at || Date.now()).toLocaleTimeString()}
                         </span>
@@ -1031,7 +1031,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
 
             <button
               onClick={() => setActiveHistoryModal(null)}
-              className="w-full bg-[#F5BE00] hover:bg-yellow-500 text-slate-900 font-black py-2.5 rounded-xl text-xs transition"
+              className="w-full bg-[#F5BE00] hover:bg-yellow-500 text-white font-black py-2.5 rounded-xl text-xs transition"
             >
               Close
             </button>

@@ -76,12 +76,12 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
     <div className="space-y-3.5 pb-20 text-xs select-none -mx-3.5 -mt-3.5">
       
       {/* 1. Curved Yellow Header with Bonus Statistics */}
-      <div className="bg-[#F5BE00] text-slate-900 px-5 pt-6 pb-6 rounded-b-[32px] shadow-sm relative">
+      <div className="bg-gradient-to-b from-[#0c1224] via-[#101932] to-[#070b19] text-white border-b border-slate-800 px-5 pt-6 pb-6 rounded-b-[32px] shadow-sm relative">
         {/* Brand Logo in Top Center */}
         <div className="flex justify-center mb-3">
           <div className="flex items-center space-x-1.5 bg-white/20 border border-white/40 px-4 py-1 rounded-full shadow-inner">
             <span className="text-base font-black italic tracking-tight text-white drop-shadow">
-              ROYAL<span className="text-slate-900 font-extrabold not-italic ml-1">CLUB BD</span>
+              ROYAL<span className="text-white font-extrabold not-italic ml-1">CLUB BD</span>
             </span>
           </div>
         </div>
@@ -90,20 +90,20 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
         <div className="grid grid-cols-2 gap-4 text-center">
           {/* Today's Bonus */}
           <div className="space-y-0.5">
-            <span className="text-[11px] font-bold text-slate-800/80 block">
+            <span className="text-[11px] font-bold text-slate-200/80 block">
               Today's bonus
             </span>
-            <span className="text-xl sm:text-2xl font-black font-mono text-slate-900 tracking-tight block">
+            <span className="text-xl sm:text-2xl font-black font-mono text-white tracking-tight block">
               ৳373.88
             </span>
           </div>
 
           {/* Total Bonus */}
           <div className="space-y-0.5">
-            <span className="text-[11px] font-bold text-slate-800/80 block">
+            <span className="text-[11px] font-bold text-slate-200/80 block">
               Total bonus
             </span>
-            <span className="text-xl sm:text-2xl font-black font-mono text-slate-900 tracking-tight block">
+            <span className="text-xl sm:text-2xl font-black font-mono text-white tracking-tight block">
               ৳9,204.78
             </span>
           </div>
@@ -119,7 +119,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
               }
               setBonusDetailsOpen(true);
             }}
-            className="bg-white hover:bg-slate-50 text-amber-500 font-black text-xs px-6 py-1.5 rounded-full shadow-sm transition active:scale-95 border border-amber-200 cursor-pointer"
+            className="bg-white hover:bg-[#0b1023] text-amber-500 font-black text-xs px-6 py-1.5 rounded-full shadow-sm transition active:scale-95 border border-amber-200 cursor-pointer"
           >
             Bonus details
           </button>
@@ -145,7 +145,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
             <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-rose-400 to-rose-200 p-2.5 text-white flex items-center justify-center shadow-sm mb-1 group-hover:scale-105 transition">
               <Award className="w-7 h-7 stroke-[2.2] drop-shadow" />
             </div>
-            <span className="text-[10px] font-bold text-slate-700 leading-tight">
+            <span className="text-[10px] font-bold text-slate-300 leading-tight">
               Activity<br />Award
             </span>
           </button>
@@ -166,7 +166,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
               {/* Red dot */}
               <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white" />
             </div>
-            <span className="text-[10px] font-bold text-slate-700 leading-tight">
+            <span className="text-[10px] font-bold text-slate-300 leading-tight">
               Betting<br />rebate
             </span>
           </button>
@@ -185,7 +185,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
             <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-teal-400 to-cyan-200 p-2.5 text-white flex items-center justify-center shadow-sm mb-1 group-hover:scale-105 transition">
               <Trophy className="w-7 h-7 stroke-[2.2] drop-shadow" />
             </div>
-            <span className="text-[10px] font-bold text-slate-700 leading-tight">
+            <span className="text-[10px] font-bold text-slate-300 leading-tight">
               Super<br />Jackpot
             </span>
           </button>
@@ -200,7 +200,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
               {/* Red dot */}
               <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white" />
             </div>
-            <span className="text-[10px] font-bold text-slate-700 leading-tight">
+            <span className="text-[10px] font-bold text-slate-300 leading-tight">
               Invite<br />Wheel
             </span>
           </button>
@@ -211,7 +211,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
           {/* Gifts (Redemption Code) */}
           <div
             onClick={onOpenGift}
-            className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm cursor-pointer hover:shadow-md transition active:scale-95 flex flex-col justify-between"
+            className="bg-[#0f1730] rounded-2xl text-white p-3 border border-slate-800 shadow-sm cursor-pointer hover:shadow-md transition active:scale-95 flex flex-col justify-between"
           >
             <div>
               <div className="h-28 bg-gradient-to-tr from-rose-50 via-rose-100 to-red-50 rounded-xl p-2 flex items-center justify-center shadow-inner mb-2 overflow-hidden relative">
@@ -222,7 +222,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
                   ✨
                 </div>
               </div>
-              <h4 className="font-black text-slate-900 text-sm">Gifts</h4>
+              <h4 className="font-black text-white text-sm">Gifts</h4>
               <p className="text-[10px] text-slate-400 mt-0.5 leading-snug">
                 Enter the redemption code to receive gift rewards
               </p>
@@ -232,7 +232,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
           {/* Attendance Bonus */}
           <div
             onClick={onOpenAttendance}
-            className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm cursor-pointer hover:shadow-md transition active:scale-95 flex flex-col justify-between"
+            className="bg-[#0f1730] rounded-2xl text-white p-3 border border-slate-800 shadow-sm cursor-pointer hover:shadow-md transition active:scale-95 flex flex-col justify-between"
           >
             <div>
               <div className="h-28 bg-gradient-to-tr from-amber-50 via-yellow-100 to-orange-50 rounded-xl p-2 flex items-center justify-center shadow-inner mb-2 overflow-hidden relative">
@@ -243,7 +243,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
                   ⭐
                 </div>
               </div>
-              <h4 className="font-black text-slate-900 text-sm">Attendance bonus</h4>
+              <h4 className="font-black text-white text-sm">Attendance bonus</h4>
               <p className="text-[10px] text-slate-400 mt-0.5 leading-snug">
                 The more consecutive days you sign in, the higher the reward will be.
               </p>
@@ -291,20 +291,20 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
       {/* 1. In-App Modal: Activity Award */}
       {activityAwardOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-100 space-y-3.5">
-            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+          <div className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-800 space-y-3.5">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-800">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-500 flex items-center justify-center">
                   <Award className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-sm text-slate-900 font-sans">Activity Award</h3>
+                  <h3 className="font-black text-sm text-white font-sans">Activity Award</h3>
                   <span className="text-[10px] text-slate-400">দৈনিক বাজি মাইলস্টোন রিওয়ার্ড</span>
                 </div>
               </div>
               <button 
                 onClick={() => setActivityAwardOpen(false)}
-                className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 hover:text-slate-900 flex items-center justify-center font-bold text-xs"
+                className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 hover:text-white flex items-center justify-center font-bold text-xs"
               >
                 ✕
               </button>
@@ -312,9 +312,9 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
 
             <div className="space-y-2.5 max-h-64 overflow-y-auto no-scrollbar">
               {/* Tier 1 */}
-              <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3 flex items-center justify-between">
+              <div className="bg-[#0b1023] border border-slate-200/80 rounded-2xl p-3 flex items-center justify-between">
                 <div>
-                  <span className="font-black text-xs text-slate-800 block">Milestone 1 (টার্নওভার ৳১,০০০)</span>
+                  <span className="font-black text-xs text-slate-200 block">Milestone 1 (টার্নওভার ৳১,০০০)</span>
                   <span className="text-[10px] text-slate-400 font-mono">পুরস্কার: ৳১০.০০ টাকা</span>
                 </div>
                 <button
@@ -331,9 +331,9 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
               </div>
 
               {/* Tier 2 */}
-              <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3 flex items-center justify-between">
+              <div className="bg-[#0b1023] border border-slate-200/80 rounded-2xl p-3 flex items-center justify-between">
                 <div>
-                  <span className="font-black text-xs text-slate-800 block">Milestone 2 (টার্নওভার ৳৫,০০০)</span>
+                  <span className="font-black text-xs text-slate-200 block">Milestone 2 (টার্নওভার ৳৫,০০০)</span>
                   <span className="text-[10px] text-slate-400 font-mono">পুরস্কার: ৳৫০.০০ টাকা</span>
                 </div>
                 <span className="text-[10px] font-bold text-slate-400 bg-slate-200/60 px-2.5 py-1 rounded-full">
@@ -342,9 +342,9 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
               </div>
 
               {/* Tier 3 */}
-              <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3 flex items-center justify-between">
+              <div className="bg-[#0b1023] border border-slate-200/80 rounded-2xl p-3 flex items-center justify-between">
                 <div>
-                  <span className="font-black text-xs text-slate-800 block">Milestone 3 (টার্নওভার ৳২০,০০০)</span>
+                  <span className="font-black text-xs text-slate-200 block">Milestone 3 (টার্নওভার ৳২০,০০০)</span>
                   <span className="text-[10px] text-slate-400 font-mono">পুরস্কার: ৳২০০.০০ টাকা</span>
                 </div>
                 <span className="text-[10px] font-bold text-slate-400 bg-slate-200/60 px-2.5 py-1 rounded-full">
@@ -366,20 +366,20 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
       {/* 2. In-App Modal: Betting Rebate */}
       {bettingRebateOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-100 space-y-3.5">
-            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+          <div className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-800 space-y-3.5">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-800">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center">
                   <Wallet className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-sm text-slate-900 font-sans">Real-time Betting Rebate</h3>
+                  <h3 className="font-black text-sm text-white font-sans">Real-time Betting Rebate</h3>
                   <span className="text-[10px] text-slate-400">প্রতি মিনিটে লাইভ ক্যাশব্যাক রিবেট</span>
                 </div>
               </div>
               <button 
                 onClick={() => setBettingRebateOpen(false)}
-                className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 hover:text-slate-900 flex items-center justify-center font-bold text-xs"
+                className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 hover:text-white flex items-center justify-center font-bold text-xs"
               >
                 ✕
               </button>
@@ -402,21 +402,21 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
 
             {/* Rebate Breakdown */}
             <div className="grid grid-cols-2 gap-2 text-[11px]">
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+              <div className="bg-[#0b1023] p-2.5 rounded-xl border border-slate-800">
                 <span className="text-slate-400 block text-[10px]">Slots Rebate</span>
-                <span className="font-black text-slate-800">0.60% Instant</span>
+                <span className="font-black text-slate-200">0.60% Instant</span>
               </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+              <div className="bg-[#0b1023] p-2.5 rounded-xl border border-slate-800">
                 <span className="text-slate-400 block text-[10px]">Casino Rebate</span>
-                <span className="font-black text-slate-800">0.40% Instant</span>
+                <span className="font-black text-slate-200">0.40% Instant</span>
               </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+              <div className="bg-[#0b1023] p-2.5 rounded-xl border border-slate-800">
                 <span className="text-slate-400 block text-[10px]">Sports Rebate</span>
-                <span className="font-black text-slate-800">0.50% Instant</span>
+                <span className="font-black text-slate-200">0.50% Instant</span>
               </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+              <div className="bg-[#0b1023] p-2.5 rounded-xl border border-slate-800">
                 <span className="text-slate-400 block text-[10px]">Lottery Rebate</span>
-                <span className="font-black text-slate-800">0.30% Instant</span>
+                <span className="font-black text-slate-200">0.30% Instant</span>
               </div>
             </div>
 
@@ -445,20 +445,20 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
       {/* 3. In-App Modal: Super Jackpot */}
       {superJackpotOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-100 space-y-3.5">
-            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+          <div className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-800 space-y-3.5">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-800">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 rounded-xl bg-teal-100 text-teal-600 flex items-center justify-center">
                   <Trophy className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-sm text-slate-900 font-sans">Super Jackpot Pool</h3>
+                  <h3 className="font-black text-sm text-white font-sans">Super Jackpot Pool</h3>
                   <span className="text-[10px] text-slate-400">প্রতিদিন রাত ৯টায় ড্র অনুষ্ঠিত হয়</span>
                 </div>
               </div>
               <button 
                 onClick={() => setSuperJackpotOpen(false)}
-                className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 hover:text-slate-900 flex items-center justify-center font-bold text-xs"
+                className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 hover:text-white flex items-center justify-center font-bold text-xs"
               >
                 ✕
               </button>
@@ -478,14 +478,14 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
 
             {/* Recent Winners */}
             <div className="space-y-1.5">
-              <span className="text-xs font-black text-slate-800 block">Recent Grand Winners</span>
-              <div className="bg-slate-50 border border-slate-100 rounded-xl p-2.5 space-y-2">
+              <span className="text-xs font-black text-slate-200 block">Recent Grand Winners</span>
+              <div className="bg-[#0b1023] border border-slate-800 rounded-xl p-2.5 space-y-2">
                 <div className="flex justify-between items-center text-[11px]">
-                  <span className="font-bold text-slate-700">Player***88 (Aviator 50x)</span>
+                  <span className="font-bold text-slate-300">Player***88 (Aviator 50x)</span>
                   <span className="font-black font-mono text-emerald-600">+৳85,000.00</span>
                 </div>
                 <div className="flex justify-between items-center text-[11px] pt-1 border-t border-slate-200/50">
-                  <span className="font-bold text-slate-700">Player***12 (Super Ace)</span>
+                  <span className="font-bold text-slate-300">Player***12 (Super Ace)</span>
                   <span className="font-black font-mono text-emerald-600">+৳120,000.00</span>
                 </div>
               </div>
@@ -504,34 +504,34 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
       {/* 4. In-App Modal: Bonus Details */}
       {bonusDetailsOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-100 space-y-3.5">
-            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-              <h3 className="font-black text-sm text-slate-900 font-sans">Bonus System Details</h3>
+          <div className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-800 space-y-3.5">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-800">
+              <h3 className="font-black text-sm text-white font-sans">Bonus System Details</h3>
               <button 
                 onClick={() => setBonusDetailsOpen(false)}
-                className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 hover:text-slate-900 flex items-center justify-center font-bold text-xs"
+                className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 hover:text-white flex items-center justify-center font-bold text-xs"
               >
                 ✕
               </button>
             </div>
 
             <div className="space-y-2.5 text-xs text-slate-600 max-h-72 overflow-y-auto no-scrollbar">
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1">
-                <span className="font-black text-slate-900 block text-xs">১. সাইন-আপ ওয়েলকাম বোনাস</span>
+              <div className="bg-[#0b1023] p-3 rounded-xl border border-slate-800 space-y-1">
+                <span className="font-black text-white block text-xs">১. সাইন-আপ ওয়েলকাম বোনাস</span>
                 <p className="text-[11px] text-slate-500 leading-relaxed">
                   নতুন একাউন্ট রেজিস্টার করলেই মেইন ব্যালেন্সে অটোমেটিক ৳১০০ ওয়েলকাম বোনাস যোগ হয়।
                 </p>
               </div>
 
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1">
-                <span className="font-black text-slate-900 block text-xs">২. ফার্স্ট ডিপোজিট রিবেট</span>
+              <div className="bg-[#0b1023] p-3 rounded-xl border border-slate-800 space-y-1">
+                <span className="font-black text-white block text-xs">২. ফার্স্ট ডিপোজিট রিবেট</span>
                 <p className="text-[11px] text-slate-500 leading-relaxed">
                   প্রথমবার ডিপোজিট করলে ১০০% অতিরিক্ত বোনাস এবং প্রতি ডিপোজিটে ৫% পর্যন্ত তাৎক্ষণিক ক্যাশব্যাক।
                 </p>
               </div>
 
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1">
-                <span className="font-black text-slate-900 block text-xs">৩. দৈনিক Safe ইন্টারেস্ট</span>
+              <div className="bg-[#0b1023] p-3 rounded-xl border border-slate-800 space-y-1">
+                <span className="font-black text-white block text-xs">৩. দৈনিক Safe ইন্টারেস্ট</span>
                 <p className="text-[11px] text-slate-500 leading-relaxed">
                   Safe ভল্টে ব্যালেন্স জমা রাখলে প্রতি মিনিটে হিসাব করে দৈনিক ০.১% সুদ প্রদান করা হয়।
                 </p>

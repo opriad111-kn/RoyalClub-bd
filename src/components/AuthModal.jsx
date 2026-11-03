@@ -6,21 +6,19 @@ import {
   Lock, 
   Phone, 
   Mail, 
-  X, 
   Eye, 
   EyeOff, 
   CheckCircle, 
   AlertCircle, 
   ChevronLeft,
   ChevronDown,
-  ShieldCheck,
-  Headphones
+  UserCheck
 } from 'lucide-react';
 
 export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
   if (!isOpen) return null;
 
-  const { login, registerUser, settings } = useGame();
+  const { login, registerUser } = useGame();
   const { lang, toggleLang, t } = useLanguage();
   
   // Tab: 'login' | 'register'
@@ -32,7 +30,6 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
   });
   const [loginMethod, setLoginMethod] = useState('phone'); // 'phone' | 'email'
 
-  // Sync tab on prop change or hash change
   useEffect(() => {
     if (initialTab) {
       setActiveTab(initialTab);
@@ -49,6 +46,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
   const [showLoginPassword, setShowLoginPassword] = useState(false);
 
   // Register form state
+  const [countryCode, setCountryCode] = useState('+880');
   const [regPhone, setRegPhone] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
@@ -61,7 +59,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
       const hashRef = new URLSearchParams(hash.split('?')[1] || '').get('ref');
       if (hashRef) return hashRef;
     }
-    return '722200';
+    return '766251';
   });
 
   useEffect(() => {
@@ -79,15 +77,15 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
       }
     }
   }, [isOpen]);
+
   const [agreedTerms, setAgreedTerms] = useState(true);
   const [showRegPassword, setShowRegPassword] = useState(false);
   const [showRegConfirmPassword, setShowRegConfirmPassword] = useState(false);
 
-  // UI state
+  // UI feedback state
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
 
   async function handleLogin(e) {
     e.preventDefault();
@@ -97,30 +95,34 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
     const identifier = loginMethod === 'phone' ? loginPhone.trim() : loginEmail.trim();
 
     if (!identifier) {
-      setErrorMsg(loginMethod === 'phone' ? 'Please enter the phone number' : 'Please enter the email address');
+      setErrorMsg(loginMethod === 'phone' ? 'অনুগ্রহ করে ফোন নম্বর দিন' : 'অনুগ্রহ করে ইমেইল ঠিকানা দিন');
       return;
     }
     if (!loginPassword) {
-      setErrorMsg('Please enter your password');
+      setErrorMsg('অনুগ্রহ করে পাসওয়ার্ড দিন');
       return;
     }
 
     setIsLoading(true);
     try {
-      const res = await login(identifier, loginPassword, rememberPassword);
+      const cleanPhone = identifier.replace(/[^0-9]/g, '');
+      const res = await login({
+        identifier: cleanPhone || identifier,
+        password: loginPassword
+      });
+
       setIsLoading(false);
       if (res.success) {
-        setSuccessMsg(`Welcome, ${res.user.username}! Logged in successfully.`);
-        confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+        setSuccessMsg('লগইন সফল হয়েছে! স্বাগতম।');
         setTimeout(() => {
           onClose();
         }, 800);
       } else {
-        setErrorMsg(res.message);
+        setErrorMsg(res.message || 'ভুল ফোন নম্বর বা পাসওয়ার্ড!');
       }
     } catch (err) {
       setIsLoading(false);
-      setErrorMsg('Login failed. Please check your credentials and try again.');
+      setErrorMsg('লগইন সম্পন্ন করা যায়নি। পুনরায় চেষ্টা করুন।');
     }
   }
 
@@ -129,21 +131,22 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
     setErrorMsg('');
     setSuccessMsg('');
 
-    const cleanPhone = regPhone.trim();
-    if (!cleanPhone || cleanPhone.length < 9) {
-      setErrorMsg('Please enter a valid phone number');
+    const cleanPhone = regPhone.trim().replace(/[^0-9]/g, '');
+
+    if (!cleanPhone || cleanPhone.length < 8) {
+      setErrorMsg('সঠিক মোবাইল নম্বর প্রদান করুন');
       return;
     }
     if (!regPassword || regPassword.length < 6) {
-      setErrorMsg('Password must be at least 6 characters');
+      setErrorMsg('পাসওয়ার্ড ন্যূনতম ৬ অক্ষরের হতে হবে');
       return;
     }
     if (regPassword !== regConfirmPassword) {
-      setErrorMsg('Passwords do not match');
+      setErrorMsg('কনফার্ম পাসওয়ার্ড মিলছে না');
       return;
     }
     if (!agreedTerms) {
-      setErrorMsg('Please read and agree to the Privacy Agreement');
+      setErrorMsg('শর্তাবলীতে টিক চিহ্ন দিন');
       return;
     }
 
@@ -159,7 +162,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
       setIsLoading(false);
       if (res.success) {
-        setSuccessMsg(`Registration successful! Welcome bonus ৳${res.bonus || 100} has been added to your balance.`);
+        setSuccessMsg(`রেজিস্ট্রেশন সফল! স্বাগতম বোনাস ৳${res.bonus || 100} আপনার ওয়ালেটে যোগ হয়েছে।`);
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.5 } });
         setTimeout(() => {
           onClose();
@@ -169,186 +172,181 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
       }
     } catch (err) {
       setIsLoading(false);
-      setErrorMsg('Registration failed. Please try again.');
+      setErrorMsg('রেজিস্ট্রেশন ব্যর্থ হয়েছে। আবার চেষ্টা করুন।');
     }
   }
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-3 select-none"
+      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 select-none"
       onClick={onClose}
     >
       <div 
-        className="bg-[#F7F8FC] border border-slate-200 w-full max-w-[390px] rounded-3xl overflow-hidden shadow-2xl relative flex flex-col font-sans"
+        className="bg-[#0b1023] border border-slate-800 w-full max-w-[390px] rounded-3xl overflow-hidden shadow-2xl relative flex flex-col font-sans text-white animate-in zoom-in-95 duration-200"
         onClick={e => e.stopPropagation()}
       >
         
-        {/* Exact DK WIN Yellow Header (photo_2 & photo_3 match) */}
-        <div className="bg-[#FFC107] px-4 pt-4 pb-5 text-slate-950 relative">
-          {/* Top navigation row */}
-          <div className="flex items-center justify-between mb-3">
-            <button 
-              onClick={onClose}
-              className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center text-slate-900 transition active:scale-95 cursor-pointer"
-            >
-              <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
-            </button>
+        {/* 1. Header Bar: Back, Brand Logo, Language (KhelV Reference) */}
+        <div className="bg-[#0b1023] px-4 py-3 flex items-center justify-between border-b border-slate-800/60">
+          <button 
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-slate-800/80 hover:bg-slate-700 flex items-center justify-center text-slate-200 transition active:scale-95 cursor-pointer"
+          >
+            <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
+          </button>
 
-            {/* Official DK WIN Styled ROYAL CLUB BD Logo */}
-            <div className="flex items-center space-x-1.5">
-              <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-xs">
-                <span className="font-black text-xs text-[#FFC107]">RC</span>
-              </div>
-              <span className="font-black text-lg tracking-wider text-white font-sans drop-shadow-xs">
-                ROYAL<span className="text-slate-950">CLUB</span>
-              </span>
-            </div>
-
-            {/* Language Switcher Button (Click to toggle EN/BN) */}
-            <button
-              type="button"
-              onClick={toggleLang}
-              title="Click to switch language / ভাষা পরিবর্তন"
-              className="flex items-center space-x-1 bg-white/25 hover:bg-white/40 border border-white/50 px-2.5 py-0.5 rounded-full text-xs font-black text-slate-950 transition active:scale-95 cursor-pointer shadow-xs"
-            >
-              <span className="text-xs">{lang === 'en' ? '🇺🇸' : '🇧🇩'}</span>
-              <span>{lang === 'en' ? 'EN' : 'BN'}</span>
-            </button>
+          {/* Official Royal Club BD Logo */}
+          <div className="flex items-center space-x-1.5">
+            <span className="text-xl">👑</span>
+            <span className="font-black text-base tracking-wider text-white font-sans drop-shadow-sm">
+              ROYAL<span className="text-amber-400">CLUB</span> <span className="text-red-500">BD</span>
+            </span>
           </div>
 
-          {/* Subtitle block */}
-          <div className="space-y-0.5">
-            <h2 className="text-xl font-black text-white font-sans tracking-tight">
-              {t(activeTab === 'login' ? 'loginTitle' : 'registerTitle')}
-            </h2>
-            <p className="text-[11px] font-medium text-slate-900/90 leading-tight">
-              {t(activeTab === 'login' ? 'loginSubtitle' : 'registerSubtitle')}
-            </p>
-            {activeTab === 'login' && (
-              <p className="text-[10px] text-slate-800 font-medium">
-                {t('customerServicePrompt')}
-              </p>
-            )}
-          </div>
+          {/* Language Switcher */}
+          <button
+            type="button"
+            onClick={toggleLang}
+            className="flex items-center space-x-1 bg-slate-800/80 border border-slate-700 px-2 py-0.5 rounded-full text-[11px] font-black text-slate-200 transition active:scale-95 cursor-pointer"
+          >
+            <span>{lang === 'en' ? '🇺🇸 EN' : '🇧🇩 BN'}</span>
+          </button>
         </div>
 
-        {/* Tab Selector for Login (Phone Number vs Email) */}
-        {activeTab === 'login' && (
-          <div className="bg-white flex border-b border-slate-100">
+        {/* 2. Red-to-Blue Gradient Banner Strip (Exact Reference) */}
+        <div className="bg-gradient-to-r from-[#d32f2f] via-[#7b1fa2] to-[#1976d2] px-5 py-4 text-white relative shadow-md">
+          <h2 className="text-xl font-black tracking-tight">
+            {activeTab === 'login' ? 'Log in' : 'Register'}
+          </h2>
+          <p className="text-[11px] text-white/90 leading-tight mt-1">
+            {activeTab === 'login' 
+              ? 'Please log in with your phone number or email' 
+              : 'Please register by phone number or email'}
+          </p>
+          {activeTab === 'login' && (
+            <p className="text-[9.5px] text-yellow-200 mt-1">
+              If you forget your password, please contact customer service
+            </p>
+          )}
+        </div>
+
+        {/* 3. Phone / Email Tabs */}
+        {activeTab === 'login' ? (
+          <div className="bg-[#0f1730] flex border-b border-slate-800">
             <button
               type="button"
               onClick={() => setLoginMethod('phone')}
               className={`flex-1 py-3 text-xs font-bold flex items-center justify-center space-x-1.5 relative transition ${
-                loginMethod === 'phone' ? 'text-amber-500 font-black' : 'text-slate-400'
+                loginMethod === 'phone' ? 'text-blue-400 font-black' : 'text-slate-400'
               }`}
             >
-              <Phone className="w-4 h-4 stroke-[2]" />
-              <span>{t('phoneTab')}</span>
+              <Phone className="w-4 h-4" />
+              <span>Phone Number</span>
               {loginMethod === 'phone' && (
-                <div className="absolute bottom-0 left-6 right-6 h-0.5 bg-[#FFC107] rounded-full" />
+                <div className="absolute bottom-0 left-6 right-6 h-0.5 bg-blue-500 rounded-full" />
               )}
             </button>
             <button
               type="button"
               onClick={() => setLoginMethod('email')}
               className={`flex-1 py-3 text-xs font-bold flex items-center justify-center space-x-1.5 relative transition ${
-                loginMethod === 'email' ? 'text-amber-500 font-black' : 'text-slate-400'
+                loginMethod === 'email' ? 'text-blue-400 font-black' : 'text-slate-400'
               }`}
             >
-              <Mail className="w-4 h-4 stroke-[2]" />
-              <span>{t('emailTab')}</span>
+              <Mail className="w-4 h-4" />
+              <span>Email</span>
               {loginMethod === 'email' && (
-                <div className="absolute bottom-0 left-6 right-6 h-0.5 bg-[#FFC107] rounded-full" />
+                <div className="absolute bottom-0 left-6 right-6 h-0.5 bg-blue-500 rounded-full" />
               )}
             </button>
           </div>
-        )}
-
-        {/* Register Title Tab */}
-        {activeTab === 'register' && (
-          <div className="bg-white py-3 border-b border-slate-100 flex items-center justify-center space-x-1.5 text-xs font-black text-amber-500 relative">
+        ) : (
+          <div className="bg-[#0f1730] py-2.5 border-b border-slate-800 flex items-center justify-center space-x-1.5 text-xs font-black text-blue-400 relative">
             <Phone className="w-4 h-4" />
-            <span>{t('registerTitle')}</span>
-            <div className="absolute bottom-0 left-12 right-12 h-0.5 bg-[#FFC107] rounded-full" />
+            <span>Register your phone</span>
+            <div className="absolute bottom-0 left-16 right-16 h-0.5 bg-blue-500 rounded-full" />
           </div>
         )}
 
-        {/* Form Body Container */}
-        <div className="p-4 sm:p-5 max-h-[68vh] overflow-y-auto no-scrollbar space-y-3.5 bg-[#F7F8FC]">
+        {/* 4. Form Body Container */}
+        <div className="p-4 sm:p-5 max-h-[65vh] overflow-y-auto no-scrollbar space-y-3.5 bg-[#0b1023]">
           
-          {/* Error & Success Toasts */}
+          {/* Error & Success Feedback */}
           {errorMsg && (
-            <div className="bg-rose-50 border border-rose-200 text-rose-700 p-2.5 rounded-xl flex items-center space-x-2 text-xs">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
-              <span className="font-medium">{errorMsg}</span>
+            <div className="p-2.5 rounded-xl bg-red-950/80 border border-red-500/50 text-red-200 text-xs flex items-center space-x-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+              <span>{errorMsg}</span>
             </div>
           )}
           {successMsg && (
-            <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-2.5 rounded-xl flex items-center space-x-2 text-xs">
-              <CheckCircle className="w-4 h-4 shrink-0 text-emerald-600" />
-              <span className="font-medium">{successMsg}</span>
+            <div className="p-2.5 rounded-xl bg-emerald-950/80 border border-emerald-500/50 text-emerald-200 text-xs flex items-center space-x-2">
+              <CheckCircle className="w-4 h-4 shrink-0 text-emerald-400" />
+              <span>{successMsg}</span>
             </div>
           )}
 
-          {/* 1. LOGIN FORM */}
-          {activeTab === 'login' && (
-            <form onSubmit={handleLogin} className="space-y-3.5">
+          {/* LOGIN FORM */}
+          {activeTab === 'login' ? (
+            <form onSubmit={handleLogin} className="space-y-3">
               
               {/* Phone or Email Input */}
               {loginMethod === 'phone' ? (
                 <div>
-                  <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-800 mb-1.5">
-                    <span className="w-4 h-4 rounded bg-amber-100 text-amber-600 flex items-center justify-center text-[10px]">📱</span>
+                  <label className="text-xs font-bold text-slate-300 flex items-center space-x-1.5 mb-1.5">
+                    <Phone className="w-3.5 h-3.5 text-blue-400" />
                     <span>Phone number</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="bg-white border border-slate-200 rounded-xl px-2.5 py-2.5 flex items-center space-x-1 text-xs font-bold text-slate-700 shadow-xs shrink-0">
+                  </label>
+                  <div className="flex rounded-xl overflow-hidden border border-slate-700 bg-[#121936] focus-within:border-blue-500">
+                    <div className="px-3 bg-slate-800/80 flex items-center space-x-1 text-xs font-mono font-bold text-slate-200 border-r border-slate-700">
+                      <span>🇧🇩</span>
                       <span>+880</span>
-                      <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                      <ChevronDown className="w-3 h-3 text-slate-400" />
                     </div>
-                    <input
+                    <input 
                       type="tel"
-                      placeholder="Please enter the phone number"
                       value={loginPhone}
                       onChange={e => setLoginPhone(e.target.value)}
-                      className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-medium text-slate-800 placeholder-slate-400 shadow-xs focus:outline-none focus:border-[#FFC107]"
+                      placeholder="Please enter the phone number"
+                      className="w-full px-3 py-3 text-xs bg-transparent text-white placeholder-slate-500 focus:outline-hidden font-mono"
                     />
                   </div>
                 </div>
               ) : (
                 <div>
-                  <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-800 mb-1.5">
-                    <span className="w-4 h-4 rounded bg-amber-100 text-amber-600 flex items-center justify-center text-[10px]">✉️</span>
+                  <label className="text-xs font-bold text-slate-300 flex items-center space-x-1.5 mb-1.5">
+                    <Mail className="w-3.5 h-3.5 text-blue-400" />
                     <span>Email</span>
+                  </label>
+                  <div className="flex rounded-xl overflow-hidden border border-slate-700 bg-[#121936] focus-within:border-blue-500 px-3 py-3">
+                    <input 
+                      type="email"
+                      value={loginEmail}
+                      onChange={e => setLoginEmail(e.target.value)}
+                      placeholder="Please enter the email address"
+                      className="w-full text-xs bg-transparent text-white placeholder-slate-500 focus:outline-hidden"
+                    />
                   </div>
-                  <input
-                    type="email"
-                    placeholder="Please enter your email"
-                    value={loginEmail}
-                    onChange={e => setLoginEmail(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-medium text-slate-800 placeholder-slate-400 shadow-xs focus:outline-none focus:border-[#FFC107]"
-                  />
                 </div>
               )}
 
-              {/* Password Input */}
+              {/* Password */}
               <div>
-                <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-800 mb-1.5">
-                  <span className="w-4 h-4 rounded bg-amber-100 text-amber-600 flex items-center justify-center text-[10px]">🔒</span>
+                <label className="text-xs font-bold text-slate-300 flex items-center space-x-1.5 mb-1.5">
+                  <Lock className="w-3.5 h-3.5 text-blue-400" />
                   <span>Password</span>
-                </div>
-                <div className="relative">
-                  <input
-                    type={showLoginPassword ? "text" : "password"}
-                    placeholder="Password"
+                </label>
+                <div className="flex items-center rounded-xl overflow-hidden border border-slate-700 bg-[#121936] focus-within:border-blue-500 px-3 py-2.5">
+                  <input 
+                    type={showLoginPassword ? 'text' : 'password'}
                     value={loginPassword}
                     onChange={e => setLoginPassword(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 pr-10 text-xs font-medium text-slate-800 placeholder-slate-400 shadow-xs focus:outline-none focus:border-[#FFC107]"
+                    placeholder="Password"
+                    className="w-full text-xs bg-transparent text-white placeholder-slate-500 focus:outline-hidden"
                   />
-                  <button
-                    type="button"
+                  <button 
+                    type="button" 
                     onClick={() => setShowLoginPassword(!showLoginPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    className="text-slate-400 hover:text-white p-1"
                   >
                     {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -356,93 +354,90 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
               </div>
 
               {/* Remember password & Forgot password */}
-              <div className="flex justify-between items-center text-[11px] pt-0.5">
-                <label className="flex items-center space-x-1.5 cursor-pointer text-slate-600">
-                  <input
-                    type="checkbox"
-                    checked={rememberPassword}
+              <div className="flex items-center justify-between text-xs pt-1">
+                <label className="flex items-center space-x-2 text-slate-400 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={rememberPassword} 
                     onChange={e => setRememberPassword(e.target.checked)}
-                    className="accent-[#FFC107] rounded"
+                    className="rounded border-slate-700 bg-slate-800 text-blue-500 focus:ring-0" 
                   />
-                  <span>Remember password</span>
+                  <span className="text-[11px]">Remember password</span>
                 </label>
-                <button
+
+                <button 
                   type="button"
-                  onClick={() => setForgotPasswordOpen(true)}
-                  className="text-amber-600 hover:underline font-bold cursor-pointer"
+                  onClick={() => alert("পাসওয়ার্ড রিসেট করতে অনুগ্রহ করে কাস্টমার সার্ভিসের সাথে যোগাযোগ করুন: @ROYALCLUB_Support")}
+                  className="text-blue-400 hover:underline text-[11px]"
                 >
                   Forgot password?
                 </button>
               </div>
 
-              {/* Action Buttons: Log in (Gold) & Register (White Outline) */}
-              <div className="space-y-2 pt-1">
+              {/* Submit Buttons */}
+              <div className="pt-2 space-y-2.5">
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-[#FFC107] hover:bg-yellow-400 active:scale-98 text-slate-950 font-black py-3 rounded-full text-xs uppercase tracking-wider shadow-sm transition cursor-pointer"
+                  className="w-full py-3.5 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-sm shadow-lg transition active:scale-95 disabled:opacity-50 cursor-pointer"
                 >
-                  {isLoading ? 'Verifying...' : t('loginBtn')}
+                  {isLoading ? 'লগইন হচ্ছে...' : 'Log in'}
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => {
-                    setActiveTab('register');
-                    setErrorMsg('');
-                    setSuccessMsg('');
-                  }}
-                  className="w-full bg-white border border-[#FFC107] text-amber-600 hover:bg-amber-50 active:scale-98 font-black py-3 rounded-full text-xs uppercase tracking-wider transition cursor-pointer"
+                  onClick={() => setActiveTab('register')}
+                  className="w-full py-3 rounded-full bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-300 font-bold text-xs transition active:scale-95 cursor-pointer"
                 >
-                  {t('registerBtn')}
+                  Register
                 </button>
               </div>
-            </form>
-          )}
 
-          {/* 2. REGISTER FORM (Exact match to photo_2) */}
-          {activeTab === 'register' && (
+            </form>
+          ) : (
+            /* REGISTER FORM */
             <form onSubmit={handleRegister} className="space-y-3">
               
               {/* Phone number */}
               <div>
-                <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-800 mb-1">
-                  <span className="w-4 h-4 rounded bg-amber-100 text-amber-600 flex items-center justify-center text-[10px]">📱</span>
-                  <span>{t('phoneNumber')}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="bg-white border border-slate-200 rounded-xl px-2.5 py-2.5 flex items-center space-x-1 text-xs font-bold text-slate-700 shadow-xs shrink-0">
-                    <span>+880</span>
-                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                <label className="text-xs font-bold text-slate-300 flex items-center space-x-1.5 mb-1.5">
+                  <Phone className="w-3.5 h-3.5 text-blue-400" />
+                  <span>Phone number</span>
+                </label>
+                <div className="flex rounded-xl overflow-hidden border border-slate-700 bg-[#121936] focus-within:border-blue-500">
+                  <div className="px-3 bg-slate-800/80 flex items-center space-x-1 text-xs font-mono font-bold text-slate-200 border-r border-slate-700">
+                    <span>🇧🇩</span>
+                    <span>{countryCode}</span>
+                    <ChevronDown className="w-3 h-3 text-slate-400" />
                   </div>
-                  <input
+                  <input 
                     type="tel"
-                    placeholder={t('phonePlaceholder')}
                     value={regPhone}
                     onChange={e => setRegPhone(e.target.value)}
-                    className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-medium text-slate-800 placeholder-slate-400 shadow-xs focus:outline-none focus:border-[#FFC107]"
+                    placeholder="Please enter the phone number"
+                    className="w-full px-3 py-3 text-xs bg-transparent text-white placeholder-slate-500 focus:outline-hidden font-mono"
                   />
                 </div>
               </div>
 
               {/* Set password */}
               <div>
-                <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-800 mb-1">
-                  <span className="w-4 h-4 rounded bg-amber-100 text-amber-600 flex items-center justify-center text-[10px]">🔒</span>
-                  <span>{t('password')}</span>
-                </div>
-                <div className="relative">
-                  <input
-                    type={showRegPassword ? "text" : "password"}
-                    placeholder={t('passwordPlaceholder')}
+                <label className="text-xs font-bold text-slate-300 flex items-center space-x-1.5 mb-1.5">
+                  <Lock className="w-3.5 h-3.5 text-blue-400" />
+                  <span>Set password</span>
+                </label>
+                <div className="flex items-center rounded-xl overflow-hidden border border-slate-700 bg-[#121936] focus-within:border-blue-500 px-3 py-2.5">
+                  <input 
+                    type={showRegPassword ? 'text' : 'password'}
                     value={regPassword}
                     onChange={e => setRegPassword(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 pr-10 text-xs font-medium text-slate-800 placeholder-slate-400 shadow-xs focus:outline-none focus:border-[#FFC107]"
+                    placeholder="Set password"
+                    className="w-full text-xs bg-transparent text-white placeholder-slate-500 focus:outline-hidden"
                   />
-                  <button
-                    type="button"
+                  <button 
+                    type="button" 
                     onClick={() => setShowRegPassword(!showRegPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    className="text-slate-400 hover:text-white p-1"
                   >
                     {showRegPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -451,22 +446,22 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
               {/* Confirm password */}
               <div>
-                <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-800 mb-1">
-                  <span className="w-4 h-4 rounded bg-amber-100 text-amber-600 flex items-center justify-center text-[10px]">🔒</span>
-                  <span>{t('confirmPassword')}</span>
-                </div>
-                <div className="relative">
-                  <input
-                    type={showRegConfirmPassword ? "text" : "password"}
-                    placeholder={t('confirmPasswordPlaceholder')}
+                <label className="text-xs font-bold text-slate-300 flex items-center space-x-1.5 mb-1.5">
+                  <Lock className="w-3.5 h-3.5 text-blue-400" />
+                  <span>Confirm password</span>
+                </label>
+                <div className="flex items-center rounded-xl overflow-hidden border border-slate-700 bg-[#121936] focus-within:border-blue-500 px-3 py-2.5">
+                  <input 
+                    type={showRegConfirmPassword ? 'text' : 'password'}
                     value={regConfirmPassword}
                     onChange={e => setRegConfirmPassword(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 pr-10 text-xs font-medium text-slate-800 placeholder-slate-400 shadow-xs focus:outline-none focus:border-[#FFC107]"
+                    placeholder="Confirm password"
+                    className="w-full text-xs bg-transparent text-white placeholder-slate-500 focus:outline-hidden"
                   />
-                  <button
-                    type="button"
+                  <button 
+                    type="button" 
                     onClick={() => setShowRegConfirmPassword(!showRegConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    className="text-slate-400 hover:text-white p-1"
                   >
                     {showRegConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -475,92 +470,61 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
               {/* Invite code */}
               <div>
-                <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-800 mb-1">
-                  <span className="w-4 h-4 rounded bg-amber-100 text-amber-600 flex items-center justify-center text-[10px]">🎟️</span>
-                  <span>{t('inviteCode')}</span>
+                <label className="text-xs font-bold text-slate-300 flex items-center space-x-1.5 mb-1.5">
+                  <UserCheck className="w-3.5 h-3.5 text-blue-400" />
+                  <span>Invite code</span>
+                </label>
+                <div className="rounded-xl overflow-hidden border border-slate-700 bg-[#121936] focus-within:border-blue-500 px-3 py-2.5">
+                  <input 
+                    type="text"
+                    value={regInviteCode}
+                    onChange={e => setRegInviteCode(e.target.value)}
+                    placeholder="Invite code"
+                    className="w-full text-xs bg-transparent text-white placeholder-slate-500 focus:outline-hidden font-mono"
+                  />
                 </div>
-                <input
-                  type="text"
-                  placeholder="Please enter the invitation code"
-                  value={regInviteCode}
-                  onChange={e => setRegInviteCode(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-mono font-bold text-slate-800 placeholder-slate-400 shadow-xs focus:outline-none focus:border-[#FFC107]"
-                />
               </div>
 
-              {/* Terms Checkbox */}
-              <div className="pt-0.5">
-                <label className="flex items-center space-x-2 cursor-pointer text-[11px] text-slate-700">
-                  <input
-                    type="checkbox"
-                    checked={agreedTerms}
+              {/* Privacy Agreement Checkbox */}
+              <div className="pt-1">
+                <label className="flex items-center space-x-2 text-slate-400 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={agreedTerms} 
                     onChange={e => setAgreedTerms(e.target.checked)}
-                    className="accent-[#FFC107]"
+                    className="rounded border-slate-700 bg-slate-800 text-blue-500 focus:ring-0" 
                   />
-                  <span>
-                    {t('agreeTerms')}
+                  <span className="text-[11px]">
+                    I have read and agree <span className="text-red-400 underline">[Privacy Agreement]</span>
                   </span>
                 </label>
               </div>
 
-              {/* Action Buttons: Register (Gold) & Log in (White Outline) */}
-              <div className="space-y-2 pt-1">
+              {/* Action Buttons */}
+              <div className="pt-2 space-y-2.5">
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-[#FFC107] hover:bg-yellow-400 active:scale-98 text-slate-950 font-black py-3 rounded-full text-xs uppercase tracking-wider shadow-sm transition cursor-pointer"
+                  className="w-full py-3.5 rounded-full bg-gradient-to-r from-red-600 via-purple-600 to-blue-600 hover:brightness-110 text-white font-black text-sm shadow-lg transition active:scale-95 disabled:opacity-50 cursor-pointer"
                 >
-                  {isLoading ? 'Creating Account...' : t('registerBtn')}
+                  {isLoading ? 'রেজিস্ট্রেশন হচ্ছে...' : 'Register'}
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => {
-                    setActiveTab('login');
-                    setErrorMsg('');
-                    setSuccessMsg('');
-                  }}
-                  className="w-full bg-white border border-[#FFC107] text-amber-600 hover:bg-amber-50 active:scale-98 font-black py-3 rounded-full text-xs uppercase tracking-wider transition cursor-pointer"
+                  onClick={() => setActiveTab('login')}
+                  className="w-full py-3 rounded-full bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-300 font-bold text-xs transition active:scale-95 cursor-pointer"
                 >
-                  {t('loginBtn')}
+                  I have an account <strong className="text-blue-400">Login</strong>
                 </button>
               </div>
+
             </form>
           )}
 
         </div>
 
       </div>
-
-      {/* Official Forgot Password Assistance Modal (NO FAKE DEMO POPUP) */}
-      {forgotPasswordOpen && (
-        <div 
-          className="fixed inset-0 z-60 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4"
-          onClick={() => setForgotPasswordOpen(false)}
-        >
-          <div 
-            className="bg-white rounded-3xl p-6 max-w-xs w-full text-center space-y-3.5 shadow-2xl"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto">
-              <Headphones className="w-6 h-6" />
-            </div>
-            <h4 className="font-black text-sm text-slate-900 font-sans">Official Password Assistance</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              If you forget your password, please contact our 24/7 official customer service on Telegram:
-              <br />
-              <strong className="text-amber-600 font-mono text-sm block mt-1">@ROYALCLUB_Support</strong>
-              <span className="text-[11px] text-slate-400 block mt-1">Provide your UID or registered phone number to verify and reset your password.</span>
-            </p>
-            <button
-              onClick={() => setForgotPasswordOpen(false)}
-              className="w-full py-2.5 bg-[#FFC107] text-slate-950 font-black rounded-xl text-xs uppercase shadow-sm cursor-pointer active:scale-95 transition"
-            >
-              OK, Got it
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

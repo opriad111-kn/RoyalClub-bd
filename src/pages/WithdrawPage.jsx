@@ -138,23 +138,23 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
   return (
     <div className="space-y-3.5 pb-20 text-xs select-none -mx-3.5 -mt-3.5">
       
-      {/* 1. DK WIN Top Header */}
-      <div className="bg-[#F5BE00] text-slate-950 px-4 py-3.5 flex items-center justify-between shadow-xs sticky top-0 z-30">
+      {/* 1. Royal Club BD Dark Luxury Top Header */}
+      <div className="bg-[#0c1224] text-white px-4 py-3.5 flex items-center justify-between shadow-md border-b border-slate-800 sticky top-0 z-30">
         <div className="flex items-center space-x-2.5">
           <button 
             onClick={onBack}
-            className="w-8 h-8 rounded-full bg-white/30 hover:bg-white/50 flex items-center justify-center transition active:scale-95 cursor-pointer"
+            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center transition active:scale-95 cursor-pointer"
           >
-            <ArrowLeft className="w-5 h-5 text-slate-950" />
+            <ArrowLeft className="w-5 h-5 text-white" />
           </button>
-          <h2 className="font-black text-base tracking-tight font-sans text-slate-950">
-            Withdraw
+          <h2 className="font-black text-base tracking-tight font-sans text-white">
+            Withdraw / ক্যাশআউট
           </h2>
         </div>
 
         <button
           onClick={() => setShowHistory(true)}
-          className="bg-white/30 hover:bg-white/50 text-slate-950 px-3 py-1 rounded-full flex items-center space-x-1 font-bold text-[11px] transition active:scale-95 cursor-pointer"
+          className="bg-slate-800 hover:bg-slate-700 text-amber-300 px-3 py-1 rounded-full flex items-center space-x-1 font-bold text-[11px] transition active:scale-95 cursor-pointer border border-slate-700"
         >
           <History className="w-3.5 h-3.5" />
           <span>Records</span>

@@ -115,9 +115,16 @@ function AppContent() {
           setTimeout(() => setToast({ show: false, message: '' }), 3500);
         }
       };
+      const handleSwitchTab = (e) => {
+        if (e?.detail?.tab) {
+          setActiveTab(e.detail.tab);
+        }
+      };
       window.addEventListener('royalclub_show_toast', handleCustomToast);
+      window.addEventListener('royalclub_switch_tab', handleSwitchTab);
       return () => {
         window.removeEventListener('royalclub_show_toast', handleCustomToast);
+        window.removeEventListener('royalclub_switch_tab', handleSwitchTab);
       };
     }
   }, []);
@@ -318,8 +325,8 @@ function AppContent() {
         </aside>
       )}
 
-      {/* Main Container: Expands to full screen on Admin matching Screenshot 4 */}
-      <div className={`w-full ${activeTab === 'admin' ? 'max-w-full bg-[#0d1117]' : 'max-w-[480px] sm:max-w-[500px] bg-[#F4F5F8] border-x border-slate-200/60'} min-h-screen flex flex-col justify-between relative shadow-2xl transition-all duration-200`}>
+      {/* Main Container: Exact KhelV Dark Navy Luxury Shell */}
+      <div className={`w-full ${activeTab === 'admin' ? 'max-w-full bg-[#0d1117]' : 'max-w-[480px] sm:max-w-[500px] bg-[#070b19] text-white border-x border-slate-800/80'} min-h-screen flex flex-col justify-between relative shadow-2xl transition-all duration-200`}>
         
         {/* Sticky Top Header (Hidden in Game, WinGo, Account, Activity, Deposit, Withdraw, Admin) */}
         {!activeGame && activeTab !== 'admin' && activeTab !== 'wingo' && activeTab !== 'account' && activeTab !== 'activity' && activeTab !== 'deposit' && activeTab !== 'withdraw' && (
