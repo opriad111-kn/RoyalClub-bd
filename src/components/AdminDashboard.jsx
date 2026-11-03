@@ -2802,34 +2802,85 @@ export default function AdminDashboard({ onExit }) {
                 </div>
 
                 {/* Personal Player Luck Mode Override */}
-                <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-3.5 space-y-2">
-                  <span className="text-xs font-bold text-white block">Individual User Luck Control (ইউজার কন্ট্রোল):</span>
+                <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-3.5 space-y-2.5">
+                  <span className="text-xs font-bold text-white block">Individual User Luck Control (টার্গেটেড ইউজার কন্ট্রোল):</span>
                   <div className="grid grid-cols-3 gap-1.5">
                     {[
-                      { id: 'controlled', label: 'Controlled (Default)' },
-                      { id: 'drain', label: 'Strict Drain (Loss)' },
-                      { id: 'sweetener', label: 'Sweetener (Trickle)' }
-                    ].map(mode => (
-                      <button
-                        key={mode.id}
-                        type="button"
-                        onClick={() => {
-                          updateUserLuckMode(selectedUser.uid, mode.id);
-                          setStatusNotice(`User #${selectedUser.uid} luck mode set to ${mode.label}`);
-                          setTimeout(() => setStatusNotice(''), 3000);
-                        }}
-                        className={`py-1.5 rounded-xl font-bold text-[10px] transition cursor-pointer ${
-                          (selectedUser.luck_mode || 'controlled') === mode.id
-                            ? 'bg-[#F5BE00] text-slate-950 font-black'
-                            : 'bg-[#161b22] text-[#8b949e] hover:text-white'
-                        }`}
-                      >
-                        {mode.label}
-                      </button>
-                    ))}
+                      { id: 'controlled', label: 'Controlled (ডিফল্ট)', wr: 20 },
+                      { id: 'drain', label: 'Strict Drain (১০০% লস)', wr: 5 },
+                      { id: 'sweetener', label: 'Sweetener (ট্রিকল উইন)', wr: 40 }
+                    ].map(mode => {
+                      const isCurrentActive = 
+                        (mode.id === 'drain' && (selectedUser.force_result === 'force_lose' || selectedUser.luck_mode === 'drain')) ||
+                        (mode.id === 'sweetener' && (selectedUser.force_result === 'force_win' || selectedUser.luck_mode === 'sweetener')) ||
+                        (mode.id === 'controlled' && (selectedUser.force_result !== 'force_lose' && selectedUser.force_result !== 'force_win' && selectedUser.luck_mode !== 'drain' && selectedUser.luck_mode !== 'sweetener'));
+
+                      return (
+                        <button
+                          key={mode.id}
+                          type="button"
+                          onClick={async () => {
+                            await updateUserLuckMode(selectedUser.uid, mode.id, mode.wr);
+                            setSelectedUser(prev => prev ? ({
+                              ...prev,
+                              luck_mode: mode.id,
+                              force_result: mode.id === 'drain' ? 'force_lose' : (mode.id === 'sweetener' ? 'force_win' : 'normal'),
+                              custom_win_rate: mode.wr
+                            }) : null);
+                            setStatusNotice(`ইউজার #${selectedUser.username || selectedUser.uid}-কে ${mode.label} মোডে সেট করা হয়েছে (Supabase ক্লাউডে লাইভ সেভড)`);
+                            setTimeout(() => setStatusNotice(''), 3000);
+                          }}
+                          className={`py-2 px-1.5 rounded-xl font-bold text-[10px] transition cursor-pointer flex flex-col items-center justify-center text-center ${
+                            isCurrentActive
+                              ? 'bg-[#F5BE00] text-slate-950 font-black shadow-md'
+                              : 'bg-[#161b22] text-[#8b949e] hover:text-white border border-[#21262d]'
+                          }`}
+                        >
+                          <span>{mode.label}</span>
+                          {isCurrentActive && <span className="text-[9px] text-slate-950 font-black mt-0.5">● সক্রিয় (Active)</span>}
+                        </button>
+                      );
+                    })}
                   </div>
+
+                  {/* Targeted Custom Win Rate Slider */}
+                  <div className="pt-2 border-t border-[#21262d]/60">
+                    <div className="flex items-center justify-between text-[11px] mb-1">
+                      <span className="text-[#8b949e]">সুনির্দিষ্ট টার্গেট উইন রেট (Win Chance %):</span>
+                      <span className="text-yellow-400 font-mono font-bold">{selectedUser.custom_win_rate ?? 20}%</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="range"
+                        min="1"
+                        max="100"
+                        value={selectedUser.custom_win_rate ?? 20}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          setSelectedUser(prev => prev ? ({ ...prev, custom_win_rate: val }) : null);
+                        }}
+                        onMouseUp={async (e) => {
+                          const val = Number(e.target.value);
+                          await updateUserLuckMode(selectedUser.uid, selectedUser.luck_mode || 'controlled', val);
+                          setStatusNotice(`টার্গেট উইন রেট ${val}% সফলভাবে ক্লাউডে সিঙ্ক হয়েছে`);
+                          setTimeout(() => setStatusNotice(''), 2500);
+                        }}
+                        onTouchEnd={async (e) => {
+                          const val = Number(e.target.value);
+                          await updateUserLuckMode(selectedUser.uid, selectedUser.luck_mode || 'controlled', val);
+                          setStatusNotice(`টার্গেট উইন রেট ${val}% সফলভাবে ক্লাউডে সিঙ্ক হয়েছে`);
+                          setTimeout(() => setStatusNotice(''), 2500);
+                        }}
+                        className="flex-1 accent-[#F5BE00] cursor-pointer"
+                      />
+                      <span className="text-xs font-mono font-black text-[#F5BE00] w-12 text-right">
+                        {selectedUser.custom_win_rate ?? 20}%
+                      </span>
+                    </div>
+                  </div>
+
                   <p className="text-[10px] text-[#8b949e]">
-                    Strict Drain মোড দিলে ইউজারের ব্যালেন্স দ্রুত কমবে (উইন রেট ৮% এর নিচে নেমে যাবে)।
+                    Strict Drain মোড দিলে ইউজারের প্রতিটি বাজি ১০০% লস হবে (ব্যালেন্স দ্রুত কমবে)।
                   </p>
                 </div>
 

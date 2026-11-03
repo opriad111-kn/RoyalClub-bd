@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
-import { 
-  ArrowLeft, 
-  Copy, 
-  Check, 
-  History, 
-  ShieldCheck, 
-  AlertCircle, 
-  Sparkles, 
+import {
+  ArrowLeft,
+  Copy,
+  Check,
+  History,
+  ShieldCheck,
+  AlertCircle,
+  Sparkles,
   HelpCircle,
   Clock,
   CheckCircle2,
@@ -124,11 +124,11 @@ export default function DepositPage({ onBack, onOpenAuth }) {
 
   return (
     <div className="space-y-3.5 pb-20 text-xs select-none -mx-3.5 -mt-3.5">
-      
+
       {/* 1. DK WIN Top Header */}
       <div className="bg-[#F5BE00] text-slate-950 px-4 py-3.5 flex items-center justify-between shadow-xs sticky top-0 z-30">
         <div className="flex items-center space-x-2.5">
-          <button 
+          <button
             onClick={onBack}
             className="w-8 h-8 rounded-full bg-white/30 hover:bg-white/50 flex items-center justify-center transition active:scale-95 cursor-pointer"
           >
@@ -149,7 +149,7 @@ export default function DepositPage({ onBack, onOpenAuth }) {
       </div>
 
       <div className="px-3.5 space-y-3.5">
-        
+
         {/* High Conversion Deposit Promo Banner */}
         <div className="bg-gradient-to-r from-red-600 via-amber-600 to-yellow-500 rounded-2xl p-3.5 text-white shadow-md flex items-center justify-between relative overflow-hidden">
           <div className="space-y-1 relative z-10">
@@ -221,19 +221,18 @@ export default function DepositPage({ onBack, onOpenAuth }) {
             Select Payment Channel
           </label>
           <div className="grid grid-cols-4 gap-2">
-            
+
             {/* bKash */}
             <button
               type="button"
               disabled={!isBkashActive}
               onClick={() => isBkashActive && setMethod('bKash')}
-              className={`p-2 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${
-                !isBkashActive
-                  ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
-                  : method === 'bKash'
+              className={`p-2 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${!isBkashActive
+                ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
+                : method === 'bKash'
                   ? 'border-[#E2136E] bg-pink-50/60 shadow-xs'
                   : 'border-slate-100 bg-slate-50 hover:bg-slate-100'
-              }`}
+                }`}
             >
               {!isBkashActive && (
                 <span className="absolute -top-1.5 -right-1 bg-rose-500 text-white text-[8px] font-bold px-1 rounded-full">বন্ধ</span>
@@ -249,13 +248,12 @@ export default function DepositPage({ onBack, onOpenAuth }) {
               type="button"
               disabled={!isNagadActive}
               onClick={() => isNagadActive && setMethod('Nagad')}
-              className={`p-2 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${
-                !isNagadActive
-                  ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
-                  : method === 'Nagad'
+              className={`p-2 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${!isNagadActive
+                ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
+                : method === 'Nagad'
                   ? 'border-[#F7941D] bg-orange-50/60 shadow-xs'
                   : 'border-slate-100 bg-slate-50 hover:bg-slate-100'
-              }`}
+                }`}
             >
               {!isNagadActive && (
                 <span className="absolute -top-1.5 -right-1 bg-rose-500 text-white text-[8px] font-bold px-1 rounded-full">বন্ধ</span>
@@ -271,13 +269,12 @@ export default function DepositPage({ onBack, onOpenAuth }) {
               type="button"
               disabled={!isRocketActive}
               onClick={() => isRocketActive && setMethod('Rocket')}
-              className={`p-2 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${
-                !isRocketActive
-                  ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
-                  : method === 'Rocket'
+              className={`p-2 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${!isRocketActive
+                ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
+                : method === 'Rocket'
                   ? 'border-[#8C3494] bg-purple-50/60 shadow-xs'
                   : 'border-slate-100 bg-slate-50 hover:bg-slate-100'
-              }`}
+                }`}
             >
               {!isRocketActive && (
                 <span className="absolute -top-1.5 -right-1 bg-rose-500 text-white text-[8px] font-bold px-1 rounded-full">বন্ধ</span>
@@ -293,13 +290,12 @@ export default function DepositPage({ onBack, onOpenAuth }) {
               type="button"
               disabled={!isUsdtActive}
               onClick={() => isUsdtActive && setMethod('USDT')}
-              className={`p-2 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${
-                !isUsdtActive
-                  ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
-                  : method === 'USDT'
+              className={`p-2 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${!isUsdtActive
+                ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400'
+                : method === 'USDT'
                   ? 'border-[#26A17B] bg-emerald-50/60 shadow-xs'
                   : 'border-slate-100 bg-slate-50 hover:bg-slate-100'
-              }`}
+                }`}
             >
               {!isUsdtActive && (
                 <span className="absolute -top-1.5 -right-1 bg-rose-500 text-white text-[8px] font-bold px-1 rounded-full">বন্ধ</span>
@@ -354,7 +350,7 @@ export default function DepositPage({ onBack, onOpenAuth }) {
 
         {/* 5. Deposit Form */}
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-3.5">
-          
+
           {/* Quick Amounts */}
           <div>
             <label className="text-xs font-black text-slate-800 block mb-2">
@@ -366,11 +362,10 @@ export default function DepositPage({ onBack, onOpenAuth }) {
                   key={val}
                   type="button"
                   onClick={() => setAmount(val.toString())}
-                  className={`py-2 rounded-xl font-mono font-black text-xs transition active:scale-95 cursor-pointer ${
-                    amount === val.toString()
-                      ? 'bg-[#F5BE00] text-slate-950 shadow-xs ring-2 ring-yellow-400'
-                      : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200/60'
-                  }`}
+                  className={`py-2 rounded-xl font-mono font-black text-xs transition active:scale-95 cursor-pointer ${amount === val.toString()
+                    ? 'bg-[#F5BE00] text-slate-950 shadow-xs ring-2 ring-yellow-400'
+                    : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200/60'
+                    }`}
                 >
                   ৳{val}
                 </button>
@@ -444,7 +439,7 @@ export default function DepositPage({ onBack, onOpenAuth }) {
               <h3 className="font-black text-slate-900 text-sm">
                 Deposit Records
               </h3>
-              <button 
+              <button
                 onClick={() => setShowHistory(false)}
                 className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 hover:text-slate-900 flex items-center justify-center font-bold text-xs"
               >
@@ -466,9 +461,8 @@ export default function DepositPage({ onBack, onOpenAuth }) {
                       <span className="text-xs font-black font-mono text-emerald-600 block">
                         +৳{Number(item.amount || 0).toFixed(2)}
                       </span>
-                      <span className={`text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase ${
-                        item.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                      }`}>
+                      <span className={`text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase ${item.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                        }`}>
                         {item.status}
                       </span>
                     </div>

