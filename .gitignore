@@ -10,6 +10,8 @@ build/
 # Extracted & Temporary Archives
 extracted_*
 RoyalClub-bd-main/
+apk_web/
+*.cjs
 *.zip
 *.tar.gz
 

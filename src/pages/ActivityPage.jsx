@@ -214,7 +214,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
             className="bg-[#0f1730] rounded-2xl text-white p-3 border border-slate-800 shadow-sm cursor-pointer hover:shadow-md transition active:scale-95 flex flex-col justify-between"
           >
             <div>
-              <div className="h-28 bg-gradient-to-tr from-rose-50 via-rose-100 to-red-50 rounded-xl p-2 flex items-center justify-center shadow-inner mb-2 overflow-hidden relative">
+              <div className="h-28 bg-gradient-to-tr from-rose-950/60 via-slate-900 to-rose-900/40 border border-rose-500/30 rounded-xl p-2 flex items-center justify-center shadow-inner mb-2 overflow-hidden relative">
                 <div className="text-5xl transform -rotate-6 hover:rotate-0 transition drop-shadow-md">
                   🧧
                 </div>
@@ -235,7 +235,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
             className="bg-[#0f1730] rounded-2xl text-white p-3 border border-slate-800 shadow-sm cursor-pointer hover:shadow-md transition active:scale-95 flex flex-col justify-between"
           >
             <div>
-              <div className="h-28 bg-gradient-to-tr from-amber-50 via-yellow-100 to-orange-50 rounded-xl p-2 flex items-center justify-center shadow-inner mb-2 overflow-hidden relative">
+              <div className="h-28 bg-gradient-to-tr from-amber-950/60 via-slate-900 to-amber-900/40 border border-amber-500/30 rounded-xl p-2 flex items-center justify-center shadow-inner mb-2 overflow-hidden relative">
                 <div className="text-5xl transform rotate-6 hover:rotate-0 transition drop-shadow-md">
                   📅
                 </div>
@@ -261,7 +261,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
           <div className="flex items-center justify-between relative z-10">
             <div className="space-y-1 max-w-[65%]">
               <div className="inline-flex items-center space-x-1 bg-amber-500/20 border border-amber-400/40 px-2 py-0.5 rounded text-[9px] font-black text-amber-300">
-                <span>DK WIN</span>
+                <span>ROYAL CLUB BD</span>
               </div>
               <h3 className="text-lg font-black font-sans text-yellow-300 tracking-tight leading-tight">
                 DAILY CHECK-IN

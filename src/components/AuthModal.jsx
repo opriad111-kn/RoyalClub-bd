@@ -12,7 +12,8 @@ import {
   AlertCircle, 
   ChevronLeft,
   ChevronDown,
-  UserCheck
+  UserCheck,
+  Crown
 } from 'lucide-react';
 
 export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
@@ -59,7 +60,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
       const hashRef = new URLSearchParams(hash.split('?')[1] || '').get('ref');
       if (hashRef) return hashRef;
     }
-    return '766251';
+    return '76625105060';
   });
 
   useEffect(() => {
@@ -178,16 +179,16 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 select-none"
+      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-0 sm:p-3 select-none"
       onClick={onClose}
     >
       <div 
-        className="bg-[#0b1023] border border-slate-800 w-full max-w-[390px] rounded-3xl overflow-hidden shadow-2xl relative flex flex-col font-sans text-white animate-in zoom-in-95 duration-200"
+        className="bg-[#0b1023] border-0 sm:border border-slate-800 w-full h-full sm:h-auto sm:max-h-[92vh] sm:max-w-[420px] rounded-none sm:rounded-3xl overflow-hidden shadow-2xl relative flex flex-col font-sans text-white animate-in zoom-in-95 duration-200"
         onClick={e => e.stopPropagation()}
       >
         
-        {/* 1. Header Bar: Back, Brand Logo, Language (KhelV Reference) */}
-        <div className="bg-[#0b1023] px-4 py-3 flex items-center justify-between border-b border-slate-800/60">
+        {/* 1. Header Bar: Back, Brand Logo, Language (Exact APK Match Image 4 & 5) */}
+        <div className="bg-[#0b1023] px-4 py-3 flex items-center justify-between border-b border-slate-800/60 shrink-0">
           <button 
             onClick={onClose}
             className="w-8 h-8 rounded-full bg-slate-800/80 hover:bg-slate-700 flex items-center justify-center text-slate-200 transition active:scale-95 cursor-pointer"
@@ -195,10 +196,12 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
             <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
           </button>
 
-          {/* Official Royal Club BD Logo */}
+          {/* Official Royal Club BD Logo (Matching Screenshot) */}
           <div className="flex items-center space-x-1.5">
-            <span className="text-xl">👑</span>
-            <span className="font-black text-base tracking-wider text-white font-sans drop-shadow-sm">
+            <div className="w-6 h-6 rounded-md bg-gradient-to-tr from-amber-500 to-yellow-400 flex items-center justify-center shadow-xs">
+              <Crown className="w-4 h-4 text-slate-950 fill-current" />
+            </div>
+            <span className="font-black text-sm tracking-wider text-white font-sans drop-shadow-sm">
               ROYAL<span className="text-amber-400">CLUB</span> <span className="text-red-500">BD</span>
             </span>
           </div>
@@ -213,8 +216,8 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
           </button>
         </div>
 
-        {/* 2. Red-to-Blue Gradient Banner Strip (Exact Reference) */}
-        <div className="bg-gradient-to-r from-[#d32f2f] via-[#7b1fa2] to-[#1976d2] px-5 py-4 text-white relative shadow-md">
+        {/* 2. Red-to-Blue Gradient Banner Strip (Exact Match Image 4 & 5) */}
+        <div className="bg-gradient-to-r from-[#d32f2f] via-[#7b1fa2] to-[#1976d2] px-5 py-4 text-white relative shadow-md shrink-0">
           <h2 className="text-xl font-black tracking-tight">
             {activeTab === 'login' ? 'Log in' : 'Register'}
           </h2>
@@ -230,9 +233,9 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
           )}
         </div>
 
-        {/* 3. Phone / Email Tabs */}
+        {/* 3. Phone / Email Tabs (Matching Image 4 & 5) */}
         {activeTab === 'login' ? (
-          <div className="bg-[#0f1730] flex border-b border-slate-800">
+          <div className="bg-[#0f1730] flex border-b border-slate-800 shrink-0">
             <button
               type="button"
               onClick={() => setLoginMethod('phone')}
@@ -261,7 +264,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
             </button>
           </div>
         ) : (
-          <div className="bg-[#0f1730] py-2.5 border-b border-slate-800 flex items-center justify-center space-x-1.5 text-xs font-black text-blue-400 relative">
+          <div className="bg-[#0f1730] py-3 border-b border-slate-800 flex items-center justify-center space-x-1.5 text-xs font-black text-blue-400 relative shrink-0">
             <Phone className="w-4 h-4" />
             <span>Register your phone</span>
             <div className="absolute bottom-0 left-16 right-16 h-0.5 bg-blue-500 rounded-full" />
@@ -269,7 +272,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
         )}
 
         {/* 4. Form Body Container */}
-        <div className="p-4 sm:p-5 max-h-[65vh] overflow-y-auto no-scrollbar space-y-3.5 bg-[#0b1023]">
+        <div className="p-4 sm:p-5 flex-1 overflow-y-auto no-scrollbar space-y-3.5 bg-[#0b1023]">
           
           {/* Error & Success Feedback */}
           {errorMsg && (
@@ -285,7 +288,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
             </div>
           )}
 
-          {/* LOGIN FORM */}
+          {/* LOGIN FORM (Screenshot 5 Match) */}
           {activeTab === 'login' ? (
             <form onSubmit={handleLogin} className="space-y-3">
               
@@ -346,14 +349,14 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                   <button 
                     type="button" 
                     onClick={() => setShowLoginPassword(!showLoginPassword)}
-                    className="text-slate-400 hover:text-white p-1"
+                    className="text-slate-400 hover:text-white p-1 cursor-pointer"
                   >
                     {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
 
-              {/* Remember password & Forgot password */}
+              {/* Remember password & Forgot password (Screenshot 5 Match) */}
               <div className="flex items-center justify-between text-xs pt-1">
                 <label className="flex items-center space-x-2 text-slate-400 cursor-pointer">
                   <input 
@@ -367,19 +370,24 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
                 <button 
                   type="button"
-                  onClick={() => alert("পাসওয়ার্ড রিসেট করতে অনুগ্রহ করে কাস্টমার সার্ভিসের সাথে যোগাযোগ করুন: @ROYALCLUB_Support")}
-                  className="text-blue-400 hover:underline text-[11px]"
+                  onClick={() => {
+                    const event = new CustomEvent('royalclub_show_toast', { 
+                      detail: { message: "পাসওয়ার্ড রিসেট করতে অনুগ্রহ করে টেলিগ্রাম কাস্টমার সার্ভিসের সাথে যোগাযোগ করুন: @ROYALCLUB_Support" } 
+                    });
+                    window.dispatchEvent(event);
+                  }}
+                  className="text-blue-400 hover:underline text-[11px] cursor-pointer"
                 >
                   Forgot password?
                 </button>
               </div>
 
-              {/* Submit Buttons */}
-              <div className="pt-2 space-y-2.5">
+              {/* Action Buttons (Screenshot 5 Match) */}
+              <div className="pt-3 space-y-2.5">
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3.5 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-sm shadow-lg transition active:scale-95 disabled:opacity-50 cursor-pointer"
+                  className="w-full py-3.5 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-sm shadow-lg transition active:scale-95 disabled:opacity-50 cursor-pointer uppercase tracking-wider"
                 >
                   {isLoading ? 'লগইন হচ্ছে...' : 'Log in'}
                 </button>
@@ -387,7 +395,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                 <button
                   type="button"
                   onClick={() => setActiveTab('register')}
-                  className="w-full py-3 rounded-full bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-300 font-bold text-xs transition active:scale-95 cursor-pointer"
+                  className="w-full py-3 rounded-full bg-transparent border border-blue-500/50 hover:border-blue-400 text-blue-400 font-bold text-xs transition active:scale-95 cursor-pointer uppercase tracking-wider"
                 >
                   Register
                 </button>
@@ -395,7 +403,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
             </form>
           ) : (
-            /* REGISTER FORM */
+            /* REGISTER FORM (Screenshot 4 Match) */
             <form onSubmit={handleRegister} className="space-y-3">
               
               {/* Phone number */}
@@ -437,7 +445,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                   <button 
                     type="button" 
                     onClick={() => setShowRegPassword(!showRegPassword)}
-                    className="text-slate-400 hover:text-white p-1"
+                    className="text-slate-400 hover:text-white p-1 cursor-pointer"
                   >
                     {showRegPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -461,7 +469,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                   <button 
                     type="button" 
                     onClick={() => setShowRegConfirmPassword(!showRegConfirmPassword)}
-                    className="text-slate-400 hover:text-white p-1"
+                    className="text-slate-400 hover:text-white p-1 cursor-pointer"
                   >
                     {showRegConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -485,7 +493,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                 </div>
               </div>
 
-              {/* Privacy Agreement Checkbox */}
+              {/* Privacy Agreement Checkbox (Screenshot 4 Match) */}
               <div className="pt-1">
                 <label className="flex items-center space-x-2 text-slate-400 cursor-pointer">
                   <input 
@@ -495,17 +503,17 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                     className="rounded border-slate-700 bg-slate-800 text-blue-500 focus:ring-0" 
                   />
                   <span className="text-[11px]">
-                    I have read and agree <span className="text-red-400 underline">[Privacy Agreement]</span>
+                    I have read and agree <span className="text-red-500 underline">[Privacy Agreement]</span>
                   </span>
                 </label>
               </div>
 
-              {/* Action Buttons */}
-              <div className="pt-2 space-y-2.5">
+              {/* Action Buttons (Screenshot 4 Match) */}
+              <div className="pt-3 space-y-2.5">
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3.5 rounded-full bg-gradient-to-r from-red-600 via-purple-600 to-blue-600 hover:brightness-110 text-white font-black text-sm shadow-lg transition active:scale-95 disabled:opacity-50 cursor-pointer"
+                  className="w-full py-3.5 rounded-full bg-gradient-to-r from-red-600 via-rose-600 to-blue-600 hover:brightness-110 text-white font-black text-sm shadow-xl transition active:scale-95 disabled:opacity-50 cursor-pointer uppercase tracking-wider"
                 >
                   {isLoading ? 'রেজিস্ট্রেশন হচ্ছে...' : 'Register'}
                 </button>
@@ -513,9 +521,9 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                 <button
                   type="button"
                   onClick={() => setActiveTab('login')}
-                  className="w-full py-3 rounded-full bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-300 font-bold text-xs transition active:scale-95 cursor-pointer"
+                  className="w-full py-3 rounded-full bg-transparent border border-slate-700 hover:border-slate-500 text-slate-300 font-bold text-xs transition active:scale-95 cursor-pointer uppercase tracking-wider"
                 >
-                  I have an account <strong className="text-blue-400">Login</strong>
+                  I have an account <strong className="text-blue-400 ml-1">Login</strong>
                 </button>
               </div>
 
