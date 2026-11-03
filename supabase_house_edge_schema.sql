@@ -68,6 +68,36 @@ ON CONFLICT (key) DO UPDATE SET
     global_house_edge_percent = EXCLUDED.global_house_edge_percent,
     company_profit_retention_percent = EXCLUDED.company_profit_retention_percent;
 
--- Enable Realtime for users and platform_settings
-ALTER PUBLICATION supabase_realtime ADD TABLE public.users;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.platform_settings;
+-- 3. PERMISSIONS & REALTIME
+ALTER TABLE public.platform_settings ENABLE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'platform_settings' AND policyname = 'Allow public read platform_settings'
+  ) THEN
+    CREATE POLICY "Allow public read platform_settings" ON public.platform_settings FOR SELECT USING (true);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'platform_settings' AND policyname = 'Allow public update platform_settings'
+  ) THEN
+    CREATE POLICY "Allow public update platform_settings" ON public.platform_settings FOR ALL USING (true);
+  END IF;
+END $$;
+
+-- Enable Realtime for users and platform_settings safely
+DO $$
+BEGIN
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.users;
+  EXCEPTION WHEN duplicate_object THEN
+    NULL;
+  END;
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.platform_settings;
+  EXCEPTION WHEN duplicate_object THEN
+    NULL;
+  END;
+END $$;
+
