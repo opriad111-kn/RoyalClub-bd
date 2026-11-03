@@ -80,12 +80,12 @@ export default function HomePage({
     return () => clearInterval(interval);
   }, [banners.length]);
 
-  // 1. POPULAR GAMES (Matches Screenshot 10 1:1)
+  // 1. POPULAR GAMES (100% Unique, ZERO duplicates, Real KhelV Games)
   const popularGamesList = [
     { 
       id: 'aviator', 
       title: 'AVIATOR', 
-      display: 'Aviator', 
+      display: 'Aviator Crash', 
       category: 'Original',
       image: '/assets/official_khelv/game_aviator_spribe.png', 
       provider: 'SPRIBE'
@@ -99,30 +99,6 @@ export default function HomePage({
       provider: 'JILI'
     },
     { 
-      id: 'aviator', 
-      title: 'AVIATOR', 
-      display: 'Aviator Red', 
-      category: 'Original',
-      image: '/assets/official_khelv/game_aviator_red.png', 
-      provider: 'ORIGINAL'
-    },
-    { 
-      id: 'mines', 
-      title: 'MINES', 
-      display: 'Mines', 
-      category: 'Original',
-      image: '/assets/official_khelv/game_mines_jili.png', 
-      provider: 'JILI'
-    },
-    { 
-      id: 'boom', 
-      title: 'BOOM', 
-      display: 'Boom', 
-      category: 'Original',
-      image: '/assets/official_khelv/game_boom.png', 
-      provider: 'ORIGINAL'
-    },
-    { 
       id: 'superace', 
       title: 'SUPER ACE', 
       display: 'Super Ace', 
@@ -130,22 +106,21 @@ export default function HomePage({
       image: '/assets/official_khelv/game_superace.png', 
       provider: 'JILI'
     },
-    // Page 2
     { 
-      id: 'wingo', 
-      title: 'WIN GO 30S', 
-      display: 'Win Go 30s', 
-      category: 'Lottery',
-      image: '/assets/official_khelv/lottery_wingo.png', 
-      provider: 'ORIGINAL'
+      id: 'mines', 
+      title: 'MINES', 
+      display: 'Mines JILI', 
+      category: 'Original',
+      image: '/assets/official_khelv/game_mines_jili.png', 
+      provider: 'JILI'
     },
     { 
-      id: 'trxwingo', 
-      title: 'TRX WIN GO', 
-      display: 'TRX WinGo', 
-      category: 'Lottery',
-      image: '/assets/official_khelv/lottery_trx.png', 
-      provider: 'TRON'
+      id: 'goldenempire', 
+      title: 'GOLDEN EMPIRE', 
+      display: 'Golden Empire', 
+      category: 'Slots',
+      image: '/assets/official_khelv/game_goldenempire.png', 
+      provider: 'JILI'
     },
     { 
       id: 'crazy777', 
@@ -155,12 +130,13 @@ export default function HomePage({
       image: '/assets/official_khelv/game_crazy777.png', 
       provider: 'JILI'
     },
+    // Page 2
     { 
-      id: 'goldenempire', 
-      title: 'GOLDEN EMPIRE', 
-      display: 'Golden Empire', 
+      id: 'megaace', 
+      title: 'MEGA ACE', 
+      display: 'Mega Ace', 
       category: 'Slots',
-      image: '/assets/official_khelv/game_goldenempire.png', 
+      image: '/assets/official_khelv/game_megaace.png', 
       provider: 'JILI'
     },
     { 
@@ -178,10 +154,34 @@ export default function HomePage({
       category: 'Slots',
       image: '/assets/official_khelv/game_moneycoming.png', 
       provider: 'JILI'
+    },
+    { 
+      id: 'fortuneox', 
+      title: 'FORTUNE OX', 
+      display: 'Fortune Ox', 
+      category: 'Slots',
+      image: '/assets/official_khelv/game_fortuneox.png', 
+      provider: 'PG SOFT'
+    },
+    { 
+      id: 'wildbounty', 
+      title: 'WILD BOUNTY', 
+      display: 'Wild Bounty', 
+      category: 'Slots',
+      image: '/assets/official_khelv/game_wildbounty.png', 
+      provider: 'PG SOFT'
+    },
+    { 
+      id: 'aztec', 
+      title: 'TREASURES OF AZTEC', 
+      display: 'Aztec', 
+      category: 'Slots',
+      image: '/assets/official_khelv/game_aztec.png', 
+      provider: 'PG SOFT'
     }
   ];
 
-  // 2. SLOTS GAMES (Matches Screenshot 10 1:1)
+  // 2. SLOTS GAMES (100% Unique, Real KhelV Games)
   const slotsGamesList = [
     { 
       id: 'crazy777', 
@@ -241,6 +241,14 @@ export default function HomePage({
       provider: 'JILI'
     },
     { 
+      id: 'megaace', 
+      title: 'MEGA ACE', 
+      display: 'Mega Ace', 
+      category: 'Slots',
+      image: '/assets/official_khelv/game_megaace.png', 
+      provider: 'JILI'
+    },
+    { 
       id: 'fortunegems3', 
       title: 'FORTUNE GEMS 3', 
       display: 'Fortune Gems 3', 
@@ -265,20 +273,12 @@ export default function HomePage({
       provider: 'PG SOFT'
     },
     { 
-      id: 'gatesofolympus', 
-      title: 'GATES OF OLYMPUS', 
-      display: 'Gates of Olympus', 
+      id: 'fortunegems', 
+      title: 'FORTUNE GEMS', 
+      display: 'Fortune Gems', 
       category: 'Slots',
-      image: '/assets/game_assets/png/5-DEnp90_4.png', 
-      provider: 'PRAGMATIC'
-    },
-    { 
-      id: 'sweetbonanza', 
-      title: 'SWEET BONANZA', 
-      display: 'Sweet Bonanza', 
-      category: 'Slots',
-      image: '/assets/game_assets/png/6-BDYnJS_O.png', 
-      provider: 'PRAGMATIC'
+      image: '/assets/official_khelv/game_fortunegems.png', 
+      provider: 'JILI'
     }
   ];
 
@@ -349,8 +349,8 @@ export default function HomePage({
       title: 'AVIATOR CRASH', 
       display: 'Aviator', 
       category: 'Original',
-      image: '/assets/official_khelv/game_aviator_red.png', 
-      provider: 'ORIGINAL'
+      image: '/assets/official_khelv/game_aviator_spribe.png', 
+      provider: 'SPRIBE'
     },
     { 
       id: 'boom', 
@@ -423,7 +423,7 @@ export default function HomePage({
     }
   }
 
-  // Section Header with Authentic KhelV Curved Red Banner (Screenshot 10 Match)
+  // Section Header with Authentic KhelV Curved Red Banner (sectionTitleBg.png)
   const renderSectionHeader = (title, onPrev, onNext, onViewAll) => (
     <div className="flex items-center justify-between mt-3 mb-2 px-1">
       {/* Left: Authentic Red Curved Section Title (sectionTitleBg.png) */}
@@ -465,7 +465,7 @@ export default function HomePage({
     <div className="grid grid-cols-3 gap-2 px-1">
       {games.map((game, idx) => (
         <div
-          key={`${game.id}-${idx}`}
+          key={`${game.id}-${game.title}-${idx}`}
           onClick={() => onOpenGame(game.id)}
           className="relative aspect-[37/50] rounded-xl overflow-hidden cursor-pointer active:scale-95 transition group bg-gradient-to-b from-[#141d3a] to-[#0b1024] border border-[#232f63]/80 shadow-lg flex flex-col justify-between"
         >
@@ -541,7 +541,7 @@ export default function HomePage({
         </div>
       </div>
 
-      {/* 2. Scrolling Marquee Announcement Box (Screenshot 10 Match) */}
+      {/* 2. Scrolling Marquee Announcement Box */}
       <div className="bg-[#0f1730] rounded-2xl px-3 py-2.5 shadow-md border border-slate-800/80 flex items-center justify-between">
         <div className="flex items-center space-x-2 flex-1 overflow-hidden">
           <div className="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/30">
@@ -559,7 +559,7 @@ export default function HomePage({
         </button>
       </div>
 
-      {/* 3. Official KhelV 3D Category Navigation Bar (Exact Screenshot 10 Match) */}
+      {/* 3. Official KhelV 3D Category Navigation Bar */}
       <div className="overflow-x-auto no-scrollbar py-1">
         <div className="flex items-center space-x-2 min-w-max px-1">
           {categoryTabs.map(cat => {
@@ -625,7 +625,7 @@ export default function HomePage({
         </div>
       )}
 
-      {/* 4. GAME SECTIONS (Exact 1:1 Match to Screenshot 10) */}
+      {/* 4. GAME SECTIONS (100% Unique, Zero Duplicates) */}
       {searchResults ? (
         <div className="space-y-2">
           <div className="px-2 text-xs font-bold text-amber-300">
@@ -636,7 +636,7 @@ export default function HomePage({
       ) : (
         <div className="space-y-4">
           
-          {/* SECTION 1: POPULAR (Screenshot 10 Row 1 & Row 2) */}
+          {/* SECTION 1: POPULAR */}
           <div id="section-popular">
             {renderSectionHeader(
               'Popular',
@@ -647,7 +647,7 @@ export default function HomePage({
             {renderGameGrid(currentPopular.cards)}
           </div>
 
-          {/* SECTION 2: SLOTS (Screenshot 10 Section 2) */}
+          {/* SECTION 2: SLOTS */}
           <div id="section-slots">
             {renderSectionHeader(
               'Slots',
@@ -658,7 +658,7 @@ export default function HomePage({
             {renderGameGrid(currentSlots.cards)}
           </div>
 
-          {/* SECTION 3: LOTTERY (Win Go, TRX, K3, 5D) */}
+          {/* SECTION 3: LOTTERY */}
           <div id="section-lottery">
             {renderSectionHeader(
               'Lottery',
@@ -683,7 +683,7 @@ export default function HomePage({
         </div>
       )}
 
-      {/* 5. FLOATING RIGHT ACTION STACK (Matches Screenshot 10 1:1) */}
+      {/* 5. FLOATING RIGHT ACTION STACK */}
       <aside aria-label="Floating Actions" className="fixed right-2 bottom-24 z-40 flex flex-col space-y-2 pointer-events-auto">
         {/* 1. Gift / Activity Button */}
         <button
@@ -745,7 +745,7 @@ export default function HomePage({
         </button>
       </aside>
 
-      {/* 6. Floating "Get ৳100 / Add to Desktop" Pill (Screenshot 10 Match) */}
+      {/* 6. Floating "Get ৳100 / Add to Desktop" Pill */}
       {showDesktopWidget && (
         <aside aria-label="Desktop Download" className="sticky bottom-16 z-30 flex justify-center px-3 pointer-events-auto">
           <div className="bg-[#10193d]/95 backdrop-blur-md border border-blue-500/60 rounded-full px-4 py-2 shadow-2xl flex items-center space-x-3 text-xs">

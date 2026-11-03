@@ -170,14 +170,16 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
   return (
     <div className="space-y-3.5 pb-20 text-xs select-none -mx-3.5 -mt-3.5 font-sans">
       
-      {/* 1. Curved Golden Gradient Header (Matching DK WIN / 91 Club) */}
+      {/* 1. Curved Golden Gradient Header (Matching KhelV Official Style) */}
       <div className="bg-gradient-to-b from-[#0c1224] via-[#101932] to-[#070b19] text-white border-b border-slate-800 px-5 pt-6 pb-12 rounded-b-[32px] relative shadow-sm">
         {isGuest ? (
           <div className="flex items-center space-x-3.5 relative z-10">
-            <div className="w-16 h-16 rounded-full bg-white/40 border-2 border-white p-0.5 shadow-md flex items-center justify-center overflow-hidden shrink-0">
-              <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-200 to-yellow-100 flex items-center justify-center text-slate-200">
-                <User className="w-8 h-8 stroke-[2.2]" />
-              </div>
+            <div className="w-16 h-16 rounded-full border-2 border-amber-400 p-0.5 shadow-md flex items-center justify-center overflow-hidden shrink-0 bg-[#141b3d]">
+              <img 
+                src="/assets/official_khelv/avatar-CPt2k29v.png" 
+                alt="Avatar" 
+                className="w-full h-full object-cover rounded-full"
+              />
             </div>
             <div className="flex-1 space-y-2 text-left">
               <div>
@@ -207,10 +209,12 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
         ) : (
           <div className="flex items-center space-x-3.5 relative z-10">
             <div className="relative">
-              <div className="w-16 h-16 rounded-full bg-white/40 border-2 border-white p-0.5 shadow-md flex items-center justify-center overflow-hidden">
-                <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-200 to-yellow-100 flex items-center justify-center text-slate-200 font-black text-xl">
-                  {safeUser.username ? safeUser.username[0].toUpperCase() : 'U'}
-                </div>
+              <div className="w-16 h-16 rounded-full border-2 border-amber-400 p-0.5 shadow-md flex items-center justify-center overflow-hidden shrink-0 bg-[#141b3d]">
+                <img 
+                  src="/assets/official_khelv/avatar-CPt2k29v.png" 
+                  alt="Avatar" 
+                  className="w-full h-full object-cover rounded-full"
+                />
               </div>
             </div>
 
@@ -221,8 +225,9 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                 </h3>
                 <button 
                   onClick={() => setShowVipModal(true)}
-                  className="bg-gradient-to-r from-rose-400 via-pink-500 to-rose-500 text-white font-black text-[10px] px-2.5 py-0.5 rounded-full shadow-sm flex items-center space-x-1 border border-white/60 active:scale-95 transition cursor-pointer"
+                  className="bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 text-slate-950 font-black text-[10px] px-2.5 py-0.5 rounded-full shadow-sm flex items-center space-x-1 active:scale-95 transition cursor-pointer"
                 >
+                  <Crown className="w-3 h-3 text-slate-950" />
                   <span>VIP{safeUser.vip_level || 1}</span>
                 </button>
                 <button
@@ -231,7 +236,7 @@ export default function AccountPage({ onOpenWallet, onOpenAdmin, onOpenAuth, onO
                     setEditPhone(safeUser.phone || '');
                     setShowProfileModal(true);
                   }}
-                  className="w-6 h-6 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center text-white transition"
+                  className="w-6 h-6 rounded-full bg-black/20 hover:bg-black/30 flex items-center justify-center text-white transition cursor-pointer"
                   title="প্রোফাইল এডিট"
                 >
                   <Edit2 className="w-3 h-3" />

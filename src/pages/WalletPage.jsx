@@ -219,3 +219,4 @@ export default function WalletPage({ onOpenDeposit, onOpenWithdraw, onOpenAuth }
     </div>
   );
 }
+
