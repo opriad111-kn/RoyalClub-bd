@@ -12,8 +12,11 @@ const DEFAULT_SERVER_SEED = "rc_provably_fair_server_seed_2026_us_production_key
 export function GameProvider({ children }) {
   // 1. App Settings & Config
   const [settings, setSettings] = useState(() => {
-    const saved = localStorage.getItem('royalclub_settings');
-    let base = saved ? JSON.parse(saved) : {};
+    let base = {};
+    try {
+      const saved = localStorage.getItem('royalclub_settings');
+      if (saved) base = JSON.parse(saved);
+    } catch (e) {}
 
     const savedBonus = localStorage.getItem('royalclub_bonus_rules');
     let adminBonusAmount = 100;
@@ -60,8 +63,11 @@ export function GameProvider({ children }) {
 
   // 2. Dynamic Promotional Banners (Managed from Admin)
   const [banners, setBanners] = useState(() => {
-    const saved = localStorage.getItem('royalclub_banners');
-    return saved ? JSON.parse(saved) : [
+    try {
+      const saved = localStorage.getItem('royalclub_banners');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return [
       {
         id: 1,
         title: "১০০% ফার্স্ট ডিপোজিট বোনাস",
@@ -126,8 +132,11 @@ export function GameProvider({ children }) {
 
   // 3B. Unified Game History (Aviator, Slots, Wheel)
   const [gameHistory, setGameHistory] = useState(() => {
-    const saved = localStorage.getItem('royalclub_game_history');
-    return saved ? JSON.parse(saved) : [
+    try {
+      const saved = localStorage.getItem('royalclub_game_history');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return [
       { id: 'GH-1092', game: 'Aviator', bet: 50, win: 112.50, status: 'WIN', mult: '2.25x', time: '10:45 PM' },
       { id: 'GH-1091', game: 'Fortune Gems 2', bet: 20, win: 80.00, status: 'WIN', mult: '4.00x', time: '10:40 PM' },
       { id: 'GH-1090', game: 'Boxing King', bet: 50, win: 150.00, status: 'WIN', mult: '3.00x', time: '10:32 PM' },

@@ -494,7 +494,12 @@ function AppContent() {
 
         {/* 4. Color & Casino Master Engine (WinGo 30s/1m/3m, TRX WinGo) */}
         {(activeGame === 'wingo' || activeGame === 'trxwingo') && (
-          <UniversalColorCasinoEngine gameId={activeGame} onClose={handleCloseGame} />
+          <WinGoGame 
+            initialMode={activeGame === 'trxwingo' ? 'trx' : '30s'}
+            onBack={handleCloseGame}
+            onOpenDeposit={() => { handleCloseGame(); setActiveTab('deposit'); }}
+            onOpenWithdraw={() => { handleCloseGame(); setActiveTab('withdraw'); }}
+          />
         )}
 
         {/* Dedicated Live Table & Lottery Engines */}
@@ -588,15 +593,30 @@ class ErrorBoundary extends React.Component {
             <br />
             (কিছু সমস্যা হয়েছে, অনুগ্রহ করে হোমপেজে ফিরে যান)
           </p>
-          <button
-            onClick={() => {
-              window.location.hash = '#/home';
-              window.location.reload();
-            }}
-            className="bg-[#FFC107] hover:bg-yellow-400 text-slate-950 font-black px-6 py-2.5 rounded-full text-xs shadow-md active:scale-95 transition cursor-pointer"
-          >
-            Go to Homepage / হোমপেজে যান
-          </button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <button
+              onClick={() => {
+                window.location.hash = '#/home';
+                window.location.reload();
+              }}
+              className="bg-[#FFC107] hover:bg-yellow-400 text-slate-950 font-black px-6 py-2.5 rounded-full text-xs shadow-md active:scale-95 transition cursor-pointer"
+            >
+              Go to Homepage / হোমপেজে যান
+            </button>
+            <button
+              onClick={() => {
+                try {
+                  sessionStorage.clear();
+                  localStorage.removeItem('royalclub_logged_out');
+                } catch (e) {}
+                window.location.href = '/#/home';
+                window.location.reload();
+              }}
+              className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-full text-xs shadow-sm active:scale-95 transition cursor-pointer"
+            >
+              Reset Cache & Reload / ক্যাশ পরিষ্কার করুন
+            </button>
+          </div>
         </div>
       );
     }
