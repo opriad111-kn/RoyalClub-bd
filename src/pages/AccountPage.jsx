@@ -27,7 +27,8 @@ import {
   LifeBuoy,
   AlertCircle,
   ShieldCheck,
-  Gift
+  Gift,
+  Crown
 } from 'lucide-react';
 import VipModal from '../components/VipModal';
 
