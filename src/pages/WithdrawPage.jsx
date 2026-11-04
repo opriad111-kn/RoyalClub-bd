@@ -1,22 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
-import { 
-  ArrowLeft, 
-  History, 
-  ShieldCheck, 
-  AlertCircle, 
-  CheckCircle2,
-  Clock,
-  HelpCircle,
-  Sparkles,
-  Lock,
-  TrendingUp,
-  AlertTriangle
-} from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { useLanguage } from '../context/LanguageContext';
+import { KhelvIcon } from '../components/common/KhelvIcon';
 
 export default function WithdrawPage({ onBack, onOpenAuth }) {
-  const { user, settings, requestWithdrawal, transactions } = useGame();
+  const { user, settings, requestWithdrawal, transactions, refreshSupabaseData } = useGame();
+  const { lang, t } = useLanguage();
 
   const safeSettings = settings || {
     WITHDRAWAL_FEE_PERCENT: 0,
@@ -37,505 +26,368 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
     return 'bKash';
   });
 
-  useEffect(() => {
-    if (method === 'Rocket' && !isRocketActive) {
-      if (isBkashActive) setMethod('bKash');
-      else if (isNagadActive) setMethod('Nagad');
-    }
-  }, [isRocketActive, isBkashActive, isNagadActive, method]);
-
-  const [accountType, setAccountType] = useState('Personal');
   const [amount, setAmount] = useState('500');
   const [accountNumber, setAccountNumber] = useState('');
-  const [showHistory, setShowHistory] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successToast, setSuccessToast] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [toastMsg, setToastMsg] = useState({ text: '', type: '' });
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [viewHistory, setViewHistory] = useState(false);
 
-  const quickAmounts = [200, 500, 1000, 2000, 5000];
-
-  const safeUser = user || { username: 'Guest', is_guest: true, balance: 0, uid: '722200' };
-
-  const currentBal = Number(safeUser?.balance !== undefined ? safeUser.balance : 0);
+  const safeUser = user || { username: 'Guest', is_guest: true, balance: 0, uid: '170826' };
+  const currentBal = Number(safeUser?.balance || 0);
   const numAmount = parseFloat(amount) || 0;
   const feePercent = safeSettings.WITHDRAWAL_FEE_PERCENT || 0;
   const feeAmount = (numAmount * feePercent) / 100;
   const netReceive = Math.max(0, numAmount - feeAmount);
 
-  // Turnover / Wagering Requirement Calculation
-  const minWithdrawLimit = safeSettings.MIN_WITHDRAWAL_AMOUNT || 200;
   const reqTurnover = Number(safeUser?.required_turnover !== undefined ? safeUser.required_turnover : (safeUser?.turnover_required || 0));
   const compTurnover = Number(safeUser?.current_turnover !== undefined ? safeUser.current_turnover : (safeUser?.turnover_completed || safeUser?.total_wagered || 0));
   const turnoverRemaining = Math.max(0, reqTurnover - compTurnover);
-  const turnoverProgress = reqTurnover > 0 ? Math.min(100, Math.round((compTurnover / reqTurnover) * 100)) : 100;
-  const isTurnoverMet = turnoverRemaining <= 0;
-  const isBalanceSufficient = currentBal >= minWithdrawLimit;
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setErrorMessage('');
+  async function handleRefresh() {
+    setIsRefreshing(true);
+    if (typeof refreshSupabaseData === 'function') {
+      await refreshSupabaseData();
+    }
+    setTimeout(() => setIsRefreshing(false), 600);
+  }
 
-    if (safeUser.username === 'Guest' || safeUser.is_guest) {
-      if (onOpenAuth) onOpenAuth();
+  async function handleSubmitWithdrawal(e) {
+    if (e) e.preventDefault();
+    setToastMsg({ text: '', type: '' });
+
+    if (!user || user.username === 'Guest' || user.is_guest) {
+      if (onOpenAuth) onOpenAuth('login');
       return;
     }
 
-    if (method === 'Rocket' && !isRocketActive) {
-      setErrorMessage("রকেট উইথড্র সার্ভিস বর্তমানে সাময়িকভাবে বন্ধ আছে। অনুগ্রহ করে বিকাশ অথবা নগদ ব্যবহার করুন।");
-      return;
-    }
-
-    const minAmount = safeSettings.MIN_WITHDRAWAL_AMOUNT || 200;
-    if (currentBal < minAmount) {
-      setErrorMessage(`উইথড্র করার জন্য আপনার অ্যাকাউন্টে সর্বনিম্ন ৳${minAmount} ব্যালেন্স থাকা আবশ্যক। আপনার বর্তমান ব্যালেন্স ৳${currentBal.toFixed(2)} টাকা।`);
-      return;
-    }
-
-    if (!numAmount || numAmount < minAmount) {
-      setErrorMessage(`সর্বনিম্ন উইথড্র ৳${minAmount} টাকা।`);
+    const minWithdraw = safeSettings.MIN_WITHDRAWAL_AMOUNT || 200;
+    if (numAmount < minWithdraw) {
+      setToastMsg({ text: `Minimum withdrawal amount is ৳${minWithdraw}`, type: 'error' });
       return;
     }
     if (numAmount > currentBal) {
-      setErrorMessage("পর্যাপ্ত ব্যালেন্স নেই!");
+      setToastMsg({ text: 'Insufficient account balance!', type: 'error' });
       return;
     }
     if (!accountNumber.trim()) {
-      setErrorMessage("টাকা তোলার মোবাইল নম্বর লিখুন।");
-      return;
-    }
-
-    // Turnover requirement check
-    if (!isTurnoverMet) {
-      setErrorMessage(`আপনার ডিপোজিট টার্নওভার বাকি রয়েছে ৳${turnoverRemaining.toFixed(2)} টাকা। গেম খেলে টার্নওভার সম্পন্ন করে উইথড্র করুন।`);
+      setToastMsg({ text: `Please enter your ${method} wallet number`, type: 'error' });
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const success = await requestWithdrawal({
-        method,
+      const res = await requestWithdrawal({
         amount: numAmount,
+        method: method,
         accountNumber: accountNumber.trim(),
-        accountType
+        accountType: 'Personal'
       });
 
-      if (success) {
-        confetti({ particleCount: 35, spread: 60, origin: { y: 0.6 } });
-        setSuccessToast(`৳${numAmount} টাকা উত্তোলনের রিকোয়েস্ট সফলভাবে জমা হয়েছে! ৩ থেকে ৫ মিনিটের মধ্যে পেমেন্ট সম্পন্ন হবে।`);
+      setIsSubmitting(false);
+      if (res?.success) {
+        setToastMsg({ text: 'Withdrawal request submitted successfully!', type: 'success' });
         setAccountNumber('');
       } else {
-        setErrorMessage("উইথড্র রিকোয়েস্ট জমা দিতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
+        setToastMsg({ text: res?.message || 'Withdrawal request failed', type: 'error' });
       }
     } catch (err) {
-      setErrorMessage("উইথড্র রিকোয়েস্ট প্রক্রিয়াকরণে সমস্যা হয়েছে।");
-    } finally {
       setIsSubmitting(false);
+      setToastMsg({ text: 'Network error, please try again', type: 'error' });
     }
   }
 
-  const withdrawList = (transactions || []).filter(t => t.type === 'withdrawal');
+  const withdrawTransactions = (transactions || []).filter(t => t.type === 'withdrawal' || t.type === 'withdraw');
 
   return (
-    <div className="space-y-3.5 pb-20 text-xs select-none -mx-3.5 -mt-3.5">
-      
-      {/* 1. Royal Club BD Dark Luxury Top Header */}
-      <div className="bg-[#0c1224] text-white px-4 py-3.5 flex items-center justify-between shadow-md border-b border-slate-800 sticky top-0 z-30">
-        <div className="flex items-center space-x-2.5">
-          <button 
-            onClick={onBack}
-            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center transition active:scale-95 cursor-pointer"
-          >
-            <ArrowLeft className="w-5 h-5 text-white" />
-          </button>
-          <h2 className="font-black text-base tracking-tight font-sans text-white">
-            Withdraw / ক্যাশআউট
-          </h2>
-        </div>
-
-        <button
-          onClick={() => setShowHistory(true)}
-          className="bg-slate-800 hover:bg-slate-700 text-amber-300 px-3 py-1 rounded-full flex items-center space-x-1 font-bold text-[11px] transition active:scale-95 cursor-pointer border border-slate-700"
+    <div className="w-full min-h-screen bg-[#14122E] text-white font-sans select-none pb-24">
+      {/* ------------------------------------------------------------------------- */}
+      {/* 1. Header: < Withdraw    Withdrawal history                               */}
+      {/* ------------------------------------------------------------------------- */}
+      <div className="sticky top-0 z-30 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center justify-between shadow-md">
+        <button 
+          onClick={onBack}
+          className="p-1 -ml-1 text-white hover:text-amber-400 active:scale-95 transition cursor-pointer flex items-center space-x-1"
         >
-          <History className="w-3.5 h-3.5" />
-          <span>Records</span>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+          </svg>
+          <span className="font-bold text-sm">Withdraw</span>
+        </button>
+
+        <button 
+          onClick={() => setViewHistory(!viewHistory)}
+          className="text-xs text-[#7098C5] hover:text-[#629EFF] font-semibold active:scale-95 transition cursor-pointer"
+        >
+          Withdrawal history
         </button>
       </div>
 
-      <div className="px-3.5 space-y-3.5">
-        
-        {/* Fast Cashout Promo Banner */}
-        <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-green-500 rounded-2xl p-3.5 text-white shadow-md flex items-center justify-between relative overflow-hidden">
-          <div className="space-y-1 relative z-10">
-            <div className="flex items-center space-x-1.5">
-              <span className="bg-emerald-300 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
-                FAST CASHOUT
-              </span>
-              <span className="text-emerald-100 font-bold text-[11px]">⚡ ৫-১৫ মিনিটে উইথড্র</span>
-            </div>
-            <h3 className="font-black text-sm tracking-tight text-white drop-shadow-sm">
-              দ্রুত এবং নিরাপদ ক্যাশআউট সুবিধা
-            </h3>
-            <p className="text-[10px] text-emerald-100 font-medium">
-              আপনার বিকাশ অথবা নগদ ওয়ালেটে সরাসরি টাকা গ্রহণ করুন।
+      <div className="p-4 space-y-4">
+        {/* ----------------------------------------------------------------------- */}
+        {/* 2. Top Available Balance Card (Screenshot 4)                            */}
+        {/* ----------------------------------------------------------------------- */}
+        <div 
+          className="w-full rounded-2xl p-4 text-white shadow-xl relative overflow-hidden"
+          style={{
+            background: 'linear-gradient(90deg, #E92A23 0%, #1374EC 100%)'
+          }}
+        >
+          <div className="flex items-center space-x-1.5 text-xs">
+            <span className="w-2.5 h-2.5 bg-[#FFC107] rounded-xs" />
+            <span className="font-medium text-white/90">Available balance</span>
+          </div>
+
+          <div className="flex items-center space-x-2.5 mt-2">
+            <span className="text-2xl font-black tracking-tight">
+              ৳{currentBal.toFixed(2)}
+            </span>
+            <button
+              onClick={handleRefresh}
+              className={`text-white/80 hover:text-white transition active:scale-95 cursor-pointer ${isRefreshing ? 'animate-spin' : ''}`}
+            >
+              <KhelvIcon name="refreshBalance" className="w-4 h-4 text-white" />
+            </button>
+          </div>
+
+          <div className="text-right text-[10px] text-white/60 font-mono mt-1">
+            **** ****
+          </div>
+        </div>
+
+        {/* ----------------------------------------------------------------------- */}
+        {/* 3. ARPay / Fast Settlement Banner (Screenshot 4)                        */}
+        {/* ----------------------------------------------------------------------- */}
+        <div className="bg-[#1C2063] border border-[#30358B] rounded-xl p-3 flex items-center space-x-3 shadow-md">
+          <div className="w-8 h-8 rounded-lg bg-amber-400 text-slate-950 font-black text-sm flex items-center justify-center shrink-0 shadow">
+            A
+          </div>
+          <div className="text-xs">
+            <h4 className="font-bold text-white leading-tight">Fast Settlement Wallet</h4>
+            <p className="text-[10.5px] text-[#7098C5] leading-tight mt-0.5">
+              Supports bKash and Nagad for fast payment, zero fees for withdrawals
             </p>
           </div>
-          <Sparkles className="w-8 h-8 text-emerald-200 opacity-80 shrink-0 animate-pulse" />
         </div>
 
-        {/* 2. Total Balance & Withdrawable Card */}
-        <div className="bg-gradient-to-tr from-amber-500 via-[#F5BE00] to-yellow-400 rounded-2xl p-4 text-slate-950 shadow-sm space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-[11px] font-bold text-white/80 uppercase tracking-wide block">
-                Total Balance
-              </span>
-              <div className="flex items-baseline space-x-1 mt-0.5">
-                <span className="text-2xl font-black font-mono">
-                  ৳{currentBal.toFixed(2)}
-                </span>
+        {/* ----------------------------------------------------------------------- */}
+        {/* 4. Payment Channels (bKash, Nagad, Rocket, USDT)                        */}
+        {/* ----------------------------------------------------------------------- */}
+        <div className="grid grid-cols-4 gap-2.5">
+          {/* bKash */}
+          <div
+            onClick={() => setMethod('bKash')}
+            className={`bg-[#1C2063] rounded-xl p-2.5 flex flex-col items-center justify-center cursor-pointer transition active:scale-95 relative border-2 ${
+              method === 'bKash' ? 'border-[#FD565C] shadow-[0_0_10px_rgba(253,86,92,0.4)]' : 'border-[#30358B]'
+            }`}
+          >
+            <div className="w-8 h-8 rounded-lg bg-[#E2136E] flex items-center justify-center text-white font-bold text-xs shadow-xs mb-1">
+              ব
+            </div>
+            <span className="text-[11px] font-bold text-white">bKash</span>
+            {method === 'bKash' && (
+              <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#FD565C] text-white flex items-center justify-center text-[8px]">
+                ✓
               </div>
-            </div>
-            <div className="bg-slate-950/10 border border-slate-950/20 px-3 py-1 rounded-full text-right">
-              <span className="text-[10px] font-black uppercase text-white">
-                Withdrawable: ৳{currentBal.toFixed(2)}
-              </span>
-            </div>
-          </div>
-
-          <div className="pt-2 border-t border-slate-950/10 flex justify-between items-center text-[11px] font-medium text-white">
-            <span>Daily Withdrawal Limit</span>
-            <span className="font-mono font-black">৳5,000.00</span>
-          </div>
-        </div>
-
-        {/* Guest Warning */}
-        {(safeUser.username === 'Guest' || safeUser.is_guest) && (
-          <div className="bg-rose-50 border border-rose-200 rounded-2xl p-3 flex items-center justify-between text-rose-800">
-            <div>
-              <span className="font-black block text-xs">লগইন প্রয়োজন</span>
-              <span className="text-[10px]">উইথড্র করতে অনুগ্রহ করে আগে লগইন করুন।</span>
-            </div>
-            <button
-              onClick={onOpenAuth}
-              className="bg-rose-600 text-white font-black px-3 py-1.5 rounded-xl text-[11px] active:scale-95 transition cursor-pointer"
-            >
-              লগইন করুন
-            </button>
-          </div>
-        )}
-
-        {/* Minimum Balance Lock Notice */}
-        {!isBalanceSufficient && (
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 flex items-start space-x-2.5 text-amber-900 shadow-sm">
-            <Lock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-            <div className="flex-1 space-y-1">
-              <span className="font-black text-xs block">উইথড্রয়াল লক রয়েছে (মিনিমাম ব্যালেন্স অপূর্ণ)</span>
-              <p className="text-[11px] leading-relaxed">
-                উইথড্র করার জন্য আপনার ওয়ালেটে সর্বনিম্ন <strong>৳{minWithdrawLimit}</strong> ব্যালেন্স থাকা আবশ্যক। আপনার বর্তমান ব্যালেন্স <strong>৳{currentBal.toFixed(2)}</strong>।
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Wagering / Turnover Progress Banner */}
-        {reqTurnover > 0 && (
-          <div className="bg-[#0f1730] rounded-2xl p-3.5 border border-slate-800 shadow-md space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center space-x-1.5 font-black text-slate-200">
-                <TrendingUp className="w-4 h-4 text-amber-500" />
-                <span>Turnover Progress (টার্নওভার অগ্রগতি)</span>
-              </div>
-              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
-                isTurnoverMet ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800'
-              }`}>
-                {isTurnoverMet ? 'COMPLETED' : `${turnoverProgress}%`}
-              </span>
-            </div>
-            
-            <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-              <div 
-                className="bg-gradient-to-r from-amber-400 to-[#F5BE00] h-full transition-all duration-500 rounded-full"
-                style={{ width: `${turnoverProgress}%` }}
-              />
-            </div>
-
-            <div className="flex justify-between text-[10px] font-mono text-slate-500">
-              <span>Wagered: ৳{compTurnover.toFixed(0)}</span>
-              <span>Target: ৳{reqTurnover.toFixed(0)}</span>
-            </div>
-
-            {!isTurnoverMet && (
-              <p className="text-[10px] text-amber-700 font-medium bg-amber-50 rounded-lg p-2 flex items-center space-x-1.5">
-                <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-amber-600" />
-                <span>উইথড্র করার জন্য আরো ৳{turnoverRemaining.toFixed(2)} টাকার টার্নওভার সম্পন্ন করতে হবে।</span>
-              </p>
             )}
           </div>
-        )}
 
-        {/* Error Message */}
-        {errorMessage && (
-          <div className="bg-rose-50 border border-rose-200 rounded-2xl p-3 text-rose-800 text-xs flex items-start space-x-2">
-            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <span className="font-bold">{errorMessage}</span>
+          {/* Nagad */}
+          <div
+            onClick={() => setMethod('Nagad')}
+            className={`bg-[#1C2063] rounded-xl p-2.5 flex flex-col items-center justify-center cursor-pointer transition active:scale-95 relative border-2 ${
+              method === 'Nagad' ? 'border-[#FD565C] shadow-[0_0_10px_rgba(253,86,92,0.4)]' : 'border-[#30358B]'
+            }`}
+          >
+            <div className="w-8 h-8 rounded-lg bg-[#F7941D] flex items-center justify-center text-white font-bold text-xs shadow-xs mb-1">
+              ন
             </div>
-            <button onClick={() => setErrorMessage('')} className="text-rose-600 font-bold cursor-pointer">✕</button>
+            <span className="text-[11px] font-bold text-white">Nagad</span>
+            {method === 'Nagad' && (
+              <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#FD565C] text-white flex items-center justify-center text-[8px]">
+                ✓
+              </div>
+            )}
           </div>
-        )}
 
-        {/* Success Banner */}
-        {successToast && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 text-emerald-800 text-xs flex items-start space-x-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <span className="font-bold">{successToast}</span>
+          {/* Rocket */}
+          <div
+            onClick={() => setMethod('Rocket')}
+            className={`bg-[#1C2063] rounded-xl p-2.5 flex flex-col items-center justify-center cursor-pointer transition active:scale-95 relative border-2 ${
+              method === 'Rocket' ? 'border-[#FD565C] shadow-[0_0_10px_rgba(253,86,92,0.4)]' : 'border-[#30358B]'
+            }`}
+          >
+            <div className="w-8 h-8 rounded-lg bg-[#8C3494] flex items-center justify-center text-white font-bold text-xs shadow-xs mb-1">
+              র
             </div>
-            <button onClick={() => setSuccessToast('')} className="text-emerald-600 font-bold cursor-pointer">✕</button>
+            <span className="text-[11px] font-bold text-white">Rocket</span>
+            {method === 'Rocket' && (
+              <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#FD565C] text-white flex items-center justify-center text-[8px]">
+                ✓
+              </div>
+            )}
           </div>
-        )}
 
-        {/* 3. Payout Method Selector (bKash, Nagad, Rocket) */}
-        <div className="bg-[#0f1730] rounded-2xl p-3.5 border border-slate-800 shadow-md space-y-2.5">
-          <label className="text-xs font-black text-slate-200 block uppercase tracking-wider">
-            Select Withdrawal Channel
-          </label>
-          <div className="grid grid-cols-3 gap-2.5">
-            
-            {/* bKash */}
-            <button
-              type="button"
-              disabled={!isBkashActive}
-              onClick={() => isBkashActive && setMethod('bKash')}
-              className={`p-2.5 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${
-                !isBkashActive
-                  ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-700 text-slate-400'
-                  : method === 'bKash'
-                  ? 'border-[#E2136E] bg-pink-50/60 shadow-xs'
-                  : 'border-slate-800 bg-[#131b35] hover:bg-[#192446]'
-              }`}
-            >
-              {!isBkashActive && (
-                <span className="absolute -top-1.5 -right-1 bg-rose-500 text-white text-[8px] font-bold px-1 rounded-full">বন্ধ</span>
-              )}
-              <div className="w-9 h-9 rounded-full bg-[#E2136E] text-white flex items-center justify-center font-black text-sm shadow-xs mb-1">
-                ব
+          {/* USDT */}
+          <div
+            onClick={() => setMethod('USDT')}
+            className={`bg-[#1C2063] rounded-xl p-2.5 flex flex-col items-center justify-center cursor-pointer transition active:scale-95 relative border-2 ${
+              method === 'USDT' ? 'border-[#FD565C] shadow-[0_0_10px_rgba(253,86,92,0.4)]' : 'border-[#30358B]'
+            }`}
+          >
+            <div className="w-8 h-8 rounded-lg bg-[#26A17B] flex items-center justify-center text-white font-bold text-xs shadow-xs mb-1">
+              ₮
+            </div>
+            <span className="text-[11px] font-bold text-white">USDT</span>
+            {method === 'USDT' && (
+              <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#FD565C] text-white flex items-center justify-center text-[8px]">
+                ✓
               </div>
-              <span className="text-xs font-black text-white">bKash</span>
-              <span className="text-[9px] text-slate-400 font-bold mt-0.5">{isBkashActive ? '3-5 mins' : 'সাময়িক বন্ধ'}</span>
-            </button>
-
-            {/* Nagad */}
-            <button
-              type="button"
-              disabled={!isNagadActive}
-              onClick={() => isNagadActive && setMethod('Nagad')}
-              className={`p-2.5 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${
-                !isNagadActive
-                  ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-700 text-slate-400'
-                  : method === 'Nagad'
-                  ? 'border-[#F7941D] bg-orange-50/60 shadow-xs'
-                  : 'border-slate-800 bg-[#131b35] hover:bg-[#192446]'
-              }`}
-            >
-              {!isNagadActive && (
-                <span className="absolute -top-1.5 -right-1 bg-rose-500 text-white text-[8px] font-bold px-1 rounded-full">বন্ধ</span>
-              )}
-              <div className="w-9 h-9 rounded-full bg-[#F7941D] text-white flex items-center justify-center font-black text-sm shadow-xs mb-1">
-                ন
-              </div>
-              <span className="text-xs font-black text-white">Nagad</span>
-              <span className="text-[9px] text-slate-400 font-bold mt-0.5">{isNagadActive ? '3-5 mins' : 'সাময়িক বন্ধ'}</span>
-            </button>
-
-            {/* Rocket */}
-            <button
-              type="button"
-              disabled={!isRocketActive}
-              onClick={() => isRocketActive && setMethod('Rocket')}
-              className={`p-2.5 rounded-xl flex flex-col items-center justify-center border-2 transition active:scale-95 cursor-pointer relative ${
-                !isRocketActive
-                  ? 'opacity-40 cursor-not-allowed bg-slate-100 border-slate-700 text-slate-400'
-                  : method === 'Rocket'
-                  ? 'border-[#8C3494] bg-purple-50/60 shadow-xs'
-                  : 'border-slate-800 bg-[#131b35] hover:bg-[#192446]'
-              }`}
-            >
-              {!isRocketActive && (
-                <span className="absolute -top-1.5 -right-1 bg-rose-500 text-white text-[8px] font-bold px-1 rounded-full">বন্ধ</span>
-              )}
-              <div className="w-9 h-9 rounded-full bg-[#8C3494] text-white flex items-center justify-center font-black text-sm shadow-xs mb-1">
-                র
-              </div>
-              <span className="text-xs font-black text-white">Rocket</span>
-              <span className="text-[9px] text-slate-400 font-bold mt-0.5">{isRocketActive ? '3-5 mins' : 'সাময়িক বন্ধ'}</span>
-            </button>
-
+            )}
           </div>
         </div>
 
-        {/* 4. Withdrawal Form */}
-        <form onSubmit={handleSubmit} className="bg-[#0f1730] rounded-2xl p-4 border border-slate-800 shadow-md space-y-3.5">
-          
-          {/* Quick Amounts */}
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <label className="text-xs font-black text-slate-200 block">
-                Withdrawal Amount (৳)
-              </label>
-              <button
-                type="button"
-                onClick={() => setAmount(Math.floor(currentBal).toString())}
-                className="text-[11px] font-bold text-amber-600 hover:text-amber-700"
-              >
-                All (সব টাকা)
-              </button>
-            </div>
+        {/* ----------------------------------------------------------------------- */}
+        {/* 5. Add Beneficiary Account Number Box (Screenshot 4)                    */}
+        {/* ----------------------------------------------------------------------- */}
+        <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2">
+          <label className="text-xs font-bold text-white block">
+            Add a {method} account number
+          </label>
+          <input
+            type="text"
+            value={accountNumber}
+            onChange={(e) => setAccountNumber(e.target.value)}
+            placeholder={`Enter 11-digit ${method} personal mobile number`}
+            className="w-full bg-[#14122E] border border-[#30358B] rounded-xl px-3.5 py-3 text-xs text-white outline-none focus:border-[#629EFF]"
+          />
+          <p className="text-[10px] text-rose-400 font-medium">
+            Need to add beneficiary information to be able to withdraw money
+          </p>
+        </div>
 
-            <div className="grid grid-cols-5 gap-1.5 mb-3">
-              {quickAmounts.map(val => (
-                <button
-                  key={val}
-                  type="button"
-                  onClick={() => setAmount(val.toString())}
-                  className={`py-2 rounded-xl font-mono font-black text-xs transition active:scale-95 cursor-pointer ${
-                    amount === val.toString()
-                      ? 'bg-[#F5BE00] text-slate-950 shadow-xs ring-2 ring-yellow-400'
-                      : 'bg-[#131b35] text-slate-300 hover:bg-[#192446] border border-slate-700'
-                  }`}
-                >
-                  ৳{val}
-                </button>
-              ))}
-            </div>
-
-            {/* Custom Amount Input */}
-            <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 font-black text-sm">
-                ৳
-              </span>
-              <input
-                type="number"
-                min="200"
-                max={currentBal}
-                value={amount}
-                onChange={e => setAmount(e.target.value)}
-                placeholder="Custom Amount (Min ৳200)"
-                className="w-full bg-[#131b35] border border-slate-700 rounded-xl pl-8 pr-3 py-2.5 text-sm font-mono font-black text-white focus:outline-none focus:border-[#F5BE00] focus:ring-1 focus:ring-[#F5BE00]"
-                required
-              />
-            </div>
-          </div>
-
-          {/* Account Number */}
-          <div>
-            <label className="text-xs font-black text-slate-200 block mb-1">
-              {method} Account Number (টাকা পাওয়ার নম্বর)
-            </label>
+        {/* ----------------------------------------------------------------------- */}
+        {/* 6. Please Enter the Amount (Screenshot 4)                               */}
+        {/* ----------------------------------------------------------------------- */}
+        <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-3">
+          <div className="relative flex items-center bg-[#14122E] border border-[#30358B] rounded-xl px-3.5 py-3">
+            <span className="text-sm font-bold text-white mr-2">৳</span>
             <input
-              type="text"
-              value={accountNumber}
-              onChange={e => setAccountNumber(e.target.value)}
-              placeholder="e.g. 01XXXXXXXXX"
-              className="w-full bg-[#131b35] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold text-white focus:outline-none focus:border-[#F5BE00] focus:ring-1 focus:ring-[#F5BE00]"
-              required
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="Please enter the amount"
+              className="flex-1 bg-transparent text-sm font-bold text-white outline-none placeholder-[#7098C5]"
             />
           </div>
 
-          {/* Fee & Receive Breakdown */}
-          <div className="bg-[#131b35] border border-slate-800 rounded-xl p-3 space-y-1 text-slate-400 font-medium">
-            <div className="flex justify-between items-center text-[11px]">
-              <span>Handling Fee:</span>
-              <span className="font-mono font-bold text-slate-200">৳0.00 (0%)</span>
-            </div>
-            <div className="flex justify-between items-center text-xs font-bold pt-1 border-t border-slate-700">
-              <span className="text-white">Actual Received:</span>
-              <span className="font-mono font-black text-emerald-600 text-sm">
-                ৳{netReceive.toFixed(2)}
-              </span>
-            </div>
+          <div className="flex items-center justify-between text-xs pt-1">
+            <span className="text-[#7098C5]">
+              Withdrawable balance: <b className="text-white">৳{currentBal.toFixed(2)}</b>
+            </span>
+            <button
+              onClick={() => setAmount(String(Math.floor(currentBal)))}
+              className="text-[#629EFF] font-bold text-xs hover:underline cursor-pointer"
+            >
+              All
+            </button>
           </div>
 
-          {/* Submit Button */}
+          <div className="flex items-center justify-between text-xs text-[#7098C5] border-t border-[#30358B]/50 pt-2">
+            <span>Withdrawal amount received</span>
+            <span className="text-white font-bold text-sm">৳{netReceive.toFixed(2)}</span>
+          </div>
+
+          {/* Feedback */}
+          {toastMsg.text && (
+            <div className={`p-2.5 rounded-lg text-xs font-semibold ${toastMsg.type === 'success' ? 'bg-emerald-950/80 text-emerald-300' : 'bg-rose-950/80 text-rose-300'}`}>
+              {toastMsg.text}
+            </div>
+          )}
+
+          {/* Big Withdraw Button */}
           <button
-            type="submit"
-            disabled={isSubmitting || safeUser.username === 'Guest' || !isBalanceSufficient || !isTurnoverMet || numAmount > currentBal || numAmount < minWithdrawLimit}
-            className="w-full bg-gradient-to-r from-amber-400 via-[#F5BE00] to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-slate-950 font-black py-3 rounded-full text-xs uppercase tracking-wider shadow-md active:scale-98 transition cursor-pointer disabled:opacity-50"
+            onClick={handleSubmitWithdrawal}
+            disabled={isSubmitting || currentBal < 200}
+            className="w-full py-3.5 rounded-full font-bold text-xs text-white shadow-xl active:scale-98 transition cursor-pointer disabled:opacity-40"
+            style={{
+              background: 'linear-gradient(90deg, #E92A23 0%, #1374EC 100%)'
+            }}
           >
-            {isSubmitting ? 'প্রসেসিং হচ্ছে...' : !isBalanceSufficient ? `সর্বনিম্ন ব্যালেন্স ৳${minWithdrawLimit} প্রয়োজন` : !isTurnoverMet ? `টার্নওভার অসম্পূর্ণ (আরও ৳${turnoverRemaining.toFixed(0)})` : `উইথড্র রিকোয়েস্ট পাঠান ৳${numAmount || 0}`}
+            {isSubmitting ? 'Processing...' : 'Withdraw'}
           </button>
-        </form>
+        </div>
 
-        {/* 5. Withdrawal Rules Card */}
-        <div className="bg-[#0f1730] rounded-2xl p-4 border border-slate-800 shadow-md space-y-2 text-slate-400">
-          <div className="flex items-center space-x-1.5 text-white font-black text-xs">
-            <ShieldCheck className="w-4 h-4 text-amber-500" />
-            <span>উইথড্র নির্দেশনা ও নিয়মাবলী</span>
+        {/* ----------------------------------------------------------------------- */}
+        {/* 7. Withdrawal Rules Box (Screenshot 4 - Exact 6 Bullets)                */}
+        {/* ----------------------------------------------------------------------- */}
+        <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2.5 text-[11px] text-[#7098C5] leading-relaxed">
+          <p>• Need to bet <b className="text-rose-400">৳{turnoverRemaining.toFixed(2)}</b> to be able to withdraw</p>
+          <p>• Withdraw time <b className="text-white">00:00-23:59</b> (24/7)</p>
+          <p>• Today Remaining Withdrawal Times <b className="text-rose-400">3</b></p>
+          <p>• Withdrawal amount range <b className="text-rose-400">৳200.00-৳50,000.00</b></p>
+          <p>• Please check your registered bank information again before making a withdrawal. If your registered bank information is incorrect, our company will not be responsible for any losses you may incur.</p>
+          <p>• If your registered bank information is incorrect, please contact customer service.</p>
+        </div>
+
+        {/* ----------------------------------------------------------------------- */}
+        {/* 8. Withdrawal History Section (Screenshot 4)                            */}
+        {/* ----------------------------------------------------------------------- */}
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center space-x-1.5 text-xs text-white font-bold">
+            <span className="text-[#629EFF]">◆</span>
+            <span>Withdrawal history</span>
           </div>
-          <ul className="text-[10px] space-y-1 text-slate-500 list-disc list-inside leading-relaxed">
-            <li>সর্বনিম্ন উইথড্র পরিমাণ ৳২০০ টাকা।</li>
-            <li>দৈনিক সর্বোচ্চ উইথড্র লিমিট ৫,০০০ টাকা।</li>
-            <li>সাধারণত ৩ থেকে ৫ মিনিটের মধ্যে টাকা বিকাশ বা নগদে চলে যাবে।</li>
-            <li>কোনো সমস্যা হলে টেলিগ্রাম সাপোর্টে যোগাযোগ করুন: <strong>@ROYALCLUB_Support</strong></li>
-          </ul>
+
+          {withdrawTransactions.length === 0 ? (
+            <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-8 text-center space-y-3">
+              <div className="w-16 h-16 mx-auto opacity-40 flex items-center justify-center">
+                <svg className="w-12 h-12 text-[#7098C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <p className="text-xs text-[#7098C5]">No data</p>
+              <button 
+                onClick={() => setViewHistory(true)}
+                className="px-6 py-2 rounded-full border border-[#30358B] text-xs text-[#7098C5] hover:text-white transition"
+              >
+                All history
+              </button>
+            </div>
+          ) : (
+            withdrawTransactions.slice(0, 5).map((w, idx) => (
+              <div key={idx} className="bg-[#1C2063] border border-[#30358B] rounded-xl p-3.5 space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold text-[10px]">
+                    Withdrawal
+                  </span>
+                  <span className={`font-bold text-[11px] ${w.status === 'approved' ? 'text-emerald-400' : w.status === 'rejected' ? 'text-rose-400' : 'text-amber-400'}`}>
+                    {w.status ? w.status.toUpperCase() : 'PENDING'}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-[#7098C5]">
+                  <span>Amount</span>
+                  <span className="text-white font-bold">৳{Number(w.amount).toFixed(2)}</span>
+                </div>
+
+                <div className="flex items-center justify-between text-[#7098C5]">
+                  <span>Method</span>
+                  <span className="text-white">{w.method || method} ({w.account_number || w.accountNumber})</span>
+                </div>
+
+                <div className="flex items-center justify-between text-[#7098C5]">
+                  <span>Time</span>
+                  <span className="text-white font-mono text-[10.5px]">
+                    {w.created_at ? new Date(w.created_at).toLocaleString() : 'Recent'}
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
         </div>
 
       </div>
-
-      {/* Withdrawal History Records Modal */}
-      {showHistory && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-800 relative">
-            <div className="flex justify-between items-center pb-3 border-b border-slate-800">
-              <h3 className="font-black text-white text-sm">
-                Withdrawal Records
-              </h3>
-              <button 
-                onClick={() => setShowHistory(false)}
-                className="w-7 h-7 rounded-full bg-slate-100 text-slate-400 hover:text-white flex items-center justify-center font-bold text-xs"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="py-3 max-h-72 overflow-y-auto space-y-2 no-scrollbar">
-              {withdrawList && withdrawList.length > 0 ? (
-                withdrawList.map((item, idx) => (
-                  <div key={idx} className="bg-[#131b35] p-2.5 rounded-xl border border-slate-800 flex items-center justify-between text-left">
-                    <div>
-                      <span className="font-black text-slate-200 text-xs">{item.method} Payout</span>
-                      <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
-                        A/C: {item.account_number || item.accountNo || '***'}
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-xs font-black font-mono text-red-500 block">
-                        -৳{Number(item.amount || 0).toFixed(2)}
-                      </span>
-                      <span className={`text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase ${
-                        item.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                      }`}>
-                        {item.status}
-                      </span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="py-8 text-center text-slate-400 text-xs">কোনো উইথড্র রেকর্ড নেই</div>
-              )}
-            </div>
-
-            <button
-              onClick={() => setShowHistory(false)}
-              className="w-full bg-[#F5BE00] hover:bg-yellow-500 text-slate-950 font-black py-2.5 rounded-xl text-xs transition"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }
-

@@ -337,15 +337,15 @@ export default function AccountPage({
                 <KhelvIcon name="wallets" className="w-9 h-9" />
               </div>
               <span className="text-[11px] text-[#D4E8FF] font-medium group-hover:text-white transition">
-                ARWallet
+                {lang === 'bn' ? 'ওয়ালেট' : 'ARWallet'}
               </span>
             </div>
 
-            {/* Deposit */}
+            {/* Deposit (Navigates directly to Deposit Page Screenshot 3) */}
             <div 
               onClick={() => {
-                // Open Extra First Deposit Bonus modal or direct deposit
-                setActiveModal('firstDeposit');
+                if (onOpenDeposit) onOpenDeposit();
+                else setActiveModal('firstDeposit');
               }}
               className="flex flex-col items-center justify-center cursor-pointer group active:scale-95 transition"
             >
@@ -353,11 +353,11 @@ export default function AccountPage({
                 <KhelvIcon name="rechargeIcon" className="w-9 h-9" />
               </div>
               <span className="text-[11px] text-[#D4E8FF] font-medium group-hover:text-white transition">
-                Deposit
+                {lang === 'bn' ? 'ডিপোজিট' : 'Deposit'}
               </span>
             </div>
 
-            {/* Withdraw */}
+            {/* Withdraw (Navigates directly to Withdraw Page Screenshot 4) */}
             <div 
               onClick={() => {
                 if (onOpenWithdraw) onOpenWithdraw();
@@ -369,11 +369,11 @@ export default function AccountPage({
                 <KhelvIcon name="widthdrawBlue" className="w-9 h-9" />
               </div>
               <span className="text-[11px] text-[#D4E8FF] font-medium group-hover:text-white transition">
-                Withdraw
+                {lang === 'bn' ? 'উইথড্র' : 'Withdraw'}
               </span>
             </div>
 
-            {/* VIP */}
+            {/* VIP (Opens Official VIP Screen Screenshot 5) */}
             <div 
               onClick={() => setActiveModal('vip')}
               className="flex flex-col items-center justify-center cursor-pointer group active:scale-95 transition"
@@ -401,8 +401,8 @@ export default function AccountPage({
               <KhelvIcon name="betHistory" className="w-9 h-9" />
             </div>
             <div className="min-w-0 text-left">
-              <h4 className="text-xs font-bold text-white leading-tight">Game History</h4>
-              <p className="text-[10px] text-[#7098C5] leading-tight mt-0.5 truncate">My game history</p>
+              <h4 className="text-xs font-bold text-white leading-tight">{lang === 'bn' ? 'গেম হিস্ট্রি' : 'Game History'}</h4>
+              <p className="text-[10px] text-[#7098C5] leading-tight mt-0.5 truncate">{lang === 'bn' ? 'আমার গেম রেকর্ড' : 'My game history'}</p>
             </div>
           </div>
 
@@ -415,36 +415,42 @@ export default function AccountPage({
               <KhelvIcon name="tradeHistory" className="w-9 h-9" />
             </div>
             <div className="min-w-0 text-left">
-              <h4 className="text-xs font-bold text-white leading-tight">Transaction</h4>
-              <p className="text-[10px] text-[#7098C5] leading-tight mt-0.5 truncate">My transaction history</p>
+              <h4 className="text-xs font-bold text-white leading-tight">{lang === 'bn' ? 'ট্রানজেকশন' : 'Transaction'}</h4>
+              <p className="text-[10px] text-[#7098C5] leading-tight mt-0.5 truncate">{lang === 'bn' ? 'লেনদেন হিস্ট্রি' : 'My transaction history'}</p>
             </div>
           </div>
 
-          {/* 3. Deposit History */}
+          {/* 3. Deposit History / Open Deposit */}
           <div 
-            onClick={() => setActiveModal('depositRecords')}
+            onClick={() => {
+              if (onOpenDeposit) onOpenDeposit();
+              else setActiveModal('transaction');
+            }}
             className="bg-[#1C2063] border border-[#30358B] rounded-xl p-3 flex items-center space-x-3 cursor-pointer hover:border-[#629EFF]/60 active:scale-98 transition shadow-sm"
           >
             <div className="w-10 h-10 shrink-0 flex items-center justify-center">
               <KhelvIcon name="rechargeHistory" className="w-9 h-9" />
             </div>
             <div className="min-w-0 text-left">
-              <h4 className="text-xs font-bold text-white leading-tight">Deposit</h4>
-              <p className="text-[10px] text-[#7098C5] leading-tight mt-0.5 truncate">My deposit history</p>
+              <h4 className="text-xs font-bold text-white leading-tight">{lang === 'bn' ? 'ডিপোজিট' : 'Deposit'}</h4>
+              <p className="text-[10px] text-[#7098C5] leading-tight mt-0.5 truncate">{lang === 'bn' ? 'ডিপোজিট করুন' : 'My deposit history'}</p>
             </div>
           </div>
 
-          {/* 4. Withdraw History */}
+          {/* 4. Withdraw History / Open Withdraw */}
           <div 
-            onClick={() => setActiveModal('withdrawRecords')}
+            onClick={() => {
+              if (onOpenWithdraw) onOpenWithdraw();
+              else setActiveModal('transaction');
+            }}
             className="bg-[#1C2063] border border-[#30358B] rounded-xl p-3 flex items-center space-x-3 cursor-pointer hover:border-[#629EFF]/60 active:scale-98 transition shadow-sm"
           >
             <div className="w-10 h-10 shrink-0 flex items-center justify-center">
               <KhelvIcon name="myWithdrawHistory" className="w-9 h-9" />
             </div>
             <div className="min-w-0 text-left">
-              <h4 className="text-xs font-bold text-white leading-tight">Withdraw</h4>
-              <p className="text-[10px] text-[#7098C5] leading-tight mt-0.5 truncate">My withdraw history</p>
+              <h4 className="text-xs font-bold text-white leading-tight">{lang === 'bn' ? 'উইথড্র' : 'Withdraw'}</h4>
+              <p className="text-[10px] text-[#7098C5] leading-tight mt-0.5 truncate">{lang === 'bn' ? 'উইথড্র করুন' : 'My withdraw history'}</p>
             </div>
           </div>
         </div>
@@ -1388,6 +1394,61 @@ export default function AccountPage({
                 <p>3. <b className="text-white">Withdraw</b>: Cash out anytime 24/7 directly to your personal mobile banking wallet.</p>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------------------- */}
+      {/* MODAL 13: NOTIFICATIONS & ANNOUNCEMENTS                                   */}
+      {/* ------------------------------------------------------------------------- */}
+      {activeModal === 'notifications' && (
+        <div className="fixed inset-0 z-50 bg-[#14122E] flex flex-col overflow-y-auto">
+          <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
+            <button 
+              onClick={() => setActiveModal(null)}
+              className="p-1 -ml-1 text-white hover:text-amber-400 active:scale-95 transition cursor-pointer"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <h2 className="flex-1 text-center font-bold text-sm text-white pr-4">
+              Notifications & Announcements
+            </h2>
+          </div>
+
+          <div className="p-4 space-y-3 text-xs flex-1">
+            <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-white text-xs">🎉 ৳100 Welcome Bonus Credited</span>
+                <span className="text-[10px] text-[#7098C5]">Today</span>
+              </div>
+              <p className="text-[11px] text-[#D4E8FF] leading-relaxed">
+                Welcome to Royal Club BD! Your automated welcome bonus has been activated. Enjoy WinGo, Aviator, and slots!
+              </p>
+            </div>
+
+            <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-white text-xs">⚡ Fast bKash & Nagad Settlement</span>
+                <span className="text-[10px] text-[#7098C5]">System</span>
+              </div>
+              <p className="text-[11px] text-[#D4E8FF] leading-relaxed">
+                Instant deposit and withdrawal gateways are 100% active 24/7 with zero fees.
+              </p>
+            </div>
+
+            {(notifications || []).map((n, idx) => (
+              <div key={idx} className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-white text-xs">{n.title || 'Notice'}</span>
+                  <span className="text-[10px] text-[#7098C5]">{n.time || 'Recent'}</span>
+                </div>
+                <p className="text-[11px] text-[#D4E8FF] leading-relaxed">
+                  {n.message || n.content}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       )}

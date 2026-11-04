@@ -1,156 +1,230 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
-import { Crown, X } from 'lucide-react';
-
-const VIP_LEVELS = [
-  { level: 1, reqExp: 0, bonus: 50, rebate: '0.2%' },
-  { level: 2, reqExp: 1000, bonus: 150, rebate: '0.3%' },
-  { level: 3, reqExp: 5000, bonus: 350, rebate: '0.4%' },
-  { level: 4, reqExp: 15000, bonus: 800, rebate: '0.5%' },
-  { level: 5, reqExp: 50000, bonus: 2000, rebate: '0.7%' },
-  { level: 6, reqExp: 150000, bonus: 5000, rebate: '0.9%' },
-  { level: 7, reqExp: 500000, bonus: 15000, rebate: '1.2%' },
-  { level: 8, reqExp: 1500000, bonus: 40000, rebate: '1.5%' },
-  { level: 9, reqExp: 5000000, bonus: 100000, rebate: '2.0%' },
-  { level: 10, reqExp: 10000000, bonus: 250000, rebate: '2.5%' },
-];
+import { useLanguage } from '../context/LanguageContext';
+import { KhelvIcon } from './common/KhelvIcon';
 
 export default function VipModal({ isOpen, onClose }) {
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
-
   if (!isOpen) return null;
 
   const { user } = useGame();
-  const currentExp = Math.floor(user?.total_wagered || 500);
-  const currentLevel = VIP_LEVELS.reduce((acc, lvl) => (currentExp >= lvl.reqExp ? lvl.level : acc), 1);
-  const nextLvl = VIP_LEVELS.find(l => l.level === currentLevel + 1) || VIP_LEVELS[VIP_LEVELS.length - 1];
-  const progressPercent = Math.min(100, Math.floor((currentExp / nextLvl.reqExp) * 100));
+  const { lang, t } = useLanguage();
+  const [activeTab, setActiveTab] = useState('history'); // 'history' | 'rules'
+
+  const safeUser = user || {
+    username: 'MemberNNGXAGEH',
+    vip_level: 0,
+    total_wagered: 0
+  };
+
+  const currentExp = Math.floor(safeUser.total_wagered || 0);
+  const requiredExp = 4000;
+  const progressPercent = Math.min(100, Math.floor((currentExp / requiredExp) * 100));
 
   return (
-    <div 
-      className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 select-none"
-      onClick={onClose}
-    >
-      <div 
-        className="bg-gradient-to-b from-[#1c1917] via-[#0c0a09] to-[#0c0a09] border border-amber-500/50 w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-150"
-        onClick={e => e.stopPropagation()}
-      >
-        
-        {/* Header */}
-        <div className="bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700 p-4 text-slate-950 flex justify-between items-start relative overflow-hidden shrink-0">
-          <div className="relative z-10">
-            <span className="text-[10px] font-black uppercase tracking-widest bg-black/20 px-2 py-0.5 rounded-full inline-block">
-              ROYAL VIP PRIVILEGE
-            </span>
-            <div className="flex items-center space-x-2 mt-1">
-              <Crown className="w-7 h-7 text-yellow-200 fill-yellow-200" />
-              <h2 className="text-xl font-black font-mono">VIP LEVEL {currentLevel}</h2>
-            </div>
-            <p className="text-[11px] font-semibold mt-0.5 opacity-90">
-              EXP: {currentExp} / {nextLvl.reqExp} (লেভেল আপ করতে বাজি ধরুন)
-            </p>
-          </div>
+    <div className="fixed inset-0 z-50 bg-[#14122E] flex flex-col overflow-y-auto select-none font-sans pb-16">
+      {/* ------------------------------------------------------------------------- */}
+      {/* 1. Header: < VIP                                                          */}
+      {/* ------------------------------------------------------------------------- */}
+      <div className="sticky top-0 z-30 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center justify-between shadow-md">
+        <button 
+          onClick={onClose}
+          className="p-1 -ml-1 text-white hover:text-amber-400 active:scale-95 transition cursor-pointer flex items-center space-x-1"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
 
-          <button 
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onClose();
-            }} 
-            className="w-9 h-9 rounded-full bg-black/30 hover:bg-black/50 text-white flex items-center justify-center relative z-10 transition active:scale-90 cursor-pointer"
-            aria-label="Close VIP Modal"
-          >
-            <X className="w-5 h-5 stroke-[2.5]" />
-          </button>
+        <h2 className="font-bold text-sm text-white pr-4">
+          VIP
+        </h2>
 
-          {/* Progress Bar */}
-          <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/40">
-            <div 
-              className="h-full bg-emerald-400 transition-all duration-500" 
-              style={{ width: `${progressPercent}%` }} 
+        <div className="w-5" />
+      </div>
+
+      <div className="p-4 space-y-4">
+        {/* ----------------------------------------------------------------------- */}
+        {/* 2. Top Profile Snippet                                                  */}
+        {/* ----------------------------------------------------------------------- */}
+        <div 
+          className="w-full rounded-2xl p-4 text-white shadow-xl relative overflow-hidden flex items-center space-x-3"
+          style={{
+            background: 'linear-gradient(90deg, #E92A23 0%, #1374EC 100%)'
+          }}
+        >
+          <div className="w-12 h-12 rounded-full border-2 border-white/80 overflow-hidden shrink-0 bg-[#1C2063]">
+            <img 
+              src={safeUser.avatar || '/assets/official_khelv/1-Cz2mt-nl.png'} 
+              alt="Avatar" 
+              className="w-full h-full object-cover" 
             />
           </div>
+          <div>
+            <h3 className="font-bold text-sm text-white uppercase tracking-wide">
+              {safeUser.username || 'MemberNNGXAGEH'}
+            </h3>
+            <span className="text-[10.5px] text-[#D4E8FF] block mt-0.5 font-medium">
+              VIP Level {safeUser.vip_level ?? 0}
+            </span>
+          </div>
         </div>
 
-        {/* Benefits Ribbon */}
-        <div className="p-3.5 overflow-y-auto space-y-2.5">
-          <div className="grid grid-cols-3 gap-1.5 text-center">
-            <div className="bg-white/5 border border-amber-500/20 rounded-2xl p-2">
-              <span className="text-[9px] text-amber-400 font-bold block">লেভেল আপ বোনাস</span>
-              <span className="text-xs font-black text-white font-mono mt-0.5 block">
-                ৳{VIP_LEVELS[currentLevel - 1].bonus}
+        {/* ----------------------------------------------------------------------- */}
+        {/* 3. 2 Stats Boxes (My experience & Payout time - Screenshot 5)            */}
+        {/* ----------------------------------------------------------------------- */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-[#1C2063] border border-[#30358B] rounded-xl p-3.5 text-center space-y-0.5 shadow-sm">
+            <h4 className="text-base font-bold text-white font-mono">{currentExp} EXP</h4>
+            <span className="text-[10.5px] text-[#7098C5]">My experience</span>
+          </div>
+          <div className="bg-[#1C2063] border border-[#30358B] rounded-xl p-3.5 text-center space-y-0.5 shadow-sm">
+            <h4 className="text-base font-bold text-white font-mono">27 Days</h4>
+            <span className="text-[10.5px] text-[#7098C5]">Payout time</span>
+          </div>
+        </div>
+
+        {/* ----------------------------------------------------------------------- */}
+        {/* 4. Settlement Notice Banner (Screenshot 5)                              */}
+        {/* ----------------------------------------------------------------------- */}
+        <div className="bg-[#1C2063] border border-[#30358B] rounded-xl p-3 text-center text-[10.5px] text-[#7098C5] shadow-xs">
+          VIP level rewards are settled at 2:00 am on the 1st of every month
+        </div>
+
+        {/* ----------------------------------------------------------------------- */}
+        {/* 5. Shiny VIP1 Card (Screenshot 5)                                       */}
+        {/* ----------------------------------------------------------------------- */}
+        <div className="bg-gradient-to-tr from-slate-400 via-slate-200 to-slate-400 rounded-2xl p-4 text-slate-900 shadow-xl relative overflow-hidden space-y-3">
+          {/* Top Row: VIP1 badge + Not open yet */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-1.5 font-black text-lg font-mono">
+              <span>VIP1</span>
+              <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-black/20 text-white text-[9.5px] font-sans font-medium">
+                🔒 Not open yet
               </span>
             </div>
-            <div className="bg-white/5 border border-amber-500/20 rounded-2xl p-2">
-              <span className="text-[9px] text-amber-400 font-bold block">দৈনিক রিবেট</span>
-              <span className="text-xs font-black text-emerald-400 font-mono mt-0.5 block">
-                {VIP_LEVELS[currentLevel - 1].rebate}
-              </span>
-            </div>
-            <div className="bg-white/5 border border-amber-500/20 rounded-2xl p-2">
-              <span className="text-[9px] text-amber-400 font-bold block">উইথড্র স্পিড</span>
-              <span className="text-xs font-black text-yellow-300 font-mono mt-0.5 block">
-                ইন্সট্যান্ট
-              </span>
+            {/* Emblem icon */}
+            <div className="w-12 h-12 rounded-full border-2 border-slate-600/30 flex items-center justify-center font-black text-slate-700 text-xl shadow-inner">
+              ★
             </div>
           </div>
 
-          <h3 className="text-[11px] font-black text-slate-300 uppercase tracking-wider pt-1">
-            সকল ভিআইপি টিয়ার (VIP TIERS 1-10)
-          </h3>
+          <p className="text-xs font-semibold text-slate-800">
+            Upgrading VIP1 requires 4000EXP
+          </p>
 
-          <div className="space-y-1.5">
-            {VIP_LEVELS.map(lvl => (
+          <div className="inline-block bg-black/20 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
+            Bet ৳1=1EXP
+          </div>
+
+          {/* Progress Bar */}
+          <div className="space-y-1">
+            <div className="w-full h-2 rounded-full bg-slate-300 overflow-hidden shadow-inner">
               <div 
-                key={lvl.level}
-                className={`p-2.5 rounded-2xl border flex justify-between items-center transition ${
-                  currentLevel >= lvl.level 
-                    ? 'bg-amber-950/30 border-amber-500/60 text-white' 
-                    : 'bg-white/5 border-white/10 text-slate-400'
-                }`}
-              >
-                <div className="flex items-center space-x-2.5">
-                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black font-mono text-xs ${
-                    currentLevel >= lvl.level 
-                      ? 'bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 shadow-md' 
-                      : 'bg-white/10 text-slate-400'
-                  }`}>
-                    V{lvl.level}
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-xs">VIP {lvl.level}</h4>
-                    <span className="text-[9px] text-slate-400">বাজির টার্গেট: ৳{lvl.reqExp.toLocaleString()}</span>
-                  </div>
-                </div>
-
-                <div className="text-right">
-                  <span className="font-mono font-bold text-yellow-400 text-xs block">+৳{lvl.bonus}</span>
-                  <span className="text-[9px] text-emerald-400">{lvl.rebate} Rebate</span>
-                </div>
-              </div>
-            ))}
+                className="h-full bg-blue-600 transition-all duration-300"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+            <div className="flex items-center justify-between text-[10px] text-slate-700 font-medium">
+              <span>{currentExp}/4000</span>
+              <span>4000 EXP can be leveled up</span>
+            </div>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="p-3 bg-black/40 border-t border-white/5 shrink-0">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onClose();
-            }}
-            className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black py-2.5 rounded-xl transition shadow-lg text-xs tracking-wider uppercase active:scale-95 cursor-pointer"
-          >
-            বন্ধ করুন
-          </button>
+        {/* ----------------------------------------------------------------------- */}
+        {/* 6. VIP1 Benefits Level (Screenshot 5)                                   */}
+        {/* ----------------------------------------------------------------------- */}
+        <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-3.5 shadow-md">
+          <div className="flex items-center space-x-2 text-white font-bold text-xs">
+            <span className="text-[#629EFF]">💎</span>
+            <span>VIP1 Benefits level</span>
+          </div>
+
+          {/* Row 1: Level up rewards */}
+          <div className="flex items-center justify-between border-t border-[#30358B]/50 pt-3 text-xs">
+            <div className="space-y-0.5">
+              <h4 className="font-bold text-white">Level up rewards</h4>
+              <p className="text-[10px] text-[#7098C5]">Each account can only receive 1 time</p>
+            </div>
+            <div className="flex items-center space-x-1.5">
+              <div className="px-2 py-0.5 rounded bg-[#FFC107]/20 border border-[#FFC107]/40 text-[#FFC107] text-xs font-bold font-mono">
+                ৳60
+              </div>
+              <div className="px-2 py-0.5 rounded bg-[#629EFF]/20 border border-[#629EFF]/40 text-[#629EFF] text-xs font-bold font-mono">
+                0
+              </div>
+            </div>
+          </div>
+
+          {/* Row 2: Monthly reward */}
+          <div className="flex items-center justify-between border-t border-[#30358B]/50 pt-3 text-xs">
+            <div className="space-y-0.5">
+              <h4 className="font-bold text-white">Monthly reward</h4>
+              <p className="text-[10px] text-[#7098C5]">Each account can only receive 1 time per month</p>
+            </div>
+            <div className="flex items-center space-x-1.5">
+              <div className="px-2 py-0.5 rounded bg-[#FFC107]/20 border border-[#FFC107]/40 text-[#FFC107] text-xs font-bold font-mono">
+                ৳3
+              </div>
+              <div className="px-2 py-0.5 rounded bg-[#629EFF]/20 border border-[#629EFF]/40 text-[#629EFF] text-xs font-bold font-mono">
+                0
+              </div>
+            </div>
+          </div>
+
+          {/* Row 3: Rebate rate */}
+          <div className="flex items-center justify-between border-t border-[#30358B]/50 pt-3 text-xs">
+            <div className="space-y-0.5">
+              <h4 className="font-bold text-white">Rebate rate</h4>
+              <p className="text-[10px] text-[#7098C5]">Increase income of rebate</p>
+            </div>
+            <div className="px-2 py-0.5 rounded bg-[#629EFF]/20 border border-[#629EFF]/40 text-[#629EFF] text-xs font-bold font-mono">
+              0.1%
+            </div>
+          </div>
+        </div>
+
+        {/* ----------------------------------------------------------------------- */}
+        {/* 7. Tabs: History | Rules (Screenshot 5)                                 */}
+        {/* ----------------------------------------------------------------------- */}
+        <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl overflow-hidden shadow-md">
+          <div className="flex border-b border-[#30358B]">
+            <button
+              onClick={() => setActiveTab('history')}
+              className={`flex-1 py-3 text-xs font-bold transition ${
+                activeTab === 'history' ? 'text-[#629EFF] border-b-2 border-[#629EFF]' : 'text-[#7098C5]'
+              }`}
+            >
+              History
+            </button>
+            <button
+              onClick={() => setActiveTab('rules')}
+              className={`flex-1 py-3 text-xs font-bold transition ${
+                activeTab === 'rules' ? 'text-[#629EFF] border-b-2 border-[#629EFF]' : 'text-[#7098C5]'
+              }`}
+            >
+              Rules
+            </button>
+          </div>
+
+          <div className="p-8 text-center space-y-3">
+            <div className="w-16 h-16 mx-auto opacity-40 flex items-center justify-center">
+              <svg className="w-12 h-12 text-[#7098C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <p className="text-xs text-[#7098C5]">No data</p>
+
+            <button
+              onClick={onClose}
+              className="w-full py-3 rounded-full font-bold text-xs text-white shadow-md active:scale-95 transition cursor-pointer"
+              style={{
+                background: 'linear-gradient(90deg, #E92A23 0%, #1374EC 100%)'
+              }}
+            >
+              View All
+            </button>
+          </div>
         </div>
 
       </div>

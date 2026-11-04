@@ -411,7 +411,7 @@ function AppContent() {
 
           {activeTab === 'deposit' && (
             <DepositPage 
-              onBack={() => setActiveTab('home')}
+              onBack={() => handleSelectTab('account')}
               onOpenAuth={() => {
                 setAuthTab('login');
                 setIsAuthOpen(true);
@@ -421,7 +421,7 @@ function AppContent() {
 
           {activeTab === 'withdraw' && (
             <WithdrawPage 
-              onBack={() => setActiveTab('home')}
+              onBack={() => handleSelectTab('account')}
               onOpenAuth={() => {
                 setAuthTab('login');
                 setIsAuthOpen(true);
