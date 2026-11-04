@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import { useLanguage } from '../context/LanguageContext';
 import { KhelvIcon } from '../components/common/KhelvIcon';
@@ -44,6 +44,7 @@ export default function AccountPage({
     refreshSupabaseData,
     notifications,
     markNotificationRead,
+    markAllNotificationsRead,
     deleteNotification,
     supportTickets,
     createSupportTicket,
@@ -57,6 +58,13 @@ export default function AccountPage({
   // Active sub-views & modals
   const [activeModal, setActiveModal] = useState(null); 
   // 'avatar', 'settings', 'transaction', 'gameHistory', 'depositBonus', 'firstDeposit', 'depositRecords', 'withdrawRecords', 'notifications', 'gifts', 'feedback', 'guide', 'about', 'logoutConfirm', 'changePassword', 'safe', 'coupons', 'gameStats', 'selfService'
+
+  // Auto-mark notifications read when viewing notifications modal (clears unread badge)
+  useEffect(() => {
+    if (activeModal === 'notifications' && typeof markAllNotificationsRead === 'function') {
+      markAllNotificationsRead();
+    }
+  }, [activeModal]);
 
   const [copied, setCopied] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -541,7 +549,12 @@ export default function AccountPage({
         <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl divide-y divide-[#30358B]/50 overflow-hidden shadow-sm">
           {/* Notification */}
           <div 
-            onClick={() => setActiveModal('notifications')}
+            onClick={() => {
+              setActiveModal('notifications');
+              if (typeof markAllNotificationsRead === 'function') {
+                markAllNotificationsRead();
+              }
+            }}
             className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-white/[0.02] active:bg-white/[0.04] transition"
           >
             <div className="flex items-center space-x-3.5">
@@ -2152,7 +2165,7 @@ export default function AccountPage({
       {activeModal === 'notifications' && (
         <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
           <div className="w-full max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
-            <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center shadow-md">
+            <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center justify-between shadow-md">
               <button 
                 onClick={() => setActiveModal(null)}
                 className="p-1 -ml-1 text-white hover:text-amber-400 active:scale-95 transition cursor-pointer"
@@ -2161,9 +2174,19 @@ export default function AccountPage({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <h2 className="flex-1 text-center font-bold text-sm text-white pr-4">
+              <h2 className="font-bold text-sm text-white">
                 Notification
               </h2>
+              <button
+                onClick={() => {
+                  if (typeof markAllNotificationsRead === 'function') {
+                    markAllNotificationsRead();
+                  }
+                }}
+                className="text-[11px] font-semibold text-[#629EFF] hover:underline cursor-pointer"
+              >
+                Mark all read
+              </button>
             </div>
 
             {/* 2 Tabs: Notification / Information (photo_13) */}

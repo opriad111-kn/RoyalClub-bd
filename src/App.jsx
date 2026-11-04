@@ -52,6 +52,7 @@ import AuthModal from './components/AuthModal';
 import FairnessModal from './components/FairnessModal';
 import PartnerRewardsModal from './components/PartnerRewardsModal';
 import UsdtBonusModal from './components/UsdtBonusModal';
+import GuestRewardModal from './components/GuestRewardModal';
 import SplashScreen from './components/SplashScreen';
 import { KhelvSvgSprite } from './components/common/KhelvIcon';
 
@@ -103,6 +104,7 @@ function AppContent() {
   const [isFairnessOpen, setIsFairnessOpen] = useState(false);
   const [isPartnerRewardOpen, setIsPartnerRewardOpen] = useState(false);
   const [isUsdtBonusOpen, setIsUsdtBonusOpen] = useState(false);
+  const [isGuestRewardOpen, setIsGuestRewardOpen] = useState(false);
   const [showSplash, setShowSplash] = useState(() => {
     if (typeof window !== 'undefined') {
       return !sessionStorage.getItem('royalclub_splash_visited');
@@ -110,6 +112,19 @@ function AppContent() {
     return true;
   });
   const [toast, setToast] = useState({ show: false, message: '' });
+
+  // Auto-show Guest Event Rewards popup for unauthenticated visitors (photo_5)
+  useEffect(() => {
+    if (!user || user.username === 'Guest' || user.is_guest) {
+      const dismissed = sessionStorage.getItem('royalclub_guest_reward_dismissed');
+      if (!dismissed) {
+        const timer = setTimeout(() => {
+          setIsGuestRewardOpen(true);
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [user]);
 
   // Intercept all native alerts to guarantee smooth in-app toasts (Zero browser alerts)
   useEffect(() => {
@@ -260,8 +275,7 @@ function AppContent() {
 
   function handleOpenGame(gameId) {
     if (user?.username === 'Guest' || user?.is_guest) {
-      setAuthTab('login');
-      setIsAuthOpen(true);
+      setIsGuestRewardOpen(true);
       return;
     }
     setActiveGame(gameId);
@@ -557,6 +571,19 @@ function AppContent() {
         <UsdtBonusModal
           isOpen={isUsdtBonusOpen}
           onClose={() => setIsUsdtBonusOpen(false)}
+        />
+        <GuestRewardModal
+          isOpen={isGuestRewardOpen}
+          onClose={() => {
+            setIsGuestRewardOpen(false);
+            sessionStorage.setItem('royalclub_guest_reward_dismissed', 'true');
+          }}
+          onOpenLogin={() => {
+            setIsGuestRewardOpen(false);
+            sessionStorage.setItem('royalclub_guest_reward_dismissed', 'true');
+            setAuthTab('login');
+            setIsAuthOpen(true);
+          }}
         />
 
       </div>

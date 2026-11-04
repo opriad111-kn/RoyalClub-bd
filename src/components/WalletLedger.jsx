@@ -62,7 +62,7 @@ export default function WalletLedger() {
   const isNagadActive = safeSettings.NAGAD_ENABLED !== false;
   const isRocketActive = safeSettings.ROCKET_ENABLED === true;
 
-  function handleDepositSubmit(e) {
+  async function handleDepositSubmit(e) {
     e.preventDefault();
     if (depMethod === 'Rocket' && !isRocketActive) {
       alert("রকেট পেমেন্ট সার্ভিস বর্তমানে সাময়িকভাবে বন্ধ আছে। অনুগ্রহ করে বিকাশ বা নগদ ব্যবহার করুন।");
@@ -82,14 +82,14 @@ export default function WalletLedger() {
       return;
     }
 
-    const success = requestDeposit({
+    const res = await requestDeposit({
       method: depMethod,
       amount: amt,
       senderPhone: senderPhone.trim(),
       txHash: depTxHash.trim().toUpperCase()
     });
 
-    if (success) {
+    if (res && (res.success || res === true)) {
       setSenderPhone('');
       setDepTxHash('');
       setActiveTab('ledger');

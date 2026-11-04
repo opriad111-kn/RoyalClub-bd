@@ -187,8 +187,9 @@ export default function DepositPage({ onBack, onOpenAuth }) {
     if (e) e.preventDefault();
     setGatewayError('');
 
-    if (!gatewayTrxId.trim()) {
-      setGatewayError('TrxID অবশ্যই পূরণ করতে হবে!');
+    const cleanTrx = (gatewayTrxId || '').trim();
+    if (!cleanTrx || cleanTrx.length < 4) {
+      setGatewayError('সঠিক TrxID লিখুন (কমপক্ষে ৪ অক্ষর)!');
       return;
     }
 
@@ -200,19 +201,21 @@ export default function DepositPage({ onBack, onOpenAuth }) {
         amount: depositAmt,
         method: method,
         senderNumber: officialWalletNumber,
-        transactionId: gatewayTrxId.trim(),
-        channel: selectedChannel
+        transactionId: cleanTrx,
+        channel: selectedChannel,
+        silent: true
       });
 
       setIsSubmitting(false);
-      if (res?.success) {
+      if (res && (res.success || res === true)) {
         setGatewaySuccess(true);
         setTimeout(() => {
-          setCurrentView('deposit');
           setGatewaySuccess(false);
-        }, 2500);
+          setCurrentView('history');
+          setGatewayTrxId('');
+        }, 2200);
       } else {
-        setGatewayError(res?.message || 'ডিপোজিট যাচাই করতে ব্যর্থ হয়েছে। পুনরায় চেষ্টা করুন।');
+        setGatewayError(res?.message || 'ডিপোজিট যাচাই করতে ব্যর্থ হয়েছে! পুনরায় চেষ্টা করুন।');
       }
     } catch (err) {
       setIsSubmitting(false);
@@ -252,8 +255,10 @@ export default function DepositPage({ onBack, onOpenAuth }) {
     if (historyStatusFilter !== 'All') {
       const isComplete = t.status === 'approved' || t.status === 'completed';
       const isFailed = t.status === 'rejected' || t.status === 'failed';
+      const isPending = t.status === 'pending' || !t.status;
       if (historyStatusFilter === 'Complete' && !isComplete) return false;
       if (historyStatusFilter === 'Failed' && !isFailed) return false;
+      if (historyStatusFilter === 'Pending' && !isPending) return false;
     }
     return true;
   });
@@ -291,19 +296,19 @@ export default function DepositPage({ onBack, onOpenAuth }) {
           </div>
         </div>
 
-        {/* Back navigation */}
-        <div className="px-4 py-2 bg-[#1C2063] border-b border-[#30358B] flex items-center justify-between">
+        {/* Back navigation - High Contrast Prominent Pill Button (1:1 Replica) */}
+        <div className="px-4 py-2.5 bg-[#1C2063] border-b border-[#30358B] flex items-center justify-between shadow-xs">
           <button 
             onClick={() => setCurrentView('deposit')}
-            className="flex items-center space-x-1 text-xs text-[#7098C5] hover:text-white cursor-pointer"
+            className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-white/15 hover:bg-white/25 active:scale-95 text-white font-bold text-xs border border-white/25 shadow-sm transition cursor-pointer"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+            <svg className="w-4 h-4 stroke-current stroke-2 fill-none" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
-            <span>ফিরে যান (Back to Deposit)</span>
+            <span>‹ ফিরে যান (Back to Deposit)</span>
           </button>
-          <span className="text-xs text-amber-400 font-mono">
-            মেয়াদ: {formatTimer(gatewayTimeRemaining)}
+          <span className="text-xs text-amber-400 font-mono font-bold bg-black/40 px-3 py-1 rounded-full border border-amber-400/30">
+            ⏱ মেয়াদ: {formatTimer(gatewayTimeRemaining)}
           </span>
         </div>
 
@@ -390,13 +395,17 @@ export default function DepositPage({ onBack, onOpenAuth }) {
               <input
                 type="text"
                 value={gatewayTrxId}
-                onChange={(e) => setGatewayTrxId(e.target.value)}
-                placeholder="TrxID অবশ্যই পূরণ করতে হবে!"
-                className="w-full bg-[#14122E] border-2 border-rose-500/80 rounded-xl px-4 py-3 text-xs font-mono uppercase text-white outline-none focus:border-[#F5BE00] placeholder-rose-300/60"
+                onChange={(e) => {
+                  setGatewayTrxId(e.target.value);
+                  if (gatewayError) setGatewayError('');
+                }}
+                placeholder="এখানে ট্রানজেকশন আইডি (TrxID) লিখুন"
+                className={`w-full bg-[#14122E] border-2 ${gatewayError ? 'border-rose-500' : 'border-[#30358B] focus:border-[#F5BE00]'} rounded-xl px-4 py-3 text-xs font-mono uppercase text-white outline-none transition placeholder-slate-500`}
               />
               {gatewayError && (
-                <p className="text-[11px] text-rose-400 font-semibold px-1 pt-1">
-                  {gatewayError}
+                <p className="text-[11px] text-rose-400 font-semibold px-1 pt-1 flex items-center space-x-1">
+                  <span>⚠️</span>
+                  <span>{gatewayError}</span>
                 </p>
               )}
             </div>
@@ -424,17 +433,30 @@ export default function DepositPage({ onBack, onOpenAuth }) {
           </div>
         </div>
 
-        {/* Success Modal */}
+        {/* Success Modal (Matching User Request: Pending Status + 5-Minute Notice) */}
         {gatewaySuccess && (
-          <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-            <div className="bg-[#1C2063] border border-emerald-500 rounded-2xl p-6 text-center space-y-3 max-w-xs shadow-2xl">
-              <div className="w-14 h-14 mx-auto rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-3xl font-bold">
+          <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
+            <div className="bg-[#1C2063] border border-emerald-500/60 rounded-3xl p-6 text-center space-y-3.5 max-w-xs w-full shadow-2xl">
+              <div className="w-16 h-16 mx-auto rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-3xl font-bold border border-emerald-500/40">
                 ✓
               </div>
-              <h3 className="font-bold text-base text-white">ডিপোজিট সফলভাবে জমা হয়েছে!</h3>
-              <p className="text-xs text-[#7098C5]">
-                ১-৫ মিনিটের মধ্যে ব্যালেন্স যুক্ত হবে।
+              <h3 className="font-black text-lg text-white">আবেদন সফল হয়েছে!</h3>
+              <div className="bg-black/40 rounded-xl p-3 border border-[#30358B] text-left space-y-1 text-xs">
+                <div className="flex justify-between text-slate-300">
+                  <span>স্ট্যাটাস:</span>
+                  <span className="text-amber-400 font-bold">Pending (অপেক্ষমান)</span>
+                </div>
+                <div className="flex justify-between text-slate-300">
+                  <span>TrxID:</span>
+                  <span className="text-white font-mono font-bold">{gatewayTrxId}</span>
+                </div>
+              </div>
+              <p className="text-xs text-emerald-200/90 font-medium leading-relaxed">
+                আপনার ডিপোজিট আবেদনটি সফলভাবে জমা হয়েছে (Pending)! যাচাই করতে সর্বোচ্চ ৫ মিনিট সময় লাগতে পারে।
               </p>
+              <div className="text-[11px] text-[#7098C5]">
+                ডিপোজিট হিস্ট্রিতে রিডাইরেক্ট করা হচ্ছে...
+              </div>
             </div>
           </div>
         )}
@@ -492,6 +514,7 @@ export default function DepositPage({ onBack, onOpenAuth }) {
               className="bg-[#1C2063] border border-[#30358B] rounded-xl px-3 py-2 text-white outline-none cursor-pointer"
             >
               <option value="All">All Status ⌄</option>
+              <option value="Pending">Pending (অপেক্ষমান)</option>
               <option value="Complete">Complete</option>
               <option value="Failed">Failed</option>
             </select>

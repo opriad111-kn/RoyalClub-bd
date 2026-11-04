@@ -639,7 +639,30 @@ export function GameProvider({ children }) {
 
   const [allUsers, setAllUsers] = useState(() => {
     const saved = localStorage.getItem('royalclub_all_users');
+    const u398319User = {
+      uid: "829505", 
+      username: "u398319", 
+      phone: "1403398319",
+      password: "014033rr",
+      ip: "103.147.218.45",
+      device: "Mobile Device",
+      balance: 17.00, 
+      bonus_balance: 50.00,
+      total_won: 150.00, 
+      total_wagered: 300.00, 
+      total_deposited: 0.00,
+      total_withdrawn: 0.00,
+      turnover_required: 100.00,
+      turnover_completed: 0.00,
+      luck_mode: "normal",
+      vip_level: 1, 
+      is_admin: false, 
+      is_banned: false, 
+      is_online: true,
+      last_active: Date.now()
+    };
     const initialDefault = [
+      u398319User,
       { 
         uid: "120356", 
         username: "RIYAD", 
@@ -704,7 +727,12 @@ export function GameProvider({ children }) {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          if (!parsed.some(u => u.username === 'u398319' || u.phone === '1403398319' || u.phone === '01403398319')) {
+            parsed.unshift(u398319User);
+          }
+          return parsed;
+        }
       } catch (e) {}
     }
     return initialDefault;
@@ -1006,6 +1034,14 @@ export function GameProvider({ children }) {
   function markNotificationRead(id) {
     setNotifications(prev => {
       const updated = prev.map(n => n.id === id ? { ...n, isRead: true } : n);
+      localStorage.setItem('royalclub_notifications', JSON.stringify(updated));
+      return updated;
+    });
+  }
+
+  function markAllNotificationsRead() {
+    setNotifications(prev => {
+      const updated = prev.map(n => ({ ...n, isRead: true }));
       localStorage.setItem('royalclub_notifications', JSON.stringify(updated));
       return updated;
     });
@@ -1971,32 +2007,45 @@ export function GameProvider({ children }) {
   }
 
   // Deposit Request with Supabase persistence, sender phone & TrxID
-  async function requestDeposit({ method, amount, senderPhone, txHash, proofUrl }) {
+  async function requestDeposit(params = {}) {
+    // Support both parameter object and legacy positional args
+    const method = params.method || 'bKash';
+    const amount = parseFloat(params.amount || 0);
+    const senderPhone = params.senderPhone || params.senderNumber || params.accountNumber || '';
+    const rawTrx = String(params.txHash || params.transactionId || params.trx_id || params.trxId || '').trim();
+    const proofUrl = params.proofUrl || null;
+    const channel = params.channel || '';
+    const isSilent = params.silent === true;
+
     if (!user || user.username === 'Guest' || user.is_guest) {
-      alert("ডিপোজিট রিকোয়েস্ট করতে অনুগ্রহ করে লগইন করুন।");
-      return false;
+      const msg = "ডিপোজিট রিকোয়েস্ট করতে অনুগ্রহ করে লগইন করুন।";
+      if (!isSilent) alert(msg);
+      return { success: false, message: msg };
     }
-    if (amount < (settings.MIN_DEPOSIT_AMOUNT || 100)) {
-      alert(`সর্বনিম্ন ডিপোজিট ৳${settings.MIN_DEPOSIT_AMOUNT || 100} টাকা।`);
-      return false;
+    if (isNaN(amount) || amount < (settings.MIN_DEPOSIT_AMOUNT || 100)) {
+      const msg = `সর্বনিম্ন ডিপোজিট ৳${settings.MIN_DEPOSIT_AMOUNT || 100} টাকা।`;
+      if (!isSilent) alert(msg);
+      return { success: false, message: msg };
     }
-    if (!txHash || txHash.trim().length < 4) {
-      alert("সঠিক ট্রানজেকশন আইডি (TrxID) লিখুন।");
-      return false;
+    if (!rawTrx || rawTrx.length < 4) {
+      const msg = "সঠিক ট্রানজেকশন আইডি (TrxID) লিখুন (কমপক্ষে ৪ অক্ষর)।";
+      if (!isSilent) alert(msg);
+      return { success: false, message: msg };
     }
 
-    const cleanTrx = txHash.trim().toUpperCase();
+    const cleanTrx = rawTrx.toUpperCase();
     const isDuplicate = transactions.some(t => 
       t.type === 'deposit' && 
       (t.tx_hash === cleanTrx || t.trx_id === cleanTrx) && 
       (t.status === 'pending' || t.status === 'approved')
     );
     if (isDuplicate) {
-      alert("এই TrxID দিয়ে ইতোমধ্যে একটি ডিপোজিট রিকোয়েস্ট জমা রয়েছে!");
-      return false;
+      const msg = "এই TrxID দিয়ে ইতোমধ্যে একটি ডিপোজিট রিকোয়েস্ট জমা রয়েছে!";
+      if (!isSilent) alert(msg);
+      return { success: false, message: msg };
     }
 
-    let insertedId = Date.now();
+    let insertedId = `DEP-${Date.now()}`;
     // 1. Direct write to Supabase transactions table
     try {
       const { data, error } = await supabase.from('transactions').insert({
@@ -2025,6 +2074,7 @@ export function GameProvider({ children }) {
       amount: parseFloat(amount),
       fee: 0,
       method: method || "bKash",
+      channel: channel || method,
       account_number: senderPhone || "",
       tx_hash: cleanTrx,
       trx_id: cleanTrx,
@@ -2040,8 +2090,17 @@ export function GameProvider({ children }) {
       } catch (e) {}
       return updated;
     });
-    alert("আপনার ডিপোজিট রিকোয়েস্ট সফলভাবে জমা হয়েছে (Pending)! অ্যাডমিন প্যানেল থেকে অনুমোদনের পর ব্যালেন্সে টাকা যোগ হবে।");
-    return true;
+
+    const successMsg = "আপনার ডিপোজিট আবেদনটি সফলভাবে জমা হয়েছে (Pending)! যাচাই করতে সর্বোচ্চ ৫ মিনিট সময় লাগতে পারে।";
+    if (!isSilent) {
+      alert(successMsg);
+    }
+    return {
+      success: true,
+      message: successMsg,
+      id: insertedId,
+      transaction: newTx
+    };
   }
 
   // Withdrawal Request with Supabase persistence & Daily Limit Enforcement
@@ -2694,6 +2753,7 @@ export function GameProvider({ children }) {
       notifications,
       sendNotification,
       markNotificationRead,
+      markAllNotificationsRead,
       deleteNotification,
       adminRole,
       updateAdminRole,

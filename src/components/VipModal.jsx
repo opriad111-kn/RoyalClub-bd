@@ -16,6 +16,109 @@ const VIP_TIERS = [
   { level: 10, exp: 30000000, reward: 288880, monthly: 30000, rebate: '0.60%' }
 ];
 
+const VIP_CARD_THEMES = {
+  1: {
+    cardBg: 'bg-gradient-to-tr from-[#6E3C1B] via-[#9C5D28] to-[#54280E]',
+    textColor: 'text-amber-100',
+    titleColor: 'text-white',
+    subColor: 'text-amber-200/90',
+    badgeBg: 'bg-black/30 text-amber-200',
+    progressBg: 'bg-amber-950/40',
+    progressFill: 'bg-gradient-to-r from-amber-400 to-yellow-300',
+    starColor: 'text-amber-200 border-amber-300/30'
+  },
+  2: {
+    cardBg: 'bg-gradient-to-tr from-[#475569] via-[#64748B] to-[#334155]',
+    textColor: 'text-slate-100',
+    titleColor: 'text-white',
+    subColor: 'text-slate-200/90',
+    badgeBg: 'bg-black/30 text-slate-200',
+    progressBg: 'bg-slate-900/40',
+    progressFill: 'bg-gradient-to-r from-slate-200 to-white',
+    starColor: 'text-slate-200 border-slate-300/30'
+  },
+  3: {
+    cardBg: 'bg-gradient-to-tr from-[#8C5D00] via-[#EAB308] to-[#664300]',
+    textColor: 'text-amber-950 font-bold',
+    titleColor: 'text-slate-950 font-black',
+    subColor: 'text-amber-950/90 font-bold',
+    badgeBg: 'bg-black/25 text-white',
+    progressBg: 'bg-amber-900/40',
+    progressFill: 'bg-gradient-to-r from-slate-900 to-amber-950',
+    starColor: 'text-amber-950 border-amber-950/40'
+  },
+  4: {
+    cardBg: 'bg-gradient-to-tr from-[#065F46] via-[#0D9488] to-[#044E3A]',
+    textColor: 'text-teal-50',
+    titleColor: 'text-white',
+    subColor: 'text-teal-100/90',
+    badgeBg: 'bg-black/30 text-teal-200',
+    progressBg: 'bg-teal-950/40',
+    progressFill: 'bg-gradient-to-r from-teal-300 to-emerald-200',
+    starColor: 'text-teal-200 border-teal-300/30'
+  },
+  5: {
+    cardBg: 'bg-gradient-to-tr from-[#1E40AF] via-[#2563EB] to-[#172554]',
+    textColor: 'text-blue-50',
+    titleColor: 'text-white',
+    subColor: 'text-blue-100/90',
+    badgeBg: 'bg-black/30 text-blue-200',
+    progressBg: 'bg-blue-950/40',
+    progressFill: 'bg-gradient-to-r from-blue-300 to-sky-200',
+    starColor: 'text-blue-200 border-blue-300/30'
+  },
+  6: {
+    cardBg: 'bg-gradient-to-tr from-[#6B21A8] via-[#9333EA] to-[#4C1D95]',
+    textColor: 'text-purple-50',
+    titleColor: 'text-white',
+    subColor: 'text-purple-100/90',
+    badgeBg: 'bg-black/30 text-purple-200',
+    progressBg: 'bg-purple-950/40',
+    progressFill: 'bg-gradient-to-r from-purple-300 to-fuchsia-200',
+    starColor: 'text-purple-200 border-purple-300/30'
+  },
+  7: {
+    cardBg: 'bg-gradient-to-tr from-[#9F1239] via-[#E11D48] to-[#881337]',
+    textColor: 'text-rose-50',
+    titleColor: 'text-white',
+    subColor: 'text-rose-100/90',
+    badgeBg: 'bg-black/30 text-rose-200',
+    progressBg: 'bg-rose-950/40',
+    progressFill: 'bg-gradient-to-r from-rose-300 to-pink-200',
+    starColor: 'text-rose-200 border-rose-300/30'
+  },
+  8: {
+    cardBg: 'bg-gradient-to-tr from-[#1E293B] via-[#334155] to-[#0F172A] border border-slate-500/40',
+    textColor: 'text-slate-100',
+    titleColor: 'text-white',
+    subColor: 'text-slate-200/90',
+    badgeBg: 'bg-black/30 text-slate-200',
+    progressBg: 'bg-slate-900/40',
+    progressFill: 'bg-gradient-to-r from-slate-300 to-white',
+    starColor: 'text-slate-200 border-slate-300/30'
+  },
+  9: {
+    cardBg: 'bg-gradient-to-tr from-[#713F12] via-[#D97706] to-[#451A03]',
+    textColor: 'text-amber-50',
+    titleColor: 'text-white',
+    subColor: 'text-amber-100/90',
+    badgeBg: 'bg-black/30 text-amber-200',
+    progressBg: 'bg-amber-950/40',
+    progressFill: 'bg-gradient-to-r from-yellow-400 to-amber-200',
+    starColor: 'text-amber-200 border-amber-300/30'
+  },
+  10: {
+    cardBg: 'bg-gradient-to-tr from-[#581C87] via-[#BE185D] to-[#9A3412]',
+    textColor: 'text-amber-50',
+    titleColor: 'text-white',
+    subColor: 'text-pink-100/90',
+    badgeBg: 'bg-black/30 text-pink-200',
+    progressBg: 'bg-purple-950/40',
+    progressFill: 'bg-gradient-to-r from-amber-300 via-pink-300 to-purple-200',
+    starColor: 'text-amber-200 border-amber-300/30'
+  }
+};
+
 export default function VipModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
@@ -162,45 +265,50 @@ export default function VipModal({ isOpen, onClose }) {
           </div>
 
           {/* ----------------------------------------------------------------------- */}
-          {/* 5. Shiny VIP Card for Selected Level                                    */}
+          {/* 5. Luxury VIP Card with Level-Specific Gradient Background (DKWin 1:1)   */}
           {/* ----------------------------------------------------------------------- */}
-          <div className="bg-gradient-to-tr from-slate-400 via-slate-200 to-slate-400 rounded-2xl p-4 text-slate-900 shadow-xl relative overflow-hidden space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-1.5 font-black text-lg font-mono">
-                <span>VIP{selectedTier.level}</span>
-                <span className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[9.5px] font-sans font-medium ${
-                  isSelectedLevelUnlocked ? 'bg-emerald-600 text-white' : 'bg-black/20 text-white'
-                }`}>
-                  {isSelectedLevelUnlocked ? '✓ Unlocked' : '🔒 Not open yet'}
-                </span>
-              </div>
-              <div className="w-12 h-12 rounded-full border-2 border-slate-600/30 flex items-center justify-center font-black text-slate-700 text-xl shadow-inner">
-                ★
-              </div>
-            </div>
+          {(() => {
+            const theme = VIP_CARD_THEMES[selectedTier.level] || VIP_CARD_THEMES[1];
+            return (
+              <div className={`${theme.cardBg} rounded-2xl p-4.5 ${theme.textColor} shadow-2xl relative overflow-hidden space-y-3.5 transition-all duration-300`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2 font-black text-xl font-mono">
+                    <span className={theme.titleColor}>VIP{selectedTier.level}</span>
+                    <span className={`inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-sans font-bold shadow-xs ${
+                      isSelectedLevelUnlocked ? 'bg-emerald-600 text-white' : theme.badgeBg
+                    }`}>
+                      {isSelectedLevelUnlocked ? '✓ Unlocked' : '🔒 Not open yet'}
+                    </span>
+                  </div>
+                  <div className={`w-12 h-12 rounded-full border-2 ${theme.starColor} flex items-center justify-center font-black text-2xl shadow-inner`}>
+                    ★
+                  </div>
+                </div>
 
-            <p className="text-xs font-semibold text-slate-800">
-              Upgrading VIP{selectedTier.level} requires {selectedTier.exp.toLocaleString()} EXP
-            </p>
+                <p className={`text-xs font-semibold ${theme.subColor}`}>
+                  Upgrading VIP{selectedTier.level} requires {selectedTier.exp.toLocaleString()} EXP
+                </p>
 
-            <div className="inline-block bg-black/20 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
-              Bet ৳1 = 1 EXP
-            </div>
+                <div className={`inline-block ${theme.badgeBg} text-[10.5px] font-bold px-2.5 py-0.5 rounded-md`}>
+                  Bet ৳1 = 1 EXP
+                </div>
 
-            {/* Progress Bar */}
-            <div className="space-y-1">
-              <div className="w-full h-2 rounded-full bg-slate-300 overflow-hidden shadow-inner">
-                <div 
-                  className="h-full bg-blue-600 transition-all duration-300"
-                  style={{ width: `${progressPercent}%` }}
-                />
+                {/* Progress Bar */}
+                <div className="space-y-1 pt-1">
+                  <div className={`w-full h-2 rounded-full ${theme.progressBg} overflow-hidden shadow-inner`}>
+                    <div 
+                      className={`h-full ${theme.progressFill} transition-all duration-300`}
+                      style={{ width: `${progressPercent}%` }}
+                    />
+                  </div>
+                  <div className={`flex items-center justify-between text-[10px] ${theme.subColor} font-mono font-medium`}>
+                    <span>{currentExp.toLocaleString()}/{requiredExp.toLocaleString()}</span>
+                    <span>{requiredExp.toLocaleString()} EXP can be leveled up</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center justify-between text-[10px] text-slate-700 font-medium">
-                <span>{currentExp.toLocaleString()}/{requiredExp.toLocaleString()}</span>
-                <span>{requiredExp.toLocaleString()} EXP can be leveled up</span>
-              </div>
-            </div>
-          </div>
+            );
+          })()}
 
           {/* Toast feedback */}
           {claimToast.text && (
