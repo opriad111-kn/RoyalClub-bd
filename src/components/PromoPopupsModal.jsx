@@ -20,6 +20,19 @@ export default function PromoPopupsModal({ isOpen, type = 'first-deposit', onClo
         localStorage.setItem('royalclub_promo_no_remind', new Date().toDateString());
       } catch (e) {}
     }
+
+    // User Mandate: When first deposit popup is closed/confirmed, sequence to 2nd popup (referral) 1 time
+    if (type === 'first-deposit') {
+      try {
+        const hasShownRef = sessionStorage.getItem('royalclub_promo_referral_shown');
+        if (!hasShownRef) {
+          sessionStorage.setItem('royalclub_promo_referral_shown', 'true');
+          window.dispatchEvent(new CustomEvent('royalclub_open_promo', { detail: { type: 'referral' } }));
+          return;
+        }
+      } catch (e) {}
+    }
+
     onClose();
   }
 
@@ -99,9 +112,9 @@ export default function PromoPopupsModal({ isOpen, type = 'first-deposit', onClo
                 />
               </div>
 
-              {/* Big Red-to-Blue Confirm Button (Photo 3 1:1) */}
+              {/* Big Red-to-Blue Confirm Button (User Mandate: closes popup, does not navigate to deposit) */}
               <button
-                onClick={handleGoDeposit}
+                onClick={handleClose}
                 className="w-full py-3 rounded-full font-black text-sm tracking-wider uppercase text-white bg-gradient-to-r from-[#ea384d] to-[#1e88e5] hover:brightness-110 active:scale-95 transition-all duration-150 shadow-lg shadow-blue-950/80 cursor-pointer"
               >
                 Confirm
@@ -149,9 +162,9 @@ export default function PromoPopupsModal({ isOpen, type = 'first-deposit', onClo
                 />
               </div>
 
-              {/* Big Red-to-Blue Confirm Button */}
+              {/* Big Red-to-Blue Confirm Button (User Mandate: closes popup, does not navigate away) */}
               <button
-                onClick={handleGoPromotion}
+                onClick={handleClose}
                 className="w-full py-3 rounded-full font-black text-sm tracking-wider uppercase text-white bg-gradient-to-r from-[#ea384d] to-[#1e88e5] hover:brightness-110 active:scale-95 transition-all duration-150 shadow-lg shadow-blue-950/80 cursor-pointer"
               >
                 Confirm
@@ -187,7 +200,8 @@ export default function PromoPopupsModal({ isOpen, type = 'first-deposit', onClo
               ].map((tier, idx) => (
                 <div 
                   key={idx}
-                  className="bg-[#1b2260] border border-[#2d3885] rounded-xl p-3 shadow-md space-y-2"
+                  onClick={handleGoDeposit}
+                  className="bg-[#1b2260] border border-[#2d3885] hover:border-[#f59e0b]/50 rounded-xl p-3 shadow-md space-y-2 cursor-pointer transition active:scale-[0.99]"
                 >
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-bold text-white">
@@ -232,8 +246,9 @@ export default function PromoPopupsModal({ isOpen, type = 'first-deposit', onClo
                 <span>No more reminders today</span>
               </label>
 
+              {/* Activity button (User Mandate: closes popup, does not navigate away) */}
               <button
-                onClick={handleGoActivity}
+                onClick={handleClose}
                 className="px-6 py-1.5 rounded-full font-bold text-xs text-white bg-gradient-to-r from-[#ea384d] to-[#1e88e5] hover:brightness-110 active:scale-95 transition shadow-sm cursor-pointer"
               >
                 Activity
