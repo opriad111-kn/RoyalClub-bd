@@ -414,7 +414,7 @@ export default function MoneyComingGame({ onClose }) {
         </div>
 
         {/* Vault Cash Cabinet (3 Cash Digit Reels + 1 Feature Reel) */}
-        <div className="relative z-10 w-full max-w-[440px] my-auto">
+        <div className="relative z-10 w-full sm:max-w-md md:max-w-[480px] my-auto">
           
           {/* Glowing Center Payline Marker */}
           <div className="absolute top-1/2 left-0 right-0 -translate-y-1/2 h-20 sm:h-24 bg-gradient-to-r from-yellow-500/10 via-yellow-400/20 to-yellow-500/10 border-y-2 border-yellow-400/60 pointer-events-none z-20 flex items-center justify-between px-1">
@@ -471,7 +471,7 @@ export default function MoneyComingGame({ onClose }) {
         </div>
 
         {/* Win Bar Indicator */}
-        <div className="relative z-10 w-full max-w-[440px] flex justify-between items-center px-2 py-1">
+        <div className="relative z-10 w-full sm:max-w-md md:max-w-[480px] flex justify-between items-center px-2 py-1">
           <div className="flex items-center space-x-1.5 bg-black/60 border border-emerald-800 px-3 py-1 rounded-full text-xs font-mono text-emerald-300">
             <span>RTP: 96.23%</span>
           </div>

@@ -5,75 +5,72 @@ import { ShieldAlert, Download, Headphones, Bell } from 'lucide-react';
 
 export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenDeposit, onOpenAdmin }) {
   const { user } = useGame();
-  const { lang, toggleLang, t } = useLanguage();
-  const isGuest = user.username === 'Guest' || user.is_guest;
+  const { t } = useLanguage();
+  const isGuest = !user || user.username === 'Guest' || user.is_guest;
 
   return (
-    <header className="sticky top-0 z-40 bg-[#0c1224]/95 backdrop-blur-md text-white px-3 py-2.5 flex items-center justify-between shadow-lg select-none border-b border-slate-800/80">
+    <header className="sticky top-0 z-40 bg-[#0c1328]/95 backdrop-blur-md text-white px-3 sm:px-4 py-2.5 flex items-center justify-between shadow-lg select-none border-b border-[#1f2b4d]">
       
       {/* Official Royal Club BD Crest Logo */}
-      <div className="flex items-center space-x-2 shrink-0">
-        <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-600 flex items-center justify-center shadow-[0_0_10px_rgba(245,190,0,0.4)]">
+      <div 
+        onClick={() => { window.location.hash = '#/home'; }}
+        className="flex items-center space-x-2 shrink-0 cursor-pointer group"
+      >
+        <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-400 via-yellow-300 to-amber-600 flex items-center justify-center shadow-[0_0_12px_rgba(245,190,0,0.45)] border border-amber-200/40 group-hover:scale-105 transition">
           <span className="text-base select-none">👑</span>
         </div>
         <div className="flex flex-col">
-          <div className="flex items-center space-x-1">
-            <span className="font-black text-xs sm:text-sm tracking-wider text-white font-sans leading-none">
-              ROYAL<span className="text-amber-400">CLUB</span> <span className="text-red-500">BD</span>
+          <div className="flex items-center space-x-1.5">
+            <span className="font-black text-sm tracking-wide text-white font-sans leading-none">
+              ROYAL<span className="text-amber-400">CLUB</span> <span className="text-[#f43f5e] font-extrabold">BD</span>
             </span>
             {!isGuest && (
-              <span className="bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 text-[8px] font-black px-1.5 py-0.2 rounded-full uppercase shadow-xs">
+              <span className="bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 text-[8.5px] font-black px-1.5 py-0.5 rounded-full uppercase shadow-xs">
                 VIP{user.vip_level || 1}
               </span>
             )}
           </div>
-          <span className="text-[7.5px] text-slate-400 font-bold uppercase tracking-widest leading-none mt-0.5">
+          <span className="text-[7.5px] text-slate-400 font-bold uppercase tracking-wider leading-none mt-1">
             WHERE FAIRNESS FUELS THE FUN
           </span>
         </div>
       </div>
 
-      {/* Right Controls: Balance, Auth, CS, Download, Language */}
-      <div className="flex items-center space-x-1.5 shrink-0">
-        {/* Language Switcher Pill */}
-        <button
-          onClick={toggleLang}
-          title={lang === 'en' ? 'বাংলায় পরিবর্তন করুন' : 'Switch to English'}
-          className="flex items-center space-x-1 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 px-2 py-0.5 rounded-full text-[10px] font-black text-slate-200 transition active:scale-95 cursor-pointer shadow-xs shrink-0"
-        >
-          <span>{lang === 'en' ? '🇺🇸 EN' : '🇧🇩 BN'}</span>
-        </button>
-
+      {/* Right Controls: Exactly matching APK Screenshots */}
+      <div className="flex items-center space-x-2 shrink-0">
         {isGuest ? (
           <>
+            {/* Log in Button: 1:1 Replica of Screenshot 12 */}
             <button
               onClick={() => onOpenAuth('login')}
-              className="bg-[#1E2555] hover:bg-[#252E6A] border border-[#333D8A] text-white font-bold text-xs px-3.5 py-1.5 rounded-full shadow transition active:scale-95 cursor-pointer"
+              className="h-[34px] px-4.5 rounded-full border border-[#2b4c8f] bg-[#122252]/90 hover:bg-[#1a2e6e] text-white font-medium text-[13px] tracking-wide flex items-center justify-center transition active:scale-95 cursor-pointer shadow-sm"
             >
               {t('login')}
             </button>
+
+            {/* Register Button: 1:1 Replica of Screenshot 12 */}
             <button
               onClick={() => onOpenAuth('register')}
-              className="bg-gradient-to-r from-[#D92525] to-[#B81818] hover:brightness-110 text-white font-bold text-xs px-3.5 py-1.5 rounded-full shadow-md transition active:scale-95 cursor-pointer"
+              className="h-[34px] px-4.5 rounded-full bg-gradient-to-r from-[#d93850] to-[#f43f5e] hover:brightness-110 text-white font-medium text-[13px] tracking-wide flex items-center justify-center transition active:scale-95 cursor-pointer shadow-md shadow-rose-950/40"
             >
               {t('register')}
             </button>
           </>
         ) : (
           <>
-            {/* Live User Balance Pill with Gold Coin & + Deposit Button */}
+            {/* Live User Balance Pill with Gold Coin & + Deposit Button (Screenshot 1 Match) */}
             <div
               onClick={onOpenDeposit || onOpenWallet}
-              className="cursor-pointer bg-[#131b33] hover:bg-[#192444] text-white px-2 py-1 rounded-full flex items-center space-x-1.5 border border-amber-500/40 transition active:scale-95 shadow-md shrink-0"
-              title="Click to Deposit / রিচার্জ করুন"
+              className="cursor-pointer bg-[#101b3b] hover:bg-[#172652] text-white pl-2.5 pr-2 py-1 rounded-full flex items-center space-x-1.5 border border-amber-500/40 transition active:scale-95 shadow-md shrink-0"
+              title="Deposit / রিচার্জ করুন"
             >
               <div className="w-4 h-4 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-500 text-slate-950 flex items-center justify-center text-[10px] font-black shadow-xs">
                 ৳
               </div>
-              <span className="text-[11px] sm:text-xs font-black font-mono text-amber-300">
-                ৳{(user.balance || 0).toFixed(2)}
+              <span className="text-xs font-black font-mono text-amber-300">
+                {(user.balance || 0).toFixed(2)}
               </span>
-              <span className="w-4 h-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-full flex items-center justify-center text-[11px] font-black shadow-xs">
+              <span className="w-4 h-4 bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 rounded-full flex items-center justify-center text-[11px] font-black shadow-xs">
                 +
               </span>
             </div>
@@ -87,7 +84,7 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenDeposit, on
                 }
               }}
               title="Notifications"
-              className="w-7 h-7 rounded-full bg-slate-800/80 text-slate-300 hover:text-amber-400 flex items-center justify-center transition active:scale-95 cursor-pointer shrink-0"
+              className="w-7 h-7 rounded-full bg-[#162142] text-slate-300 hover:text-amber-400 flex items-center justify-center transition active:scale-95 cursor-pointer shrink-0 border border-[#23335d]"
             >
               <Bell className="w-3.5 h-3.5" />
             </button>
@@ -96,7 +93,7 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenDeposit, on
             <button
               onClick={() => window.open('https://t.me/ROYALCLUB_Support', '_blank')}
               title={t('support')}
-              className="w-7 h-7 rounded-full bg-slate-800/80 text-amber-400 hover:bg-slate-700 flex items-center justify-center transition active:scale-95 cursor-pointer shrink-0"
+              className="w-7 h-7 rounded-full bg-[#162142] text-amber-400 hover:bg-[#1d2d59] flex items-center justify-center transition active:scale-95 cursor-pointer shrink-0 border border-[#23335d]"
             >
               <Headphones className="w-3.5 h-3.5" />
             </button>
@@ -110,7 +107,7 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenDeposit, on
                 }
               }}
               title="Download App"
-              className="w-7 h-7 rounded-full bg-slate-800/80 text-emerald-400 hover:bg-slate-700 flex items-center justify-center transition active:scale-95 cursor-pointer shrink-0"
+              className="w-7 h-7 rounded-full bg-[#162142] text-emerald-400 hover:bg-[#1d2d59] flex items-center justify-center transition active:scale-95 cursor-pointer shrink-0 border border-[#23335d]"
             >
               <Download className="w-3.5 h-3.5" />
             </button>

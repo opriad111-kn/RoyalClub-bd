@@ -177,9 +177,9 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-[#0b102b] flex flex-col max-w-[425px] mx-auto min-h-screen text-white select-none overflow-y-auto no-scrollbar"
+      className="fixed inset-0 z-50 bg-[#0b102b] flex flex-col w-full sm:max-w-md md:max-w-[480px] mx-auto min-h-screen text-white select-none overflow-y-auto no-scrollbar"
     >
-      {/* 1. Top Header Bar (Exact Screenshot 3 Match) */}
+      {/* 1. Top Header Bar (Exact Screenshot 11 Match) */}
       <div className="bg-[#0b102b] px-4 py-3 flex items-center justify-between border-b border-slate-800/80 shrink-0">
         <button 
           onClick={onClose}
@@ -202,9 +202,9 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
         <button
           type="button"
           onClick={toggleLang}
-          className="flex items-center space-x-1 bg-slate-800/80 border border-slate-700 px-2 py-0.5 rounded-full text-[11px] font-bold text-slate-200 cursor-pointer"
+          className="flex items-center space-x-1 bg-[#141d40] border border-[#24356e] px-2.5 py-1 rounded-full text-xs font-bold text-slate-200 cursor-pointer active:scale-95 transition"
         >
-          <span>🇺🇸 EN</span>
+          <span>{lang === 'en' ? '🇺🇸 EN' : '🇧🇩 BN'}</span>
         </button>
       </div>
 
@@ -528,6 +528,23 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
           </form>
         )}
 
+      </div>
+
+      {/* Floating Customer Service Bot (APK Screenshot 11 Match) */}
+      <div 
+        onClick={() => window.open('https://t.me/ROYALCLUB_Support', '_blank')}
+        className="fixed bottom-6 right-5 sm:right-[max(1.25rem,calc(50%-240px+1.25rem))] z-60 cursor-pointer active:scale-95 transition drop-shadow-2xl"
+        title="Live Customer Service"
+      >
+        <div className="w-13 h-13 rounded-full bg-gradient-to-tr from-blue-600 to-cyan-400 p-0.5 shadow-lg shadow-blue-500/40">
+          <div className="w-full h-full rounded-full bg-[#0d1430] flex items-center justify-center overflow-hidden">
+            <img 
+              src="/assets/amarclub/service.png" 
+              alt="Live Support" 
+              className="w-9 h-9 object-contain drop-shadow" 
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

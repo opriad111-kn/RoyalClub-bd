@@ -268,7 +268,7 @@ export default function K3LotteryGame({ onClose, onOpenDeposit, onOpenWithdraw }
 
   return (
     <div className="fixed inset-0 z-[999] bg-[#090d16] text-white flex justify-center overflow-y-auto font-sans select-none pb-16">
-      <div className="w-full max-w-[430px] min-h-screen bg-[#090d16] flex flex-col justify-between relative shadow-2xl">
+      <div className="w-full sm:max-w-md md:max-w-[480px] min-h-screen bg-[#090d16] flex flex-col justify-between relative shadow-2xl">
         
         {/* 1. Dark Luxury Header */}
         <div className="bg-[#0b102b] px-3.5 pt-3 pb-3 border-b border-slate-800">
@@ -522,7 +522,7 @@ export default function K3LotteryGame({ onClose, onOpenDeposit, onOpenWithdraw }
         {/* Bet Sheet Drawer */}
         {betDrawer && (
           <div className="fixed inset-0 z-[120] bg-black/80 flex items-end justify-center">
-            <div className="w-full max-w-[430px] bg-[#0e1633] rounded-t-3xl border-t border-slate-700 p-4 space-y-4">
+            <div className="w-full sm:max-w-md md:max-w-[480px] bg-[#0e1633] rounded-t-3xl border-t border-slate-700 p-4 space-y-4">
               <div className="flex justify-between items-center pb-2 border-b border-slate-800">
                 <span className="font-black text-sm text-white">
                   Select: {betDrawer.label} ({betDrawer.mult})

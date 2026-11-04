@@ -326,8 +326,8 @@ function AppContent() {
       {/* Official Injected KhelV Vector SVG Sprite */}
       <KhelvSvgSprite />
 
-      {/* Main Container: Exact KhelV Dark Navy Luxury Shell (Matching APK Dimensions 1:1) */}
-      <div className={`w-full ${activeTab === 'admin' ? 'max-w-full bg-[#0d1117]' : 'max-w-[425px] bg-[#14122E] text-white border-x border-[#30358B]/50'} min-h-screen flex flex-col justify-between relative shadow-2xl transition-all duration-200`}>
+      {/* Main Container: Full width on mobile, responsive max-480px shell on tablet/desktop */}
+      <div className={`w-full ${activeTab === 'admin' ? 'max-w-full bg-[#0d1117]' : 'sm:max-w-md md:max-w-[480px] bg-[#14122E] text-white sm:border-x sm:border-[#30358B]/50 sm:shadow-2xl'} min-h-screen flex flex-col justify-between relative transition-all duration-200`}>
         
         {/* Sticky Top Header (Hidden in Game, WinGo, Account, Activity, Deposit, Withdraw, Admin) */}
         {!activeGame && activeTab !== 'admin' && activeTab !== 'wingo' && activeTab !== 'account' && activeTab !== 'activity' && activeTab !== 'deposit' && activeTab !== 'withdraw' && (

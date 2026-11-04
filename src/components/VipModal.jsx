@@ -172,7 +172,7 @@ export default function VipModal({ isOpen, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 flex flex-col overflow-y-auto select-none font-sans pb-16">
-      <div className="max-w-[425px] mx-auto min-h-screen w-full flex flex-col bg-[#14122E] shadow-2xl relative">
+      <div className="w-full sm:max-w-md md:max-w-[480px] mx-auto min-h-screen flex flex-col bg-[#14122E] shadow-2xl relative">
         {/* ------------------------------------------------------------------------- */}
         {/* 1. Header: < VIP                                                          */}
         {/* ------------------------------------------------------------------------- */}
