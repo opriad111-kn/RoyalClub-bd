@@ -3,100 +3,221 @@
 @tailwind utilities;
 
 :root {
-  --main_gradient-color: linear-gradient(90deg, #E92A23 0%, #1374EC 100%);
-  --main-color: #629EFF;
-  --bg_color_L1: #14122E;
-  --bg_color_L2: #1C2063;
-  --bg_color_L3: #3E44A9;
-  --Dividing-line_color: #30358B;
-  --Secondary_red_color: #FD565C;
-  --text_color_L1: #FFFFFF;
-  --text_color_L2: #D4E8FF;
-  --text_color_L3: #7098C5;
+  color-scheme: dark;
+  --main_gradient-color: linear-gradient(110deg, #f25462 0%, #7c6cf2 52%, #3889f8 100%);
+  --main-color: #8db4ff;
+  --bg_color_L1: #0a1020;
+  --bg_color_L2: #131d3d;
+  --bg_color_L3: #222f63;
+  --Dividing-line_color: rgba(160, 178, 226, 0.17);
+  --Secondary_red_color: #ff6a7e;
+  --text_color_L1: #f7f8ff;
+  --text_color_L2: #d3dcf4;
+  --text_color_L3: #9eaccb;
+  --surface: rgba(19, 28, 53, 0.9);
+  --surface-soft: rgba(20, 30, 58, 0.72);
+  --gold: #ffd166;
+  --gold-deep: #f4b942;
+  --ease-premium: cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: #070b16;
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
 }
 
 body {
   margin: 0;
-  background-color: #14122E;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 50% -18%, rgba(86, 108, 197, 0.3), transparent 44%),
+    radial-gradient(ellipse at 100% 58%, rgba(88, 61, 156, 0.12), transparent 38%),
+    linear-gradient(180deg, #0b1224 0%, #090e1b 48%, #070b16 100%);
   font-family: 'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #ffffff;
+  color: #f7f8ff;
+  text-rendering: optimizeLegibility;
 }
 
-/* Hide scrollbar for clean mobile tabs */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+button, input, select, textarea {
+  font: inherit;
 }
 
-/* Custom Scrollbar for desktop */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+button {
+  -webkit-tap-highlight-color: transparent;
 }
 
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid rgba(255, 209, 102, 0.92);
+  outline-offset: 3px;
 }
 
+img {
+  max-width: 100%;
+}
+
+#root {
+  min-height: 100vh;
+  isolation: isolate;
+}
+
+::selection {
+  background: rgba(124, 108, 242, 0.5);
+  color: #fff;
+}
+
+/* Soft entrance and interaction motion. Keep animation short and low-key. */
+@keyframes rc-page-enter {
+  from { opacity: 0; transform: translateY(9px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes rc-soft-glow {
+  0%, 100% { box-shadow: 0 0 0 rgba(255, 209, 102, 0); }
+  50% { box-shadow: 0 0 24px rgba(255, 209, 102, 0.12); }
+}
+@keyframes rc-float-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+main > div {
+  animation: rc-page-enter 420ms var(--ease-premium) both;
+}
+
+main button, main a, header button, nav button {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity, filter;
+  transition-duration: 180ms;
+  transition-timing-function: var(--ease-premium);
+}
+
+main button:not(:disabled):hover, header button:hover, nav button:hover {
+  filter: brightness(1.08);
+}
+
+main button:not(:disabled):active, header button:active, nav button:active {
+  transform: scale(0.975);
+}
+
+input, select, textarea {
+  color: #f7f8ff;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #9eaccb;
+  opacity: 0.82;
+}
+
+/* Smooth, cohesive surfaces across the existing pages without changing their behavior. */
+main [class*="bg-[#14122E]"],
+main [class*="bg-[#070b19]"],
+main [class*="bg-[#0d142d]"] {
+  background-color: #0b1224 !important;
+}
+
+main [class*="bg-[#1C2063]"],
+main [class*="bg-[#182046]"],
+main [class*="bg-[#10193d]"] {
+  background-color: #151f3e !important;
+}
+
+main [class*="border-[#30358B]"],
+main [class*="border-blue-900"] {
+  border-color: rgba(157, 176, 230, 0.2) !important;
+}
+
+main [class*="rounded-2xl"][class*="border"],
+main [class*="rounded-3xl"][class*="border"] {
+  box-shadow: 0 12px 32px rgba(1, 5, 16, 0.2);
+}
+
+/* Home lobby hero and game tiles get a gentle premium lift. */
+main img {
+  image-rendering: auto;
+}
+
+main [class*="aspect-[37/50]"] {
+  border-radius: 17px !important;
+  border-color: rgba(166, 185, 241, 0.22) !important;
+  box-shadow: 0 9px 22px rgba(1, 5, 16, 0.28);
+  transition: transform 220ms var(--ease-premium), box-shadow 220ms var(--ease-premium), border-color 220ms var(--ease-premium);
+}
+
+main [class*="aspect-[37/50]"]:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 209, 102, 0.55) !important;
+  box-shadow: 0 14px 28px rgba(1, 5, 16, 0.36), 0 0 18px rgba(255, 209, 102, 0.08);
+}
+
+/* Header and navigation: cleaner translucent surfaces. */
+header.sticky {
+  background: rgba(9, 15, 30, 0.9) !important;
+  border-color: rgba(157, 176, 230, 0.14) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+nav.fixed.bottom-0 > div {
+  background-image: linear-gradient(180deg, rgba(20, 29, 55, 0.98), rgba(8, 13, 27, 0.99)) !important;
+  background-color: #0b1224 !important;
+  border-top: 1px solid rgba(157, 176, 230, 0.16);
+  box-shadow: 0 -12px 32px rgba(1, 5, 16, 0.4) !important;
+}
+
+/* The app-loading screen has a calm fade-in instead of a harsh flash. */
+#root > div > div[class*="z-[9999]"] {
+  animation: rc-float-in 360ms var(--ease-premium) both;
+}
+
+/* Keep existing game reveal animations while honoring accessibility settings. */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: rgba(10, 16, 32, 0.85); }
 ::-webkit-scrollbar-thumb {
-  background: #F5BE00;
+  background: linear-gradient(180deg, rgba(255, 209, 102, 0.82), rgba(124, 108, 242, 0.82));
   border-radius: 9999px;
+  border: 2px solid rgba(10, 16, 32, 0.85);
 }
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #ffd166, #8b7bff); }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #D9A700;
-}
-
-/* Subtle DKWIN Curved Header Clip */
-.dkwin-curved-header {
-  border-bottom-left-radius: 28px;
-  border-bottom-right-radius: 28px;
-}
-
-/* Golden text gradient */
+.dkwin-curved-header { border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; }
 .text-gold-gradient {
-  background: linear-gradient(180deg, #FFE873 0%, #F5BE00 50%, #D49B00 100%);
+  background: linear-gradient(180deg, #fff0b0 0%, #ffd166 50%, #f4b942 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* 60FPS High Performance Lottery Ball Animations */
 @keyframes ballRollReel {
-  0% {
-    transform: translateY(0);
-  }
-  100% {
-    transform: translateY(-88%);
-  }
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-88%); }
 }
-
-.animate-ball-roll {
-  animation: ballRollReel 2.2s cubic-bezier(0.12, 0.85, 0.35, 1) forwards;
-  will-change: transform;
-}
+.animate-ball-roll { animation: ballRollReel 2.2s cubic-bezier(0.12, 0.85, 0.35, 1) forwards; will-change: transform; }
 
 @keyframes revealBounce {
-  0% {
-    transform: scale(0.65) translateY(12px);
-    opacity: 0.4;
-  }
-  60% {
-    transform: scale(1.15) translateY(-2px);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-  }
+  0% { transform: scale(0.65) translateY(12px); opacity: 0.4; }
+  60% { transform: scale(1.15) translateY(-2px); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+.animate-reveal-bounce { animation: revealBounce 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; will-change: transform, opacity; }
+
+@media (max-width: 380px) {
+  main [class*="aspect-[37/50]"] { border-radius: 13px !important; }
 }
 
-.animate-reveal-bounce {
-  animation: revealBounce 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  will-change: transform, opacity;
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
-
