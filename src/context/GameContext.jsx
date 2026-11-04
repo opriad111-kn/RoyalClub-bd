@@ -2220,19 +2220,46 @@ export function GameProvider({ children }) {
     }));
   }
 
-  // Auth: Real Supabase Table Sync Login & Password Validation
-  async function login(identifier, password, rememberMe = true) {
-    const cleanId = (identifier || '').trim();
+  // Auth: Real Supabase Table Sync Login & Password Validation (Supports Both Signature Formats)
+  async function login(firstArg, secondArg, thirdArg = true) {
+    let cleanId = '';
+    let password = '';
+    let rememberMe = true;
+
+    if (firstArg && typeof firstArg === 'object') {
+      cleanId = String(firstArg.identifier || firstArg.phone || firstArg.username || firstArg.email || '').trim();
+      password = String(firstArg.password || '').trim();
+      rememberMe = firstArg.rememberMe !== undefined ? firstArg.rememberMe : true;
+    } else {
+      cleanId = String(firstArg || '').trim();
+      password = String(secondArg || '').trim();
+      rememberMe = thirdArg;
+    }
+
     if (!cleanId) return { success: false, message: 'ইউজারনেম, মোবাইল বা ইমেইল লিখুন।' };
+
+    // Extract all phone variants (e.g. 1403398319 vs 01403398319 vs +8801403398319)
+    const rawDigits = cleanId.replace(/[^0-9]/g, '');
+    const noCountry = rawDigits.startsWith('880') ? rawDigits.slice(3) : rawDigits;
+    const noZero = noCountry.replace(/^0+/, '');
+    const withZero = '0' + noZero;
+
+    const orParts = [
+      `username.ilike.${cleanId}`,
+      `phone.eq.${cleanId}`
+    ];
+    if (noZero) orParts.push(`phone.eq.${noZero}`);
+    if (withZero) orParts.push(`phone.eq.${withZero}`);
+    if (rawDigits && rawDigits !== cleanId) orParts.push(`phone.eq.${rawDigits}`);
 
     let foundUser = null;
 
-    // 1. Direct query to Supabase users table
+    // 1. Direct query to Supabase users table with all phone variants
     try {
       const { data, error } = await supabase
         .from('users')
         .select('*')
-        .or(`username.ilike.${cleanId},phone.eq.${cleanId}`)
+        .or(orParts.join(','))
         .limit(1);
 
       if (!error && data && data.length > 0) {
@@ -2244,18 +2271,22 @@ export function GameProvider({ children }) {
 
     // 2. Resilient check in local state if Supabase didn't find or errored
     if (!foundUser) {
-      foundUser = allUsers.find(u => 
-        (u.username && u.username.toLowerCase() === cleanId.toLowerCase()) || 
-        (u.phone && u.phone === cleanId) || 
-        (u.email && u.email && u.email.toLowerCase() === cleanId.toLowerCase())
-      );
+      foundUser = allUsers.find(u => {
+        const uPhone = String(u.phone || '').replace(/[^0-9]/g, '');
+        const uPhoneNoZero = uPhone.replace(/^0+/, '');
+        return (
+          (u.username && u.username.toLowerCase() === cleanId.toLowerCase()) || 
+          (u.phone && (u.phone === cleanId || uPhone === rawDigits || uPhoneNoZero === noZero)) || 
+          (u.email && u.email && u.email.toLowerCase() === cleanId.toLowerCase())
+        );
+      });
     }
 
     if (foundUser) {
       if (foundUser.is_banned) {
         return { success: false, message: 'এই অ্যাকাউন্টটি স্থগিত (Banned) করা হয়েছে।' };
       }
-      if (foundUser.password && password && foundUser.password !== password) {
+      if (foundUser.password && password && String(foundUser.password).trim() !== String(password).trim()) {
         return { success: false, message: 'ভুল পাসওয়ার্ড! অনুগ্রহ করে সঠিক পাসওয়ার্ড লিখুন।' };
       }
 

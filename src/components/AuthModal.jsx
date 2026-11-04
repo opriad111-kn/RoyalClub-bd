@@ -107,10 +107,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
     setIsLoading(true);
     try {
       const cleanPhone = identifier.replace(/[^0-9]/g, '');
-      const res = await login({
-        identifier: cleanPhone || identifier,
-        password: loginPassword
-      });
+      const res = await login(cleanPhone || identifier, loginPassword, rememberPassword);
 
       setIsLoading(false);
       if (res.success) {
