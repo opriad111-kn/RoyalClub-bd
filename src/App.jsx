@@ -53,6 +53,7 @@ import FairnessModal from './components/FairnessModal';
 import PartnerRewardsModal from './components/PartnerRewardsModal';
 import UsdtBonusModal from './components/UsdtBonusModal';
 import SplashScreen from './components/SplashScreen';
+import { KhelvSvgSprite } from './components/common/KhelvIcon';
 
 const VALID_TABS = ['home', 'activity', 'promotion', 'account', 'deposit', 'withdraw', 'wallet', 'admin', 'wingo'];
 
@@ -297,8 +298,11 @@ function AppContent() {
         </div>
       )}
 
+      {/* Official Injected KhelV Vector SVG Sprite */}
+      <KhelvSvgSprite />
+
       {/* Main Container: Exact KhelV Dark Navy Luxury Shell */}
-      <div className={`w-full ${activeTab === 'admin' ? 'max-w-full bg-[#0d1117]' : 'max-w-[480px] sm:max-w-[500px] bg-[#070b19] text-white border-x border-slate-800/80'} min-h-screen flex flex-col justify-between relative shadow-2xl transition-all duration-200`}>
+      <div className={`w-full ${activeTab === 'admin' ? 'max-w-full bg-[#0d1117]' : 'max-w-[480px] sm:max-w-[500px] bg-[#14122E] text-white border-x border-[#30358B]/50'} min-h-screen flex flex-col justify-between relative shadow-2xl transition-all duration-200`}>
         
         {/* Sticky Top Header (Hidden in Game, WinGo, Account, Activity, Deposit, Withdraw, Admin) */}
         {!activeGame && activeTab !== 'admin' && activeTab !== 'wingo' && activeTab !== 'account' && activeTab !== 'activity' && activeTab !== 'deposit' && activeTab !== 'withdraw' && (
@@ -319,7 +323,9 @@ function AppContent() {
             ? 'p-0 pb-0'
             : activeTab === 'wingo' 
             ? 'p-0 pb-16' 
-            : activeTab === 'account' || activeTab === 'activity' || activeTab === 'deposit' || activeTab === 'withdraw'
+            : activeTab === 'account'
+            ? 'p-0 pb-24'
+            : activeTab === 'activity' || activeTab === 'deposit' || activeTab === 'withdraw'
             ? 'p-3.5 pt-0 pb-20' 
             : 'p-3.5 pb-20'
         }`}>

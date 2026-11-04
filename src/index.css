@@ -2,9 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --main_gradient-color: linear-gradient(90deg, #E92A23 0%, #1374EC 100%);
+  --main-color: #629EFF;
+  --bg_color_L1: #14122E;
+  --bg_color_L2: #1C2063;
+  --bg_color_L3: #3E44A9;
+  --Dividing-line_color: #30358B;
+  --Secondary_red_color: #FD565C;
+  --text_color_L1: #FFFFFF;
+  --text_color_L2: #D4E8FF;
+  --text_color_L3: #7098C5;
+}
+
 body {
   margin: 0;
-  background-color: #070b19;
+  background-color: #14122E;
   font-family: 'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

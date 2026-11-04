@@ -1,11 +1,13 @@
 import React from 'react';
+export { KhelvSvgSprite } from './common/KhelvIcon';
 
-export default function KhelvIcon({ name, className = 'w-6 h-6', style, ...props }) {
+export function KhelvIcon({ name, className = 'w-6 h-6', style, ...props }) {
   const iconId = name.startsWith('icon-') ? name : `icon-${name}`;
   return (
-    <svg className={className} style={style} aria-hidden="true" {...props}>
-      <use href={`/assets/khelv_sprite.svg#${iconId}`} />
+    <svg className={className} style={style} aria-hidden="true" focusable="false" {...props}>
+      <use href={`#${iconId}`} xlinkHref={`#${iconId}`} />
     </svg>
   );
 }
 
+export default KhelvIcon;
