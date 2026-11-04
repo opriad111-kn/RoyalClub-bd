@@ -2,34 +2,35 @@ import React from 'react';
 
 /**
  * GuestRewardModal
- * 1:1 replica of the official KhelV / DKWin guest incentive modal (photo_5)
- * Floating 3D gift box with glowing halo ring, sparkles, and red-to-blue gradient CTA.
+ * 1:1 replica of the official KhelV / DKWin guest incentive bottom sheet (Screenshot 2).
+ * Slides up from the bottom ("nic thaka") with floating 3D gift box, glowing ring,
+ * and red-to-blue gradient button that navigates directly to Login (Screenshot 1).
  */
 export default function GuestRewardModal({ isOpen, onClose, onOpenLogin }) {
   if (!isOpen) return null;
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-end sm:items-center justify-center p-3 sm:p-4 select-none animate-in fade-in duration-200"
+      className="fixed inset-0 z-[100] bg-black/75 backdrop-blur-xs flex items-end justify-center select-none animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div 
-        className="w-full max-w-[360px] bg-gradient-to-b from-[#1C2063] via-[#161A52] to-[#12153F] border border-[#30358B] rounded-3xl p-6 text-center shadow-2xl relative overflow-visible space-y-4 mb-4 sm:mb-0"
+        className="w-full max-w-[480px] bg-gradient-to-b from-[#1C2063] via-[#161A52] to-[#10133A] border-t border-x border-[#30358B] rounded-t-[32px] rounded-b-none px-6 pt-14 pb-8 text-center shadow-[0_-15px_50px_rgba(0,0,0,0.9)] relative overflow-visible space-y-4 animate-in slide-in-from-bottom duration-300"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Floating 3D Gift Box with Glowing Halo Ring & Emoji Elements (Matching photo_5) */}
-        <div className="relative -mt-16 mx-auto w-36 h-36 flex items-center justify-center pointer-events-none">
+        {/* Floating 3D Gift Box with Glowing Halo Ring & Emoji Elements (Matching Screenshot 2 1:1) */}
+        <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-36 h-36 flex items-center justify-center pointer-events-none z-20">
           {/* Glowing Halo Backing */}
-          <div className="absolute inset-0 rounded-full bg-blue-500/25 blur-xl scale-90 animate-pulse" />
+          <div className="absolute inset-0 rounded-full bg-blue-500/30 blur-xl scale-95 animate-pulse" />
           
           {/* Floating Pink Heart on Left */}
           <div className="absolute top-2 left-2 text-2xl animate-bounce" style={{ animationDuration: '2s' }}>
             💖
           </div>
 
-          {/* Floating Emoji / Sparkle on Right */}
+          {/* Floating Emoji / Smile on Right */}
           <div className="absolute top-3 right-3 text-2xl animate-bounce" style={{ animationDuration: '2.5s' }}>
-            ✨
+            🥰
           </div>
 
           {/* Glowing Orbital Ring */}
@@ -39,9 +40,8 @@ export default function GuestRewardModal({ isOpen, onClose, onOpenLogin }) {
           <img 
             src="/assets/official_khelv/gift-Q7IYrFBN.png" 
             alt="Event Rewards Gift Box"
-            className="w-28 h-28 object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] relative z-10 transition-transform duration-500 hover:scale-105"
+            className="w-28 h-28 object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.7)] relative z-10 transition-transform duration-500 hover:scale-105"
             onError={(e) => {
-              // Fallback if image fails to render
               e.currentTarget.style.display = 'none';
               const parent = e.currentTarget.parentElement;
               if (parent) {
@@ -72,7 +72,7 @@ export default function GuestRewardModal({ isOpen, onClose, onOpenLogin }) {
           </p>
         </div>
 
-        {/* Action Button: Red-to-Blue Luxury Gradient Pill (Matching photo_5) */}
+        {/* Action Button: Red-to-Blue Luxury Gradient Pill (Navigates to Login Screen) */}
         <div className="pt-2 space-y-3">
           <button
             onClick={() => {

@@ -90,17 +90,8 @@ function AppContent() {
   const [isAttendanceOpen, setIsAttendanceOpen] = useState(false);
   const [isGiftOpen, setIsGiftOpen] = useState(false);
   
-  const [authTab, setAuthTab] = useState(() => {
-    const h = window.location.hash || '';
-    const s = window.location.search || '';
-    if (h.includes('register') || s.includes('register')) return 'register';
-    return 'login';
-  });
-  const [isAuthOpen, setIsAuthOpen] = useState(() => {
-    const h = window.location.hash || '';
-    const s = window.location.search || '';
-    return h.includes('register') || h.includes('login') || h.includes('auth') || s.includes('auth=true');
-  });
+  const [authTab, setAuthTab] = useState('login');
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isFairnessOpen, setIsFairnessOpen] = useState(false);
   const [isPartnerRewardOpen, setIsPartnerRewardOpen] = useState(false);
   const [isUsdtBonusOpen, setIsUsdtBonusOpen] = useState(false);
@@ -113,14 +104,30 @@ function AppContent() {
   });
   const [toast, setToast] = useState({ show: false, message: '' });
 
-  // Auto-show Guest Event Rewards popup for unauthenticated visitors (photo_5)
+  // Unified Auth Trigger: For guests, ALWAYS show the bottom sheet first (Screenshot 2),
+  // and clicking 'Log in now to participate' navigates to the login screen (Screenshot 1).
+  const handleOpenAuth = (tab = 'login') => {
+    if (tab === 'register') {
+      setAuthTab('register');
+      setIsAuthOpen(true);
+      return;
+    }
+    if (!user || user.username === 'Guest' || user.is_guest) {
+      setIsGuestRewardOpen(true);
+    } else {
+      setAuthTab('login');
+      setIsAuthOpen(true);
+    }
+  };
+
+  // Auto-show Guest Event Rewards bottom sheet for unauthenticated visitors (Screenshot 2)
   useEffect(() => {
     if (!user || user.username === 'Guest' || user.is_guest) {
       const dismissed = sessionStorage.getItem('royalclub_guest_reward_dismissed');
       if (!dismissed) {
         const timer = setTimeout(() => {
           setIsGuestRewardOpen(true);
-        }, 1500);
+        }, 1200);
         return () => clearTimeout(timer);
       }
     }
@@ -195,8 +202,12 @@ function AppContent() {
         setAuthTab('register');
         setIsAuthOpen(true);
       } else if (cleanTab === 'login' || cleanTab === 'auth' || rawHash.startsWith('login')) {
-        setAuthTab('login');
-        setIsAuthOpen(true);
+        if (!user || user.username === 'Guest' || user.is_guest) {
+          setIsGuestRewardOpen(true);
+        } else {
+          setAuthTab('login');
+          setIsAuthOpen(true);
+        }
       }
 
       if (VALID_TABS.includes(cleanTab)) {
@@ -321,10 +332,7 @@ function AppContent() {
         {/* Sticky Top Header (Hidden in Game, WinGo, Account, Activity, Deposit, Withdraw, Admin) */}
         {!activeGame && activeTab !== 'admin' && activeTab !== 'wingo' && activeTab !== 'account' && activeTab !== 'activity' && activeTab !== 'deposit' && activeTab !== 'withdraw' && (
           <AmarHeader
-            onOpenAuth={(tab = 'login') => {
-              setAuthTab(tab);
-              setIsAuthOpen(true);
-            }}
+            onOpenAuth={handleOpenAuth}
             onOpenWallet={() => setActiveTab('wallet')}
             onOpenDeposit={() => setActiveTab('deposit')}
             onOpenAdmin={() => setActiveTab('admin')}
@@ -346,24 +354,19 @@ function AppContent() {
               onOpenGame={handleOpenGame}
               onOpenWheel={() => {
                 if (user?.username === 'Guest' || user?.is_guest) {
-                  setAuthTab('login');
-                  setIsAuthOpen(true);
+                  handleOpenAuth('login');
                   return;
                 }
                 setIsWheelOpen(true);
               }}
               onOpenGift={() => {
                 if (user?.username === 'Guest' || user?.is_guest) {
-                  setAuthTab('login');
-                  setIsAuthOpen(true);
+                  handleOpenAuth('login');
                   return;
                 }
                 setIsGiftOpen(true);
               }}
-              onOpenAuth={(tab = 'login') => {
-                setAuthTab(tab);
-                setIsAuthOpen(true);
-              }}
+              onOpenAuth={handleOpenAuth}
               onOpenAdmin={() => setActiveTab('admin')}
               onOpenPartnerReward={() => setIsPartnerRewardOpen(true)}
               onOpenUsdtBonus={() => setIsUsdtBonusOpen(true)}
@@ -374,37 +377,31 @@ function AppContent() {
             <ActivityPage 
               onOpenGift={() => {
                 if (user?.username === 'Guest' || user?.is_guest) {
-                  setAuthTab('login');
-                  setIsAuthOpen(true);
+                  handleOpenAuth('login');
                   return;
                 }
                 setIsGiftOpen(true);
               }}
               onOpenAttendance={() => {
                 if (user?.username === 'Guest' || user?.is_guest) {
-                  setAuthTab('login');
-                  setIsAuthOpen(true);
+                  handleOpenAuth('login');
                   return;
                 }
                 setIsAttendanceOpen(true);
               }}
               onOpenWheel={() => {
                 if (user?.username === 'Guest' || user?.is_guest) {
-                  setAuthTab('login');
-                  setIsAuthOpen(true);
+                  handleOpenAuth('login');
                   return;
                 }
                 setIsWheelOpen(true);
               }}
-              onOpenAuth={() => {
-                setAuthTab('login');
-                setIsAuthOpen(true);
-              }}
+              onOpenAuth={handleOpenAuth}
             />
           )}
 
           {activeTab === 'promotion' && (
-            <PromotionPage onOpenAuth={(mode) => { setAuthTab(mode || 'login'); setIsAuthOpen(true); }} />
+            <PromotionPage onOpenAuth={handleOpenAuth} />
           )}
 
           {activeTab === 'account' && (
@@ -414,30 +411,21 @@ function AppContent() {
               onOpenWithdraw={() => setActiveTab('withdraw')}
               onOpenAdmin={() => setActiveTab('admin')}
               onOpenGift={() => setIsGiftOpen(true)}
-              onOpenAuth={() => {
-                setAuthTab('login');
-                setIsAuthOpen(true);
-              }}
+              onOpenAuth={handleOpenAuth}
             />
           )}
 
           {activeTab === 'deposit' && (
             <DepositPage 
               onBack={() => handleSelectTab('account')}
-              onOpenAuth={() => {
-                setAuthTab('login');
-                setIsAuthOpen(true);
-              }}
+              onOpenAuth={handleOpenAuth}
             />
           )}
 
           {activeTab === 'withdraw' && (
             <WithdrawPage 
               onBack={() => handleSelectTab('account')}
-              onOpenAuth={() => {
-                setAuthTab('login');
-                setIsAuthOpen(true);
-              }}
+              onOpenAuth={handleOpenAuth}
             />
           )}
 
@@ -445,10 +433,7 @@ function AppContent() {
             <WalletPage 
               onOpenDeposit={() => setActiveTab('deposit')} 
               onOpenWithdraw={() => setActiveTab('withdraw')} 
-              onOpenAuth={(t = 'login') => {
-                setAuthTab(t);
-                setIsAuthOpen(true);
-              }}
+              onOpenAuth={handleOpenAuth}
             />
           )}
 
@@ -472,16 +457,12 @@ function AppContent() {
             onSelectTab={handleSelectTab}
             onOpenWheel={() => {
               if (user?.username === 'Guest' || user?.is_guest) {
-                setAuthTab('login');
-                setIsAuthOpen(true);
+                handleOpenAuth('login');
                 return;
               }
               setIsWheelOpen(true);
             }}
-            onOpenAuth={(tab = 'login') => {
-              setAuthTab(tab);
-              setIsAuthOpen(true);
-            }}
+            onOpenAuth={handleOpenAuth}
           />
         )}
 
