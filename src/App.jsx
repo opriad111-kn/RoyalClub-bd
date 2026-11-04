@@ -97,7 +97,7 @@ function AppContent() {
   const [isPartnerRewardOpen, setIsPartnerRewardOpen] = useState(false);
   const [isUsdtBonusOpen, setIsUsdtBonusOpen] = useState(false);
   const [isGuestRewardOpen, setIsGuestRewardOpen] = useState(false);
-  const [promoModal, setPromoModal] = useState({ isOpen: false, slide: 0 });
+  const [promoModal, setPromoModal] = useState({ isOpen: false, type: 'first-deposit' });
   const [showSplash, setShowSplash] = useState(() => {
     if (typeof window !== 'undefined') {
       return !sessionStorage.getItem('royalclub_splash_visited');
@@ -147,7 +147,7 @@ function AppContent() {
         if (noRemind !== new Date().toDateString() && !alreadyShownLogin) {
           sessionStorage.setItem('royalclub_promo_login_shown', 'true');
           const timer = setTimeout(() => {
-            setPromoModal({ isOpen: true, slide: 0 });
+            setPromoModal({ isOpen: true, type: 'first-deposit' });
           }, 1500);
           return () => clearTimeout(timer);
         }
@@ -174,8 +174,13 @@ function AppContent() {
         }
       };
       const handleOpenPromo = (e) => {
-        const slide = typeof e?.detail?.slide === 'number' ? e.detail.slide : 0;
-        setPromoModal({ isOpen: true, slide });
+        let promoType = e?.detail?.type;
+        if (!promoType) {
+          if (e?.detail?.slide === 1) promoType = 'referral';
+          else if (e?.detail?.slide === 2) promoType = 'extra-tasks';
+          else promoType = 'first-deposit';
+        }
+        setPromoModal({ isOpen: true, type: promoType });
       };
       window.addEventListener('royalclub_show_toast', handleCustomToast);
       window.addEventListener('royalclub_switch_tab', handleSwitchTab);
@@ -598,7 +603,7 @@ function AppContent() {
         {/* 1:1 KhelV / DKWin Promotional Popups (Photos 1, 2, 3 in BDT ৳ Currency) */}
         <PromoPopupsModal
           isOpen={promoModal.isOpen}
-          initialSlide={promoModal.slide}
+          type={promoModal.type}
           onClose={() => setPromoModal(prev => ({ ...prev, isOpen: false }))}
           onNavigate={(tab) => setActiveTab(tab)}
         />

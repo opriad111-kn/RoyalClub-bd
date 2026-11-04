@@ -117,8 +117,8 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
         } catch (e) {}
         setTimeout(() => {
           onClose();
-          // User Mandate: Show promo popup exactly 1 time upon login
-          window.dispatchEvent(new CustomEvent('royalclub_open_promo', { detail: { slide: 0 } }));
+          // User Mandate: Show First Deposit Bonus popup (Screenshot 3 & Photo 4) exactly 1 time upon login
+          window.dispatchEvent(new CustomEvent('royalclub_open_promo', { detail: { type: 'first-deposit' } }));
         }, 800);
       } else {
         setErrorMsg(res?.message || 'ভুল ফোন নম্বর বা পাসওয়ার্ড!');

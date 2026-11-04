@@ -413,9 +413,9 @@ export default function HomePage({
 
   function handleBannerClick(banner) {
     if (banner.id === 'first-deposit' || banner.action === 'deposit') {
-      window.dispatchEvent(new CustomEvent('royalclub_open_promo', { detail: { slide: 0 } }));
+      window.dispatchEvent(new CustomEvent('royalclub_open_promo', { detail: { type: 'first-deposit' } }));
     } else if (banner.id === 'mega-vip' || banner.action === 'activity') {
-      window.dispatchEvent(new CustomEvent('royalclub_open_promo', { detail: { slide: 2 } }));
+      window.dispatchEvent(new CustomEvent('royalclub_open_promo', { detail: { type: 'extra-tasks' } }));
     } else if (banner.action === 'game' && banner.gameId) {
       onOpenGame(banner.gameId);
     }
