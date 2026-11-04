@@ -638,6 +638,7 @@ export default function DepositPage({ onBack, onOpenAuth }) {
             </div>
           </div>
         )}
+        </div>
       </div>
     );
   }

@@ -1135,7 +1135,7 @@ export function GameProvider({ children }) {
     } catch (e) {}
 
     try {
-      const allowedCols = ['nickname', 'avatar', 'avatar_id', 'wallet_account', 'claimed_vip_levels', 'balance'];
+      const allowedCols = ['nickname', 'avatar', 'avatar_id', 'wallet_account', 'claimed_vip_levels', 'balance', 'safe_balance'];
       const patch = {};
       for (const k of allowedCols) {
         if (updates[k] !== undefined) patch[k] = updates[k];
@@ -1241,6 +1241,38 @@ export function GameProvider({ children }) {
     } catch (e) {}
 
     return { success: true, amount: rewardAmount, message: `VIP ${targetLevel} reward ৳${rewardAmount} claimed successfully!` };
+  }
+
+  // Safe Vault: Real Transfer In / Out with Interest Rate Tracking (User Mandate)
+  async function transferSafeBalance(direction, amount) {
+    if (!user || user.username === 'Guest' || user.is_guest) {
+      return { success: false, message: 'Please log in to use the Safe Vault.' };
+    }
+    const numAmount = parseFloat(amount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      return { success: false, message: 'Please enter a valid amount.' };
+    }
+
+    const currentBal = Number(user.balance || 0);
+    const safeBal = Number(user.safe_balance || 0);
+
+    if (direction === 'in') {
+      if (currentBal < numAmount) {
+        return { success: false, message: 'Insufficient available balance.' };
+      }
+      const nextBal = parseFloat((currentBal - numAmount).toFixed(2));
+      const nextSafe = parseFloat((safeBal + numAmount).toFixed(2));
+      await updateUserProfile({ balance: nextBal, safe_balance: nextSafe });
+      return { success: true, message: `৳${numAmount.toFixed(2)} transferred to Safe.` };
+    } else {
+      if (safeBal < numAmount) {
+        return { success: false, message: 'Insufficient safe balance.' };
+      }
+      const nextBal = parseFloat((currentBal + numAmount).toFixed(2));
+      const nextSafe = parseFloat((safeBal - numAmount).toFixed(2));
+      await updateUserProfile({ balance: nextBal, safe_balance: nextSafe });
+      return { success: true, message: `৳${numAmount.toFixed(2)} transferred to Main Wallet.` };
+    }
   }
 
   const [supabaseStatus, setSupabaseStatus] = useState('checking'); // 'connected' | 'offline' | 'checking'
@@ -2676,7 +2708,8 @@ export function GameProvider({ children }) {
       changeUserPassword,
       updateUserProfile,
       saveUserWalletAccount,
-      claimVipLevelReward
+      claimVipLevelReward,
+      transferSafeBalance
     }}>
       {children}
     </GameContext.Provider>

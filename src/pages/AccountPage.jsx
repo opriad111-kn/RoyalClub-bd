@@ -44,17 +44,19 @@ export default function AccountPage({
     refreshSupabaseData,
     notifications,
     markNotificationRead,
+    deleteNotification,
     supportTickets,
     createSupportTicket,
     editUserProfile,
-    changeUserPassword
+    changeUserPassword,
+    transferSafeBalance
   } = useGame();
 
   const { lang, setLang, toggleLang, t } = useLanguage();
 
   // Active sub-views & modals
   const [activeModal, setActiveModal] = useState(null); 
-  // 'avatar', 'settings', 'transaction', 'gameHistory', 'depositBonus', 'firstDeposit', 'depositRecords', 'withdrawRecords', 'notifications', 'gifts', 'feedback', 'guide', 'about', 'logoutConfirm', 'changePassword'
+  // 'avatar', 'settings', 'transaction', 'gameHistory', 'depositBonus', 'firstDeposit', 'depositRecords', 'withdrawRecords', 'notifications', 'gifts', 'feedback', 'guide', 'about', 'logoutConfirm', 'changePassword', 'safe', 'coupons', 'gameStats', 'selfService'
 
   const [copied, setCopied] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -69,6 +71,27 @@ export default function AccountPage({
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordNotice, setPasswordNotice] = useState({ text: '', type: '' });
+
+  // Safe Vault states
+  const [safeTab, setSafeTab] = useState('in'); // 'in' | 'out'
+  const [safeAmount, setSafeAmount] = useState('');
+  const [safeNotice, setSafeNotice] = useState({ text: '', type: '' });
+  const [isSafeSubmitting, setIsSafeSubmitting] = useState(false);
+
+  // Top-Up Coupons state
+  const [couponTab, setCouponTab] = useState('unused'); // 'unused' | 'used' | 'expired'
+
+  // Game Statistics state
+  const [statsTimeframe, setStatsTimeframe] = useState('today'); // 'today' | 'yesterday' | 'week' | 'month'
+
+  // About Us sub-view
+  const [aboutSubView, setAboutSubView] = useState('main'); // 'main' | 'confidentiality' | 'risk'
+
+  // Beginner Guide tab
+  const [guideTab, setGuideTab] = useState('wingo'); // 'wingo' | 'finance' | 'referral' | 'security'
+
+  // Notification tab
+  const [notifTab, setNotifTab] = useState('notification'); // 'notification' | 'information'
 
   // History filters
   const [transFilterType, setTransFilterType] = useState('All');
@@ -172,6 +195,29 @@ export default function AccountPage({
       setTicketSubject('');
       setTicketMessage('');
       setTimeout(() => setTicketNotice(''), 3000);
+    }
+  }
+
+  // Safe Vault transfer handler
+  async function handleSafeTransfer() {
+    if (!safeAmount || isNaN(parseFloat(safeAmount)) || parseFloat(safeAmount) <= 0) {
+      setSafeNotice({ text: 'Please enter a valid amount', type: 'error' });
+      return;
+    }
+    setIsSafeSubmitting(true);
+    setSafeNotice({ text: '', type: '' });
+    if (typeof transferSafeBalance === 'function') {
+      const res = await transferSafeBalance(safeTab, safeAmount);
+      setIsSafeSubmitting(false);
+      if (res?.success) {
+        setSafeNotice({ text: res.message, type: 'success' });
+        setSafeAmount('');
+      } else {
+        setSafeNotice({ text: res?.message || 'Transfer failed', type: 'error' });
+      }
+    } else {
+      setIsSafeSubmitting(false);
+      setSafeNotice({ text: 'Safe Vault service is updating. Please try again.', type: 'error' });
     }
   }
 
@@ -389,6 +435,40 @@ export default function AccountPage({
         </div>
 
         {/* ----------------------------------------------------------------------- */}
+        {/* Safe Vault Card (Screenshot 1 & photo_32 1:1 Replica)                   */}
+        {/* ----------------------------------------------------------------------- */}
+        <div 
+          onClick={() => {
+            setActiveModal('safe');
+            setSafeNotice({ text: '', type: '' });
+            setSafeAmount('');
+          }}
+          className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-3.5 flex items-center justify-between cursor-pointer hover:border-[#F5BE00]/60 active:scale-98 transition shadow-md"
+        >
+          <div className="flex items-center space-x-3 min-w-0">
+            <div className="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 shadow-inner">
+              <svg className="w-6 h-6 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                <circle cx="12" cy="16" r="1.5" />
+              </svg>
+            </div>
+            <div className="min-w-0 text-left">
+              <h4 className="text-xs font-bold text-white leading-tight">Safe</h4>
+              <p className="text-[10px] text-[#7098C5] leading-tight mt-0.5 truncate">
+                The daily interest rate is 0.1%, and the income is calculated once every 1 minutes.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-1.5 shrink-0 pl-2">
+            <span className="text-xs font-bold text-[#F5BE00]">৳{Number(safeUser?.safe_balance || 0).toFixed(2)}</span>
+            <svg className="w-3.5 h-3.5 text-[#7098C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </div>
+
+        {/* ----------------------------------------------------------------------- */}
         {/* 2x2 Financial History Grid (Matching Screenshot 1 & 5)                  */}
         {/* ----------------------------------------------------------------------- */}
         <div className="grid grid-cols-2 gap-2.5">
@@ -456,25 +536,27 @@ export default function AccountPage({
         </div>
 
         {/* ----------------------------------------------------------------------- */}
-        {/* Menu List Container (Matching Screenshot 1)                             */}
+        {/* Menu List Container (Prominent Large 3D Icons - Screenshot 1 1:1)       */}
         {/* ----------------------------------------------------------------------- */}
         <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl divide-y divide-[#30358B]/50 overflow-hidden shadow-sm">
           {/* Notification */}
           <div 
             onClick={() => setActiveModal('notifications')}
-            className="flex items-center justify-between px-4 py-3.5 cursor-pointer hover:bg-white/[0.02] active:bg-white/[0.04] transition"
+            className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-white/[0.02] active:bg-white/[0.04] transition"
           >
-            <div className="flex items-center space-x-3">
-              <KhelvIcon name="notification" className="w-5 h-5 text-[#629EFF]" />
-              <span className="text-xs font-medium text-white">Notification</span>
+            <div className="flex items-center space-x-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#1E50A0] to-[#122E60] border border-[#3A70D0]/40 shadow-[0_2px_8px_rgba(20,50,150,0.3)] flex items-center justify-center shrink-0">
+                <KhelvIcon name="notification" className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-xs font-bold text-white tracking-wide">Notification</span>
             </div>
-            <div className="flex items-center space-x-1.5">
+            <div className="flex items-center space-x-2">
               {(notifications || []).filter(n => !n.isRead).length > 0 && (
-                <span className="w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">
+                <span className="w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow">
                   {(notifications || []).filter(n => !n.isRead).length}
                 </span>
               )}
-              <svg className="w-3.5 h-3.5 text-[#7098C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-[#7098C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
               </svg>
             </div>
@@ -483,41 +565,47 @@ export default function AccountPage({
           {/* Gifts */}
           <div 
             onClick={() => setActiveModal('gifts')}
-            className="flex items-center justify-between px-4 py-3.5 cursor-pointer hover:bg-white/[0.02] active:bg-white/[0.04] transition"
+            className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-white/[0.02] active:bg-white/[0.04] transition"
           >
-            <div className="flex items-center space-x-3">
-              <KhelvIcon name="gifts" className="w-5 h-5 text-[#629EFF]" />
-              <span className="text-xs font-medium text-white">Gifts</span>
+            <div className="flex items-center space-x-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#7B2CBF] to-[#4A107A] border border-[#9D4EDD]/40 shadow-[0_2px_8px_rgba(120,40,190,0.3)] flex items-center justify-center shrink-0">
+                <KhelvIcon name="gifts" className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-xs font-bold text-white tracking-wide">Gifts</span>
             </div>
-            <svg className="w-3.5 h-3.5 text-[#7098C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-[#7098C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
             </svg>
           </div>
 
           {/* My Top-Up Coupons */}
           <div 
-            onClick={() => setActiveModal('firstDeposit')}
-            className="flex items-center justify-between px-4 py-3.5 cursor-pointer hover:bg-white/[0.02] active:bg-white/[0.04] transition"
+            onClick={() => setActiveModal('coupons')}
+            className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-white/[0.02] active:bg-white/[0.04] transition"
           >
-            <div className="flex items-center space-x-3">
-              <KhelvIcon name="login_list_icon" className="w-5 h-5 text-[#629EFF]" />
-              <span className="text-xs font-medium text-white">My Top-Up Coupons</span>
+            <div className="flex items-center space-x-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#028090] to-[#004E64] border border-[#00A896]/40 shadow-[0_2px_8px_rgba(0,160,150,0.3)] flex items-center justify-center shrink-0">
+                <KhelvIcon name="login_list_icon" className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-xs font-bold text-white tracking-wide">My Top-Up Coupons</span>
             </div>
-            <svg className="w-3.5 h-3.5 text-[#7098C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-[#7098C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
             </svg>
           </div>
 
           {/* Game statistics */}
           <div 
-            onClick={() => setActiveModal('gameHistory')}
-            className="flex items-center justify-between px-4 py-3.5 cursor-pointer hover:bg-white/[0.02] active:bg-white/[0.04] transition"
+            onClick={() => setActiveModal('gameStats')}
+            className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-white/[0.02] active:bg-white/[0.04] transition"
           >
-            <div className="flex items-center space-x-3">
-              <KhelvIcon name="statsIcon" className="w-5 h-5 text-[#629EFF]" />
-              <span className="text-xs font-medium text-white">Game statistics</span>
+            <div className="flex items-center space-x-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#277DA1] to-[#1D3557] border border-[#4EA8DE]/40 shadow-[0_2px_8px_rgba(30,100,160,0.3)] flex items-center justify-center shrink-0">
+                <KhelvIcon name="statsIcon" className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-xs font-bold text-white tracking-wide">Game statistics</span>
             </div>
-            <svg className="w-3.5 h-3.5 text-[#7098C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-[#7098C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
             </svg>
           </div>
@@ -525,15 +613,17 @@ export default function AccountPage({
           {/* Language */}
           <div 
             onClick={() => setActiveModal('language')}
-            className="flex items-center justify-between px-4 py-3.5 cursor-pointer hover:bg-white/[0.02] active:bg-white/[0.04] transition"
+            className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-white/[0.02] active:bg-white/[0.04] transition"
           >
-            <div className="flex items-center space-x-3">
-              <KhelvIcon name="language" className="w-5 h-5 text-[#629EFF]" />
-              <span className="text-xs font-medium text-white">{lang === 'bn' ? 'ভাষা' : 'Language'}</span>
+            <div className="flex items-center space-x-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#3D5A80] to-[#293241] border border-[#98C1D9]/40 shadow-[0_2px_8px_rgba(60,90,130,0.3)] flex items-center justify-center shrink-0">
+                <KhelvIcon name="language" className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-xs font-bold text-white tracking-wide">{lang === 'bn' ? 'ভাষা' : 'Language'}</span>
             </div>
-            <div className="flex items-center space-x-1.5">
-              <span className="text-xs text-[#D4E8FF] font-medium">{lang === 'bn' ? 'বাংলা' : 'English'}</span>
-              <svg className="w-3.5 h-3.5 text-[#7098C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center space-x-2">
+              <span className="text-xs text-[#D4E8FF] font-semibold">{lang === 'bn' ? 'বাংলা' : 'English'}</span>
+              <svg className="w-4 h-4 text-[#7098C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
               </svg>
             </div>
@@ -541,7 +631,7 @@ export default function AccountPage({
         </div>
 
         {/* ----------------------------------------------------------------------- */}
-        {/* Service Center Grid (Matching Screenshot 1)                            */}
+        {/* Service Center Grid (Prominent Large 3D Icons - Screenshot 1 1:1)       */}
         {/* ----------------------------------------------------------------------- */}
         <div className="space-y-2 pt-1">
           <h3 className="text-xs font-bold text-white px-1">Service center</h3>
@@ -552,7 +642,7 @@ export default function AccountPage({
                 onClick={() => setActiveModal('settings')}
                 className="flex flex-col items-center justify-center cursor-pointer group active:scale-95 transition"
               >
-                <div className="w-8 h-8 flex items-center justify-center mb-1">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#1C255A] to-[#10173D] border border-[#303B8A] shadow-md flex items-center justify-center mb-1.5 text-[#7BAAFF] group-hover:border-[#629EFF]">
                   <KhelvIcon name="settingCenter" className="w-6 h-6 text-[#629EFF]" />
                 </div>
                 <span className="text-[11px] text-[#D4E8FF] font-medium group-hover:text-white transition">
@@ -565,7 +655,7 @@ export default function AccountPage({
                 onClick={() => setActiveModal('feedback')}
                 className="flex flex-col items-center justify-center cursor-pointer group active:scale-95 transition"
               >
-                <div className="w-8 h-8 flex items-center justify-center mb-1">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#1C255A] to-[#10173D] border border-[#303B8A] shadow-md flex items-center justify-center mb-1.5 text-[#7BAAFF] group-hover:border-[#629EFF]">
                   <KhelvIcon name="feedback" className="w-6 h-6 text-[#629EFF]" />
                 </div>
                 <span className="text-[11px] text-[#D4E8FF] font-medium group-hover:text-white transition">
@@ -578,7 +668,7 @@ export default function AccountPage({
                 onClick={() => setActiveModal('notifications')}
                 className="flex flex-col items-center justify-center cursor-pointer group active:scale-95 transition"
               >
-                <div className="w-8 h-8 flex items-center justify-center mb-1">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#1C255A] to-[#10173D] border border-[#303B8A] shadow-md flex items-center justify-center mb-1.5 text-[#7BAAFF] group-hover:border-[#629EFF]">
                   <KhelvIcon name="notificationCenter" className="w-6 h-6 text-[#629EFF]" />
                 </div>
                 <span className="text-[11px] text-[#D4E8FF] font-medium group-hover:text-white transition">
@@ -586,12 +676,12 @@ export default function AccountPage({
                 </span>
               </div>
 
-              {/* Customer Service */}
+              {/* Customer Service (Opens 1:1 Self-Service Center) */}
               <div 
-                onClick={() => setActiveModal('feedback')}
+                onClick={() => setActiveModal('selfService')}
                 className="flex flex-col items-center justify-center cursor-pointer group active:scale-95 transition"
               >
-                <div className="w-8 h-8 flex items-center justify-center mb-1">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#1C255A] to-[#10173D] border border-[#303B8A] shadow-md flex items-center justify-center mb-1.5 text-[#7BAAFF] group-hover:border-[#629EFF]">
                   <KhelvIcon name="server" className="w-6 h-6 text-[#629EFF]" />
                 </div>
                 <span className="text-[11px] text-[#D4E8FF] font-medium group-hover:text-white transition">
@@ -604,7 +694,7 @@ export default function AccountPage({
                 onClick={() => setActiveModal('guide')}
                 className="flex flex-col items-center justify-center cursor-pointer group active:scale-95 transition"
               >
-                <div className="w-8 h-8 flex items-center justify-center mb-1">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#1C255A] to-[#10173D] border border-[#303B8A] shadow-md flex items-center justify-center mb-1.5 text-[#7BAAFF] group-hover:border-[#629EFF]">
                   <KhelvIcon name="guide" className="w-6 h-6 text-[#629EFF]" />
                 </div>
                 <span className="text-[11px] text-[#D4E8FF] font-medium group-hover:text-white transition">
@@ -614,10 +704,13 @@ export default function AccountPage({
 
               {/* About us */}
               <div 
-                onClick={() => setActiveModal('about')}
+                onClick={() => {
+                  setAboutSubView('main');
+                  setActiveModal('about');
+                }}
                 className="flex flex-col items-center justify-center cursor-pointer group active:scale-95 transition"
               >
-                <div className="w-8 h-8 flex items-center justify-center mb-1">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#1C255A] to-[#10173D] border border-[#303B8A] shadow-md flex items-center justify-center mb-1.5 text-[#7BAAFF] group-hover:border-[#629EFF]">
                   <KhelvIcon name="about" className="w-6 h-6 text-[#629EFF]" />
                 </div>
                 <span className="text-[11px] text-[#D4E8FF] font-medium group-hover:text-white transition">
@@ -1109,52 +1202,495 @@ export default function AccountPage({
       )}
 
       {/* ------------------------------------------------------------------------- */}
-      {/* MODAL 6: GIFTS & PROMO CODES                                              */}
+      {/* MODAL 6: GIFTS (Screenshot photo_14 1:1 REPLICA)                          */}
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'gifts' && (
         <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
           <div className="w-full max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
-          <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
-            <button 
-              onClick={() => setActiveModal(null)}
-              className="p-1 -ml-1 text-white hover:text-amber-400 active:scale-95 transition cursor-pointer"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <h2 className="flex-1 text-center font-bold text-sm text-white pr-4">
-              Gifts & Promo Codes
-            </h2>
-          </div>
+            <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center shadow-md">
+              <button 
+                onClick={() => setActiveModal(null)}
+                className="p-1 -ml-1 text-white hover:text-amber-400 active:scale-95 transition cursor-pointer"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <h2 className="flex-1 text-center font-bold text-sm text-white pr-4">
+                Gifts
+              </h2>
+            </div>
 
-          <div className="p-4 space-y-4 flex-1">
-            <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-3">
-              <label className="text-xs text-[#7098C5] block font-medium">Please enter redemption code</label>
-              <input
-                type="text"
-                value={giftCode}
-                onChange={(e) => setGiftCode(e.target.value)}
-                placeholder="Enter Gift Code (e.g. ROYAL100)"
-                className="w-full bg-[#14122E] border border-[#30358B] rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#629EFF]"
-              />
-              {giftNotice && (
-                <p className="text-xs text-amber-400">{giftNotice}</p>
-              )}
+            {/* Top Banner (photo_14) */}
+            <div 
+              className="p-4 mx-4 mt-3 rounded-2xl flex items-center justify-between relative overflow-hidden shadow-lg"
+              style={{
+                background: 'linear-gradient(90deg, #E92A23 0%, #1374EC 100%)'
+              }}
+            >
+              <div className="space-y-1 z-10">
+                <h3 className="font-black text-base text-white">Hi</h3>
+                <p className="text-xs text-white/90 font-medium">We have a gift for you</p>
+              </div>
+              <div className="w-16 h-16 flex items-center justify-center shrink-0 z-10">
+                <KhelvIcon name="gifts" className="w-14 h-14" />
+              </div>
+              <div className="absolute right-0 top-0 bottom-0 w-32 bg-white/10 skew-x-12 pointer-events-none" />
+            </div>
+
+            <div className="p-4 space-y-4 flex-1">
+              {/* Input Card */}
+              <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-3 shadow-md">
+                <label className="text-xs text-[#7098C5] block font-medium">Please enter the gift code below</label>
+                <input
+                  type="text"
+                  value={giftCode}
+                  onChange={(e) => setGiftCode(e.target.value)}
+                  placeholder="Please enter gift code"
+                  className="w-full bg-[#14122E] border border-[#30358B] rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-[#629EFF]"
+                />
+                {giftNotice && (
+                  <p className={`text-xs ${giftNotice.includes('credited') ? 'text-emerald-400' : 'text-amber-400'}`}>{giftNotice}</p>
+                )}
+                <button
+                  onClick={() => {
+                    if (!giftCode.trim()) return;
+                    setGiftNotice('Invalid or expired gift code. Please obtain valid code from official Telegram.');
+                  }}
+                  className="w-full py-3.5 rounded-full font-bold text-xs text-white shadow-md active:scale-95 transition cursor-pointer"
+                  style={{
+                    background: 'linear-gradient(90deg, #E92A23 0%, #1374EC 100%)'
+                  }}
+                >
+                  Receive
+                </button>
+              </div>
+
+              {/* History Card (photo_14) */}
+              <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-3 shadow-md">
+                <div className="flex items-center space-x-2 border-b border-[#30358B]/50 pb-2.5">
+                  <svg className="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                  <span className="text-xs font-bold text-white">History</span>
+                </div>
+                <div className="py-8 text-center space-y-2">
+                  <div className="w-14 h-14 mx-auto rounded-full bg-[#14122E] flex items-center justify-center text-2xl text-[#7098C5]/50 shadow-inner">
+                    🎁
+                  </div>
+                  <p className="text-xs text-[#7098C5]">No data</p>
+                </div>
+              </div>
+
+              {/* Redemption Notes (photo_14) */}
+              <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2.5 shadow-md">
+                <div className="flex items-center space-x-2 border-b border-[#30358B]/50 pb-2">
+                  <span className="text-amber-400 text-xs">◆</span>
+                  <span className="text-xs font-bold text-white">Redemption Notes</span>
+                </div>
+                <div className="space-y-2 text-[11px] text-[#7098C5] leading-relaxed">
+                  <p className="flex items-start space-x-1.5">
+                    <span className="text-amber-400 shrink-0 mt-0.5">◆</span>
+                    <span>Each gift code can only be used once per account.</span>
+                  </p>
+                  <p className="flex items-start space-x-1.5">
+                    <span className="text-amber-400 shrink-0 mt-0.5">◆</span>
+                    <span>Please follow the official Telegram channels and customer service to receive gift codes.</span>
+                  </p>
+                  <p className="flex items-start space-x-1.5">
+                    <span className="text-amber-400 shrink-0 mt-0.5">◆</span>
+                    <span>The bonus received from the gift code is directly credited to your account balance.</span>
+                  </p>
+                  <p className="flex items-start space-x-1.5">
+                    <span className="text-amber-400 shrink-0 mt-0.5">◆</span>
+                    <span>Royal Club BD reserves the right of final interpretation of all promotional activities.</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------------------- */}
+      {/* MODAL: SAFE VAULT (photo_32 1:1 REPLICA)                                  */}
+      {/* ------------------------------------------------------------------------- */}
+      {activeModal === 'safe' && (
+        <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
+          <div className="w-full max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
+            <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center shadow-md">
+              <button 
+                onClick={() => setActiveModal(null)}
+                className="p-1 -ml-1 text-white hover:text-amber-400 active:scale-95 transition cursor-pointer"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <h2 className="flex-1 text-center font-bold text-sm text-white pr-4">
+                Safe
+              </h2>
+            </div>
+
+            <div className="p-4 space-y-4 flex-1">
+              {/* Safe Balance Card */}
+              <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-3 shadow-md relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-[#7098C5] font-medium">Safe balance</span>
+                  <span className="text-[10.5px] px-2 py-0.5 rounded-full bg-amber-500/20 text-[#F5BE00] font-bold">
+                    0.1% Daily Interest
+                  </span>
+                </div>
+                <div className="text-2xl font-black text-white">
+                  ৳{Number(safeUser?.safe_balance || 0).toFixed(2)}
+                </div>
+                <div className="pt-2 border-t border-[#30358B]/50 flex items-center justify-between text-xs">
+                  <span className="text-[#7098C5]">Main wallet balance:</span>
+                  <span className="text-white font-bold">৳{Number(safeUser?.balance || 0).toFixed(2)}</span>
+                </div>
+              </div>
+
+              {/* Transfer Tabs */}
+              <div className="grid grid-cols-2 gap-2 bg-[#1C2063] p-1 rounded-xl border border-[#30358B]">
+                <button
+                  type="button"
+                  onClick={() => { setSafeTab('in'); setSafeNotice({ text: '', type: '' }); }}
+                  className={`py-2.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                    safeTab === 'in'
+                      ? 'bg-gradient-to-r from-[#E92A23] to-[#1374EC] text-white shadow'
+                      : 'text-[#7098C5] hover:text-white'
+                  }`}
+                >
+                  Transfer In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setSafeTab('out'); setSafeNotice({ text: '', type: '' }); }}
+                  className={`py-2.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                    safeTab === 'out'
+                      ? 'bg-gradient-to-r from-[#E92A23] to-[#1374EC] text-white shadow'
+                      : 'text-[#7098C5] hover:text-white'
+                  }`}
+                >
+                  Transfer Out
+                </button>
+              </div>
+
+              {/* Transfer Amount Input */}
+              <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-3 shadow-md">
+                <div className="flex items-center justify-between text-xs">
+                  <label className="text-[#7098C5] font-medium">
+                    {safeTab === 'in' ? 'Deposit into Safe' : 'Withdraw from Safe'}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (safeTab === 'in') setSafeAmount(String(safeUser?.balance || 0));
+                      else setSafeAmount(String(safeUser?.safe_balance || 0));
+                    }}
+                    className="text-amber-400 font-bold text-xs hover:underline cursor-pointer"
+                  >
+                    All
+                  </button>
+                </div>
+
+                <div className="flex items-center bg-[#14122E] border border-[#30358B] rounded-xl px-3 py-2.5 focus-within:border-[#F5BE00]">
+                  <span className="text-amber-400 font-bold text-sm mr-2">৳</span>
+                  <input
+                    type="number"
+                    value={safeAmount}
+                    onChange={(e) => setSafeAmount(e.target.value)}
+                    placeholder="Please enter amount"
+                    className="w-full bg-transparent text-white text-xs outline-none font-mono"
+                  />
+                </div>
+
+                {/* Quick Amounts */}
+                <div className="grid grid-cols-4 gap-2 pt-1">
+                  {[100, 500, 1000, 5000].map((amt) => (
+                    <button
+                      key={amt}
+                      type="button"
+                      onClick={() => setSafeAmount(String(amt))}
+                      className="py-1.5 rounded-lg border border-[#30358B] bg-[#14122E] text-xs font-bold text-[#D4E8FF] hover:border-[#F5BE00] transition active:scale-95"
+                    >
+                      +{amt}
+                    </button>
+                  ))}
+                </div>
+
+                {safeNotice.text && (
+                  <div className={`p-2.5 rounded-xl text-xs font-medium ${safeNotice.type === 'success' ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/40' : 'bg-rose-950/80 text-rose-300 border border-rose-500/40'}`}>
+                    {safeNotice.text}
+                  </div>
+                )}
+
+                <button
+                  onClick={handleSafeTransfer}
+                  disabled={isSafeSubmitting}
+                  className="w-full py-3.5 rounded-full font-bold text-xs text-[#14122E] bg-[#F5BE00] shadow-lg active:scale-98 transition cursor-pointer hover:brightness-105 disabled:opacity-50 mt-2"
+                >
+                  {isSafeSubmitting ? 'Processing...' : (safeTab === 'in' ? 'Transfer In to Safe' : 'Transfer Out to Main Wallet')}
+                </button>
+              </div>
+
+              {/* Safe Rules Note */}
+              <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2 text-[11px] text-[#7098C5] shadow-md">
+                <h4 className="font-bold text-white text-xs">Safe Rules</h4>
+                <p>1. The daily interest rate is 0.1%, and the income is calculated once every 1 minute.</p>
+                <p>2. Funds in the Safe cannot be directly used for betting. Transfer them back to the main wallet at any time.</p>
+                <p>3. Zero handling fee for all safe transfers in and out.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------------------- */}
+      {/* MODAL: MY TOP-UP COUPONS (photo_15 1:1 REPLICA)                           */}
+      {/* ------------------------------------------------------------------------- */}
+      {activeModal === 'coupons' && (
+        <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
+          <div className="w-full max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
+            <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center shadow-md">
+              <button 
+                onClick={() => setActiveModal(null)}
+                className="p-1 -ml-1 text-white hover:text-amber-400 active:scale-95 transition cursor-pointer"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <h2 className="flex-1 text-center font-bold text-sm text-white pr-4">
+                My Top-Up Coupons
+              </h2>
+            </div>
+
+            {/* 3 Tabs: Unused / Used / Expired (photo_15) */}
+            <div className="p-4">
+              <div className="grid grid-cols-3 gap-2 bg-[#1C2063] p-1 rounded-xl border border-[#30358B]">
+                {[
+                  { id: 'unused', label: 'Unused (0)' },
+                  { id: 'used', label: 'Used (0)' },
+                  { id: 'expired', label: 'Expired (0)' }
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setCouponTab(tab.id)}
+                    className={`py-2 rounded-lg text-xs font-bold transition cursor-pointer ${
+                      couponTab === tab.id
+                        ? 'bg-gradient-to-r from-[#E92A23] to-[#1374EC] text-white shadow'
+                        : 'text-[#7098C5] hover:text-white'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Empty State Graphic (photo_15) */}
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-3">
+              <div className="w-20 h-20 rounded-2xl bg-[#1C2063] border border-[#30358B] flex items-center justify-center text-4xl shadow-inner">
+                🎟️
+              </div>
+              <h4 className="text-sm font-bold text-white">No data</h4>
+              <p className="text-xs text-[#7098C5] max-w-xs leading-relaxed">
+                You currently have no top-up coupons. Recharge promotions and event reward coupons will be stored here.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------------------- */}
+      {/* MODAL: GAME STATISTICS (photo_16 1:1 REPLICA)                             */}
+      {/* ------------------------------------------------------------------------- */}
+      {activeModal === 'gameStats' && (
+        <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
+          <div className="w-full max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
+            <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center shadow-md">
+              <button 
+                onClick={() => setActiveModal(null)}
+                className="p-1 -ml-1 text-white hover:text-amber-400 active:scale-95 transition cursor-pointer"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <h2 className="flex-1 text-center font-bold text-sm text-white pr-4">
+                Game statistics
+              </h2>
+            </div>
+
+            {/* Filter Pills: Today / Yesterday / This week / This month (photo_16) */}
+            <div className="p-4 space-y-4 flex-1">
+              <div className="grid grid-cols-4 gap-2 bg-[#1C2063] p-1 rounded-xl border border-[#30358B]">
+                {[
+                  { id: 'today', label: 'Today' },
+                  { id: 'yesterday', label: 'Yesterday' },
+                  { id: 'week', label: 'This week' },
+                  { id: 'month', label: 'This month' }
+                ].map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => setStatsTimeframe(p.id)}
+                    className={`py-2 rounded-lg text-xs font-bold transition cursor-pointer ${
+                      statsTimeframe === p.id
+                        ? 'bg-gradient-to-r from-[#E92A23] to-[#1374EC] text-white shadow'
+                        : 'text-[#7098C5] hover:text-white'
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Total Bet Summary Card (photo_16) */}
+              <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-3 shadow-md">
+                <div className="flex items-center justify-between border-b border-[#30358B]/50 pb-2.5">
+                  <span className="text-xs text-[#7098C5] font-medium">Total bet</span>
+                  <span className="text-sm font-bold text-white">৳0.00</span>
+                </div>
+                <div className="grid grid-cols-2 gap-3 pt-1">
+                  <div>
+                    <span className="text-[10.5px] text-[#7098C5] block">Total winning</span>
+                    <span className="text-xs font-bold text-emerald-400">৳0.00</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10.5px] text-[#7098C5] block">Profit and loss</span>
+                    <span className="text-xs font-bold text-white">৳0.00</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Breakdown Cards by Game Category (photo_16) */}
+              <div className="space-y-2.5">
+                {[
+                  { name: 'Lottery', sub: 'WinGo, TRX, K3, 5D', bet: '0.00', win: '0.00' },
+                  { name: 'Video / Casino', sub: 'Crazy Time, Roulette, Live Studio', bet: '0.00', win: '0.00' },
+                  { name: 'Slot', sub: 'Fortune Gems, Super Ace, Olympus', bet: '0.00', win: '0.00' },
+                  { name: 'Fish', sub: 'Jackpot Fishing, Ocean King', bet: '0.00', win: '0.00' },
+                  { name: 'Sport', sub: 'SABA, Cricket, Football', bet: '0.00', win: '0.00' },
+                  { name: 'ChessCard', sub: 'Rummy, Teen Patti, Poker', bet: '0.00', win: '0.00' }
+                ].map((cat, idx) => (
+                  <div key={idx} className="bg-[#1C2063] border border-[#30358B] rounded-xl p-3.5 space-y-2 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-white">{cat.name}</span>
+                      <span className="text-[10px] text-[#7098C5]">{cat.sub}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-[#30358B]/40">
+                      <div>
+                        <span className="text-[10px] text-[#7098C5] block">Bet</span>
+                        <span className="font-bold text-white">৳{cat.bet}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] text-[#7098C5] block">Winnings</span>
+                        <span className="font-bold text-emerald-400">৳{cat.win}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------------------- */}
+      {/* MODAL: SELF-SERVICE CENTER (photo_19 1:1 REPLICA)                         */}
+      {/* ------------------------------------------------------------------------- */}
+      {activeModal === 'selfService' && (
+        <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
+          <div className="w-full max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
+            <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center shadow-md">
+              <button 
+                onClick={() => setActiveModal(null)}
+                className="p-1 -ml-1 text-white hover:text-amber-400 active:scale-95 transition cursor-pointer"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <h2 className="flex-1 text-center font-bold text-sm text-white pr-4">
+                Self-service Center
+              </h2>
+            </div>
+
+            <div className="p-4 space-y-4 flex-1">
+              {/* Menu Items (photo_19) */}
+              <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl divide-y divide-[#30358B]/50 overflow-hidden shadow-md">
+                {[
+                  {
+                    title: 'Deposit Not Received',
+                    sub: 'Query and submit missing deposit slip',
+                    action: () => { setActiveModal(null); if (onOpenDeposit) onOpenDeposit(); }
+                  },
+                  {
+                    title: 'Withdrawal problem',
+                    sub: 'Check pending status and transaction hash',
+                    action: () => { setActiveModal(null); if (onOpenWithdraw) onOpenWithdraw(); }
+                  },
+                  {
+                    title: 'Change ID Login Password',
+                    sub: 'Update your login password securely',
+                    action: () => setActiveModal('changePassword')
+                  },
+                  {
+                    title: 'Modify E-Wallet Information',
+                    sub: 'Manage bound bKash or Nagad wallet',
+                    action: () => { setActiveModal(null); if (onOpenWithdraw) onOpenWithdraw(); }
+                  },
+                  {
+                    title: 'Add USDT Address',
+                    sub: 'Configure TRC20 wallet for USDT withdrawal',
+                    action: () => { setActiveModal(null); if (onOpenWithdraw) onOpenWithdraw(); }
+                  },
+                  {
+                    title: 'Online Service (24/7 Agent)',
+                    sub: 'Direct live support on official Telegram',
+                    action: () => window.open(settings?.TELEGRAM_SUPPORT_URL || 'https://t.me/RoyalClubBD_Support', '_blank')
+                  }
+                ].map((item, idx) => (
+                  <div
+                    key={idx}
+                    onClick={item.action}
+                    className="flex items-center justify-between p-4 cursor-pointer hover:bg-white/[0.02] active:bg-white/[0.04] transition"
+                  >
+                    <div>
+                      <h4 className="text-xs font-bold text-white">{item.title}</h4>
+                      <p className="text-[10px] text-[#7098C5] mt-0.5">{item.sub}</p>
+                    </div>
+                    <svg className="w-4 h-4 text-[#7098C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                ))}
+              </div>
+
+              {/* Kind Tips Card (photo_19) */}
+              <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2 text-[11px] text-[#7098C5] shadow-md">
+                <h4 className="font-bold text-white text-xs">Kind tips</h4>
+                <p>1. Please prepare your user UID (<span className="text-amber-400 font-mono font-bold">{safeUser?.uid || '170826'}</span>) and registered phone number before consulting.</p>
+                <p>2. For deposit issues, have the 10-digit TrxID ready for instant verification.</p>
+                <p>3. Do not share your login password or OTP with anyone, including customer service agents.</p>
+              </div>
+
+              {/* Progress Query Button (photo_19) */}
               <button
                 onClick={() => {
-                  if (!giftCode.trim()) return;
-                  setGiftNotice('Invalid or expired gift code. Please check customer service.');
+                  setActiveModal(null);
+                  if (onOpenDeposit) onOpenDeposit();
                 }}
-                className="w-full py-3 rounded-full font-bold text-xs text-white shadow-md active:scale-95 transition cursor-pointer"
+                className="w-full py-3.5 rounded-full font-bold text-xs text-white shadow-lg active:scale-95 transition cursor-pointer"
                 style={{
                   background: 'linear-gradient(90deg, #E92A23 0%, #1374EC 100%)'
                 }}
               >
-                Receive
+                Progress Query
               </button>
             </div>
-          </div>
           </div>
         </div>
       )}
@@ -1376,135 +1912,365 @@ export default function AccountPage({
     )}
 
       {/* ------------------------------------------------------------------------- */}
-      {/* MODAL 11: ABOUT US                                                        */}
+      {/* MODAL 11: ABOUT US & AGREEMENTS (photo_22, 23, 24 1:1 REPLICA)            */}
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'about' && (
         <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
           <div className="w-full max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
-          <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
-            <button 
-              onClick={() => setActiveModal(null)}
-              className="p-1 -ml-1 text-white hover:text-amber-400 active:scale-95 transition cursor-pointer"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <h2 className="flex-1 text-center font-bold text-sm text-white pr-4">
-              About us
-            </h2>
-          </div>
-
-          <div className="p-4 space-y-4 text-xs">
-            <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-5 text-center space-y-3">
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-[#14122E] p-2 border border-[#30358B]">
-                <img src="/assets/amarclub/logo.png" alt="RoyalClub BD" className="w-full h-full object-contain" />
-              </div>
-              <h3 className="font-black text-base text-white">ROYAL CLUB BD</h3>
-              <p className="text-[11px] text-amber-400 font-bold uppercase tracking-wider">
-                Where Fairness Fuels the Fun
-              </p>
-              <p className="text-[#7098C5] leading-relaxed text-[11px] text-left pt-2">
-                Royal Club BD is Bangladesh's premier licensed gaming and color prediction entertainment platform.
-                Featuring instant bKash, Nagad, and Rocket settlements, provably fair Tron blockchain hash verification, and 24/7 dedicated local customer service.
-              </p>
-              <div className="pt-3 border-t border-[#30358B]/50 flex justify-between text-[10px] text-[#7098C5]">
-                <span>App Version</span>
-                <span className="text-white font-mono">v2.10.8</span>
-              </div>
+            <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center shadow-md">
+              <button 
+                onClick={() => {
+                  if (aboutSubView !== 'main') setAboutSubView('main');
+                  else setActiveModal(null);
+                }}
+                className="p-1 -ml-1 text-white hover:text-amber-400 active:scale-95 transition cursor-pointer"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <h2 className="flex-1 text-center font-bold text-sm text-white pr-4">
+                {aboutSubView === 'confidentiality' 
+                  ? 'Confidentiality Agreement' 
+                  : aboutSubView === 'risk' 
+                  ? 'Risk Disclosure Agreement' 
+                  : 'About us'}
+              </h2>
             </div>
-          </div>
+
+            <div className="p-4 space-y-4 text-xs flex-1">
+              {aboutSubView === 'main' ? (
+                <>
+                  <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-5 text-center space-y-3 shadow-md">
+                    <div className="w-16 h-16 mx-auto rounded-2xl bg-[#14122E] p-2 border border-[#30358B] shadow-inner">
+                      <img src="/assets/amarclub/logo.png" alt="RoyalClub BD" className="w-full h-full object-contain" />
+                    </div>
+                    <h3 className="font-black text-base text-white">ROYAL CLUB BD</h3>
+                    <p className="text-[11px] text-amber-400 font-bold uppercase tracking-wider">
+                      Where Fairness Fuels the Fun
+                    </p>
+                    <p className="text-[#7098C5] leading-relaxed text-[11.5px] text-left pt-2">
+                      Royal Club BD is Bangladesh's premier licensed color prediction and lottery entertainment platform.
+                      Operating under official provably fair blockchain protocol with instant bKash, Nagad, and USDT settlements.
+                    </p>
+                    <div className="pt-3 border-t border-[#30358B]/50 flex justify-between text-[10px] text-[#7098C5]">
+                      <span>App Version</span>
+                      <span className="text-white font-mono">v2.10.8</span>
+                    </div>
+                  </div>
+
+                  {/* Agreement Links (photo_22) */}
+                  <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl divide-y divide-[#30358B]/50 overflow-hidden shadow-md">
+                    <div
+                      onClick={() => setAboutSubView('confidentiality')}
+                      className="p-4 flex items-center justify-between cursor-pointer hover:bg-white/[0.02] active:bg-white/[0.04] transition"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <span className="text-base">📜</span>
+                        <span className="font-bold text-xs text-white">Confidentiality Agreement</span>
+                      </div>
+                      <svg className="w-4 h-4 text-[#7098C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+
+                    <div
+                      onClick={() => setAboutSubView('risk')}
+                      className="p-4 flex items-center justify-between cursor-pointer hover:bg-white/[0.02] active:bg-white/[0.04] transition"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <span className="text-base">⚖️</span>
+                        <span className="font-bold text-xs text-white">Risk Disclosure Agreement</span>
+                      </div>
+                      <svg className="w-4 h-4 text-[#7098C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </div>
+                </>
+              ) : aboutSubView === 'confidentiality' ? (
+                /* Confidentiality Agreement View (photo_23) */
+                <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-3.5 shadow-md text-[#D4E8FF] leading-relaxed text-[11px]">
+                  <h3 className="font-bold text-sm text-white border-b border-[#30358B]/50 pb-2">User Privacy & Data Protection</h3>
+                  <p>1. <b>Data Collection</b>: Royal Club BD collects registration phone numbers, transaction histories, and device information solely for account authentication, anti-fraud verification, and payment processing.</p>
+                  <p>2. <b>Security Standards</b>: All user interactions and financial transactions are encrypted with industry-standard 256-bit TLS/SSL encryption and stored across enterprise-grade cloud databases.</p>
+                  <p>3. <b>Third-Party Sharing</b>: Under no circumstances does Royal Club BD sell, lease, or distribute user identification data to external commercial third parties.</p>
+                  <p>4. <b>User Rights</b>: Users maintain the right to view, modify their bind wallet numbers, and request account termination through customer service at any time.</p>
+                </div>
+              ) : (
+                /* Risk Disclosure Agreement View (photo_24) */
+                <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-3.5 shadow-md text-[#D4E8FF] leading-relaxed text-[11px]">
+                  <h3 className="font-bold text-sm text-white border-b border-[#30358B]/50 pb-2">Responsible Play & Risk Warning</h3>
+                  <p>1. <b>Entertainment Purpose</b>: WinGo, lottery, and casino games on Royal Club BD are intended solely for adult entertainment (18+). Participation carries financial risk of loss.</p>
+                  <p>2. <b>Rational Gaming</b>: Players are strongly advised to manage budgets rationally and only wager amounts they can afford to lose without affecting their livelihood.</p>
+                  <p>3. <b>Zero Tolerance for Collusion</b>: Multi-accounting, arbitrage abuse, or exploitation of glitches will lead to immediate balance cancellation and account suspension.</p>
+                  <p>4. <b>Self-Exclusion</b>: If you feel your gaming habits require moderation, please contact 24/7 customer service to set betting limits or request temporary self-exclusion.</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
 
       {/* ------------------------------------------------------------------------- */}
-      {/* MODAL 12: BEGINNER'S GUIDE                                                */}
+      {/* MODAL 12: BEGINNER'S GUIDE (photo_20 to photo_31 1:1 REPLICA)              */}
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'guide' && (
         <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
           <div className="w-full max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
-          <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
-            <button 
-              onClick={() => setActiveModal(null)}
-              className="p-1 -ml-1 text-white hover:text-amber-400 active:scale-95 transition cursor-pointer"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <h2 className="flex-1 text-center font-bold text-sm text-white pr-4">
-              Beginner's Guide
-            </h2>
-          </div>
-
-          <div className="p-4 space-y-3 text-xs">
-            <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-3">
-              <h4 className="font-bold text-white text-sm">How to Play & Earn</h4>
-              <div className="space-y-2 text-[#D4E8FF] leading-relaxed text-[11px]">
-                <p>1. <b className="text-white">Deposit</b>: Use bKash, Nagad, or Rocket to add funds securely with instant bonus.</p>
-                <p>2. <b className="text-white">WinGo & Lottery</b>: Predict Green, Violet, or Red colors and lucky numbers 0-9 for up to 9x returns.</p>
-                <p>3. <b className="text-white">Withdraw</b>: Cash out anytime 24/7 directly to your personal mobile banking wallet.</p>
-              </div>
+            <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center shadow-md">
+              <button 
+                onClick={() => setActiveModal(null)}
+                className="p-1 -ml-1 text-white hover:text-amber-400 active:scale-95 transition cursor-pointer"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <h2 className="flex-1 text-center font-bold text-sm text-white pr-4">
+                Beginner's Guide
+              </h2>
             </div>
-          </div>
+
+            {/* 4 Tabs: WinGo / Recharge & Withdraw / Referral / Security */}
+            <div className="p-4 space-y-4 flex-1">
+              <div className="grid grid-cols-2 gap-2 bg-[#1C2063] p-1 rounded-xl border border-[#30358B]">
+                {[
+                  { id: 'wingo', label: 'WinGo Rules' },
+                  { id: 'finance', label: 'Recharge & Cashout' },
+                  { id: 'referral', label: 'Promotion Rebate' },
+                  { id: 'security', label: 'Account Security' }
+                ].map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => setGuideTab(t.id)}
+                    className={`py-2 px-2 rounded-lg text-xs font-bold transition cursor-pointer truncate ${
+                      guideTab === t.id
+                        ? 'bg-gradient-to-r from-[#E92A23] to-[#1374EC] text-white shadow'
+                        : 'text-[#7098C5] hover:text-white'
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+
+              {guideTab === 'wingo' && (
+                <div className="space-y-3 text-xs">
+                  <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2.5 shadow-md">
+                    <h4 className="font-bold text-white text-xs">WinGo Color & Number Odds</h4>
+                    <div className="space-y-2 text-[11px] text-[#D4E8FF] leading-relaxed">
+                      <p><b className="text-emerald-400">Green (1, 3, 7, 9)</b>: 2x payout (৳100 returns ৳196 after 2% fee). If outcome is 5, returns 1.5x.</p>
+                      <p><b className="text-rose-400">Red (2, 4, 6, 8)</b>: 2x payout (৳100 returns ৳196 after 2% fee). If outcome is 0, returns 1.5x.</p>
+                      <p><b className="text-purple-400">Violet (0, 5)</b>: 4.5x payout (৳100 returns ৳441 after 2% fee).</p>
+                      <p><b className="text-amber-400">Number (0-9)</b>: 9x payout (৳100 returns ৳882 after 2% fee).</p>
+                      <p><b className="text-blue-400">Big (5-9) / Small (0-4)</b>: 2x payout (৳100 returns ৳196 after 2% fee).</p>
+                    </div>
+                  </div>
+                  <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2 text-[11px] text-[#7098C5] shadow-md">
+                    <h4 className="font-bold text-white text-xs">Game Periods & Timers</h4>
+                    <p>• <b>WinGo 30s</b>: 25 seconds betting, 5 seconds ball animation countdown.</p>
+                    <p>• <b>WinGo 1M</b>: 55 seconds betting, 5 seconds ball animation countdown.</p>
+                    <p>• <b>WinGo 3M / 5M</b>: Extended analysis intervals for strategic multi-period trend tracing.</p>
+                  </div>
+                </div>
+              )}
+
+              {guideTab === 'finance' && (
+                <div className="space-y-3 text-xs">
+                  <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2.5 shadow-md">
+                    <h4 className="font-bold text-white text-xs">Fast Deposit Instructions</h4>
+                    <p className="text-[11px] text-[#D4E8FF]">1. Go to the Deposit page and choose your preferred method: <b>bKash</b>, <b>Nagad</b>, or <b>USDT</b>.</p>
+                    <p className="text-[11px] text-[#D4E8FF]">2. Select your payment channel (e.g. RolezPay) and deposit amount (৳100 - ৳50,000).</p>
+                    <p className="text-[11px] text-[#D4E8FF]">3. Copy the official agent number and complete Send Money / Cash Out in your wallet app.</p>
+                    <p className="text-[11px] text-[#D4E8FF]">4. Enter the 10-character TrxID and submit. Your balance will be credited within 60 seconds.</p>
+                  </div>
+                  <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2.5 shadow-md">
+                    <h4 className="font-bold text-white text-xs">Withdrawal Rules</h4>
+                    <p className="text-[11px] text-[#D4E8FF]">1. Bind your personal bKash or Nagad wallet in the Withdraw page (1 wallet per account).</p>
+                    <p className="text-[11px] text-[#D4E8FF]">2. Ensure you have completed the required turnover before withdrawing.</p>
+                    <p className="text-[11px] text-[#D4E8FF]">3. Withdrawals are processed 24/7 with zero handling fees directly to your personal mobile banking account.</p>
+                  </div>
+                </div>
+              )}
+
+              {guideTab === 'referral' && (
+                <div className="space-y-3 text-xs">
+                  <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2.5 shadow-md">
+                    <h4 className="font-bold text-white text-xs">Multi-Tier Referral Commission Table</h4>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-[11px] divide-y divide-[#30358B]/50">
+                        <thead>
+                          <tr className="text-[#7098C5]">
+                            <th className="py-2">Level</th>
+                            <th className="py-2">Rebate Rate</th>
+                            <th className="py-2">Example (100K turnover)</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#30358B]/30 text-[#D4E8FF]">
+                          <tr>
+                            <td className="py-2 font-bold text-amber-400">Tier 1 (Direct)</td>
+                            <td className="py-2">0.60%</td>
+                            <td className="py-2 font-mono">৳600.00</td>
+                          </tr>
+                          <tr>
+                            <td className="py-2 font-bold text-blue-400">Tier 2</td>
+                            <td className="py-2">0.18%</td>
+                            <td className="py-2 font-mono">৳180.00</td>
+                          </tr>
+                          <tr>
+                            <td className="py-2 font-bold text-purple-400">Tier 3</td>
+                            <td className="py-2">0.054%</td>
+                            <td className="py-2 font-mono">৳54.00</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <p className="text-[10.5px] text-[#7098C5] pt-2 border-t border-[#30358B]/40">
+                      Rebates are automatically settled every night at 00:00 and can be withdrawn immediately without turnover requirements.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {guideTab === 'security' && (
+                <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2.5 shadow-md text-[11px] text-[#D4E8FF] leading-relaxed">
+                  <h4 className="font-bold text-white text-xs">Protecting Your Account</h4>
+                  <p>1. <b>Unique Password</b>: Use a strong password containing letters and numbers (min 6 characters).</p>
+                  <p>2. <b>Personal E-Wallet Only</b>: Only bind mobile banking accounts registered under your own legal name.</p>
+                  <p>3. <b>Anti-Scam Notice</b>: Official Royal Club BD representatives will never ask you for your login password or OTP.</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
 
       {/* ------------------------------------------------------------------------- */}
-      {/* MODAL 13: NOTIFICATIONS & ANNOUNCEMENTS                                   */}
+      {/* MODAL 13: NOTIFICATIONS (photo_13 1:1 REPLICA)                            */}
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'notifications' && (
         <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
           <div className="w-full max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
-          <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
-            <button 
-              onClick={() => setActiveModal(null)}
-              className="p-1 -ml-1 text-white hover:text-amber-400 active:scale-95 transition cursor-pointer"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <h2 className="flex-1 text-center font-bold text-sm text-white pr-4">
-              Notifications & Announcements
-            </h2>
-          </div>
-
-          <div className="p-4 space-y-3 text-xs flex-1">
-            <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-white text-xs">🎉 ৳100 Welcome Bonus Credited</span>
-                <span className="text-[10px] text-[#7098C5]">Today</span>
-              </div>
-              <p className="text-[11px] text-[#D4E8FF] leading-relaxed">
-                Welcome to Royal Club BD! Your automated welcome bonus has been activated. Enjoy WinGo, Aviator, and slots!
-              </p>
+            <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center shadow-md">
+              <button 
+                onClick={() => setActiveModal(null)}
+                className="p-1 -ml-1 text-white hover:text-amber-400 active:scale-95 transition cursor-pointer"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <h2 className="flex-1 text-center font-bold text-sm text-white pr-4">
+                Notification
+              </h2>
             </div>
 
-            <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-white text-xs">⚡ Fast bKash & Nagad Settlement</span>
-                <span className="text-[10px] text-[#7098C5]">System</span>
+            {/* 2 Tabs: Notification / Information (photo_13) */}
+            <div className="p-4 space-y-4 flex-1">
+              <div className="grid grid-cols-2 gap-2 bg-[#1C2063] p-1 rounded-xl border border-[#30358B]">
+                <button
+                  onClick={() => setNotifTab('notification')}
+                  className={`py-2 rounded-lg text-xs font-bold transition cursor-pointer ${
+                    notifTab === 'notification'
+                      ? 'bg-gradient-to-r from-[#E92A23] to-[#1374EC] text-white shadow'
+                      : 'text-[#7098C5] hover:text-white'
+                  }`}
+                >
+                  Notification
+                </button>
+                <button
+                  onClick={() => setNotifTab('information')}
+                  className={`py-2 rounded-lg text-xs font-bold transition cursor-pointer ${
+                    notifTab === 'information'
+                      ? 'bg-gradient-to-r from-[#E92A23] to-[#1374EC] text-white shadow'
+                      : 'text-[#7098C5] hover:text-white'
+                  }`}
+                >
+                  Information
+                </button>
               </div>
-              <p className="text-[11px] text-[#D4E8FF] leading-relaxed">
-                Instant deposit and withdrawal gateways are 100% active 24/7 with zero fees.
-              </p>
-            </div>
 
-            {(notifications || []).map((n, idx) => (
-              <div key={idx} className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-white text-xs">{n.title || 'Notice'}</span>
-                  <span className="text-[10px] text-[#7098C5]">{n.time || 'Recent'}</span>
+              {/* Message Cards (photo_13) */}
+              <div className="space-y-3">
+                {/* Default Welcome Notification */}
+                <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2.5 shadow-md">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-7 h-7 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center">
+                        <svg className="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                          <polyline points="22,6 12,13 2,6" />
+                        </svg>
+                      </div>
+                      <h4 className="text-xs font-bold text-white">"Daily Reward" reward to claim 🎁</h4>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-[#D4E8FF] leading-relaxed">
+                    Welcome to Royal Club BD! Your daily rewards and welcome bonuses are waiting to be claimed. Play WinGo and slots to level up!
+                  </p>
+                  <div className="text-[10px] text-[#7098C5] pt-1 border-t border-[#30358B]/40">
+                    {formattedLastLogin}
+                  </div>
                 </div>
-                <p className="text-[11px] text-[#D4E8FF] leading-relaxed">
-                  {n.message || n.content}
-                </p>
+
+                {/* Recharge Arrival Notification */}
+                <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2.5 shadow-md">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                        <svg className="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M12 6v6l4 2" />
+                        </svg>
+                      </div>
+                      <h4 className="text-xs font-bold text-white">Recharge Arrival Notification</h4>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-[#D4E8FF] leading-relaxed">
+                    Instant 24/7 automated deposit system with 0 fees is active. Top up via bKash, Nagad, or USDT to receive up to +৳388 first deposit bonus.
+                  </p>
+                  <div className="text-[10px] text-[#7098C5] pt-1 border-t border-[#30358B]/40">
+                    System Broadcast
+                  </div>
+                </div>
+
+                {/* Live notifications from Context */}
+                {(notifications || []).map((n, idx) => (
+                  <div key={idx} className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2.5 shadow-md">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-7 h-7 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center">
+                          <svg className="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                            <polyline points="22,6 12,13 2,6" />
+                          </svg>
+                        </div>
+                        <h4 className="text-xs font-bold text-white">{n.title || 'Notice'}</h4>
+                      </div>
+                      {typeof deleteNotification === 'function' && (
+                        <button
+                          onClick={() => deleteNotification(n.id)}
+                          className="p-1 text-[#7098C5] hover:text-rose-400 transition cursor-pointer"
+                          title="Delete notification"
+                        >
+                          <svg className="w-3.5 h-3.5 stroke-current stroke-2 fill-none" viewBox="0 0 24 24">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-[#D4E8FF] leading-relaxed">
+                      {n.message || n.content}
+                    </p>
+                    <div className="text-[10px] text-[#7098C5] pt-1 border-t border-[#30358B]/40">
+                      {n.time || formattedLastLogin}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
           </div>
         </div>
       )}
