@@ -1228,14 +1228,32 @@ export function GameProvider({ children }) {
       return { success: false, message: 'Please log in to claim VIP rewards.' };
     }
 
+    const userKey = user.phone || user.username || user.uid;
+    const storageKey = `royalclub_vip_claimed_${userKey}`;
+    let locallyClaimed = [];
+    try {
+      locallyClaimed = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      if (!Array.isArray(locallyClaimed)) locallyClaimed = [];
+    } catch (e) {
+      locallyClaimed = [];
+    }
+
+    const stateClaimed = Array.isArray(user.claimed_vip_levels) ? user.claimed_vip_levels : [];
+    
+    // Check existing transactions for duplicate bonus preventation
+    const txClaimed = Array.isArray(transactions) && transactions.some(t => 
+      (t.uid === user.uid || t.username === user.username) &&
+      t.type === 'vip_bonus' &&
+      (t.method === `VIP ${targetLevel} Reward` || t.method === `VIP ${targetLevel}`)
+    );
+
+    if (stateClaimed.includes(targetLevel) || locallyClaimed.includes(targetLevel) || txClaimed) {
+      return { success: false, message: `VIP ${targetLevel} reward already claimed!` };
+    }
+
     const userLevel = Number(user.vip_level || 0);
     if (userLevel < targetLevel) {
       return { success: false, message: `Reach VIP ${targetLevel} to unlock this reward.` };
-    }
-
-    const claimed = Array.isArray(user.claimed_vip_levels) ? user.claimed_vip_levels : [];
-    if (claimed.includes(targetLevel)) {
-      return { success: false, message: `VIP ${targetLevel} reward already claimed!` };
     }
 
     const rewardAmount = VIP_LEVEL_REWARDS[targetLevel] || 0;
@@ -1243,8 +1261,13 @@ export function GameProvider({ children }) {
       return { success: false, message: 'Invalid reward amount.' };
     }
 
+    // Persist to isolated localStorage immediately to prevent race conditions
+    const nextClaimed = Array.from(new Set([...stateClaimed, ...locallyClaimed, targetLevel]));
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(nextClaimed));
+    } catch (e) {}
+
     const nextBal = parseFloat((Number(user.balance || 0) + rewardAmount).toFixed(2));
-    const nextClaimed = [...claimed, targetLevel];
 
     await updateUserProfile({
       balance: nextBal,
@@ -1408,10 +1431,29 @@ export function GameProvider({ children }) {
               ? localBal
               : Number(liveMatch.balance ?? 0.00);
 
+            const userClaimKey = `royalclub_vip_claimed_${liveMatch.phone || liveMatch.username || liveMatch.uid}`;
+            let storedClaimed = [];
+            try {
+              storedClaimed = JSON.parse(localStorage.getItem(userClaimKey) || '[]');
+            } catch (e) {}
+
+            let parsedUser = {};
+            if (localSaved) {
+              try { parsedUser = JSON.parse(localSaved); } catch (e) {}
+            }
+
+            const mergedClaimed = Array.from(new Set([
+              ...(Array.isArray(liveMatch.claimed_vip_levels) ? liveMatch.claimed_vip_levels : []),
+              ...(Array.isArray(parsedUser.claimed_vip_levels) ? parsedUser.claimed_vip_levels : []),
+              ...(Array.isArray(storedClaimed) ? storedClaimed : [])
+            ]));
+
             const updatedUser = {
               ...liveMatch,
               balance: finalBal,
               vip_level: Number(liveMatch.vip_level ?? 1),
+              claimed_vip_levels: mergedClaimed,
+              wallet_account: liveMatch.wallet_account || parsedUser.wallet_account || null,
               custom_win_rate: Number(liveMatch.custom_win_rate ?? 96),
               is_online: true
             };
@@ -1592,6 +1634,10 @@ export function GameProvider({ children }) {
                       ...prev,
                       balance: Number(match.balance !== undefined ? match.balance : prev.balance),
                       vip_level: Number(match.vip_level !== undefined ? match.vip_level : prev.vip_level),
+                      claimed_vip_levels: Array.isArray(prev.claimed_vip_levels) && prev.claimed_vip_levels.length > 0 
+                        ? prev.claimed_vip_levels 
+                        : (Array.isArray(match.claimed_vip_levels) ? match.claimed_vip_levels : []),
+                      wallet_account: prev.wallet_account || match.wallet_account || null,
                       custom_win_rate: Number(match.custom_win_rate !== undefined ? match.custom_win_rate : prev.custom_win_rate),
                       force_result: match.force_result || prev.force_result,
                       luck_mode: match.force_result === 'force_lose' ? 'drain' : match.force_result === 'force_win' ? 'sweetener' : prev.luck_mode

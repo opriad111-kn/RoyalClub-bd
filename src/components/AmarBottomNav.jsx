@@ -32,7 +32,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenAuth }) {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 w-full sm:max-w-md md:max-w-[480px] mx-auto z-40 select-none pointer-events-auto">
+    <nav className="fixed bottom-0 left-0 right-0 w-full sm:max-w-[480px] mx-auto z-40 select-none pointer-events-auto">
       
       {/* 1. Bar Background Container (Uses Official KhelV tabBarBg.png) */}
       <div 
@@ -85,7 +85,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenAuth }) {
         {/* 3. Center Elevated 3D Blue Diamond Promotion Throne (Matching Image 10 1:1) */}
         <div 
           onClick={() => onSelectTab('promotion')}
-          className="relative -top-3.5 flex flex-col items-center justify-center shrink-0 w-22 cursor-pointer active:scale-95 transition group"
+          className="relative -top-3.5 flex flex-col items-center justify-center shrink-0 w-20 sm:w-[88px] cursor-pointer active:scale-95 transition group"
         >
           {/* Raised Pedestal Graphic */}
           <div className="relative w-20 h-16 flex items-center justify-center">

@@ -82,7 +82,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
       desc: 'Recharge and get instant bonus up to ৳10,000!',
       btnText: 'Deposit Now',
       action: () => {
-        const event = new CustomEvent('royalclub_switch_tab', { detail: { tab: 'deposit' } });
+        const event = new CustomEvent('royalclub_open_promo', { detail: { slide: 0 } });
         window.dispatchEvent(event);
       }
     },
@@ -109,7 +109,7 @@ export default function ActivityPage({ onOpenGift, onOpenAttendance, onOpenWheel
       desc: 'Share your referral code with friends and earn unlimited lifetime rebates.',
       btnText: 'Invite Friends',
       action: () => {
-        const event = new CustomEvent('royalclub_switch_tab', { detail: { tab: 'promotion' } });
+        const event = new CustomEvent('royalclub_open_promo', { detail: { slide: 1 } });
         window.dispatchEvent(event);
       }
     },

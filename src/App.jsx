@@ -53,6 +53,7 @@ import FairnessModal from './components/FairnessModal';
 import PartnerRewardsModal from './components/PartnerRewardsModal';
 import UsdtBonusModal from './components/UsdtBonusModal';
 import GuestRewardModal from './components/GuestRewardModal';
+import PromoPopupsModal from './components/PromoPopupsModal';
 import SplashScreen from './components/SplashScreen';
 import { KhelvSvgSprite } from './components/common/KhelvIcon';
 
@@ -96,6 +97,7 @@ function AppContent() {
   const [isPartnerRewardOpen, setIsPartnerRewardOpen] = useState(false);
   const [isUsdtBonusOpen, setIsUsdtBonusOpen] = useState(false);
   const [isGuestRewardOpen, setIsGuestRewardOpen] = useState(false);
+  const [promoModal, setPromoModal] = useState({ isOpen: false, slide: 0 });
   const [showSplash, setShowSplash] = useState(() => {
     if (typeof window !== 'undefined') {
       return !sessionStorage.getItem('royalclub_splash_visited');
@@ -130,6 +132,17 @@ function AppContent() {
         }, 1200);
         return () => clearTimeout(timer);
       }
+    } else {
+      // Auto-show Promo Popups (Photos 1, 2, 3) for authenticated players unless dismissed today
+      try {
+        const noRemind = localStorage.getItem('royalclub_promo_no_remind');
+        if (noRemind !== new Date().toDateString()) {
+          const timer = setTimeout(() => {
+            setPromoModal({ isOpen: true, slide: 0 });
+          }, 1500);
+          return () => clearTimeout(timer);
+        }
+      } catch (e) {}
     }
   }, [user]);
 
@@ -151,11 +164,17 @@ function AppContent() {
           setActiveTab(e.detail.tab);
         }
       };
+      const handleOpenPromo = (e) => {
+        const slide = typeof e?.detail?.slide === 'number' ? e.detail.slide : 0;
+        setPromoModal({ isOpen: true, slide });
+      };
       window.addEventListener('royalclub_show_toast', handleCustomToast);
       window.addEventListener('royalclub_switch_tab', handleSwitchTab);
+      window.addEventListener('royalclub_open_promo', handleOpenPromo);
       return () => {
         window.removeEventListener('royalclub_show_toast', handleCustomToast);
         window.removeEventListener('royalclub_switch_tab', handleSwitchTab);
+        window.removeEventListener('royalclub_open_promo', handleOpenPromo);
       };
     }
   }, []);
@@ -327,7 +346,7 @@ function AppContent() {
       <KhelvSvgSprite />
 
       {/* Main Container: Full width on mobile, responsive max-480px shell on tablet/desktop */}
-      <div className={`w-full ${activeTab === 'admin' ? 'max-w-full bg-[#0d1117]' : 'sm:max-w-md md:max-w-[480px] bg-[#14122E] text-white sm:border-x sm:border-[#30358B]/50 sm:shadow-2xl'} min-h-screen flex flex-col justify-between relative transition-all duration-200`}>
+      <div className={`w-full ${activeTab === 'admin' ? 'max-w-full bg-[#0d1117]' : 'sm:max-w-[480px] bg-[#14122E] text-white sm:border-x sm:border-[#30358B]/50 sm:shadow-2xl'} min-h-screen flex flex-col justify-between relative transition-all duration-200`}>
         
         {/* Sticky Top Header (Hidden in Game, WinGo, Account, Activity, Deposit, Withdraw, Admin) */}
         {!activeGame && activeTab !== 'admin' && activeTab !== 'wingo' && activeTab !== 'account' && activeTab !== 'activity' && activeTab !== 'deposit' && activeTab !== 'withdraw' && (
@@ -565,6 +584,14 @@ function AppContent() {
             setAuthTab('login');
             setIsAuthOpen(true);
           }}
+        />
+
+        {/* 1:1 KhelV / DKWin Promotional Popups (Photos 1, 2, 3 in BDT ৳ Currency) */}
+        <PromoPopupsModal
+          isOpen={promoModal.isOpen}
+          initialSlide={promoModal.slide}
+          onClose={() => setPromoModal(prev => ({ ...prev, isOpen: false }))}
+          onNavigate={(tab) => setActiveTab(tab)}
         />
 
       </div>

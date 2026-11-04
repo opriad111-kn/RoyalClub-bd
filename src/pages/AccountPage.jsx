@@ -758,7 +758,7 @@ export default function AccountPage({
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'avatar' && (
         <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
-          <div className="w-full sm:max-w-md md:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
+          <div className="w-full sm:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
           {/* Header */}
           <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
             <button 
@@ -814,7 +814,7 @@ export default function AccountPage({
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'settings' && (
         <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
-          <div className="w-full sm:max-w-md md:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
+          <div className="w-full sm:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
           {/* Header */}
           <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
             <button 
@@ -1062,7 +1062,7 @@ export default function AccountPage({
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'transaction' && (
         <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
-          <div className="w-full sm:max-w-md md:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
+          <div className="w-full sm:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
           {/* Header */}
           <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
             <button 
@@ -1172,7 +1172,7 @@ export default function AccountPage({
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'gameHistory' && (
         <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
-          <div className="w-full sm:max-w-md md:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
+          <div className="w-full sm:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
           <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
             <button 
               onClick={() => setActiveModal(null)}
@@ -1219,7 +1219,7 @@ export default function AccountPage({
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'gifts' && (
         <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
-          <div className="w-full sm:max-w-md md:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
+          <div className="w-full sm:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
             <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center shadow-md">
               <button 
                 onClick={() => setActiveModal(null)}
@@ -1331,7 +1331,7 @@ export default function AccountPage({
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'safe' && (
         <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
-          <div className="w-full sm:max-w-md md:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
+          <div className="w-full sm:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
             <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center shadow-md">
               <button 
                 onClick={() => setActiveModal(null)}
@@ -1465,7 +1465,7 @@ export default function AccountPage({
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'coupons' && (
         <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
-          <div className="w-full sm:max-w-md md:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
+          <div className="w-full sm:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
             <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center shadow-md">
               <button 
                 onClick={() => setActiveModal(null)}
@@ -1522,7 +1522,7 @@ export default function AccountPage({
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'gameStats' && (
         <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
-          <div className="w-full sm:max-w-md md:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
+          <div className="w-full sm:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
             <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center shadow-md">
               <button 
                 onClick={() => setActiveModal(null)}
@@ -1616,7 +1616,7 @@ export default function AccountPage({
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'selfService' && (
         <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
-          <div className="w-full sm:max-w-md md:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
+          <div className="w-full sm:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
             <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center shadow-md">
               <button 
                 onClick={() => setActiveModal(null)}
@@ -1713,7 +1713,7 @@ export default function AccountPage({
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'changePassword' && (
         <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
-          <div className="w-full sm:max-w-md md:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
+          <div className="w-full sm:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
           <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
             <button 
               onClick={() => setActiveModal(null)}
@@ -1831,7 +1831,7 @@ export default function AccountPage({
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'feedback' && (
         <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
-          <div className="w-full sm:max-w-md md:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
+          <div className="w-full sm:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
           <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
             <button 
               onClick={() => setActiveModal(null)}
@@ -1929,7 +1929,7 @@ export default function AccountPage({
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'about' && (
         <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
-          <div className="w-full sm:max-w-md md:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
+          <div className="w-full sm:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
             <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center shadow-md">
               <button 
                 onClick={() => {
@@ -2030,7 +2030,7 @@ export default function AccountPage({
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'guide' && (
         <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
-          <div className="w-full sm:max-w-md md:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
+          <div className="w-full sm:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
             <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center shadow-md">
               <button 
                 onClick={() => setActiveModal(null)}
@@ -2164,7 +2164,7 @@ export default function AccountPage({
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'notifications' && (
         <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
-          <div className="w-full sm:max-w-md md:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
+          <div className="w-full sm:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
             <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center justify-between shadow-md">
               <button 
                 onClick={() => setActiveModal(null)}
@@ -2303,7 +2303,7 @@ export default function AccountPage({
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'language' && (
         <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
-          <div className="w-full sm:max-w-md md:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
+          <div className="w-full sm:max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
           <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
             <button 
               onClick={() => setActiveModal(null)}

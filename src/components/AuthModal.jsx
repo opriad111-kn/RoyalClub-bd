@@ -176,9 +176,10 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
   }
 
   return (
-    <div 
-      className="fixed inset-0 z-50 bg-[#0b102b] flex flex-col w-full sm:max-w-md md:max-w-[480px] mx-auto min-h-screen text-white select-none overflow-y-auto no-scrollbar"
-    >
+    <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex justify-center overflow-y-auto">
+      <div 
+        className="w-full sm:max-w-[480px] bg-[#0b102b] min-h-screen flex flex-col text-white select-none overflow-y-auto no-scrollbar shadow-2xl relative"
+      >
       {/* 1. Top Header Bar (Exact Screenshot 11 Match) */}
       <div className="bg-[#0b102b] px-4 py-3 flex items-center justify-between border-b border-slate-800/80 shrink-0">
         <button 
@@ -533,19 +534,20 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
       {/* Floating Customer Service Bot (APK Screenshot 11 Match) */}
       <div 
         onClick={() => window.open('https://t.me/ROYALCLUB_Support', '_blank')}
-        className="fixed bottom-6 right-5 sm:right-[max(1.25rem,calc(50%-240px+1.25rem))] z-60 cursor-pointer active:scale-95 transition drop-shadow-2xl"
+        className="fixed bottom-6 right-5 sm:right-[max(1.25rem,calc(50%-240px+1.25rem))] z-[70] cursor-pointer active:scale-95 transition drop-shadow-2xl"
         title="Live Customer Service"
       >
-        <div className="w-13 h-13 rounded-full bg-gradient-to-tr from-blue-600 to-cyan-400 p-0.5 shadow-lg shadow-blue-500/40">
+        <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-cyan-400 p-0.5 shadow-lg shadow-blue-500/40">
           <div className="w-full h-full rounded-full bg-[#0d1430] flex items-center justify-center overflow-hidden">
             <img 
-              src="/assets/amarclub/service.png" 
+              src="/assets/official_khelv/icon_sevice-CTlFP_dx.png" 
               alt="Live Support" 
-              className="w-9 h-9 object-contain drop-shadow" 
+              className="w-11 h-11 object-contain drop-shadow" 
             />
           </div>
         </div>
       </div>
     </div>
+  </div>
   );
 }

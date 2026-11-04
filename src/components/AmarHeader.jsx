@@ -43,17 +43,17 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenDeposit, on
             {/* Log in Button: 1:1 Replica of Screenshot 12 */}
             <button
               onClick={() => onOpenAuth('login')}
-              className="h-[34px] px-4.5 rounded-full border border-[#2b4c8f] bg-[#122252]/90 hover:bg-[#1a2e6e] text-white font-medium text-[13px] tracking-wide flex items-center justify-center transition active:scale-95 cursor-pointer shadow-sm"
+              className="h-9 min-w-[78px] px-[16px] rounded-full border border-[#2b4c8f] bg-[#122252]/90 hover:bg-[#1a2e6e] text-white font-medium text-[13px] tracking-wide flex items-center justify-center transition active:scale-95 cursor-pointer shadow-sm whitespace-nowrap"
             >
-              {t('login')}
+              Log in
             </button>
 
             {/* Register Button: 1:1 Replica of Screenshot 12 */}
             <button
               onClick={() => onOpenAuth('register')}
-              className="h-[34px] px-4.5 rounded-full bg-gradient-to-r from-[#d93850] to-[#f43f5e] hover:brightness-110 text-white font-medium text-[13px] tracking-wide flex items-center justify-center transition active:scale-95 cursor-pointer shadow-md shadow-rose-950/40"
+              className="h-9 min-w-[84px] px-[18px] rounded-full bg-gradient-to-r from-[#d93850] to-[#f43f5e] hover:brightness-110 text-white font-medium text-[13px] tracking-wide flex items-center justify-center transition active:scale-95 cursor-pointer shadow-md shadow-rose-950/40 whitespace-nowrap"
             >
-              {t('register')}
+              Register
             </button>
           </>
         ) : (

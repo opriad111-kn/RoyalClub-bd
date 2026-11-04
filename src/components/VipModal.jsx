@@ -122,7 +122,7 @@ const VIP_CARD_THEMES = {
 export default function VipModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
-  const { user, claimVipLevelReward } = useGame();
+  const { user, claimVipLevelReward, transactions } = useGame();
   const { lang, t } = useLanguage();
   const [activeTab, setActiveTab] = useState('history'); // 'history' | 'rules'
   const [selectedVipLevel, setSelectedVipLevel] = useState(1);
@@ -142,8 +142,26 @@ export default function VipModal({ isOpen, onClose }) {
   const requiredExp = selectedTier.exp;
   const progressPercent = Math.min(100, Math.floor((currentExp / requiredExp) * 100));
 
+  // Multi-layer single claim verification (User Mandate: strictly 1 claim per level)
+  const userClaimKey = `royalclub_vip_claimed_${safeUser.phone || safeUser.username || safeUser.uid || 'guest'}`;
+  const [localClaimed, setLocalClaimed] = useState(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(userClaimKey) || '[]');
+      return Array.isArray(stored) ? stored : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
   const claimedLevels = Array.isArray(safeUser.claimed_vip_levels) ? safeUser.claimed_vip_levels : [];
-  const isSelectedLevelClaimed = claimedLevels.includes(selectedVipLevel);
+  
+  const isTxClaimed = Array.isArray(transactions) && transactions.some(t => 
+    (t.uid === safeUser.uid || t.username === safeUser.username) &&
+    t.type === 'vip_bonus' &&
+    (t.method === `VIP ${selectedVipLevel} Reward` || t.method === `VIP ${selectedVipLevel}`)
+  );
+
+  const isSelectedLevelClaimed = claimedLevels.includes(selectedVipLevel) || localClaimed.includes(selectedVipLevel) || isTxClaimed;
   const isSelectedLevelUnlocked = userVipLevel >= selectedVipLevel;
 
   async function handleClaimReward() {
@@ -157,6 +175,9 @@ export default function VipModal({ isOpen, onClose }) {
     }
 
     setIsClaiming(true);
+    // Optimistically lock button immediately to prevent double-clicking
+    setLocalClaimed(prev => Array.from(new Set([...prev, selectedVipLevel])));
+
     if (typeof claimVipLevelReward === 'function') {
       const res = await claimVipLevelReward(selectedVipLevel);
       setIsClaiming(false);
@@ -172,7 +193,7 @@ export default function VipModal({ isOpen, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 flex flex-col overflow-y-auto select-none font-sans pb-16">
-      <div className="w-full sm:max-w-md md:max-w-[480px] mx-auto min-h-screen flex flex-col bg-[#14122E] shadow-2xl relative">
+      <div className="w-full sm:max-w-[480px] mx-auto min-h-screen flex flex-col bg-[#14122E] shadow-2xl relative">
         {/* ------------------------------------------------------------------------- */}
         {/* 1. Header: < VIP                                                          */}
         {/* ------------------------------------------------------------------------- */}
@@ -265,43 +286,106 @@ export default function VipModal({ isOpen, onClose }) {
           </div>
 
           {/* ----------------------------------------------------------------------- */}
-          {/* 5. Luxury VIP Card with Level-Specific Gradient Background (DKWin 1:1)   */}
+          {/* 5. Luxury VIP Card (1:1 Replica of Screenshot 4 with Laurel Wreath Star)  */}
           {/* ----------------------------------------------------------------------- */}
           {(() => {
             const theme = VIP_CARD_THEMES[selectedTier.level] || VIP_CARD_THEMES[1];
             return (
-              <div className={`${theme.cardBg} rounded-2xl p-4.5 ${theme.textColor} shadow-2xl relative overflow-hidden space-y-3.5 transition-all duration-300`}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2 font-black text-xl font-mono">
-                    <span className={theme.titleColor}>VIP{selectedTier.level}</span>
-                    <span className={`inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-sans font-bold shadow-xs ${
-                      isSelectedLevelUnlocked ? 'bg-emerald-600 text-white' : theme.badgeBg
-                    }`}>
-                      {isSelectedLevelUnlocked ? '✓ Unlocked' : '🔒 Not open yet'}
-                    </span>
+              <div className={`${theme.cardBg} rounded-2xl p-4.5 text-white shadow-2xl relative overflow-hidden space-y-3.5 border border-white/15 transition-all duration-300`}>
+                
+                {/* 1:1 Giant Watermark in Background (Photo 4) */}
+                <div className="absolute -right-2 -bottom-4 text-[92px] font-black font-mono tracking-tighter opacity-15 select-none pointer-events-none text-white italic leading-none">
+                  VIP{selectedTier.level}
+                </div>
+
+                {/* Top Row: VIP Badge & Unlock Status + 3D Laurel Wreath Star Emblem */}
+                <div className="flex items-center justify-between relative z-10">
+                  <div className="flex items-center space-x-2.5">
+                    {/* Crown/Shield Icon */}
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 via-orange-500 to-red-600 flex items-center justify-center shadow-md shadow-black/40 border border-amber-300/40">
+                      <span className="text-white text-base leading-none">👑</span>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <span className="text-2xl font-black font-sans text-white tracking-wide drop-shadow-sm">
+                        VIP{selectedTier.level}
+                      </span>
+                      <span className={`inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold shadow-xs border ${
+                        isSelectedLevelUnlocked 
+                          ? 'bg-emerald-600/90 border-emerald-400/50 text-white' 
+                          : 'bg-black/40 border-white/20 text-white/90'
+                      }`}>
+                        {isSelectedLevelUnlocked ? '✓ Unlocked' : '🔴 Not open yet'}
+                      </span>
+                    </div>
                   </div>
-                  <div className={`w-12 h-12 rounded-full border-2 ${theme.starColor} flex items-center justify-center font-black text-2xl shadow-inner`}>
-                    ★
+
+                  {/* 1:1 Embossed Metallic Laurel Wreath 3D Star Badge (Photo 4 Top-Right) */}
+                  <div className="relative w-14 h-14 flex items-center justify-center shrink-0">
+                    <div className="absolute inset-0 rounded-full bg-white/10 blur-xs pointer-events-none" />
+                    <svg className="w-14 h-14 drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <defs>
+                        <linearGradient id={`goldSheen_${selectedTier.level}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#FFFFFF" />
+                          <stop offset="25%" stopColor="#FDE68A" />
+                          <stop offset="65%" stopColor="#F59E0B" />
+                          <stop offset="100%" stopColor="#B45309" />
+                        </linearGradient>
+                        <filter id={`emboss_${selectedTier.level}`} x="-20%" y="-20%" width="140%" height="140%">
+                          <feDropShadow dx="1" dy="1.5" stdDeviation="0.8" floodColor="#000000" floodOpacity="0.7"/>
+                        </filter>
+                      </defs>
+                      {/* Left Laurel Branch */}
+                      <g filter={`url(#emboss_${selectedTier.level})`} fill={`url(#goldSheen_${selectedTier.level})`}>
+                        <path d="M 50 88 C 26 84 14 65 18 42 C 20 28 28 18 38 12" stroke={`url(#goldSheen_${selectedTier.level})`} strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                        <path d="M 44 85 C 38 82 33 80 28 73 C 33 71 38 72 44 85 Z" />
+                        <path d="M 33 76 C 26 71 21 66 18 57 C 24 57 28 61 33 76 Z" />
+                        <path d="M 23 61 C 17 53 15 45 16 36 C 22 38 25 44 23 61 Z" />
+                        <path d="M 20 42 C 17 32 18 24 23 16 C 28 20 29 27 20 42 Z" />
+                        <path d="M 28 25 C 29 17 33 11 41 8 C 42 15 39 21 28 25 Z" />
+                      </g>
+                      {/* Right Laurel Branch */}
+                      <g filter={`url(#emboss_${selectedTier.level})`} fill={`url(#goldSheen_${selectedTier.level})`}>
+                        <path d="M 50 88 C 74 84 86 65 82 42 C 80 28 72 18 62 12" stroke={`url(#goldSheen_${selectedTier.level})`} strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                        <path d="M 56 85 C 62 82 67 80 72 73 C 67 71 62 72 56 85 Z" />
+                        <path d="M 67 76 C 74 71 79 66 82 57 C 76 57 72 61 67 76 Z" />
+                        <path d="M 77 61 C 83 53 85 45 84 36 C 78 38 75 44 77 61 Z" />
+                        <path d="M 80 42 C 83 32 82 24 77 16 C 72 20 71 27 80 42 Z" />
+                        <path d="M 72 25 C 71 17 67 11 59 8 C 58 15 61 21 72 25 Z" />
+                      </g>
+                      {/* Center 3D Five-Point Star */}
+                      <polygon 
+                        points="50,22 57,38 75,40 61,53 65,71 50,62 35,71 39,53 25,40 43,38" 
+                        fill={`url(#goldSheen_${selectedTier.level})`} 
+                        filter={`url(#emboss_${selectedTier.level})`} 
+                        stroke="#FFF" 
+                        strokeWidth="0.8" 
+                      />
+                    </svg>
                   </div>
                 </div>
 
-                <p className={`text-xs font-semibold ${theme.subColor}`}>
+                {/* Subtitle: Upgrading VIP requires EXP */}
+                <p className="text-xs font-semibold text-white/90 drop-shadow-xs relative z-10">
                   Upgrading VIP{selectedTier.level} requires {selectedTier.exp.toLocaleString()} EXP
                 </p>
 
-                <div className={`inline-block ${theme.badgeBg} text-[10.5px] font-bold px-2.5 py-0.5 rounded-md`}>
-                  Bet ৳1 = 1 EXP
+                {/* 1:1 White Border Pill Tag (Photo 4) */}
+                <div className="relative z-10">
+                  <div className="inline-block border border-white/40 bg-black/25 text-[11px] font-bold px-2.5 py-0.5 rounded-md text-white/90 shadow-xs">
+                    Bet ৳1 = 1 EXP
+                  </div>
                 </div>
 
-                {/* Progress Bar */}
-                <div className="space-y-1 pt-1">
-                  <div className={`w-full h-2 rounded-full ${theme.progressBg} overflow-hidden shadow-inner`}>
+                {/* 1:1 Progress Bar with Sleek Pill Finish (Photo 4) */}
+                <div className="space-y-1.5 pt-1 relative z-10">
+                  <div className="w-full h-2.5 rounded-full bg-black/40 border border-white/10 overflow-hidden shadow-inner p-0.5">
                     <div 
-                      className={`h-full ${theme.progressFill} transition-all duration-300`}
+                      className={`h-full rounded-full ${theme.progressFill} transition-all duration-300 shadow-[0_0_8px_rgba(255,255,255,0.4)]`}
                       style={{ width: `${progressPercent}%` }}
                     />
                   </div>
-                  <div className={`flex items-center justify-between text-[10px] ${theme.subColor} font-mono font-medium`}>
+                  <div className="flex items-center justify-between text-[11px] text-white/90 font-mono font-medium drop-shadow-xs">
                     <span>{currentExp.toLocaleString()}/{requiredExp.toLocaleString()}</span>
                     <span>{requiredExp.toLocaleString()} EXP can be leveled up</span>
                   </div>

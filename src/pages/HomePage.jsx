@@ -412,12 +412,10 @@ export default function HomePage({
   }
 
   function handleBannerClick(banner) {
-    if (banner.action === 'deposit') {
-      const event = new CustomEvent('royalclub_switch_tab', { detail: { tab: 'deposit' } });
-      window.dispatchEvent(event);
-    } else if (banner.action === 'activity') {
-      const event = new CustomEvent('royalclub_switch_tab', { detail: { tab: 'activity' } });
-      window.dispatchEvent(event);
+    if (banner.id === 'first-deposit' || banner.action === 'deposit') {
+      window.dispatchEvent(new CustomEvent('royalclub_open_promo', { detail: { slide: 0 } }));
+    } else if (banner.id === 'mega-vip' || banner.action === 'activity') {
+      window.dispatchEvent(new CustomEvent('royalclub_open_promo', { detail: { slide: 2 } }));
     } else if (banner.action === 'game' && banner.gameId) {
       onOpenGame(banner.gameId);
     }
@@ -713,7 +711,7 @@ export default function HomePage({
           className="w-11 h-11 flex items-center justify-center transition active:scale-90 cursor-pointer drop-shadow-xl hover:scale-105"
         >
           <img 
-            src="/assets/official_khelv/kefu-CWn8Xwlr.png" 
+            src="/assets/official_khelv/icon_sevice-CTlFP_dx.png" 
             alt="Customer Support" 
             className="w-full h-full object-contain"
           />
