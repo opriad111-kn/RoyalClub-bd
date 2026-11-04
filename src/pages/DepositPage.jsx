@@ -16,9 +16,20 @@ export default function DepositPage({ onBack, onOpenAuth }) {
   // Selected Channel
   const [selectedChannel, setSelectedChannel] = useState('RolezPayPS-BK');
 
-  // Amount
-  const [amount, setAmount] = useState('15000');
+  // Amount (Default to 500 BDT matching normal deposit tiers, NOT 15000)
+  const [amount, setAmount] = useState('500');
   const [usdtAmount, setUsdtAmount] = useState('100');
+
+  // Support direct amount selection from promo bonus cards or custom events
+  useEffect(() => {
+    function handleDepositAmountEvent(e) {
+      if (e?.detail?.amount) {
+        setAmount(String(e.detail.amount));
+      }
+    }
+    window.addEventListener('royalclub_set_deposit_amount', handleDepositAmountEvent);
+    return () => window.removeEventListener('royalclub_set_deposit_amount', handleDepositAmountEvent);
+  }, []);
 
   // Gateway state
   const [gatewayTrxId, setGatewayTrxId] = useState('');

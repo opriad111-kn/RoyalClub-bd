@@ -4,10 +4,10 @@ import React, { useState } from 'react';
  * PromoPopupsModal
  * 1:1 authentic replica of KhelV / DKWin individual promotional modals.
  *
- * Each popup is completely INDEPENDENT (Zero top tabs, per user mandate):
+ * Each popup is completely INDEPENDENT:
  * 1. 'first-deposit' (Screenshot 3 & Photo 4): Welcome Bonus Up to ৳10,000 with luxury chest artwork and Confirm button.
  * 2. 'referral' (Photo 5): Referral Super Bonus ৳308,888 with luxury blue ribbon artwork and Confirm button.
- * 3. 'extra-tasks' (Screenshot 2): Extra First Deposit Bonus task list modal with 6 deposit tiers, progress bars, and Activity button.
+ * 3. 'extra-tasks' (Screenshot 2 / 3): Extra First Deposit Bonus task list modal with 6 deposit tiers, progress bars, and Deposit action buttons.
  */
 export default function PromoPopupsModal({ isOpen, type = 'first-deposit', onClose, onNavigate }) {
   const [noRemindToday, setNoRemindToday] = useState(false);
@@ -36,30 +36,20 @@ export default function PromoPopupsModal({ isOpen, type = 'first-deposit', onClo
     onClose();
   }
 
-  function handleGoDeposit() {
-    handleClose();
+  function handleGoDeposit(targetAmount) {
+    if (noRemindToday) {
+      try {
+        localStorage.setItem('royalclub_promo_no_remind', new Date().toDateString());
+      } catch (e) {}
+    }
+    onClose();
+    if (targetAmount) {
+      window.dispatchEvent(new CustomEvent('royalclub_set_deposit_amount', { detail: { amount: targetAmount } }));
+    }
     if (typeof onNavigate === 'function') {
       onNavigate('deposit');
     } else {
       window.dispatchEvent(new CustomEvent('royalclub_switch_tab', { detail: { tab: 'deposit' } }));
-    }
-  }
-
-  function handleGoPromotion() {
-    handleClose();
-    if (typeof onNavigate === 'function') {
-      onNavigate('promotion');
-    } else {
-      window.dispatchEvent(new CustomEvent('royalclub_switch_tab', { detail: { tab: 'promotion' } }));
-    }
-  }
-
-  function handleGoActivity() {
-    handleClose();
-    if (typeof onNavigate === 'function') {
-      onNavigate('activity');
-    } else {
-      window.dispatchEvent(new CustomEvent('royalclub_switch_tab', { detail: { tab: 'activity' } }));
     }
   }
 
@@ -69,7 +59,7 @@ export default function PromoPopupsModal({ isOpen, type = 'first-deposit', onClo
       onClick={handleClose}
     >
       <div 
-        className="w-full max-w-[360px] flex flex-col items-center relative animate-in zoom-in-95 duration-200"
+        className="w-full max-w-[340px] sm:max-w-[360px] flex flex-col items-center relative animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
 
@@ -77,19 +67,18 @@ export default function PromoPopupsModal({ isOpen, type = 'first-deposit', onClo
         {/* POPUP 1: First Deposit Bonus (1:1 Replica of Screenshot 3 & Photo 4)      */}
         {/* ========================================================================= */}
         {type === 'first-deposit' && (
-          <div className="w-full bg-[#0d1435] border border-[#2e3e7e] rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.95)] flex flex-col text-white">
+          <div className="w-full bg-[#0a0f2b] border border-[#27387d] rounded-2xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.95)] flex flex-col text-white">
             {/* Top Red-to-Blue Curved Header Banner */}
-            <div className="bg-gradient-to-r from-[#ea384d] via-[#a825b0] to-[#1e88e5] py-2.5 px-3 flex items-center justify-center space-x-2 shadow-md">
+            <div className="bg-gradient-to-r from-[#ea384d] to-[#1e88e5] py-2.5 px-3 flex items-center justify-center space-x-2 shadow-md">
               <span className="text-yellow-300 text-sm">⭐</span>
-              <h2 className="text-[14.5px] font-black tracking-wide uppercase drop-shadow-md text-white font-sans">
+              <h2 className="text-[14px] font-black tracking-wide uppercase drop-shadow-md text-white font-sans">
                 Welcome Bonus Up to ৳10,000
               </h2>
-              <span className="text-yellow-300 text-sm">⭐</span>
             </div>
 
             {/* Official Channel Notice */}
             <div className="bg-[#070b20] py-2 px-3 text-center border-b border-[#1b2656]">
-              <p className="text-[9.5px] text-slate-300 font-semibold tracking-tight uppercase">
+              <p className="text-[9.5px] text-slate-300 font-semibold tracking-tight uppercase leading-tight">
                 FOLLOW OUR OFFICIAL CHANNEL FOR THE LATEST NEWS, UPDATES & ANNOUNCEMENTS
               </p>
               <a 
@@ -102,17 +91,17 @@ export default function PromoPopupsModal({ isOpen, type = 'first-deposit', onClo
               </a>
             </div>
 
-            {/* Full High-Resolution Artwork & Table (Photo 4 1:1) */}
-            <div className="p-2.5 space-y-2.5 max-h-[60vh] overflow-y-auto">
-              <div className="w-full rounded-xl overflow-hidden bg-black/40 flex items-center justify-center">
-                <img 
-                  src="/assets/promos/first_deposit_bonus_full.jpg" 
-                  alt="First Deposit Bonus"
-                  className="w-full h-auto object-contain select-none"
-                />
-              </div>
+            {/* Full High-Resolution Artwork & Table (Photo 4 1:1 Edge-to-Edge) */}
+            <div className="max-h-[64vh] overflow-y-auto bg-black flex flex-col">
+              <img 
+                src="/assets/promos/first_deposit_bonus_full.jpg" 
+                alt="First Deposit Bonus"
+                className="w-full h-auto object-contain block select-none pointer-events-none"
+              />
+            </div>
 
-              {/* Big Red-to-Blue Confirm Button (User Mandate: closes popup, does not navigate to deposit) */}
+            {/* Bottom Button Area (User Mandate: Confirm closes popup without navigating away) */}
+            <div className="p-3 bg-[#0a0f2b] border-t border-[#1b2656]">
               <button
                 onClick={handleClose}
                 className="w-full py-3 rounded-full font-black text-sm tracking-wider uppercase text-white bg-gradient-to-r from-[#ea384d] to-[#1e88e5] hover:brightness-110 active:scale-95 transition-all duration-150 shadow-lg shadow-blue-950/80 cursor-pointer"
@@ -124,17 +113,16 @@ export default function PromoPopupsModal({ isOpen, type = 'first-deposit', onClo
         )}
 
         {/* ========================================================================= */}
-        {/* POPUP 2: Referral Super Bonus (1:1 Replica of Photo 5)                     */}
+        {/* POPUP 2: Referral Super Bonus (1:1 Replica of Photo 2 & Photo 5)           */}
         {/* ========================================================================= */}
         {type === 'referral' && (
-          <div className="w-full bg-[#0d1435] border border-[#2e3e7e] rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.95)] flex flex-col text-white">
+          <div className="w-full bg-[#0a0f2b] border border-[#27387d] rounded-2xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.95)] flex flex-col text-white">
             {/* Top Red-to-Blue Header Banner */}
-            <div className="bg-gradient-to-r from-[#ea384d] via-[#a825b0] to-[#1e88e5] py-2.5 px-3 flex items-center justify-center space-x-2 shadow-md">
+            <div className="bg-gradient-to-r from-[#ea384d] to-[#1e88e5] py-2.5 px-3 flex items-center justify-center space-x-2 shadow-md">
               <span className="text-yellow-300 text-sm">👥</span>
-              <h2 className="text-[14.5px] font-black tracking-wide uppercase drop-shadow-md text-white font-sans">
+              <h2 className="text-[14px] font-black tracking-wide uppercase drop-shadow-md text-white font-sans">
                 INVITE FRIENDS TO JOIN ৳308,888
               </h2>
-              <span className="text-yellow-300 text-sm">👥</span>
             </div>
 
             {/* Security Caution Box */}
@@ -148,21 +136,21 @@ export default function PromoPopupsModal({ isOpen, type = 'first-deposit', onClo
                 <span>🔍</span>
               </div>
               <p className="text-[9px] text-yellow-300 font-bold leading-tight">
-                Never transfer money to any strangers !! Never send OTP to anyone claiming to be an official !!
+                Never transfer money to any strangers !! Never send OTP to anyone claiming to be an official !!"
               </p>
             </div>
 
-            {/* Full High-Resolution Artwork & Table (Photo 5 1:1) */}
-            <div className="p-2.5 space-y-2.5 max-h-[60vh] overflow-y-auto">
-              <div className="w-full rounded-xl overflow-hidden bg-black/40 flex items-center justify-center">
-                <img 
-                  src="/assets/promos/referral_super_bonus_full.png" 
-                  alt="Referral Super Bonus"
-                  className="w-full h-auto object-contain select-none"
-                />
-              </div>
+            {/* Full High-Resolution Artwork & Table (Photo 5 1:1 Edge-to-Edge) */}
+            <div className="max-h-[64vh] overflow-y-auto bg-black flex flex-col">
+              <img 
+                src="/assets/promos/referral_super_bonus_full.png" 
+                alt="Referral Super Bonus"
+                className="w-full h-auto object-contain block select-none pointer-events-none"
+              />
+            </div>
 
-              {/* Big Red-to-Blue Confirm Button (User Mandate: closes popup, does not navigate away) */}
+            {/* Bottom Button Area (User Mandate: Confirm closes popup without navigating away) */}
+            <div className="p-3 bg-[#0a0f2b] border-t border-[#1b2656]">
               <button
                 onClick={handleClose}
                 className="w-full py-3 rounded-full font-black text-sm tracking-wider uppercase text-white bg-gradient-to-r from-[#ea384d] to-[#1e88e5] hover:brightness-110 active:scale-95 transition-all duration-150 shadow-lg shadow-blue-950/80 cursor-pointer"
@@ -174,16 +162,16 @@ export default function PromoPopupsModal({ isOpen, type = 'first-deposit', onClo
         )}
 
         {/* ========================================================================= */}
-        {/* POPUP 3: Extra First Deposit Bonus Tasks (1:1 Replica of Screenshot 2)     */}
+        {/* POPUP 3: Extra First Deposit Bonus Tasks (1:1 Replica of Screenshot 2 & 3) */}
         {/* ========================================================================= */}
         {type === 'extra-tasks' && (
-          <div className="w-full bg-[#272f7c] border border-[#3b47aa] rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.95)] flex flex-col text-white">
+          <div className="w-full bg-[#272f7c] border border-[#3b47aa] rounded-2xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.95)] flex flex-col text-white">
             {/* Header: Title & Subtitle */}
             <div className="pt-4 pb-2 px-4 text-center">
               <h2 className="text-base font-black text-white tracking-wide">
                 Extra first deposit bonus
               </h2>
-              <p className="text-[11px] text-[#9bb0db] mt-0.5">
+              <p className="text-[11.5px] text-[#9bb0db] mt-0.5">
                 Each account can only receive rewards once
               </p>
             </div>
@@ -200,14 +188,14 @@ export default function PromoPopupsModal({ isOpen, type = 'first-deposit', onClo
               ].map((tier, idx) => (
                 <div 
                   key={idx}
-                  onClick={handleGoDeposit}
-                  className="bg-[#1b2260] border border-[#2d3885] hover:border-[#f59e0b]/50 rounded-xl p-3 shadow-md space-y-2 cursor-pointer transition active:scale-[0.99]"
+                  onClick={() => handleGoDeposit(tier.deposit)}
+                  className="bg-[#1b2260] border border-[#2d3885] hover:border-[#f59e0b]/60 rounded-xl p-3 shadow-md space-y-2 cursor-pointer transition active:scale-[0.99]"
                 >
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-bold text-white">
-                      First deposit <span className="text-[#f59e0b] font-mono font-bold">{tier.deposit}</span>
+                      First deposit <span className="text-[#f59e0b] font-mono font-bold text-sm">{tier.deposit}</span>
                     </span>
-                    <span className="font-bold text-[#f59e0b] font-mono text-[13px]">
+                    <span className="font-black text-[#f59e0b] font-mono text-[13px]">
                       + ৳{tier.reward}
                     </span>
                   </div>
@@ -222,10 +210,13 @@ export default function PromoPopupsModal({ isOpen, type = 'first-deposit', onClo
                       {tier.progress}
                     </div>
 
-                    {/* Deposit Button with Gold Border */}
+                    {/* Deposit Button with Gold Border (Navigates to Deposit with tier amount auto-selected) */}
                     <button
-                      onClick={handleGoDeposit}
-                      className="px-5 py-1 rounded-full border border-[#f59e0b] text-[#f59e0b] hover:bg-[#f59e0b]/15 active:scale-95 text-xs font-bold transition-all duration-150 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleGoDeposit(tier.deposit);
+                      }}
+                      className="px-5 py-1 rounded-full border border-[#f59e0b] text-[#f59e0b] hover:bg-[#f59e0b]/20 active:scale-95 text-xs font-bold transition-all duration-150 cursor-pointer shadow-sm"
                     >
                       Deposit
                     </button>
