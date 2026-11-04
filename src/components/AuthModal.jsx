@@ -110,17 +110,18 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
       const res = await login(cleanPhone || identifier, loginPassword, rememberPassword);
 
       setIsLoading(false);
-      if (res.success) {
+      if (res && res.success) {
         setSuccessMsg('লগইন সফল হয়েছে! স্বাগতম।');
         setTimeout(() => {
           onClose();
         }, 800);
       } else {
-        setErrorMsg(res.message || 'ভুল ফোন নম্বর বা পাসওয়ার্ড!');
+        setErrorMsg(res?.message || 'ভুল ফোন নম্বর বা পাসওয়ার্ড!');
       }
     } catch (err) {
+      console.error('Login error detail:', err);
       setIsLoading(false);
-      setErrorMsg('লগইন সম্পন্ন করা যায়নি। পুনরায় চেষ্টা করুন।');
+      setErrorMsg(err?.message || 'লগইন সম্পন্ন করা যায়নি। পুনরায় চেষ্টা করুন।');
     }
   }
 

@@ -323,10 +323,8 @@ function AppContent() {
             ? 'p-0 pb-0'
             : activeTab === 'wingo' 
             ? 'p-0 pb-16' 
-            : activeTab === 'account'
+            : activeTab === 'account' || activeTab === 'deposit' || activeTab === 'withdraw'
             ? 'p-0 pb-24'
-            : activeTab === 'activity' || activeTab === 'deposit' || activeTab === 'withdraw'
-            ? 'p-3.5 pt-0 pb-20' 
             : 'p-3.5 pb-20'
         }`}>
           {activeTab === 'home' && (

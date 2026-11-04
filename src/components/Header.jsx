@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
 import { soundManager } from '../lib/audio';
 import { 
@@ -68,7 +68,7 @@ export default function Header({ onOpenFairness, onOpenAuth, onOpenDeposit }) {
           <span className="font-bold text-yellow-400 text-xs">৳</span>
           <div className="text-right">
             <span className="text-xs font-black font-mono text-yellow-400">
-              {user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {Number(user?.balance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
           <span className="w-4 h-4 bg-emerald-600 text-white rounded-full flex items-center justify-center text-[10px] font-bold ml-0.5">
@@ -87,7 +87,7 @@ export default function Header({ onOpenFairness, onOpenAuth, onOpenDeposit }) {
         ) : (
           <div className="flex items-center space-x-1">
             <div className="w-7 h-7 rounded-lg bg-emerald-950 border border-emerald-600/50 flex items-center justify-center text-xs font-bold text-emerald-300">
-              {user.username.slice(0, 2).toUpperCase()}
+              {(user?.username || 'GU').slice(0, 2).toUpperCase()}
             </div>
             <button 
               onClick={logout}

@@ -651,7 +651,8 @@ export default function AccountPage({
       {/* MODAL 1: CHANGE AVATAR (Screenshot 2 1:1 Replica)                         */}
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'avatar' && (
-        <div className="fixed inset-0 z-50 bg-[#14122E] flex flex-col overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
+          <div className="w-full max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
           {/* Header */}
           <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
             <button 
@@ -698,6 +699,7 @@ export default function AccountPage({
               })}
             </div>
           </div>
+          </div>
         </div>
       )}
 
@@ -705,7 +707,8 @@ export default function AccountPage({
       {/* MODAL 2: SETTINGS CENTER (Screenshot 4 1:1 Replica)                       */}
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'settings' && (
-        <div className="fixed inset-0 z-50 bg-[#14122E] flex flex-col overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
+          <div className="w-full max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
           {/* Header */}
           <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
             <button 
@@ -858,6 +861,7 @@ export default function AccountPage({
               </div>
             </div>
           </div>
+          </div>
         </div>
       )}
 
@@ -951,7 +955,8 @@ export default function AccountPage({
       {/* MODAL 4: TRANSACTION HISTORY (Screenshot 5 1:1 Replica)                   */}
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'transaction' && (
-        <div className="fixed inset-0 z-50 bg-[#14122E] flex flex-col overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
+          <div className="w-full max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
           {/* Header */}
           <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
             <button 
@@ -1052,6 +1057,7 @@ export default function AccountPage({
               No more
             </div>
           </div>
+          </div>
         </div>
       )}
 
@@ -1059,7 +1065,8 @@ export default function AccountPage({
       {/* MODAL 5: GAME HISTORY                                                     */}
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'gameHistory' && (
-        <div className="fixed inset-0 z-50 bg-[#14122E] flex flex-col overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
+          <div className="w-full max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
           <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
             <button 
               onClick={() => setActiveModal(null)}
@@ -1097,6 +1104,7 @@ export default function AccountPage({
               ))
             )}
           </div>
+          </div>
         </div>
       )}
 
@@ -1104,7 +1112,8 @@ export default function AccountPage({
       {/* MODAL 6: GIFTS & PROMO CODES                                              */}
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'gifts' && (
-        <div className="fixed inset-0 z-50 bg-[#14122E] flex flex-col overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
+          <div className="w-full max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
           <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
             <button 
               onClick={() => setActiveModal(null)}
@@ -1146,6 +1155,7 @@ export default function AccountPage({
               </button>
             </div>
           </div>
+          </div>
         </div>
       )}
 
@@ -1153,7 +1163,8 @@ export default function AccountPage({
       {/* MODAL 7: CHANGE PASSWORD                                                  */}
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'changePassword' && (
-        <div className="fixed inset-0 z-50 bg-[#14122E] flex flex-col overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
+          <div className="w-full max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
           <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
             <button 
               onClick={() => setActiveModal(null)}
@@ -1218,6 +1229,7 @@ export default function AccountPage({
               </button>
             </div>
           </form>
+          </div>
         </div>
       )}
 
@@ -1269,7 +1281,8 @@ export default function AccountPage({
       {/* MODAL 10: FEEDBACK & 24/7 SUPPORT                                         */}
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'feedback' && (
-        <div className="fixed inset-0 z-50 bg-[#14122E] flex flex-col overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
+          <div className="w-full max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
           <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
             <button 
               onClick={() => setActiveModal(null)}
@@ -1358,6 +1371,7 @@ export default function AccountPage({
             </div>
           </form>
         </div>
+        </div>
       </div>
     )}
 
@@ -1365,7 +1379,8 @@ export default function AccountPage({
       {/* MODAL 11: ABOUT US                                                        */}
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'about' && (
-        <div className="fixed inset-0 z-50 bg-[#14122E] flex flex-col overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
+          <div className="w-full max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
           <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
             <button 
               onClick={() => setActiveModal(null)}
@@ -1399,6 +1414,7 @@ export default function AccountPage({
               </div>
             </div>
           </div>
+          </div>
         </div>
       )}
 
@@ -1406,7 +1422,8 @@ export default function AccountPage({
       {/* MODAL 12: BEGINNER'S GUIDE                                                */}
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'guide' && (
-        <div className="fixed inset-0 z-50 bg-[#14122E] flex flex-col overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
+          <div className="w-full max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
           <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
             <button 
               onClick={() => setActiveModal(null)}
@@ -1431,6 +1448,7 @@ export default function AccountPage({
               </div>
             </div>
           </div>
+          </div>
         </div>
       )}
 
@@ -1438,7 +1456,8 @@ export default function AccountPage({
       {/* MODAL 13: NOTIFICATIONS & ANNOUNCEMENTS                                   */}
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'notifications' && (
-        <div className="fixed inset-0 z-50 bg-[#14122E] flex flex-col overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
+          <div className="w-full max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
           <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
             <button 
               onClick={() => setActiveModal(null)}
@@ -1486,6 +1505,7 @@ export default function AccountPage({
               </div>
             ))}
           </div>
+          </div>
         </div>
       )}
 
@@ -1493,7 +1513,8 @@ export default function AccountPage({
       {/* MODAL 14: LANGUAGE SELECTOR (APK 1:1 Replica)                             */}
       {/* ------------------------------------------------------------------------- */}
       {activeModal === 'language' && (
-        <div className="fixed inset-0 z-50 bg-[#14122E] flex flex-col overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-[#0b0a1a]/80 backdrop-blur-xs flex justify-center overflow-y-auto">
+          <div className="w-full max-w-[480px] min-h-screen bg-[#14122E] flex flex-col shadow-2xl relative">
           <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
             <button 
               onClick={() => setActiveModal(null)}
@@ -1556,6 +1577,7 @@ export default function AccountPage({
                 </div>
               )}
             </div>
+          </div>
           </div>
         </div>
       )}

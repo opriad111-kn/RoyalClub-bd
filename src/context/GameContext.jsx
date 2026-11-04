@@ -1125,6 +1125,124 @@ export function GameProvider({ children }) {
     return { success: true, message: 'পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে!' };
   }
 
+  // Update user profile with state & Supabase synchronization
+  async function updateUserProfile(updates) {
+    if (!user || user.username === 'Guest' || user.is_guest) return false;
+    const nextUser = { ...user, ...updates };
+    setUser(nextUser);
+    try {
+      localStorage.setItem('royalclub_current_user', JSON.stringify(nextUser));
+    } catch (e) {}
+
+    try {
+      const allowedCols = ['nickname', 'avatar', 'avatar_id', 'wallet_account', 'claimed_vip_levels', 'balance'];
+      const patch = {};
+      for (const k of allowedCols) {
+        if (updates[k] !== undefined) patch[k] = updates[k];
+      }
+      if (Object.keys(patch).length > 0) {
+        if (user.phone) await supabase.from('users').update(patch).eq('phone', user.phone);
+        else if (user.username) await supabase.from('users').update(patch).eq('username', user.username);
+        else if (user.uid) await supabase.from('users').update(patch).eq('id', user.uid);
+      }
+    } catch (e) {
+      console.warn('Supabase updateUserProfile notice:', e);
+    }
+    return true;
+  }
+
+  // Save 1 and ONLY 1 E-Wallet payment method per account (User Mandate)
+  async function saveUserWalletAccount({ method, accountName, accountNumber }) {
+    if (!user || user.username === 'Guest' || user.is_guest) {
+      return { success: false, message: 'Please log in to bind wallet account.' };
+    }
+    if (!accountNumber || !accountNumber.trim()) {
+      return { success: false, message: 'Please enter account number.' };
+    }
+
+    const cleanNumber = accountNumber.trim();
+    const cleanName = (accountName || user.full_name || user.username || 'Member').trim();
+    const walletData = {
+      method: method || 'BKASH',
+      accountName: cleanName,
+      accountNumber: cleanNumber,
+      updated_at: new Date().toISOString()
+    };
+
+    await updateUserProfile({ wallet_account: walletData });
+    return { success: true, message: 'Wallet account saved successfully!', data: walletData };
+  }
+
+  // VIP Level Up Rewards: Can ONLY be claimed 1 time per level (User Mandate)
+  const VIP_LEVEL_REWARDS = {
+    1: 60,
+    2: 180,
+    3: 680,
+    4: 1880,
+    5: 5880,
+    6: 12880,
+    7: 28880,
+    8: 58880,
+    9: 128880,
+    10: 288880
+  };
+
+  async function claimVipLevelReward(targetLevel) {
+    if (!user || user.username === 'Guest' || user.is_guest) {
+      return { success: false, message: 'Please log in to claim VIP rewards.' };
+    }
+
+    const userLevel = Number(user.vip_level || 0);
+    if (userLevel < targetLevel) {
+      return { success: false, message: `Reach VIP ${targetLevel} to unlock this reward.` };
+    }
+
+    const claimed = Array.isArray(user.claimed_vip_levels) ? user.claimed_vip_levels : [];
+    if (claimed.includes(targetLevel)) {
+      return { success: false, message: `VIP ${targetLevel} reward already claimed!` };
+    }
+
+    const rewardAmount = VIP_LEVEL_REWARDS[targetLevel] || 0;
+    if (rewardAmount <= 0) {
+      return { success: false, message: 'Invalid reward amount.' };
+    }
+
+    const nextBal = parseFloat((Number(user.balance || 0) + rewardAmount).toFixed(2));
+    const nextClaimed = [...claimed, targetLevel];
+
+    await updateUserProfile({
+      balance: nextBal,
+      claimed_vip_levels: nextClaimed
+    });
+
+    const newTx = {
+      id: Date.now(),
+      uid: user.uid,
+      username: user.username,
+      type: "vip_bonus",
+      amount: rewardAmount,
+      fee: 0,
+      method: `VIP ${targetLevel} Reward`,
+      status: "completed",
+      created_at: new Date().toISOString()
+    };
+
+    setTransactions(prev => [newTx, ...prev]);
+
+    try {
+      await supabase.from('transactions').insert({
+        user_id: user.uid,
+        username: user.username,
+        type: 'vip_bonus',
+        method: `VIP ${targetLevel} Reward`,
+        amount: rewardAmount,
+        status: 'completed'
+      });
+    } catch (e) {}
+
+    return { success: true, amount: rewardAmount, message: `VIP ${targetLevel} reward ৳${rewardAmount} claimed successfully!` };
+  }
+
   const [supabaseStatus, setSupabaseStatus] = useState('checking'); // 'connected' | 'offline' | 'checking'
 
   // Auto-heal payment numbers and synchronize settings live across all tabs
@@ -2555,7 +2673,10 @@ export function GameProvider({ children }) {
       calculateOutcome,
       setCurrentGame,
       syncGlobalSettingsToSupabase,
-      changeUserPassword
+      changeUserPassword,
+      updateUserProfile,
+      saveUserWalletAccount,
+      claimVipLevelReward
     }}>
       {children}
     </GameContext.Provider>

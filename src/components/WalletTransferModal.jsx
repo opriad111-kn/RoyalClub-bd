@@ -103,7 +103,7 @@ export default function WalletTransferModal({
               <Coins className="w-5 h-5" />
             </div>
             <span className="text-xs font-black font-mono text-yellow-300">
-              ৳{isTransferIn ? user.balance.toFixed(2) : amount.toFixed(2)}
+              ৳{isTransferIn ? Number(user?.balance || 0).toFixed(2) : Number(amount || 0).toFixed(2)}
             </span>
           </div>
 
@@ -126,7 +126,7 @@ export default function WalletTransferModal({
               <Sparkles className="w-5 h-5 fill-current" />
             </div>
             <span className="text-xs font-black font-mono text-emerald-400">
-              ৳{isTransferIn ? user.balance.toFixed(2) : (amount).toFixed(2)}
+              ৳{isTransferIn ? Number(user?.balance || 0).toFixed(2) : Number(amount || 0).toFixed(2)}
             </span>
           </div>
 
