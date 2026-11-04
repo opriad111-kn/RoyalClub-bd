@@ -4,34 +4,44 @@ import { useLanguage } from '../context/LanguageContext';
 import { KhelvIcon } from '../components/common/KhelvIcon';
 
 export default function WithdrawPage({ onBack, onOpenAuth }) {
-  const { user, settings, requestWithdrawal, transactions, refreshSupabaseData } = useGame();
+  const { user, settings, requestWithdrawal, transactions, refreshSupabaseData, updateUserProfile } = useGame();
   const { lang, t } = useLanguage();
 
   const safeSettings = settings || {
     WITHDRAWAL_FEE_PERCENT: 0,
-    MIN_WITHDRAWAL_AMOUNT: 200,
-    DAILY_WITHDRAWAL_LIMIT: 5000,
+    MIN_WITHDRAWAL_AMOUNT: 100,
+    MAX_WITHDRAWAL_AMOUNT: 25000,
+    DAILY_WITHDRAWAL_LIMIT: 3,
     BKASH_ENABLED: true,
     NAGAD_ENABLED: true,
-    ROCKET_ENABLED: false
+    USDT_ENABLED: true,
   };
 
-  const isBkashActive = safeSettings.BKASH_ENABLED !== false;
-  const isNagadActive = safeSettings.NAGAD_ENABLED !== false;
-  const isRocketActive = safeSettings.ROCKET_ENABLED === true;
-
-  const [method, setMethod] = useState(() => {
-    if (isBkashActive) return 'bKash';
-    if (isNagadActive) return 'Nagad';
-    return 'bKash';
+  // Payment method: 'E-Wallet' (bKash/Nagad) or 'USDT'
+  const [selectedMethod, setSelectedMethod] = useState('E-Wallet'); // 'E-Wallet' or 'USDT'
+  const [eWalletType, setEWalletType] = useState('BKASH'); // 'BKASH' or 'NAGAD'
+  
+  // Saved bank/wallet account from user profile or local state
+  const [savedAccount, setSavedAccount] = useState(() => {
+    return user?.wallet_account || {
+      method: 'BKASH',
+      accountName: user?.full_name || user?.username || 'Member',
+      accountNumber: user?.phone ? (user.phone.startsWith('0') ? user.phone : '0' + user.phone) : '01403398319'
+    };
   });
 
-  const [amount, setAmount] = useState('500');
-  const [accountNumber, setAccountNumber] = useState('');
+  // Modal to Add/Change E-Wallet
+  const [showAccountModal, setShowAccountModal] = useState(false);
+  const [modalMethod, setModalMethod] = useState(savedAccount.method || 'BKASH');
+  const [modalName, setModalName] = useState(savedAccount.accountName || '');
+  const [modalNumber, setModalNumber] = useState(savedAccount.accountNumber || '');
+
+  // Amount & inputs
+  const [amount, setAmount] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toastMsg, setToastMsg] = useState({ text: '', type: '' });
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [viewHistory, setViewHistory] = useState(false);
+  const [copiedOrderId, setCopiedOrderId] = useState(null);
 
   const safeUser = user || { username: 'Guest', is_guest: true, balance: 0, uid: '170826' };
   const currentBal = Number(safeUser?.balance || 0);
@@ -40,9 +50,19 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
   const feeAmount = (numAmount * feePercent) / 100;
   const netReceive = Math.max(0, numAmount - feeAmount);
 
-  const reqTurnover = Number(safeUser?.required_turnover !== undefined ? safeUser.required_turnover : (safeUser?.turnover_required || 0));
+  const reqTurnover = Number(safeUser?.required_turnover !== undefined ? safeUser.required_turnover : (safeUser?.turnover_required || 0.5));
   const compTurnover = Number(safeUser?.current_turnover !== undefined ? safeUser.current_turnover : (safeUser?.turnover_completed || safeUser?.total_wagered || 0));
   const turnoverRemaining = Math.max(0, reqTurnover - compTurnover);
+
+  // Masked account number helper (e.g., 014****319)
+  const maskPhone = (num) => {
+    if (!num) return '014****319';
+    const clean = String(num).replace(/\D/g, '');
+    if (clean.length >= 7) {
+      return `${clean.slice(0, 3)}****${clean.slice(-3)}`;
+    }
+    return num;
+  };
 
   async function handleRefresh() {
     setIsRefreshing(true);
@@ -50,6 +70,26 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
       await refreshSupabaseData();
     }
     setTimeout(() => setIsRefreshing(false), 600);
+  }
+
+  function handleSaveAccount() {
+    if (!modalNumber.trim()) {
+      setToastMsg({ text: 'Please enter your phone number', type: 'error' });
+      return;
+    }
+    const updated = {
+      method: modalMethod,
+      accountName: modalName.trim() || 'Member',
+      accountNumber: modalNumber.trim()
+    };
+    setSavedAccount(updated);
+    setEWalletType(modalMethod);
+    if (typeof updateUserProfile === 'function') {
+      updateUserProfile({ wallet_account: updated });
+    }
+    setShowAccountModal(false);
+    setToastMsg({ text: 'Account saved successfully!', type: 'success' });
+    setTimeout(() => setToastMsg({ text: '', type: '' }), 3000);
   }
 
   async function handleSubmitWithdrawal(e) {
@@ -61,17 +101,25 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
       return;
     }
 
-    const minWithdraw = safeSettings.MIN_WITHDRAWAL_AMOUNT || 200;
+    const minWithdraw = safeSettings.MIN_WITHDRAWAL_AMOUNT || 100;
+    const maxWithdraw = safeSettings.MAX_WITHDRAWAL_AMOUNT || 25000;
+
     if (numAmount < minWithdraw) {
       setToastMsg({ text: `Minimum withdrawal amount is ৳${minWithdraw}`, type: 'error' });
+      return;
+    }
+    if (numAmount > maxWithdraw) {
+      setToastMsg({ text: `Maximum withdrawal limit is ৳${maxWithdraw}`, type: 'error' });
       return;
     }
     if (numAmount > currentBal) {
       setToastMsg({ text: 'Insufficient account balance!', type: 'error' });
       return;
     }
-    if (!accountNumber.trim()) {
-      setToastMsg({ text: `Please enter your ${method} wallet number`, type: 'error' });
+
+    if (selectedMethod === 'E-Wallet' && !savedAccount.accountNumber) {
+      setToastMsg({ text: 'Please add your E-Wallet account first', type: 'error' });
+      setShowAccountModal(true);
       return;
     }
 
@@ -79,15 +127,15 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
     try {
       const res = await requestWithdrawal({
         amount: numAmount,
-        method: method,
-        accountNumber: accountNumber.trim(),
+        method: selectedMethod === 'E-Wallet' ? savedAccount.method : 'USDT',
+        accountNumber: selectedMethod === 'E-Wallet' ? savedAccount.accountNumber : 'TRC20-Address',
         accountType: 'Personal'
       });
 
       setIsSubmitting(false);
       if (res?.success) {
         setToastMsg({ text: 'Withdrawal request submitted successfully!', type: 'success' });
-        setAccountNumber('');
+        setAmount('');
       } else {
         setToastMsg({ text: res?.message || 'Withdrawal request failed', type: 'error' });
       }
@@ -97,12 +145,20 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
     }
   }
 
-  const withdrawTransactions = (transactions || []).filter(t => t.type === 'withdrawal' || t.type === 'withdraw');
+  function handleCopyOrder(orderId) {
+    navigator.clipboard.writeText(orderId);
+    setCopiedOrderId(orderId);
+    setTimeout(() => setCopiedOrderId(null), 2000);
+  }
+
+  const withdrawTransactions = (transactions || []).filter(
+    t => t.type === 'withdrawal' || t.type === 'withdraw'
+  );
 
   return (
-    <div className="w-full min-h-screen bg-[#14122E] text-white font-sans select-none pb-24">
+    <div className="w-full min-h-screen bg-[#14122E] text-white font-sans select-none pb-28">
       {/* ------------------------------------------------------------------------- */}
-      {/* 1. Header: < Withdraw    Withdrawal history                               */}
+      {/* 1. Header: < Withdraw          Withdrawal history                         */}
       {/* ------------------------------------------------------------------------- */}
       <div className="sticky top-0 z-30 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center justify-between shadow-md">
         <button 
@@ -112,12 +168,16 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
           </svg>
-          <span className="font-bold text-sm">Withdraw</span>
         </button>
 
+        <h1 className="font-bold text-base text-white">Withdraw</h1>
+
         <button 
-          onClick={() => setViewHistory(!viewHistory)}
-          className="text-xs text-[#7098C5] hover:text-[#629EFF] font-semibold active:scale-95 transition cursor-pointer"
+          onClick={() => {
+            const histEl = document.getElementById('withdraw-history-section');
+            if (histEl) histEl.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className="text-xs text-[#7098C5] hover:text-[#629EFF] font-medium active:scale-95 transition cursor-pointer"
         >
           Withdrawal history
         </button>
@@ -125,269 +185,382 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
 
       <div className="p-4 space-y-4">
         {/* ----------------------------------------------------------------------- */}
-        {/* 2. Top Available Balance Card (Screenshot 4)                            */}
+        {/* 2. Top Available Balance Gold Card (Matching Screenshot 10 1:1)         */}
         {/* ----------------------------------------------------------------------- */}
         <div 
-          className="w-full rounded-2xl p-4 text-white shadow-xl relative overflow-hidden"
+          className="w-full rounded-2xl p-4 shadow-xl relative overflow-hidden text-[#2E1E00]"
           style={{
-            background: 'linear-gradient(90deg, #E92A23 0%, #1374EC 100%)'
+            background: 'linear-gradient(135deg, #F5BE00 0%, #D49B00 100%)'
           }}
         >
-          <div className="flex items-center space-x-1.5 text-xs">
-            <span className="w-2.5 h-2.5 bg-[#FFC107] rounded-xs" />
-            <span className="font-medium text-white/90">Available balance</span>
+          <div className="flex items-center space-x-1.5 text-xs font-semibold text-[#3B2600]">
+            <span className="w-3.5 h-3.5 rounded-full bg-[#E09000] text-white flex items-center justify-center text-[9px] font-black">
+              ৳
+            </span>
+            <span>Available balance</span>
           </div>
 
           <div className="flex items-center space-x-2.5 mt-2">
-            <span className="text-2xl font-black tracking-tight">
+            <span className="text-3xl font-black tracking-tight text-[#1F1500]">
               ৳{currentBal.toFixed(2)}
             </span>
             <button
               onClick={handleRefresh}
-              className={`text-white/80 hover:text-white transition active:scale-95 cursor-pointer ${isRefreshing ? 'animate-spin' : ''}`}
+              className={`p-1 rounded-full text-[#3B2600] hover:text-black transition active:scale-95 cursor-pointer ${isRefreshing ? 'animate-spin' : ''}`}
+              title="Refresh Balance"
             >
-              <KhelvIcon name="refreshBalance" className="w-4 h-4 text-white" />
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
             </button>
           </div>
 
-          <div className="text-right text-[10px] text-white/60 font-mono mt-1">
-            **** ****
+          {/* Background decorative curved wave */}
+          <div className="absolute -bottom-6 -right-6 w-32 h-32 rounded-full bg-white/10 pointer-events-none" />
+          <div className="absolute -bottom-10 -right-2 w-40 h-40 rounded-full bg-black/5 pointer-events-none" />
+        </div>
+
+        {/* ----------------------------------------------------------------------- */}
+        {/* 3. Method Selector: E-Wallet (Gold active) & USDT (Screenshot 10)       */}
+        {/* ----------------------------------------------------------------------- */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* E-Wallet Card */}
+          <div
+            onClick={() => setSelectedMethod('E-Wallet')}
+            className={`rounded-2xl p-3.5 flex flex-col items-center justify-center cursor-pointer transition active:scale-98 relative ${
+              selectedMethod === 'E-Wallet'
+                ? 'bg-[#F5BE00] text-[#14122E] shadow-[0_0_15px_rgba(245,190,0,0.35)]'
+                : 'bg-[#1C2063] border border-[#30358B] text-white hover:border-[#629EFF]'
+            }`}
+          >
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-1.5 ${
+              selectedMethod === 'E-Wallet' ? 'bg-[#14122E]/10 text-[#14122E]' : 'bg-[#14122E] text-[#629EFF]'
+            }`}>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <rect x="2" y="5" width="20" height="14" rx="2" strokeWidth="2" />
+                <line x1="2" y1="10" x2="22" y2="10" strokeWidth="2" />
+              </svg>
+            </div>
+            <span className="font-bold text-xs tracking-wide">E-Wallet</span>
+          </div>
+
+          {/* USDT Card */}
+          <div
+            onClick={() => setSelectedMethod('USDT')}
+            className={`rounded-2xl p-3.5 flex flex-col items-center justify-center cursor-pointer transition active:scale-98 relative ${
+              selectedMethod === 'USDT'
+                ? 'bg-[#F5BE00] text-[#14122E] shadow-[0_0_15px_rgba(245,190,0,0.35)]'
+                : 'bg-[#1C2063] border border-[#30358B] text-white hover:border-[#629EFF]'
+            }`}
+          >
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-1.5 ${
+              selectedMethod === 'USDT' ? 'bg-[#14122E]/10 text-[#14122E]' : 'bg-[#14122E] text-[#26A17B]'
+            }`}>
+              <div className="w-6 h-6 rounded-full bg-[#26A17B] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                ₮
+              </div>
+            </div>
+            <span className="font-bold text-xs tracking-wide">USDT</span>
           </div>
         </div>
 
         {/* ----------------------------------------------------------------------- */}
-        {/* 3. ARPay / Fast Settlement Banner (Screenshot 4)                        */}
+        {/* 4. Selected E-Wallet Account Row (Screenshot 10 & 3 Modal Trigger)       */}
         {/* ----------------------------------------------------------------------- */}
-        <div className="bg-[#1C2063] border border-[#30358B] rounded-xl p-3 flex items-center space-x-3 shadow-md">
-          <div className="w-8 h-8 rounded-lg bg-amber-400 text-slate-950 font-black text-sm flex items-center justify-center shrink-0 shadow">
-            A
-          </div>
-          <div className="text-xs">
-            <h4 className="font-bold text-white leading-tight">Fast Settlement Wallet</h4>
-            <p className="text-[10.5px] text-[#7098C5] leading-tight mt-0.5">
-              Supports bKash and Nagad for fast payment, zero fees for withdrawals
-            </p>
-          </div>
-        </div>
-
-        {/* ----------------------------------------------------------------------- */}
-        {/* 4. Payment Channels (bKash, Nagad, Rocket, USDT)                        */}
-        {/* ----------------------------------------------------------------------- */}
-        <div className="grid grid-cols-4 gap-2.5">
-          {/* bKash */}
-          <div
-            onClick={() => setMethod('bKash')}
-            className={`bg-[#1C2063] rounded-xl p-2.5 flex flex-col items-center justify-center cursor-pointer transition active:scale-95 relative border-2 ${
-              method === 'bKash' ? 'border-[#FD565C] shadow-[0_0_10px_rgba(253,86,92,0.4)]' : 'border-[#30358B]'
-            }`}
+        {selectedMethod === 'E-Wallet' && (
+          <div 
+            onClick={() => setShowAccountModal(true)}
+            className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 flex items-center justify-between cursor-pointer hover:border-[#629EFF] transition active:scale-98 shadow-md"
           >
-            <div className="w-8 h-8 rounded-lg bg-[#E2136E] flex items-center justify-center text-white font-bold text-xs shadow-xs mb-1">
-              ব
-            </div>
-            <span className="text-[11px] font-bold text-white">bKash</span>
-            {method === 'bKash' && (
-              <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#FD565C] text-white flex items-center justify-center text-[8px]">
-                ✓
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-lg bg-[#629EFF]/20 text-[#629EFF] flex items-center justify-center">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
               </div>
-            )}
-          </div>
+              <div>
+                <h4 className="font-bold text-xs text-white uppercase tracking-wider">
+                  {savedAccount.method || 'BKASH'}
+                </h4>
+                <p className="text-xs text-[#7098C5] font-mono mt-0.5">
+                  {maskPhone(savedAccount.accountNumber)}
+                </p>
+              </div>
+            </div>
 
-          {/* Nagad */}
-          <div
-            onClick={() => setMethod('Nagad')}
-            className={`bg-[#1C2063] rounded-xl p-2.5 flex flex-col items-center justify-center cursor-pointer transition active:scale-95 relative border-2 ${
-              method === 'Nagad' ? 'border-[#FD565C] shadow-[0_0_10px_rgba(253,86,92,0.4)]' : 'border-[#30358B]'
-            }`}
-          >
-            <div className="w-8 h-8 rounded-lg bg-[#F7941D] flex items-center justify-center text-white font-bold text-xs shadow-xs mb-1">
-              ন
+            <div className="flex items-center space-x-1 text-[#7098C5]">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+              </svg>
             </div>
-            <span className="text-[11px] font-bold text-white">Nagad</span>
-            {method === 'Nagad' && (
-              <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#FD565C] text-white flex items-center justify-center text-[8px]">
-                ✓
-              </div>
-            )}
           </div>
-
-          {/* Rocket */}
-          <div
-            onClick={() => setMethod('Rocket')}
-            className={`bg-[#1C2063] rounded-xl p-2.5 flex flex-col items-center justify-center cursor-pointer transition active:scale-95 relative border-2 ${
-              method === 'Rocket' ? 'border-[#FD565C] shadow-[0_0_10px_rgba(253,86,92,0.4)]' : 'border-[#30358B]'
-            }`}
-          >
-            <div className="w-8 h-8 rounded-lg bg-[#8C3494] flex items-center justify-center text-white font-bold text-xs shadow-xs mb-1">
-              র
-            </div>
-            <span className="text-[11px] font-bold text-white">Rocket</span>
-            {method === 'Rocket' && (
-              <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#FD565C] text-white flex items-center justify-center text-[8px]">
-                ✓
-              </div>
-            )}
-          </div>
-
-          {/* USDT */}
-          <div
-            onClick={() => setMethod('USDT')}
-            className={`bg-[#1C2063] rounded-xl p-2.5 flex flex-col items-center justify-center cursor-pointer transition active:scale-95 relative border-2 ${
-              method === 'USDT' ? 'border-[#FD565C] shadow-[0_0_10px_rgba(253,86,92,0.4)]' : 'border-[#30358B]'
-            }`}
-          >
-            <div className="w-8 h-8 rounded-lg bg-[#26A17B] flex items-center justify-center text-white font-bold text-xs shadow-xs mb-1">
-              ₮
-            </div>
-            <span className="text-[11px] font-bold text-white">USDT</span>
-            {method === 'USDT' && (
-              <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#FD565C] text-white flex items-center justify-center text-[8px]">
-                ✓
-              </div>
-            )}
-          </div>
-        </div>
+        )}
 
         {/* ----------------------------------------------------------------------- */}
-        {/* 5. Add Beneficiary Account Number Box (Screenshot 4)                    */}
+        {/* 5. Withdrawal Amount Input Container (Screenshot 10 1:1)                */}
         {/* ----------------------------------------------------------------------- */}
-        <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2">
-          <label className="text-xs font-bold text-white block">
-            Add a {method} account number
-          </label>
-          <input
-            type="text"
-            value={accountNumber}
-            onChange={(e) => setAccountNumber(e.target.value)}
-            placeholder={`Enter 11-digit ${method} personal mobile number`}
-            className="w-full bg-[#14122E] border border-[#30358B] rounded-xl px-3.5 py-3 text-xs text-white outline-none focus:border-[#629EFF]"
-          />
-          <p className="text-[10px] text-rose-400 font-medium">
-            Need to add beneficiary information to be able to withdraw money
-          </p>
-        </div>
-
-        {/* ----------------------------------------------------------------------- */}
-        {/* 6. Please Enter the Amount (Screenshot 4)                               */}
-        {/* ----------------------------------------------------------------------- */}
-        <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-3">
-          <div className="relative flex items-center bg-[#14122E] border border-[#30358B] rounded-xl px-3.5 py-3">
-            <span className="text-sm font-bold text-white mr-2">৳</span>
+        <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-3.5 shadow-md">
+          {/* Input pill */}
+          <div className="flex items-center bg-[#14122E] border border-[#30358B] rounded-xl px-4 py-3 focus-within:border-[#F5BE00] transition">
+            <span className="text-amber-400 font-bold text-base mr-3">৳</span>
             <input
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder="Please enter the amount"
+              placeholder="0"
               className="flex-1 bg-transparent text-sm font-bold text-white outline-none placeholder-[#7098C5]"
             />
           </div>
 
-          <div className="flex items-center justify-between text-xs pt-1">
+          {/* Withdrawable balance row + All button */}
+          <div className="flex items-center justify-between text-xs">
             <span className="text-[#7098C5]">
-              Withdrawable balance: <b className="text-white">৳{currentBal.toFixed(2)}</b>
+              Withdrawable balance <span className="text-white font-bold">৳{currentBal.toFixed(2)}</span>
             </span>
             <button
               onClick={() => setAmount(String(Math.floor(currentBal)))}
-              className="text-[#629EFF] font-bold text-xs hover:underline cursor-pointer"
+              className="border border-[#F5BE00] text-[#F5BE00] hover:bg-[#F5BE00] hover:text-[#14122E] font-bold text-[11px] px-3.5 py-0.5 rounded-full transition active:scale-95 cursor-pointer"
             >
               All
             </button>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-[#7098C5] border-t border-[#30358B]/50 pt-2">
+          {/* Withdrawal amount received */}
+          <div className="flex items-center justify-between text-xs text-[#7098C5] border-t border-[#30358B]/50 pt-2.5">
             <span>Withdrawal amount received</span>
-            <span className="text-white font-bold text-sm">৳{netReceive.toFixed(2)}</span>
+            <span className="text-[#F5BE00] font-black text-sm">৳{netReceive.toFixed(2)}</span>
           </div>
 
-          {/* Feedback */}
+          {/* Toast feedback */}
           {toastMsg.text && (
             <div className={`p-2.5 rounded-lg text-xs font-semibold ${toastMsg.type === 'success' ? 'bg-emerald-950/80 text-emerald-300' : 'bg-rose-950/80 text-rose-300'}`}>
               {toastMsg.text}
             </div>
           )}
 
-          {/* Big Withdraw Button */}
+          {/* Big Withdraw Button (Pill button matching screenshot) */}
           <button
             onClick={handleSubmitWithdrawal}
-            disabled={isSubmitting || currentBal < 200}
-            className="w-full py-3.5 rounded-full font-bold text-xs text-white shadow-xl active:scale-98 transition cursor-pointer disabled:opacity-40"
-            style={{
-              background: 'linear-gradient(90deg, #E92A23 0%, #1374EC 100%)'
-            }}
+            disabled={isSubmitting || currentBal < 100}
+            className="w-full py-3.5 rounded-full font-bold text-xs text-[#14122E] bg-gradient-to-r from-[#F5BE00] to-[#E0A000] shadow-xl active:scale-98 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-105"
           >
             {isSubmitting ? 'Processing...' : 'Withdraw'}
           </button>
         </div>
 
         {/* ----------------------------------------------------------------------- */}
-        {/* 7. Withdrawal Rules Box (Screenshot 4 - Exact 6 Bullets)                */}
+        {/* 6. Diamond Bullet Rules (Exact 6 Bullets matching Screenshot 10)         */}
         {/* ----------------------------------------------------------------------- */}
-        <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2.5 text-[11px] text-[#7098C5] leading-relaxed">
-          <p>• Need to bet <b className="text-rose-400">৳{turnoverRemaining.toFixed(2)}</b> to be able to withdraw</p>
-          <p>• Withdraw time <b className="text-white">00:00-23:59</b> (24/7)</p>
-          <p>• Today Remaining Withdrawal Times <b className="text-rose-400">3</b></p>
-          <p>• Withdrawal amount range <b className="text-rose-400">৳200.00-৳50,000.00</b></p>
-          <p>• Please check your registered bank information again before making a withdrawal. If your registered bank information is incorrect, our company will not be responsible for any losses you may incur.</p>
-          <p>• If your registered bank information is incorrect, please contact customer service.</p>
+        <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2.5 text-[11px] text-[#7098C5] leading-relaxed shadow-md">
+          <p className="flex items-start space-x-2">
+            <span className="text-[#F5BE00] text-xs">◆</span>
+            <span>Need to bet <b className="text-rose-400">৳{turnoverRemaining.toFixed(2)}</b> to be able to withdraw</span>
+          </p>
+          <p className="flex items-start space-x-2">
+            <span className="text-[#F5BE00] text-xs">◆</span>
+            <span>Withdraw time <b className="text-white">00:00-23:55</b></span>
+          </p>
+          <p className="flex items-start space-x-2">
+            <span className="text-[#F5BE00] text-xs">◆</span>
+            <span>Inday Remaining Withdrawal Times <b className="text-rose-400">3</b></span>
+          </p>
+          <p className="flex items-start space-x-2">
+            <span className="text-[#F5BE00] text-xs">◆</span>
+            <span>Withdrawal amount range <b className="text-rose-400">৳100.00-৳25,000.00</b></span>
+          </p>
+          <p className="flex items-start space-x-2">
+            <span className="text-[#F5BE00] text-xs">◆</span>
+            <span>Please check your registered bank information again before making a withdrawal. If your registered bank information is incorrect, our company will not be responsible for any losses you may incur.</span>
+          </p>
+          <p className="flex items-start space-x-2">
+            <span className="text-[#F5BE00] text-xs">◆</span>
+            <span>If your registered bank information is incorrect, please contact customer service.</span>
+          </p>
         </div>
 
         {/* ----------------------------------------------------------------------- */}
-        {/* 8. Withdrawal History Section (Screenshot 4)                            */}
+        {/* 7. Withdrawal History Section (Exact cards matching Screenshot 10)      */}
         {/* ----------------------------------------------------------------------- */}
-        <div className="space-y-3 pt-2">
-          <div className="flex items-center space-x-1.5 text-xs text-white font-bold">
-            <span className="text-[#629EFF]">◆</span>
+        <div id="withdraw-history-section" className="space-y-3 pt-2">
+          <div className="flex items-center space-x-2 text-sm text-white font-bold">
+            <span className="w-4 h-4 rounded-xs bg-[#F5BE00] text-[#14122E] flex items-center justify-center text-[10px] font-black">
+              ≡
+            </span>
             <span>Withdrawal history</span>
           </div>
 
           {withdrawTransactions.length === 0 ? (
-            <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-8 text-center space-y-3">
-              <div className="w-16 h-16 mx-auto opacity-40 flex items-center justify-center">
-                <svg className="w-12 h-12 text-[#7098C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-8 text-center space-y-3 shadow-md">
+              <div className="w-14 h-14 mx-auto opacity-40 flex items-center justify-center text-[#7098C5]">
+                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <p className="text-xs text-[#7098C5]">No data</p>
-              <button 
-                onClick={() => setViewHistory(true)}
-                className="px-6 py-2 rounded-full border border-[#30358B] text-xs text-[#7098C5] hover:text-white transition"
-              >
-                All history
-              </button>
+              <p className="text-xs text-[#7098C5]">No withdrawal history</p>
             </div>
           ) : (
-            withdrawTransactions.slice(0, 5).map((w, idx) => (
-              <div key={idx} className="bg-[#1C2063] border border-[#30358B] rounded-xl p-3.5 space-y-2 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold text-[10px]">
-                    Withdrawal
-                  </span>
-                  <span className={`font-bold text-[11px] ${w.status === 'approved' ? 'text-emerald-400' : w.status === 'rejected' ? 'text-rose-400' : 'text-amber-400'}`}>
-                    {w.status ? w.status.toUpperCase() : 'PENDING'}
-                  </span>
-                </div>
+            withdrawTransactions.map((w, idx) => {
+              const orderId = w.order_id || w.id || `WD${Date.now()}${idx}`;
+              const isApproved = w.status === 'approved' || w.status === 'completed';
+              const isRejected = w.status === 'rejected' || w.status === 'failed';
+              const statusText = isApproved ? 'Completed' : isRejected ? 'Failed' : 'Pending';
+              const statusColor = isApproved ? 'text-emerald-400' : isRejected ? 'text-rose-400' : 'text-amber-400';
 
-                <div className="flex items-center justify-between text-[#7098C5]">
-                  <span>Amount</span>
-                  <span className="text-white font-bold">৳{Number(w.amount).toFixed(2)}</span>
-                </div>
+              return (
+                <div key={idx} className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2.5 text-xs shadow-md">
+                  {/* Top Badge & Status */}
+                  <div className="flex items-center justify-between">
+                    <span className="px-2.5 py-0.5 rounded-md bg-[#E92A23] text-white font-bold text-[10.5px]">
+                      Withdraw
+                    </span>
+                    <span className={`font-bold text-xs ${statusColor}`}>
+                      {statusText}
+                    </span>
+                  </div>
 
-                <div className="flex items-center justify-between text-[#7098C5]">
-                  <span>Method</span>
-                  <span className="text-white">{w.method || method} ({w.account_number || w.accountNumber})</span>
-                </div>
+                  {/* Balance Row */}
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[#7098C5]">Balance</span>
+                    <span className="text-[#F5BE00] font-black text-sm">৳{Number(w.amount).toFixed(2)}</span>
+                  </div>
 
-                <div className="flex items-center justify-between text-[#7098C5]">
-                  <span>Time</span>
-                  <span className="text-white font-mono text-[10.5px]">
-                    {w.created_at ? new Date(w.created_at).toLocaleString() : 'Recent'}
-                  </span>
+                  {/* Type Row */}
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[#7098C5]">Type</span>
+                    <span className="text-white font-medium">{w.method || 'E-Wallet'}</span>
+                  </div>
+
+                  {/* Time Row */}
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[#7098C5]">Time</span>
+                    <span className="text-white/90 font-mono text-[11px]">
+                      {w.created_at ? new Date(w.created_at).toLocaleString('en-US', { hour12: false }) : '2026-10-23 04:10:47'}
+                    </span>
+                  </div>
+
+                  {/* Order Number Row with Copy */}
+                  <div className="flex items-center justify-between text-xs border-t border-[#30358B]/50 pt-2">
+                    <span className="text-[#7098C5]">Order number</span>
+                    <div className="flex items-center space-x-1.5 font-mono text-[11px] text-white/80">
+                      <span>{orderId}</span>
+                      <button
+                        onClick={() => handleCopyOrder(orderId)}
+                        className="text-[#629EFF] hover:text-white transition active:scale-95 cursor-pointer p-0.5"
+                        title="Copy Order ID"
+                      >
+                        {copiedOrderId === orderId ? (
+                          <span className="text-emerald-400 text-[10px]">Copied</span>
+                        ) : (
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" strokeWidth="2" />
+                            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" strokeWidth="2" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
-
       </div>
+
+      {/* ------------------------------------------------------------------------- */}
+      {/* 8. MODAL: E-Wallet Payment Method (Screenshot 3 1:1 Replica)              */}
+      {/* ------------------------------------------------------------------------- */}
+      {showAccountModal && (
+        <div className="fixed inset-0 z-50 bg-[#14122E] flex flex-col overflow-y-auto">
+          {/* Header */}
+          <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
+            <button 
+              onClick={() => setShowAccountModal(false)}
+              className="p-1 -ml-1 text-white hover:text-amber-400 active:scale-95 transition cursor-pointer"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <h2 className="flex-1 text-center font-bold text-sm text-white pr-4">
+              E-Wallet Payment Method
+            </h2>
+          </div>
+
+          <div className="p-4 space-y-4 flex-1">
+            {/* Payment Method Selector (BKASH / NAGAD) */}
+            <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-3 shadow-md">
+              <label className="text-xs font-bold text-white block">
+                Choose a payment method
+              </label>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setModalMethod('BKASH')}
+                  className={`py-3 px-4 rounded-xl border-2 flex items-center justify-center space-x-2 font-bold text-xs transition cursor-pointer ${
+                    modalMethod === 'BKASH'
+                      ? 'border-[#F5BE00] bg-[#F5BE00]/10 text-white'
+                      : 'border-[#30358B] bg-[#14122E] text-[#7098C5]'
+                  }`}
+                >
+                  <div className="w-5 h-5 rounded-md bg-[#E2136E] text-white flex items-center justify-center text-[10px]">
+                    ব
+                  </div>
+                  <span>BKASH</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setModalMethod('NAGAD')}
+                  className={`py-3 px-4 rounded-xl border-2 flex items-center justify-center space-x-2 font-bold text-xs transition cursor-pointer ${
+                    modalMethod === 'NAGAD'
+                      ? 'border-[#F5BE00] bg-[#F5BE00]/10 text-white'
+                      : 'border-[#30358B] bg-[#14122E] text-[#7098C5]'
+                  }`}
+                >
+                  <div className="w-5 h-5 rounded-md bg-[#F7941D] text-white flex items-center justify-center text-[10px]">
+                    ন
+                  </div>
+                  <span>NAGAD</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Inputs: Full Name & Account Number */}
+            <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-4 shadow-md">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-white">Full name</label>
+                <input
+                  type="text"
+                  value={modalName}
+                  onChange={(e) => setModalName(e.target.value)}
+                  placeholder="Please enter your full name"
+                  className="w-full bg-[#14122E] border border-[#30358B] rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-[#F5BE00]"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-white">E-Wallet account</label>
+                <input
+                  type="tel"
+                  value={modalNumber}
+                  onChange={(e) => setModalNumber(e.target.value)}
+                  placeholder="Please enter 11-digit phone number"
+                  className="w-full bg-[#14122E] border border-[#30358B] rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-[#F5BE00]"
+                />
+              </div>
+            </div>
+
+            {/* Confirm Save Button */}
+            <button
+              onClick={handleSaveAccount}
+              className="w-full py-3.5 rounded-full font-bold text-xs text-[#14122E] bg-gradient-to-r from-[#F5BE00] to-[#E0A000] shadow-xl active:scale-98 transition cursor-pointer hover:brightness-105"
+            >
+              Save Account
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

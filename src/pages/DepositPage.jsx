@@ -9,52 +9,89 @@ export default function DepositPage({ onBack, onOpenAuth }) {
 
   const isBkashActive = settings?.BKASH_ENABLED !== false;
   const isNagadActive = settings?.NAGAD_ENABLED !== false;
-  const isRocketActive = settings?.ROCKET_ENABLED === true;
   const isUsdtActive = settings?.USDT_ENABLED !== false;
 
-  const [method, setMethod] = useState(() => {
-    if (isBkashActive) return 'bKash';
-    if (isNagadActive) return 'Nagad';
-    if (isUsdtActive) return 'USDT';
-    return 'bKash';
-  });
+  // Selected Payment Method: 'Nagad', 'bKash', or 'USDT' (Nagad first as in Screenshot 5)
+  const [method, setMethod] = useState('Nagad');
 
-  const [channelTab, setChannelTab] = useState('bKash');
-  const [amount, setAmount] = useState('300');
+  // Selected Channel
+  const [selectedChannel, setSelectedChannel] = useState('GoPayPS-NAGAD');
+
+  // Amount
+  const [amount, setAmount] = useState('500');
   const [senderPhone, setSenderPhone] = useState('');
   const [trxId, setTrxId] = useState('');
   const [copied, setCopied] = useState(false);
+  const [copiedOrderId, setCopiedOrderId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toastMsg, setToastMsg] = useState({ text: '', type: '' });
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [viewHistory, setViewHistory] = useState(false);
 
-  const quickAmounts = ['100', '300', '500', '800', '1K', '2K', '3K', '5K'];
-  const quickAmountValues = {
-    '100': 100,
-    '300': 300,
-    '500': 500,
-    '800': 800,
-    '1K': 1000,
-    '2K': 2000,
-    '3K': 3000,
-    '5K': 5000
+  // Channels per method (DKWin screenshot 5)
+  const CHANNELS = {
+    Nagad: [
+      { id: 'GoPayPS-NAGAD', name: 'GoPayPS-NAGAD', range: 'Balance: 100 - 25,000' },
+      { id: 'StarPago-NA', name: 'StarPago-NA', range: 'Balance: 100 - 25,000' },
+      { id: 'TkPay-NA', name: 'TkPay-NA', range: 'Balance: 100 - 25,000' },
+      { id: 'CrownPay-NA', name: 'CrownPay-NA', range: 'Balance: 100 - 25,000' },
+    ],
+    bKash: [
+      { id: 'GoPayPS-BKASH', name: 'GoPayPS-BKASH', range: 'Balance: 100 - 25,000' },
+      { id: 'StarPago-BK', name: 'StarPago-BK', range: 'Balance: 100 - 25,000' },
+      { id: 'BkPay-BK', name: 'BkPay-BK', range: 'Balance: 100 - 25,000' },
+      { id: 'CrownPay-BK', name: 'CrownPay-BK', range: 'Balance: 100 - 25,000' },
+    ],
+    USDT: [
+      { id: 'TRC20-Instant', name: 'TRC20-Instant', range: 'Balance: 10 - 5,000 USDT' },
+      { id: 'BEP20-Instant', name: 'BEP20-Instant', range: 'Balance: 10 - 5,000 USDT' },
+    ],
   };
+
+  // 12 Quick Amounts Grid (Screenshot 5: 3 cols x 4 rows)
+  const QUICK_AMOUNTS = [
+    { label: '100', val: 100 },
+    { label: '500', val: 500 },
+    { label: '700', val: 700 },
+    { label: '1K', val: 1000 },
+    { label: '2K', val: 2000 },
+    { label: '3K', val: 3000 },
+    { label: '5K', val: 5000 },
+    { label: '10K', val: 10000 },
+    { label: '15K', val: 15000 },
+    { label: '20K', val: 20000 },
+    { label: '25K', val: 25000 },
+    { label: '50K', val: 50000 },
+  ];
+
+  // When method changes, default channel
+  useEffect(() => {
+    const list = CHANNELS[method] || [];
+    if (list.length > 0) {
+      setSelectedChannel(list[0].id);
+    }
+  }, [method]);
 
   const defaultOfficialPhone = '01403398319 (Personal)';
   const currentPayNumber = method === 'bKash'
     ? (settings?.BKASH_NUMBER || defaultOfficialPhone)
     : method === 'Nagad'
     ? (settings?.NAGAD_NUMBER || defaultOfficialPhone)
-    : method === 'Rocket'
-    ? (settings?.ROCKET_NUMBER || defaultOfficialPhone)
     : (settings?.USDT_DEPOSIT_ADDRESS || 'TQu8sB7xNkL2mP89qZtV1yWz4AeR6cX4Kd');
+
+  const safeUser = user || { username: 'Guest', is_guest: true, balance: 0, uid: '170826' };
+  const currentBal = Number(safeUser?.balance || 0);
 
   function handleCopyNumber() {
     const rawNum = currentPayNumber.split(' ')[0];
     navigator.clipboard.writeText(rawNum);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  function handleCopyOrder(orderId) {
+    navigator.clipboard.writeText(orderId);
+    setCopiedOrderId(orderId);
+    setTimeout(() => setCopiedOrderId(null), 2000);
   }
 
   async function handleRefresh() {
@@ -97,7 +134,7 @@ export default function DepositPage({ onBack, onOpenAuth }) {
 
       setIsSubmitting(false);
       if (res?.success) {
-        setToastMsg({ text: 'Deposit request submitted successfully!', type: 'success' });
+        setToastMsg({ text: 'Deposit request submitted successfully! Verifying in 1-5 mins.', type: 'success' });
         setSenderPhone('');
         setTrxId('');
       } else {
@@ -109,12 +146,14 @@ export default function DepositPage({ onBack, onOpenAuth }) {
     }
   }
 
-  const depositTransactions = (transactions || []).filter(t => t.type === 'deposit');
+  const depositTransactions = (transactions || []).filter(
+    t => t.type === 'deposit' || t.type === 'recharge'
+  );
 
   return (
-    <div className="w-full min-h-screen bg-[#14122E] text-white font-sans select-none pb-24">
+    <div className="w-full min-h-screen bg-[#14122E] text-white font-sans select-none pb-28">
       {/* ------------------------------------------------------------------------- */}
-      {/* 1. Header: < Deposit    Deposit history                                   */}
+      {/* 1. Header: < Deposit          Deposit history                             */}
       {/* ------------------------------------------------------------------------- */}
       <div className="sticky top-0 z-30 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center justify-between shadow-md">
         <button 
@@ -124,12 +163,16 @@ export default function DepositPage({ onBack, onOpenAuth }) {
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
           </svg>
-          <span className="font-bold text-sm">Deposit</span>
         </button>
 
+        <h1 className="font-bold text-base text-white">Deposit</h1>
+
         <button 
-          onClick={() => setViewHistory(!viewHistory)}
-          className="text-xs text-[#7098C5] hover:text-[#629EFF] font-semibold active:scale-95 transition cursor-pointer"
+          onClick={() => {
+            const histEl = document.getElementById('deposit-history-section');
+            if (histEl) histEl.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className="text-xs text-[#7098C5] hover:text-[#629EFF] font-medium active:scale-95 transition cursor-pointer"
         >
           Deposit history
         </button>
@@ -137,205 +180,179 @@ export default function DepositPage({ onBack, onOpenAuth }) {
 
       <div className="p-4 space-y-4">
         {/* ----------------------------------------------------------------------- */}
-        {/* 2. Top Balance Card (Exact Red-to-Blue Gradient Banner)                 */}
+        {/* 2. Top Balance Gold Card (Matching Screenshot 5 1:1)                    */}
         {/* ----------------------------------------------------------------------- */}
         <div 
-          className="w-full rounded-2xl p-4 text-white shadow-xl relative overflow-hidden"
+          className="w-full rounded-2xl p-4 shadow-xl relative overflow-hidden text-[#2E1E00]"
           style={{
-            background: 'linear-gradient(90deg, #E92A23 0%, #1374EC 100%)'
+            background: 'linear-gradient(135deg, #F5BE00 0%, #D49B00 100%)'
           }}
         >
-          <div className="flex items-center space-x-1.5 text-xs">
-            <span className="w-2.5 h-2.5 bg-[#FFC107] rounded-xs" />
-            <span className="font-medium text-white/90">Balance</span>
+          <div className="flex items-center space-x-1.5 text-xs font-semibold text-[#3B2600]">
+            <span className="w-3.5 h-3.5 rounded-full bg-[#E09000] text-white flex items-center justify-center text-[9px] font-black">
+              ৳
+            </span>
+            <span>Balance</span>
           </div>
 
           <div className="flex items-center space-x-2.5 mt-2">
-            <span className="text-2xl font-black tracking-tight">
-              ৳{Number(user?.balance || 0).toFixed(2)}
+            <span className="text-3xl font-black tracking-tight text-[#1F1500]">
+              ৳{currentBal.toFixed(2)}
             </span>
             <button
               onClick={handleRefresh}
-              className={`text-white/80 hover:text-white transition active:scale-95 cursor-pointer ${isRefreshing ? 'animate-spin' : ''}`}
+              className={`p-1 rounded-full text-[#3B2600] hover:text-black transition active:scale-95 cursor-pointer ${isRefreshing ? 'animate-spin' : ''}`}
+              title="Refresh Balance"
             >
-              <KhelvIcon name="refreshBalance" className="w-4 h-4 text-white" />
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
             </button>
           </div>
 
-          <div className="text-right text-[10px] text-white/60 font-mono mt-1">
-            **** ****
-          </div>
+          {/* Background decorative curved wave */}
+          <div className="absolute -bottom-6 -right-6 w-32 h-32 rounded-full bg-white/10 pointer-events-none" />
+          <div className="absolute -bottom-10 -right-2 w-40 h-40 rounded-full bg-black/5 pointer-events-none" />
         </div>
 
         {/* ----------------------------------------------------------------------- */}
-        {/* 3. Payment Channels Grid (bKash, Nagad, Rocket, USDT)                   */}
+        {/* 3. Method Tabs: Nagad, bKash, USDT (+2% bonus) (Screenshot 5)           */}
         {/* ----------------------------------------------------------------------- */}
-        <div className="grid grid-cols-4 gap-2.5">
-          {/* bKash */}
-          <div
-            onClick={() => setMethod('bKash')}
-            className={`bg-[#1C2063] rounded-xl p-2.5 flex flex-col items-center justify-center cursor-pointer transition active:scale-95 relative border-2 ${
-              method === 'bKash' ? 'border-[#FD565C] shadow-[0_0_10px_rgba(253,86,92,0.4)]' : 'border-[#30358B]'
-            }`}
-          >
-            <div className="w-9 h-9 rounded-lg bg-[#E2136E] flex items-center justify-center text-white font-bold text-xs shadow-xs mb-1">
-              ব
-            </div>
-            <span className="text-[11px] font-bold text-white">bKash</span>
-            {method === 'bKash' && (
-              <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#FD565C] text-white flex items-center justify-center text-[8px]">
-                ✓
-              </div>
-            )}
-          </div>
-
+        <div className="grid grid-cols-3 gap-2.5">
           {/* Nagad */}
           <div
             onClick={() => setMethod('Nagad')}
-            className={`bg-[#1C2063] rounded-xl p-2.5 flex flex-col items-center justify-center cursor-pointer transition active:scale-95 relative border-2 ${
-              method === 'Nagad' ? 'border-[#FD565C] shadow-[0_0_10px_rgba(253,86,92,0.4)]' : 'border-[#30358B]'
+            className={`rounded-2xl p-3 flex flex-col items-center justify-center cursor-pointer transition active:scale-95 relative border-2 ${
+              method === 'Nagad'
+                ? 'bg-[#F5BE00] text-[#14122E] border-[#F5BE00] shadow-[0_0_12px_rgba(245,190,0,0.35)]'
+                : 'bg-[#1C2063] border-[#30358B] text-white hover:border-[#629EFF]'
             }`}
           >
-            <div className="w-9 h-9 rounded-lg bg-[#F7941D] flex items-center justify-center text-white font-bold text-xs shadow-xs mb-1">
+            <div className="w-8 h-8 rounded-lg bg-[#F7941D] flex items-center justify-center text-white font-bold text-xs shadow-xs mb-1">
               ন
             </div>
-            <span className="text-[11px] font-bold text-white">Nagad</span>
-            {method === 'Nagad' && (
-              <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#FD565C] text-white flex items-center justify-center text-[8px]">
-                ✓
-              </div>
-            )}
+            <span className="text-xs font-bold">Nagad</span>
           </div>
 
-          {/* Rocket */}
+          {/* bKash */}
           <div
-            onClick={() => setMethod('Rocket')}
-            className={`bg-[#1C2063] rounded-xl p-2.5 flex flex-col items-center justify-center cursor-pointer transition active:scale-95 relative border-2 ${
-              method === 'Rocket' ? 'border-[#FD565C] shadow-[0_0_10px_rgba(253,86,92,0.4)]' : 'border-[#30358B]'
+            onClick={() => setMethod('bKash')}
+            className={`rounded-2xl p-3 flex flex-col items-center justify-center cursor-pointer transition active:scale-95 relative border-2 ${
+              method === 'bKash'
+                ? 'bg-[#F5BE00] text-[#14122E] border-[#F5BE00] shadow-[0_0_12px_rgba(245,190,0,0.35)]'
+                : 'bg-[#1C2063] border-[#30358B] text-white hover:border-[#629EFF]'
             }`}
           >
-            <div className="w-9 h-9 rounded-lg bg-[#8C3494] flex items-center justify-center text-white font-bold text-xs shadow-xs mb-1">
-              র
+            <div className="w-8 h-8 rounded-lg bg-[#E2136E] flex items-center justify-center text-white font-bold text-xs shadow-xs mb-1">
+              ব
             </div>
-            <span className="text-[11px] font-bold text-white">Rocket</span>
-            {method === 'Rocket' && (
-              <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#FD565C] text-white flex items-center justify-center text-[8px]">
-                ✓
-              </div>
-            )}
+            <span className="text-xs font-bold">bKash</span>
           </div>
 
           {/* USDT */}
           <div
             onClick={() => setMethod('USDT')}
-            className={`bg-[#1C2063] rounded-xl p-2.5 flex flex-col items-center justify-center cursor-pointer transition active:scale-95 relative border-2 ${
-              method === 'USDT' ? 'border-[#FD565C] shadow-[0_0_10px_rgba(253,86,92,0.4)]' : 'border-[#30358B]'
+            className={`rounded-2xl p-3 flex flex-col items-center justify-center cursor-pointer transition active:scale-95 relative border-2 ${
+              method === 'USDT'
+                ? 'bg-[#F5BE00] text-[#14122E] border-[#F5BE00] shadow-[0_0_12px_rgba(245,190,0,0.35)]'
+                : 'bg-[#1C2063] border-[#30358B] text-white hover:border-[#629EFF]'
             }`}
           >
-            <div className="w-9 h-9 rounded-lg bg-[#26A17B] flex items-center justify-center text-white font-bold text-xs shadow-xs mb-1">
+            {/* Top red bonus badge */}
+            <div className="absolute -top-2 right-1 bg-[#E92A23] text-white font-bold text-[8.5px] px-1.5 py-0.2 rounded-full shadow-xs">
+              +2%
+            </div>
+            <div className="w-8 h-8 rounded-lg bg-[#26A17B] flex items-center justify-center text-white font-bold text-xs shadow-xs mb-1">
               ₮
             </div>
-            <span className="text-[11px] font-bold text-white">USDT</span>
-            {method === 'USDT' && (
-              <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#FD565C] text-white flex items-center justify-center text-[8px]">
-                ✓
-              </div>
-            )}
+            <span className="text-xs font-bold">USDT</span>
           </div>
         </div>
 
         {/* ----------------------------------------------------------------------- */}
-        {/* 4. Select Channel Info Box (Screenshot 3)                               */}
+        {/* 4. Select Channel: 2-Columns Grid (Screenshot 5 1:1)                    */}
         {/* ----------------------------------------------------------------------- */}
-        <div className="space-y-1.5">
-          <div className="flex items-center space-x-1.5 text-xs text-[#7098C5]">
-            <span className="text-[#629EFF]">◆</span>
-            <span className="font-semibold text-white">Select channel</span>
-          </div>
+        <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-3 shadow-md">
+          <h3 className="text-xs font-bold text-white tracking-wide">
+            Select channel
+          </h3>
 
-          <div className="bg-[#1C2063] border border-[#629EFF] rounded-xl p-3 flex items-center justify-between shadow-md">
-            <div>
-              <h4 className="text-xs font-bold text-white">{method} Fast Pay</h4>
-              <p className="text-[10.5px] text-[#7098C5] mt-0.5">Balance: ৳100 - ৳50,000</p>
-            </div>
-            <div className="px-2 py-1 rounded bg-[#629EFF]/20 text-[#629EFF] text-[10px] font-bold">
-              Instant
-            </div>
-          </div>
-        </div>
-
-        {/* ----------------------------------------------------------------------- */}
-        {/* 5. Official Account Number Card with Copy Button                        */}
-        {/* ----------------------------------------------------------------------- */}
-        <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2.5">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-[#7098C5]">Official {method} Number (Send Money):</span>
-            <span className="text-[10px] text-amber-400 font-bold px-2 py-0.5 bg-amber-400/10 rounded-full">
-              Personal
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between bg-[#14122E] border border-[#30358B] rounded-xl px-3.5 py-3">
-            <span className="font-mono font-bold text-sm text-white tracking-wide">
-              {currentPayNumber}
-            </span>
-            <button
-              onClick={handleCopyNumber}
-              className="px-3 py-1 bg-[#FFC107] text-slate-950 rounded-lg text-xs font-black shadow-sm active:scale-95 transition cursor-pointer hover:bg-amber-300"
-            >
-              {copied ? 'Copied!' : 'Copy'}
-            </button>
-          </div>
-          <p className="text-[10px] text-[#7098C5] leading-tight">
-            * উপরে উল্লেখিত নম্বরে সেন্ড মানি (Send Money) করে নিচের বক্সে আপনার প্রেরক নম্বর ও TrxID লিখে সাবমিট করুন।
-          </p>
-        </div>
-
-        {/* ----------------------------------------------------------------------- */}
-        {/* 6. Deposit Amount Grid & Custom Input (Screenshot 3)                    */}
-        {/* ----------------------------------------------------------------------- */}
-        <div className="space-y-2">
-          <div className="flex items-center space-x-1.5 text-xs text-[#7098C5]">
-            <span className="text-[#629EFF]">◆</span>
-            <span className="font-semibold text-white">Deposit amount</span>
-          </div>
-
-          {/* 8 Quick Buttons Grid (Screenshot 3) */}
-          <div className="grid grid-cols-3 gap-2.5">
-            {quickAmounts.map((q) => {
-              const val = String(quickAmountValues[q]);
-              const isSelected = amount === val;
+          <div className="grid grid-cols-2 gap-2.5">
+            {(CHANNELS[method] || []).map((ch) => {
+              const isSelected = selectedChannel === ch.id;
               return (
-                <button
-                  key={q}
-                  type="button"
-                  onClick={() => setAmount(val)}
-                  className={`py-2.5 px-3 rounded-xl text-xs font-bold transition active:scale-95 cursor-pointer border ${
+                <div
+                  key={ch.id}
+                  onClick={() => setSelectedChannel(ch.id)}
+                  className={`rounded-xl p-2.5 border transition cursor-pointer relative ${
                     isSelected
-                      ? 'bg-[#1C2063] border-[#629EFF] text-white shadow-[0_0_8px_rgba(98,158,255,0.4)]'
-                      : 'bg-[#1C2063] border-[#30358B] text-[#D4E8FF] hover:border-[#629EFF]/60'
+                      ? 'bg-[#14122E] border-[#F5BE00] shadow-[0_0_8px_rgba(245,190,0,0.25)]'
+                      : 'bg-[#14122E]/60 border-[#30358B] hover:border-[#629EFF]'
                   }`}
                 >
-                  ৳ {q}
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white truncate pr-1">
+                      {ch.name}
+                    </span>
+                    {isSelected && (
+                      <div className="w-4 h-4 rounded-full bg-[#F5BE00] text-[#14122E] flex items-center justify-center text-[10px] font-black shrink-0">
+                        ✓
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-[#7098C5] mt-1 truncate">
+                    {ch.range}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ----------------------------------------------------------------------- */}
+        {/* 5. Deposit Amount: 12 Quick Amount Grid + Custom Input (Screenshot 5)    */}
+        {/* ----------------------------------------------------------------------- */}
+        <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-3.5 shadow-md">
+          <h3 className="text-xs font-bold text-white tracking-wide">
+            Deposit amount
+          </h3>
+
+          {/* 3 columns x 4 rows = 12 Quick Amount Buttons */}
+          <div className="grid grid-cols-3 gap-2">
+            {QUICK_AMOUNTS.map((qa) => {
+              const isSelected = String(amount) === String(qa.val);
+              return (
+                <button
+                  key={qa.label}
+                  type="button"
+                  onClick={() => setAmount(String(qa.val))}
+                  className={`py-2.5 rounded-xl font-bold text-xs transition cursor-pointer active:scale-95 border ${
+                    isSelected
+                      ? 'bg-[#F5BE00] text-[#14122E] border-[#F5BE00] shadow-[0_0_10px_rgba(245,190,0,0.3)]'
+                      : 'bg-[#14122E] text-white border-[#30358B] hover:border-[#629EFF]'
+                  }`}
+                >
+                  ৳{qa.label}
                 </button>
               );
             })}
           </div>
 
-          {/* Custom Input Field with Currency Icon and Clear Button */}
-          <div className="relative flex items-center bg-[#1C2063] border border-[#30358B] rounded-xl px-3.5 py-3">
-            <span className="text-sm font-bold text-white mr-2">৳</span>
+          {/* Amount Input with Clear (✕) Button */}
+          <div className="flex items-center bg-[#14122E] border border-[#30358B] rounded-xl px-4 py-3 focus-within:border-[#F5BE00] transition">
+            <span className="text-amber-400 font-bold text-base mr-3">৳</span>
             <input
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder="৳100.00 - ৳50,000.00"
+              placeholder="Please enter amount"
               className="flex-1 bg-transparent text-sm font-bold text-white outline-none placeholder-[#7098C5]"
             />
             {amount && (
-              <button 
+              <button
+                type="button"
                 onClick={() => setAmount('')}
-                className="text-[#7098C5] hover:text-white p-1"
+                className="w-5 h-5 rounded-full bg-[#30358B] text-white flex items-center justify-center text-[10px] hover:bg-[#629EFF] cursor-pointer"
               >
                 ✕
               </button>
@@ -344,133 +361,173 @@ export default function DepositPage({ onBack, onOpenAuth }) {
         </div>
 
         {/* ----------------------------------------------------------------------- */}
-        {/* 7. Sender Phone & TrxID Input Fields                                    */}
+        {/* 6. Live Payment Form: Official Account & Sender Number & TrxID          */}
         {/* ----------------------------------------------------------------------- */}
-        <div className="space-y-3">
-          <div>
-            <label className="text-xs font-semibold text-[#7098C5] block mb-1">
-              Your {method} Sender Number
+        <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-3.5 shadow-md">
+          {/* Official Receiver Account */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-white">Official {method} Number</span>
+              <span className="text-[10px] text-amber-400 font-semibold px-2 py-0.5 rounded-full bg-amber-400/10">
+                Send Money / Cash Out
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between bg-[#14122E] border border-[#30358B] rounded-xl px-3.5 py-2.5">
+              <span className="font-mono text-sm font-bold text-white select-all">
+                {currentPayNumber}
+              </span>
+              <button
+                onClick={handleCopyNumber}
+                className="bg-[#F5BE00] hover:bg-[#E0A000] text-[#14122E] font-bold text-[11px] px-3 py-1 rounded-lg transition active:scale-95 cursor-pointer shadow-xs"
+              >
+                {copied ? 'Copied' : 'Copy'}
+              </button>
+            </div>
+          </div>
+
+          {/* Sender Phone Number Input */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-white block">
+              Sender {method} Number
             </label>
             <input
-              type="text"
+              type="tel"
               value={senderPhone}
               onChange={(e) => setSenderPhone(e.target.value)}
-              placeholder="e.g. 017XXXXXXXX"
-              className="w-full bg-[#1C2063] border border-[#30358B] rounded-xl px-3.5 py-3 text-xs text-white outline-none focus:border-[#629EFF]"
+              placeholder={`Enter your 11-digit ${method} number`}
+              className="w-full bg-[#14122E] border border-[#30358B] rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-[#F5BE00]"
             />
           </div>
 
-          <div>
-            <label className="text-xs font-semibold text-[#7098C5] block mb-1">
+          {/* Transaction ID (TrxID) Input */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-white block">
               Transaction ID (TrxID)
             </label>
             <input
               type="text"
               value={trxId}
               onChange={(e) => setTrxId(e.target.value)}
-              placeholder="e.g. BK789XYZ12"
-              className="w-full bg-[#1C2063] border border-[#30358B] rounded-xl px-3.5 py-3 text-xs text-white outline-none focus:border-[#629EFF]"
+              placeholder="e.g. BD782910AK"
+              className="w-full bg-[#14122E] border border-[#30358B] rounded-xl px-4 py-2.5 text-xs text-white font-mono uppercase outline-none focus:border-[#F5BE00]"
             />
           </div>
-        </div>
 
-        {/* Feedback Message */}
-        {toastMsg.text && (
-          <div className={`p-3 rounded-xl text-xs font-semibold ${toastMsg.type === 'success' ? 'bg-emerald-950/80 border border-emerald-500/50 text-emerald-300' : 'bg-rose-950/80 border border-rose-500/50 text-rose-300'}`}>
-            {toastMsg.text}
-          </div>
-        )}
+          {/* Toast feedback */}
+          {toastMsg.text && (
+            <div className={`p-2.5 rounded-lg text-xs font-semibold ${toastMsg.type === 'success' ? 'bg-emerald-950/80 text-emerald-300' : 'bg-rose-950/80 text-rose-300'}`}>
+              {toastMsg.text}
+            </div>
+          )}
 
-        {/* ----------------------------------------------------------------------- */}
-        {/* 8. Recharge Instructions Box (Screenshot 3)                            */}
-        {/* ----------------------------------------------------------------------- */}
-        <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2">
-          <div className="flex items-center space-x-1.5 text-xs text-white font-bold">
-            <span className="text-[#629EFF]">◆</span>
-            <span>Recharge instructions</span>
-          </div>
-
-          <div className="text-[11px] text-[#7098C5] space-y-2 leading-relaxed">
-            <p>• If the transfer time is up, please fill out the deposit form again.</p>
-            <p>• The transfer amount must match the order you created, otherwise the money cannot be credited successfully.</p>
-            <p>• If you transfer the wrong amount, our company will not be responsible for the lost amount!</p>
-            <p>• Note: do not cancel the deposit order after the money has been transferred.</p>
-          </div>
+          {/* Big Deposit Button (Screenshot 5) */}
+          <button
+            onClick={handleSubmitDeposit}
+            disabled={isSubmitting || !amount || parseFloat(amount) < 100}
+            className="w-full py-3.5 rounded-full font-bold text-xs text-[#14122E] bg-gradient-to-r from-[#F5BE00] to-[#E0A000] shadow-xl active:scale-98 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-105"
+          >
+            {isSubmitting ? 'Submitting...' : `Deposit ৳${amount || '0'}`}
+          </button>
         </div>
 
         {/* ----------------------------------------------------------------------- */}
-        {/* 9. Deposit History Section (Screenshot 3)                               */}
+        {/* 7. Recharge Instructions Card (Exact 4 bullets matching Screenshot 5)    */}
         {/* ----------------------------------------------------------------------- */}
-        <div className="space-y-3 pt-2">
-          <div className="flex items-center space-x-1.5 text-xs text-white font-bold">
-            <span className="text-[#629EFF]">◆</span>
+        <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2.5 text-[11px] text-[#7098C5] leading-relaxed shadow-md">
+          <h4 className="font-bold text-white text-xs mb-1">Recharge instructions</h4>
+          <p>1. Please follow the instructions to transfer money through your mobile wallet.</p>
+          <p>2. Minimum deposit amount is <b className="text-rose-400">৳100</b>. Single deposit limit is <b className="text-rose-400">৳25,000</b>.</p>
+          <p>3. After completing the payment, please enter the correct sender number and 10-digit TrxID to confirm.</p>
+          <p>4. If the deposit has not arrived within 5 minutes, please contact 24/7 online customer service.</p>
+        </div>
+
+        {/* ----------------------------------------------------------------------- */}
+        {/* 8. Deposit History Section (Screenshot 5 1:1 Replica)                   */}
+        {/* ----------------------------------------------------------------------- */}
+        <div id="deposit-history-section" className="space-y-3 pt-2">
+          <div className="flex items-center space-x-2 text-sm text-white font-bold">
+            <span className="w-4 h-4 rounded-xs bg-[#F5BE00] text-[#14122E] flex items-center justify-center text-[10px] font-black">
+              ≡
+            </span>
             <span>Deposit history</span>
           </div>
 
           {depositTransactions.length === 0 ? (
-            <div className="bg-[#1C2063] border border-[#30358B] rounded-xl p-6 text-center text-xs text-[#7098C5]">
-              No deposit history yet
+            <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-8 text-center space-y-3 shadow-md">
+              <div className="w-14 h-14 mx-auto opacity-40 flex items-center justify-center text-[#7098C5]">
+                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <p className="text-xs text-[#7098C5]">No deposit history</p>
             </div>
           ) : (
-            depositTransactions.slice(0, 5).map((d, idx) => (
-              <div key={idx} className="bg-[#1C2063] border border-[#30358B] rounded-xl p-3.5 space-y-2 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold text-[10px]">
-                    Deposit
-                  </span>
-                  <span className={`font-bold text-[11px] ${d.status === 'approved' ? 'text-emerald-400' : d.status === 'rejected' ? 'text-rose-400' : 'text-amber-400'}`}>
-                    {d.status ? d.status.toUpperCase() : 'PENDING'}
-                  </span>
-                </div>
+            depositTransactions.map((d, idx) => {
+              const orderId = d.order_id || d.id || `DP${Date.now()}${idx}`;
+              const isApproved = d.status === 'approved' || d.status === 'completed';
+              const isRejected = d.status === 'rejected' || d.status === 'failed';
+              const statusText = isApproved ? 'Complete' : isRejected ? 'Failed' : 'Pending';
+              const statusColor = isApproved ? 'text-emerald-400' : isRejected ? 'text-rose-400' : 'text-amber-400';
 
-                <div className="flex items-center justify-between text-[#7098C5]">
-                  <span>Order amount</span>
-                  <span className="text-white font-bold">৳{Number(d.amount).toFixed(2)}</span>
-                </div>
+              return (
+                <div key={idx} className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2.5 text-xs shadow-md">
+                  {/* Top Badge & Status */}
+                  <div className="flex items-center justify-between">
+                    <span className="px-2.5 py-0.5 rounded-md bg-[#F5BE00] text-[#14122E] font-bold text-[10.5px]">
+                      Deposit
+                    </span>
+                    <span className={`font-bold text-xs ${statusColor}`}>
+                      {statusText}
+                    </span>
+                  </div>
 
-                <div className="flex items-center justify-between text-[#7098C5]">
-                  <span>Type</span>
-                  <span className="text-white">{d.method || method}</span>
-                </div>
+                  {/* Balance Row */}
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[#7098C5]">Deposit amount</span>
+                    <span className="text-[#F5BE00] font-black text-sm">৳{Number(d.amount).toFixed(2)}</span>
+                  </div>
 
-                <div className="flex items-center justify-between text-[#7098C5]">
-                  <span>Time</span>
-                  <span className="text-white font-mono text-[10.5px]">
-                    {d.created_at ? new Date(d.created_at).toLocaleString() : 'Recent'}
-                  </span>
-                </div>
+                  {/* Type Row */}
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[#7098C5]">Type</span>
+                    <span className="text-white font-medium">{d.method || method}</span>
+                  </div>
 
-                <div className="flex items-center justify-between text-[#7098C5]">
-                  <span>TrxID</span>
-                  <span className="text-[#629EFF] font-mono text-[10.5px] truncate max-w-[180px]">
-                    {d.transaction_id || d.id?.slice(0, 16)}
-                  </span>
+                  {/* Time Row */}
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[#7098C5]">Time</span>
+                    <span className="text-white/90 font-mono text-[11px]">
+                      {d.created_at ? new Date(d.created_at).toLocaleString('en-US', { hour12: false }) : '2026-10-23 04:10:47'}
+                    </span>
+                  </div>
+
+                  {/* Order Number Row with Copy */}
+                  <div className="flex items-center justify-between text-xs border-t border-[#30358B]/50 pt-2">
+                    <span className="text-[#7098C5]">Order number</span>
+                    <div className="flex items-center space-x-1.5 font-mono text-[11px] text-white/80">
+                      <span>{orderId}</span>
+                      <button
+                        onClick={() => handleCopyOrder(orderId)}
+                        className="text-[#629EFF] hover:text-white transition active:scale-95 cursor-pointer p-0.5"
+                        title="Copy Order ID"
+                      >
+                        {copiedOrderId === orderId ? (
+                          <span className="text-emerald-400 text-[10px]">Copied</span>
+                        ) : (
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" strokeWidth="2" />
+                            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" strokeWidth="2" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
-      </div>
-
-      {/* ------------------------------------------------------------------------- */}
-      {/* 10. Fixed Bottom Bar (Screenshot 3)                                       */}
-      {/* ------------------------------------------------------------------------- */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-[480px] sm:max-w-[500px] mx-auto z-40 bg-[#14122E] border-t border-[#30358B] px-4 py-3 flex items-center justify-between shadow-2xl">
-        <div className="text-xs">
-          <span className="text-[#7098C5] block text-[10.5px]">Recharge Method:</span>
-          <span className="font-bold text-white text-xs">{method} Fast Pay</span>
-        </div>
-
-        <button
-          onClick={handleSubmitDeposit}
-          disabled={isSubmitting}
-          className="px-8 py-2.5 rounded-full font-bold text-xs text-white shadow-lg active:scale-95 transition cursor-pointer disabled:opacity-50"
-          style={{
-            background: 'linear-gradient(90deg, #E92A23 0%, #1374EC 100%)'
-          }}
-        >
-          {isSubmitting ? 'Submitting...' : 'Deposit'}
-        </button>
       </div>
     </div>
   );

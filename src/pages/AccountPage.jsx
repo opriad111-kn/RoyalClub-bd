@@ -50,7 +50,7 @@ export default function AccountPage({
     changeUserPassword
   } = useGame();
 
-  const { lang, toggleLang, t } = useLanguage();
+  const { lang, setLang, toggleLang, t } = useLanguage();
 
   // Active sub-views & modals
   const [activeModal, setActiveModal] = useState(null); 
@@ -524,12 +524,12 @@ export default function AccountPage({
 
           {/* Language */}
           <div 
-            onClick={toggleLang}
+            onClick={() => setActiveModal('language')}
             className="flex items-center justify-between px-4 py-3.5 cursor-pointer hover:bg-white/[0.02] active:bg-white/[0.04] transition"
           >
             <div className="flex items-center space-x-3">
               <KhelvIcon name="language" className="w-5 h-5 text-[#629EFF]" />
-              <span className="text-xs font-medium text-white">Language</span>
+              <span className="text-xs font-medium text-white">{lang === 'bn' ? 'ভাষা' : 'Language'}</span>
             </div>
             <div className="flex items-center space-x-1.5">
               <span className="text-xs text-[#D4E8FF] font-medium">{lang === 'bn' ? 'বাংলা' : 'English'}</span>
@@ -1284,7 +1284,42 @@ export default function AccountPage({
             </h2>
           </div>
 
-          <form onSubmit={handleCreateTicket} className="p-4 space-y-4">
+          <div className="p-4 space-y-4">
+            {/* 24/7 Official Live Support Cards */}
+            <div className="grid grid-cols-2 gap-3">
+              <a 
+                href={settings?.TELEGRAM_SUPPORT_URL || 'https://t.me/RoyalClubBD_Support'} 
+                target="_blank" 
+                rel="noreferrer"
+                className="bg-[#1C2063] border border-[#30358B] hover:border-[#629EFF] rounded-2xl p-3.5 flex flex-col items-center justify-center text-center cursor-pointer transition active:scale-95 shadow-sm"
+              >
+                <div className="w-10 h-10 rounded-full bg-[#2AABEE]/20 text-[#2AABEE] flex items-center justify-center mb-1.5">
+                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .39z"/>
+                  </svg>
+                </div>
+                <h4 className="text-xs font-bold text-white">Telegram 24/7</h4>
+                <p className="text-[10px] text-[#7098C5]">Instant live agent</p>
+              </a>
+
+              <a 
+                href={settings?.OFFICIAL_CHANNEL_URL || 'https://t.me/RoyalClubBD'} 
+                target="_blank" 
+                rel="noreferrer"
+                className="bg-[#1C2063] border border-[#30358B] hover:border-[#F5BE00] rounded-2xl p-3.5 flex flex-col items-center justify-center text-center cursor-pointer transition active:scale-95 shadow-sm"
+              >
+                <div className="w-10 h-10 rounded-full bg-[#F5BE00]/20 text-[#F5BE00] flex items-center justify-center mb-1.5">
+                  <svg className="w-5 h-5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                    <path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                  </svg>
+                </div>
+                <h4 className="text-xs font-bold text-white">Official Channel</h4>
+                <p className="text-[10px] text-[#7098C5]">Latest gift codes</p>
+              </a>
+            </div>
+
+            {/* Ticket Submission Form */}
+            <form onSubmit={handleCreateTicket} className="space-y-4">
             <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-3">
               <div>
                 <label className="text-[11px] text-[#7098C5] block mb-1">Subject</label>
@@ -1323,7 +1358,8 @@ export default function AccountPage({
             </div>
           </form>
         </div>
-      )}
+      </div>
+    )}
 
       {/* ------------------------------------------------------------------------- */}
       {/* MODAL 11: ABOUT US                                                        */}
@@ -1449,6 +1485,77 @@ export default function AccountPage({
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------------------- */}
+      {/* MODAL 14: LANGUAGE SELECTOR (APK 1:1 Replica)                             */}
+      {/* ------------------------------------------------------------------------- */}
+      {activeModal === 'language' && (
+        <div className="fixed inset-0 z-50 bg-[#14122E] flex flex-col overflow-y-auto">
+          <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
+            <button 
+              onClick={() => setActiveModal(null)}
+              className="p-1 -ml-1 text-white hover:text-amber-400 active:scale-95 transition cursor-pointer"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <h2 className="flex-1 text-center font-bold text-sm text-white pr-4">
+              {lang === 'bn' ? 'ভাষা নির্বাচন করুন' : 'Language'}
+            </h2>
+          </div>
+
+          <div className="p-4 space-y-3">
+            {/* English */}
+            <div 
+              onClick={() => {
+                setLang('en');
+                setActiveModal(null);
+              }}
+              className={`bg-[#1C2063] border rounded-2xl p-4 flex items-center justify-between cursor-pointer transition active:scale-98 ${
+                lang === 'en' ? 'border-[#F5BE00] shadow-[0_0_12px_rgba(245,190,0,0.35)]' : 'border-[#30358B] hover:border-[#629EFF]'
+              }`}
+            >
+              <div className="flex items-center space-x-3.5">
+                <span className="text-2xl">🇺🇸</span>
+                <div>
+                  <h4 className="text-sm font-bold text-white">English</h4>
+                  <p className="text-[10.5px] text-[#7098C5]">United States</p>
+                </div>
+              </div>
+              {lang === 'en' && (
+                <div className="w-6 h-6 rounded-full bg-[#F5BE00] text-[#14122E] flex items-center justify-center text-xs font-black">
+                  ✓
+                </div>
+              )}
+            </div>
+
+            {/* Bangla */}
+            <div 
+              onClick={() => {
+                setLang('bn');
+                setActiveModal(null);
+              }}
+              className={`bg-[#1C2063] border rounded-2xl p-4 flex items-center justify-between cursor-pointer transition active:scale-98 ${
+                lang === 'bn' ? 'border-[#F5BE00] shadow-[0_0_12px_rgba(245,190,0,0.35)]' : 'border-[#30358B] hover:border-[#629EFF]'
+              }`}
+            >
+              <div className="flex items-center space-x-3.5">
+                <span className="text-2xl">🇧🇩</span>
+                <div>
+                  <h4 className="text-sm font-bold text-white">বাংলা</h4>
+                  <p className="text-[10.5px] text-[#7098C5]">বাংলাদেশ</p>
+                </div>
+              </div>
+              {lang === 'bn' && (
+                <div className="w-6 h-6 rounded-full bg-[#F5BE00] text-[#14122E] flex items-center justify-center text-xs font-black">
+                  ✓
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
