@@ -15,38 +15,38 @@ export default function GuestRewardModal({ isOpen, onClose, onOpenLogin }) {
       onClick={onClose}
     >
       <div 
-        className="w-full max-w-[480px] bg-gradient-to-b from-[#1C2063] via-[#161A52] to-[#10133A] border-t border-x border-[#30358B] rounded-t-[32px] rounded-b-none px-6 pt-14 pb-8 text-center shadow-[0_-15px_50px_rgba(0,0,0,0.9)] relative overflow-visible space-y-4 animate-in slide-in-from-bottom duration-300"
+        className="w-full max-w-[425px] bg-gradient-to-b from-[#1C2063] via-[#161A52] to-[#10133A] border-t border-x border-[#30358B] rounded-t-[30px] rounded-b-none px-5 pt-13 pb-8 text-center shadow-[0_-15px_50px_rgba(0,0,0,0.9)] relative overflow-visible space-y-3.5 animate-in slide-in-from-bottom duration-300"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Floating 3D Gift Box with Glowing Halo Ring & Emoji Elements (Matching Screenshot 2 1:1) */}
-        <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-36 h-36 flex items-center justify-center pointer-events-none z-20">
+        {/* Floating 3D Gift Box with Glowing Halo Ring & Emoji Elements (Matching Screenshot 1 1:1) */}
+        <div className="absolute -top-15 left-1/2 -translate-x-1/2 w-32 h-32 flex items-center justify-center pointer-events-none z-20">
           {/* Glowing Halo Backing */}
-          <div className="absolute inset-0 rounded-full bg-blue-500/30 blur-xl scale-95 animate-pulse" />
+          <div className="absolute inset-0 rounded-full bg-blue-500/35 blur-xl scale-95 animate-pulse" />
           
           {/* Floating Pink Heart on Left */}
-          <div className="absolute top-2 left-2 text-2xl animate-bounce" style={{ animationDuration: '2s' }}>
+          <div className="absolute top-1 left-1 text-2xl animate-bounce" style={{ animationDuration: '2s' }}>
             💖
           </div>
 
           {/* Floating Emoji / Smile on Right */}
-          <div className="absolute top-3 right-3 text-2xl animate-bounce" style={{ animationDuration: '2.5s' }}>
+          <div className="absolute top-2 right-1 text-2xl animate-bounce" style={{ animationDuration: '2.5s' }}>
             🥰
           </div>
 
           {/* Glowing Orbital Ring */}
-          <div className="absolute w-32 h-16 rounded-[100%] border-2 border-white/60 shadow-[0_0_15px_rgba(255,255,255,0.7)] rotate-[-15deg] pointer-events-none" />
+          <div className="absolute w-28 h-14 rounded-[100%] border-2 border-white/60 shadow-[0_0_15px_rgba(255,255,255,0.7)] rotate-[-15deg] pointer-events-none" />
 
           {/* Official 3D Gift Box Image */}
           <img 
             src="/assets/official_khelv/gift-Q7IYrFBN.png" 
             alt="Event Rewards Gift Box"
-            className="w-28 h-28 object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.7)] relative z-10 transition-transform duration-500 hover:scale-105"
+            className="w-24 h-24 object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.7)] relative z-10 transition-transform duration-500 hover:scale-105"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
               const parent = e.currentTarget.parentElement;
               if (parent) {
                 const fallback = document.createElement('div');
-                fallback.className = 'text-6xl relative z-10';
+                fallback.className = 'text-5xl relative z-10';
                 fallback.innerText = '🎁';
                 parent.appendChild(fallback);
               }
@@ -55,25 +55,25 @@ export default function GuestRewardModal({ isOpen, onClose, onOpenLogin }) {
         </div>
 
         {/* Modal Header: 🎉 Event Rewards 🎉 */}
-        <div className="space-y-2 pt-1">
+        <div className="space-y-1.5 pt-1">
           <div className="flex items-center justify-center space-x-2">
-            <span className="text-rose-400 text-sm">🎉</span>
-            <h2 className="text-xl font-black text-white tracking-wide font-sans">
+            <span className="text-sm">🎉</span>
+            <h2 className="text-lg font-black text-white tracking-wide font-sans">
               Event Rewards
             </h2>
-            <span className="text-blue-400 text-sm">🎉</span>
+            <span className="text-sm">🎉</span>
           </div>
 
           {/* Subtitle with highlighted blue text */}
-          <p className="text-xs text-slate-300 leading-relaxed font-medium px-2">
+          <p className="text-xs text-slate-300 leading-relaxed font-medium px-2 max-w-[310px] mx-auto">
             Log in to participate in the{' '}
-            <span className="text-[#629EFF] font-bold">event rewards</span>{' '}
+            <span className="text-[#3B82F6] font-bold">event rewards</span>{' '}
             and unlock all 8 exclusive rewards
           </p>
         </div>
 
         {/* Action Button: Red-to-Blue Luxury Gradient Pill (Navigates to Login Screen) */}
-        <div className="pt-2 space-y-3">
+        <div className="pt-2 space-y-2.5">
           <button
             onClick={() => {
               onClose();

@@ -32,7 +32,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenAuth }) {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 max-w-[430px] sm:max-w-[480px] mx-auto w-full z-40 select-none pointer-events-auto">
+    <nav className="fixed bottom-0 left-0 right-0 max-w-[425px] mx-auto w-full z-40 select-none pointer-events-auto">
       
       {/* 1. Bar Background Container (Uses Official KhelV tabBarBg.png) */}
       <div 

@@ -460,18 +460,18 @@ export default function HomePage({
     </div>
   );
 
-  // 3x2 Game Cards Grid (Screenshot 10 Aspect Ratio 37/50 Match)
+  // 3x2 Game Cards Grid (Screenshot 1 & 10 Aspect Ratio 37/50 Match)
   const renderGameGrid = (games) => (
     <div className="grid grid-cols-3 gap-2 px-1">
       {games.map((game, idx) => (
         <div
           key={`${game.id}-${game.title}-${idx}`}
           onClick={() => onOpenGame(game.id)}
-          className="relative aspect-[37/50] rounded-xl overflow-hidden cursor-pointer active:scale-95 transition group bg-gradient-to-b from-[#141d3a] to-[#0b1024] border border-[#232f63]/80 shadow-lg flex flex-col justify-between"
+          className="relative aspect-[37/50] rounded-2xl overflow-hidden cursor-pointer active:scale-95 transition group bg-gradient-to-b from-[#182046] to-[#0e1330] border border-[#2b3575]/60 shadow-md flex flex-col justify-between"
         >
           {/* Studio Badge Top Right */}
           {game.provider && (
-            <div className="absolute top-1 right-1 bg-black/75 backdrop-blur-xs text-amber-300 border border-amber-400/30 text-[7px] font-black px-1.5 py-0.2 rounded shadow-xs z-10 uppercase tracking-wider">
+            <div className="absolute top-1.5 right-1.5 bg-black/75 backdrop-blur-xs text-amber-300 border border-amber-400/30 text-[7.5px] font-black px-1.5 py-0.2 rounded shadow-xs z-10 uppercase tracking-wider">
               {game.provider}
             </div>
           )}
@@ -512,10 +512,10 @@ export default function HomePage({
   const currentOriginal = getPaginatedCards(originalGamesList, originalPage);
 
   return (
-    <div className="space-y-3 pb-24 text-white select-none font-sans bg-[#070b19] relative">
+    <div className="space-y-3 pb-24 text-white select-none font-sans bg-[#14122E] relative">
       
       {/* 1. Promotional High-Res Banner Carousel (Authentic APK Graphic) */}
-      <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[702/330] bg-[#0c1224] border border-slate-800/80">
+      <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[702/330] bg-[#14122E] border border-slate-800/80">
         <div 
           onClick={() => handleBannerClick(banners[activeBanner])}
           className="w-full h-full cursor-pointer relative overflow-hidden"
@@ -542,9 +542,9 @@ export default function HomePage({
       </div>
 
       {/* 2. Scrolling Marquee Announcement Box */}
-      <div className="bg-[#0f1730] rounded-2xl px-3 py-2.5 shadow-md border border-slate-800/80 flex items-center justify-between">
+      <div className="bg-[#1C2063] rounded-2xl px-3 py-2.5 shadow-md border border-[#30358B]/60 flex items-center justify-between">
         <div className="flex items-center space-x-2 flex-1 overflow-hidden">
-          <div className="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/30">
+          <div className="w-7 h-7 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0 border border-blue-500/30">
             <Volume2 className="w-4 h-4" />
           </div>
           <marquee behavior="scroll" direction="left" scrollamount="4" className="text-xs text-slate-300 font-medium">
@@ -553,77 +553,46 @@ export default function HomePage({
         </div>
         <button 
           onClick={() => setShowNotice(true)}
-          className="ml-2 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 text-[11px] font-black px-3 py-1 rounded-full shrink-0 shadow-sm transition active:scale-95 cursor-pointer"
+          className="ml-2 bg-gradient-to-r from-red-600 to-rose-600 hover:brightness-110 text-white text-[11px] font-black px-3.5 py-1 rounded-full shrink-0 shadow-sm transition active:scale-95 cursor-pointer"
         >
           Detail
         </button>
       </div>
 
-      {/* 3. Official KhelV 3D Category Navigation Bar */}
-      <div className="overflow-x-auto no-scrollbar py-1">
-        <div className="flex items-center space-x-2 min-w-max px-1">
-          {categoryTabs.map(cat => {
-            const isActive = selectedCategory === cat.id;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => {
-                  setSelectedCategory(cat.id);
-                  setSearchQuery('');
-                  // Smooth scroll to section if matching
-                  const el = document.getElementById(`section-${cat.id.toLowerCase()}`);
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className={`flex flex-col items-center justify-center pt-1.5 pb-2 px-3 rounded-2xl transition cursor-pointer min-w-[72px] ${
-                  isActive 
-                    ? 'bg-gradient-to-b from-[#1e2a5c] to-[#0f1738] text-amber-300 font-black border border-amber-400/90 shadow-[0_0_12px_rgba(245,190,0,0.35)] scale-102' 
-                    : 'bg-[#0f1730]/90 text-slate-300 hover:text-white hover:bg-[#141e3d] border border-slate-800/80'
-                }`}
-              >
+      {/* 3. Official KhelV 4-Grid 3D Category Bar (Screenshot 1 Exact Match) */}
+      <div className="grid grid-cols-4 gap-2 px-1 py-1">
+        {[
+          { id: 'Popular', label: 'Popular', icon: '/assets/official_khelv/cat_3d_popular.png' },
+          { id: 'Slots', label: 'Slots', icon: '/assets/official_khelv/cat_3d_slot.png' },
+          { id: 'Lottery', label: 'Lottery', icon: '/assets/official_khelv/cat_3d_lottery.png' },
+          { id: 'Original', label: 'Original', icon: '/assets/official_khelv/cat_3d_flash.png' },
+        ].map(cat => {
+          const isActive = selectedCategory === cat.id;
+          return (
+            <button
+              key={cat.id}
+              onClick={() => {
+                setSelectedCategory(cat.id);
+                setSearchQuery('');
+                const el = document.getElementById(`section-${cat.id.toLowerCase()}`);
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="flex flex-col items-center justify-center p-1 transition cursor-pointer group active:scale-95"
+            >
+              <div className="relative w-14 h-14 flex items-center justify-center">
                 <img 
                   src={cat.icon} 
                   alt={cat.label} 
-                  className="w-12 h-12 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] mb-1 transform transition group-hover:scale-105" 
+                  className="w-full h-full object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)] transform transition group-hover:scale-105" 
                 />
-                <span className={`text-[11px] font-black tracking-tight whitespace-nowrap ${isActive ? 'text-amber-300' : 'text-slate-300'}`}>
-                  {cat.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+              </div>
+              <span className={`text-[11px] font-black tracking-tight mt-1 ${isActive ? 'text-amber-300 drop-shadow' : 'text-slate-300'}`}>
+                {cat.label}
+              </span>
+            </button>
+          );
+        })}
       </div>
-
-      {/* Search Bar Toggle */}
-      <div className="flex justify-between items-center px-2">
-        <div className="flex items-center space-x-2">
-          <span className="font-black text-xs tracking-wider text-slate-400 uppercase">
-            EXPLORE GAMES
-          </span>
-        </div>
-        <button 
-          onClick={() => setShowSearch(prev => !prev)}
-          className="text-slate-400 hover:text-white p-1 flex items-center space-x-1 text-xs"
-          title="Search"
-        >
-          <Search className="w-4 h-4" />
-          <span>Search</span>
-        </button>
-      </div>
-
-      {/* Search Input Box */}
-      {showSearch && (
-        <div className="relative px-1">
-          <input 
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="গেম খুঁজুন (e.g. Aviator, Super Ace, Wingo, Mines)..."
-            className="w-full bg-[#0f1730] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-amber-400 shadow-inner"
-            autoFocus
-          />
-        </div>
-      )}
 
       {/* 4. GAME SECTIONS (100% Unique, Zero Duplicates) */}
       {searchResults ? (

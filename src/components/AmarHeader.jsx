@@ -48,13 +48,13 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenDeposit, on
           <>
             <button
               onClick={() => onOpenAuth('login')}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:brightness-110 text-white font-black text-xs px-3.5 py-1.5 rounded-full shadow-md transition active:scale-95 cursor-pointer"
+              className="bg-[#1E2555] hover:bg-[#252E6A] border border-[#333D8A] text-white font-bold text-xs px-3.5 py-1.5 rounded-full shadow transition active:scale-95 cursor-pointer"
             >
               {t('login')}
             </button>
             <button
               onClick={() => onOpenAuth('register')}
-              className="bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 font-black text-xs px-3 py-1.5 rounded-full border border-red-500/60 shadow-xs transition active:scale-95 cursor-pointer"
+              className="bg-gradient-to-r from-[#D92525] to-[#B81818] hover:brightness-110 text-white font-bold text-xs px-3.5 py-1.5 rounded-full shadow-md transition active:scale-95 cursor-pointer"
             >
               {t('register')}
             </button>

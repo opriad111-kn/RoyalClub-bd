@@ -192,7 +192,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
   if (currentView === 'wallet_list') {
     return (
       <div className="w-full min-h-screen bg-[#14122E] text-white font-sans select-none pb-24">
-        <div className="max-w-[480px] mx-auto min-h-screen flex flex-col justify-between bg-[#14122E] shadow-2xl relative">
+        <div className="max-w-[425px] mx-auto min-h-screen flex flex-col justify-between bg-[#14122E] shadow-2xl relative">
           <div>
             {/* Header: < E-Wallet Payment Method */}
             <div className="sticky top-0 z-30 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center shadow-md">
@@ -281,7 +281,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
   if (currentView === 'add_wallet') {
     return (
       <div className="w-full min-h-screen bg-[#14122E] text-white font-sans select-none pb-20">
-        <div className="max-w-[480px] mx-auto min-h-screen flex flex-col justify-between bg-[#14122E] shadow-2xl relative">
+        <div className="max-w-[425px] mx-auto min-h-screen flex flex-col justify-between bg-[#14122E] shadow-2xl relative">
           <div>
             <div className="sticky top-0 z-30 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center shadow-md">
               <button 
@@ -387,7 +387,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
   if (currentView === 'history') {
     return (
       <div className="w-full min-h-screen bg-[#14122E] text-white font-sans select-none pb-20">
-        <div className="max-w-[480px] mx-auto min-h-screen flex flex-col bg-[#14122E] shadow-2xl relative">
+        <div className="max-w-[425px] mx-auto min-h-screen flex flex-col bg-[#14122E] shadow-2xl relative">
           <div className="sticky top-0 z-30 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center justify-between shadow-md">
             <button 
               onClick={() => setCurrentView('withdraw')}
@@ -529,7 +529,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
   // ===========================================================================
   return (
     <div className="w-full min-h-screen bg-[#14122E] text-white font-sans select-none pb-28">
-      <div className="max-w-[480px] mx-auto min-h-screen flex flex-col bg-[#14122E] shadow-2xl relative">
+      <div className="max-w-[425px] mx-auto min-h-screen flex flex-col bg-[#14122E] shadow-2xl relative">
         {/* 1. Header: < Withdraw          Withdrawal history */}
         <div className="sticky top-0 z-30 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center justify-between shadow-md">
           <button 

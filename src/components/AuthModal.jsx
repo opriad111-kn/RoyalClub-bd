@@ -177,7 +177,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-[#0b102b] flex flex-col max-w-[430px] sm:max-w-[480px] mx-auto min-h-screen text-white select-none overflow-y-auto no-scrollbar"
+      className="fixed inset-0 z-50 bg-[#0b102b] flex flex-col max-w-[425px] mx-auto min-h-screen text-white select-none overflow-y-auto no-scrollbar"
     >
       {/* 1. Top Header Bar (Exact Screenshot 3 Match) */}
       <div className="bg-[#0b102b] px-4 py-3 flex items-center justify-between border-b border-slate-800/80 shrink-0">
