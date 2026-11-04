@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { GameProvider, useGame } from './context/GameContext';
 import AmarHeader from './components/AmarHeader';
 import AmarBottomNav from './components/AmarBottomNav';
@@ -122,9 +122,16 @@ function AppContent() {
     }
   };
 
-  // Auto-show Guest Event Rewards bottom sheet for unauthenticated visitors (Screenshot 2)
+  // Single Initial Check for Popups (Mount only - Zero repeated popups)
+  const hasInitializedPopups = useRef(false);
   useEffect(() => {
-    if (!user || user.username === 'Guest' || user.is_guest) {
+    if (hasInitializedPopups.current) return;
+    hasInitializedPopups.current = true;
+
+    const isGuestUser = !user || user.username === 'Guest' || user.is_guest;
+
+    if (isGuestUser) {
+      // For unauthenticated guests: show guest incentive once if not dismissed
       const dismissed = sessionStorage.getItem('royalclub_guest_reward_dismissed');
       if (!dismissed) {
         const timer = setTimeout(() => {
@@ -133,10 +140,12 @@ function AppContent() {
         return () => clearTimeout(timer);
       }
     } else {
-      // Auto-show Promo Popups (Photos 1, 2, 3) for authenticated players unless dismissed today
+      // For authenticated players: show promo popup exactly 1 time per session if not dismissed today
       try {
         const noRemind = localStorage.getItem('royalclub_promo_no_remind');
-        if (noRemind !== new Date().toDateString()) {
+        const alreadyShownLogin = sessionStorage.getItem('royalclub_promo_login_shown');
+        if (noRemind !== new Date().toDateString() && !alreadyShownLogin) {
+          sessionStorage.setItem('royalclub_promo_login_shown', 'true');
           const timer = setTimeout(() => {
             setPromoModal({ isOpen: true, slide: 0 });
           }, 1500);
@@ -144,7 +153,7 @@ function AppContent() {
         }
       } catch (e) {}
     }
-  }, [user]);
+  }, []);
 
   // Intercept all native alerts to guarantee smooth in-app toasts (Zero browser alerts)
   useEffect(() => {

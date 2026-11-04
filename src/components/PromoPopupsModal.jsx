@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 
 /**
  * PromoPopupsModal
- * 1:1 replica of the 3 official promotional popups / banners in KhelV / DKWin (Photos 1, 2, 3),
+ * Ultra-luxury 1:1 replica of the 3 official promotional popups / banners in KhelV / DKWin (Photos 1, 2, 3),
  * fully localized to Bangladesh Taka (৳ / BDT).
  *
- * Slide 1 (Photo 1): First Deposit Bonus (Welcome Bonus Up to ৳10,000 with Luxury Chest)
- * Slide 2 (Photo 2): Referral Super Bonus (Invite Friends to Join ৳308,888)
- * Slide 3 (Photo 3): Extra First Deposit Bonus (6 Task Cards with Progress Bars & Activity CTA)
+ * Slide 0 (Photo 1): First Deposit Bonus (Welcome Bonus Up to ৳10,000 with Luxury Chest)
+ * Slide 1 (Photo 2): Referral Super Bonus (Invite Friends to Join ৳308,888)
+ * Slide 2 (Photo 3): Extra First Deposit Bonus (6 Task Cards with Progress Bars & Activity CTA)
  */
 export default function PromoPopupsModal({ isOpen, initialSlide = 0, onClose, onNavigate }) {
   const [currentSlide, setCurrentSlide] = useState(initialSlide);
@@ -57,44 +57,53 @@ export default function PromoPopupsModal({ isOpen, initialSlide = 0, onClose, on
 
   return (
     <div 
-      className="fixed inset-0 z-[110] bg-black/80 backdrop-blur-xs flex items-center justify-center p-3 select-none animate-in fade-in duration-200"
+      className="fixed inset-0 z-[110] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 select-none animate-in fade-in duration-200"
       onClick={handleClose}
     >
+      {/* Background Ambient Radial Glow */}
+      <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+        <div className="w-[320px] h-[320px] rounded-full bg-blue-600/15 blur-[100px]" />
+        <div className="w-[260px] h-[260px] rounded-full bg-amber-500/10 blur-[80px]" />
+      </div>
+
       <div 
-        className="w-full max-w-[390px] flex flex-col items-center relative animate-in zoom-in-95 duration-250"
+        className="w-full max-w-[390px] flex flex-col items-center relative z-10 animate-in zoom-in-95 duration-250"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Slide Navigation Pill Tabs */}
-        <div className="flex items-center justify-center space-x-1.5 mb-2.5 bg-black/50 p-1 rounded-full border border-white/10 backdrop-blur-md">
+        {/* Luxury Glassmorphism Slide Navigation Tabs */}
+        <div className="flex items-center justify-center space-x-1 mb-2.5 bg-[#0a0f26]/90 p-1 rounded-full border border-white/15 shadow-xl backdrop-blur-md">
           <button
             onClick={() => setCurrentSlide(0)}
-            className={`px-3 py-1 rounded-full text-[11px] font-bold transition ${
+            className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all duration-200 flex items-center space-x-1 cursor-pointer ${
               currentSlide === 0 
-                ? 'bg-gradient-to-r from-red-500 to-blue-600 text-white shadow-sm' 
+                ? 'bg-gradient-to-r from-[#e53950] via-[#c026d3] to-[#2563eb] text-white shadow-md shadow-blue-900/50 scale-102 border border-white/30' 
                 : 'text-slate-300 hover:text-white'
             }`}
           >
-            🎁 ৳10,000 Bonus
+            <span>🎁</span>
+            <span>৳10,000 Bonus</span>
           </button>
           <button
             onClick={() => setCurrentSlide(1)}
-            className={`px-3 py-1 rounded-full text-[11px] font-bold transition ${
+            className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all duration-200 flex items-center space-x-1 cursor-pointer ${
               currentSlide === 1 
-                ? 'bg-gradient-to-r from-red-500 to-blue-600 text-white shadow-sm' 
+                ? 'bg-gradient-to-r from-[#e53950] via-[#c026d3] to-[#2563eb] text-white shadow-md shadow-blue-900/50 scale-102 border border-white/30' 
                 : 'text-slate-300 hover:text-white'
             }`}
           >
-            👥 ৳308,888 Referral
+            <span>👥</span>
+            <span>৳308k Referral</span>
           </button>
           <button
             onClick={() => setCurrentSlide(2)}
-            className={`px-3 py-1 rounded-full text-[11px] font-bold transition ${
+            className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all duration-200 flex items-center space-x-1 cursor-pointer ${
               currentSlide === 2 
-                ? 'bg-gradient-to-r from-red-500 to-blue-600 text-white shadow-sm' 
+                ? 'bg-gradient-to-r from-[#e53950] via-[#c026d3] to-[#2563eb] text-white shadow-md shadow-blue-900/50 scale-102 border border-white/30' 
                 : 'text-slate-300 hover:text-white'
             }`}
           >
-            ⭐ Extra Bonus
+            <span>⭐</span>
+            <span>Extra Tasks</span>
           </button>
         </div>
 
@@ -102,103 +111,110 @@ export default function PromoPopupsModal({ isOpen, initialSlide = 0, onClose, on
         {/* SLIDE 0: Welcome Bonus Up to ৳10,000 (Photo 1 1:1 Replica)                */}
         {/* ========================================================================= */}
         {currentSlide === 0 && (
-          <div className="w-full bg-[#0E1538] border border-[#2A3775] rounded-2xl overflow-hidden shadow-2xl flex flex-col text-white">
+          <div className="w-full bg-gradient-to-b from-[#11183f] via-[#0d1333] to-[#070b20] border-2 border-[#384996] rounded-[24px] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.95)] flex flex-col text-white">
             {/* Top Red-to-Blue Header Banner */}
-            <div className="bg-gradient-to-r from-[#e53950] via-[#c026d3] to-[#2563eb] py-2 px-3 flex items-center justify-center space-x-1.5 shadow-md">
-              <span className="text-yellow-300 text-sm">⭐</span>
-              <h2 className="text-[14.5px] font-black tracking-wide uppercase drop-shadow-sm">
+            <div className="bg-gradient-to-r from-[#e53950] via-[#ba25bb] to-[#2563eb] py-2.5 px-3 flex items-center justify-center space-x-2 shadow-md relative overflow-hidden">
+              <div className="absolute inset-0 bg-white/10 opacity-30 mix-blend-overlay pointer-events-none" />
+              <span className="text-yellow-300 text-base drop-shadow-sm animate-pulse">⭐</span>
+              <h2 className="text-[14.5px] font-black tracking-wide uppercase drop-shadow-md text-white font-sans">
                 Welcome Bonus Up to ৳10,000
               </h2>
+              <span className="text-yellow-300 text-base drop-shadow-sm animate-pulse">⭐</span>
             </div>
 
             {/* Official Channel Notice */}
-            <div className="bg-[#090E26] py-2 px-3 text-center border-b border-[#1E2856]">
-              <p className="text-[10px] text-slate-300 font-semibold tracking-tight">
-                FOLLOW OUR OFFICIAL CHANNEL FOR THE LATEST NEWS, UPDATES & ANNOUNCEMENTS
+            <div className="bg-[#080d24] py-2 px-3 text-center border-b border-[#212c61] flex flex-col items-center justify-center space-y-0.5">
+              <p className="text-[9.5px] text-slate-300 font-semibold tracking-tight uppercase">
+                FOLLOW OUR OFFICIAL CHANNEL FOR THE LATEST NEWS & UPDATES
               </p>
               <a 
                 href="https://t.me/royalclubbd" 
                 target="_blank" 
                 rel="noreferrer"
-                className="text-[10.5px] font-black text-[#38BDF8] hover:underline tracking-wide block mt-0.5"
+                className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-[#0088cc]/20 border border-[#0088cc]/50 text-[#38bdf8] text-[10.5px] font-black tracking-wide hover:brightness-125 transition"
               >
-                ROYAL CLUB OFFICIAL TELEGRAM
+                <span>✈️</span>
+                <span>ROYAL CLUB OFFICIAL TELEGRAM</span>
+                <span className="text-[9px]">↗</span>
               </a>
             </div>
 
             {/* Body: Luxury Golden Chest & Rewards Table */}
-            <div className="p-3.5 space-y-3 max-h-[64vh] overflow-y-auto">
-              {/* Luxury Graphic Banner */}
-              <div className="relative rounded-xl overflow-hidden bg-gradient-to-b from-[#1C234F] via-[#10173A] to-[#0A0F2B] p-3 text-center border border-[#303D82]/50 shadow-inner">
-                {/* 3D Golden Chest Visual */}
-                <div className="relative w-28 h-28 mx-auto flex items-center justify-center">
-                  <div className="absolute inset-0 bg-yellow-500/20 blur-xl rounded-full" />
+            <div className="p-3.5 space-y-3 max-h-[62vh] overflow-y-auto">
+              {/* Luxury Graphic Banner with Golden Treasure Chest */}
+              <div className="relative rounded-2xl overflow-hidden bg-gradient-to-b from-[#1c2452] via-[#10173c] to-[#0a0f29] p-3 text-center border border-[#354388]/60 shadow-inner">
+                {/* Visual Chest Artwork */}
+                <div className="relative w-32 h-28 mx-auto flex items-center justify-center">
+                  <div className="absolute inset-0 bg-yellow-500/25 blur-xl rounded-full scale-110 pointer-events-none" />
                   <img 
                     src="/assets/promos/first_deposit_bonus.jpg" 
                     alt="First Deposit Bonus"
-                    className="w-full h-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.8)]"
+                    className="w-full h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.85)] relative z-10"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
-                      e.currentTarget.parentElement.innerHTML = '<span class="text-6xl">👑</span>';
+                      if (e.currentTarget.parentElement) {
+                        e.currentTarget.parentElement.innerHTML = '<span class="text-7xl">👑</span>';
+                      }
                     }}
                   />
                 </div>
 
-                <h3 className="text-lg font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-200 uppercase drop-shadow-sm mt-1">
+                <h3 className="text-[17px] font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-200 uppercase drop-shadow-md mt-1">
                   FIRST DEPOSIT BONUS
                 </h3>
 
                 {/* Main Highlight Card */}
-                <div className="mt-2 bg-gradient-to-r from-[#172554] via-[#1e3a8a] to-[#172554] border border-[#3b82f6]/50 rounded-xl p-2.5 shadow-md">
-                  <p className="text-[11px] text-blue-200 font-medium">Deposit amount ৳ 100,000</p>
-                  <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-200 to-yellow-400 font-mono tracking-tight drop-shadow-sm">
+                <div className="mt-2.5 bg-gradient-to-r from-[#172554] via-[#1e3a8a] to-[#172554] border border-[#3b82f6]/60 rounded-xl p-2.5 shadow-lg relative overflow-hidden">
+                  <div className="absolute inset-0 bg-blue-400/5 pointer-events-none" />
+                  <p className="text-[11px] text-blue-200 font-semibold uppercase tracking-wider">Deposit amount ৳ 100,000</p>
+                  <p className="text-[26px] font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-amber-300 to-yellow-400 font-mono tracking-tight drop-shadow-md">
                     + ৳10,000
                   </p>
                 </div>
               </div>
 
-              {/* Reward Table */}
-              <div className="bg-[#131B42] rounded-xl border border-[#27346A] overflow-hidden shadow-inner">
-                <div className="grid grid-cols-2 bg-[#1B2556] py-1.5 px-3 text-[11px] font-bold text-slate-300 border-b border-[#27346A]">
+              {/* Reward Table (Glassmorphism & Crisp BDT rows) */}
+              <div className="bg-[#0e1436] rounded-xl border border-[#273570] overflow-hidden shadow-inner">
+                <div className="grid grid-cols-2 bg-[#192252] py-2 px-3 text-[11px] font-bold text-slate-200 border-b border-[#273570] tracking-wide">
                   <span>Deposit amount</span>
                   <span className="text-right">Reward amount</span>
                 </div>
-                <div className="divide-y divide-[#27346A]/50 text-[11px] font-mono">
-                  <div className="grid grid-cols-2 py-1.5 px-3 items-center">
-                    <span className="text-slate-200 flex items-center space-x-1">
-                      <span>🪙</span> <span>≥ ৳300</span>
+                <div className="divide-y divide-[#273570]/50 text-[11px] font-mono">
+                  <div className="grid grid-cols-2 py-2 px-3 items-center hover:bg-white/5 transition">
+                    <span className="text-slate-200 flex items-center space-x-1.5">
+                      <span className="text-amber-400">🪙</span> <span>≥ ৳300</span>
                     </span>
-                    <span className="text-right font-bold text-yellow-400">৳18</span>
+                    <span className="text-right font-black text-yellow-400 text-xs">৳18</span>
                   </div>
-                  <div className="grid grid-cols-2 py-1.5 px-3 items-center bg-[#151D47]/40">
-                    <span className="text-slate-200 flex items-center space-x-1">
-                      <span>🪙</span> <span>≥ ৳600</span>
+                  <div className="grid grid-cols-2 py-2 px-3 items-center bg-[#131b46]/50 hover:bg-white/5 transition">
+                    <span className="text-slate-200 flex items-center space-x-1.5">
+                      <span className="text-amber-400">🪙</span> <span>≥ ৳600</span>
                     </span>
-                    <span className="text-right font-bold text-yellow-400">৳68</span>
+                    <span className="text-right font-black text-yellow-400 text-xs">৳68</span>
                   </div>
-                  <div className="grid grid-cols-2 py-1.5 px-3 items-center">
-                    <span className="text-slate-200 flex items-center space-x-1">
-                      <span>🪙</span> <span>≥ ৳1,500</span>
+                  <div className="grid grid-cols-2 py-2 px-3 items-center hover:bg-white/5 transition">
+                    <span className="text-slate-200 flex items-center space-x-1.5">
+                      <span className="text-amber-400">🪙</span> <span>≥ ৳1,500</span>
                     </span>
-                    <span className="text-right font-bold text-yellow-400">৳158</span>
+                    <span className="text-right font-black text-yellow-400 text-xs">৳158</span>
                   </div>
-                  <div className="grid grid-cols-2 py-1.5 px-3 items-center bg-[#151D47]/40">
-                    <span className="text-slate-200 flex items-center space-x-1">
-                      <span>🪙</span> <span>≥ ৳4,000</span>
+                  <div className="grid grid-cols-2 py-2 px-3 items-center bg-[#131b46]/50 hover:bg-white/5 transition">
+                    <span className="text-slate-200 flex items-center space-x-1.5">
+                      <span className="text-amber-400">🪙</span> <span>≥ ৳4,000</span>
                     </span>
-                    <span className="text-right font-bold text-yellow-400">৳388</span>
+                    <span className="text-right font-black text-yellow-400 text-xs">৳388</span>
                   </div>
-                  <div className="grid grid-cols-2 py-1.5 px-3 items-center">
-                    <span className="text-slate-200 flex items-center space-x-1">
-                      <span>🪙</span> <span>≥ ৳10,000</span>
+                  <div className="grid grid-cols-2 py-2 px-3 items-center hover:bg-white/5 transition">
+                    <span className="text-slate-200 flex items-center space-x-1.5">
+                      <span className="text-amber-400">🪙</span> <span>≥ ৳10,000</span>
                     </span>
-                    <span className="text-right font-bold text-yellow-400">৳888</span>
+                    <span className="text-right font-black text-yellow-400 text-xs">৳888</span>
                   </div>
-                  <div className="grid grid-cols-2 py-1.5 px-3 items-center bg-blue-950/40">
-                    <span className="text-blue-200 font-bold flex items-center space-x-1">
-                      <span>🪙</span> <span>≥ ৳100,000</span>
+                  <div className="grid grid-cols-2 py-2.5 px-3 items-center bg-gradient-to-r from-blue-950/60 to-purple-950/60 border-t border-yellow-500/30">
+                    <span className="text-yellow-200 font-bold flex items-center space-x-1.5">
+                      <span className="text-amber-300">👑</span> <span>≥ ৳100,000</span>
                     </span>
-                    <span className="text-right font-black text-yellow-300">+ ৳10,000</span>
+                    <span className="text-right font-black text-yellow-300 text-[13px] drop-shadow-sm">+ ৳10,000</span>
                   </div>
                 </div>
               </div>
@@ -206,7 +222,7 @@ export default function PromoPopupsModal({ isOpen, initialSlide = 0, onClose, on
               {/* Confirm Action Button */}
               <button
                 onClick={handleGoDeposit}
-                className="w-full py-3 rounded-full font-black text-sm tracking-wide text-white bg-gradient-to-r from-[#e53950] via-[#c026d3] to-[#2563eb] hover:brightness-110 active:scale-95 transition shadow-lg shadow-blue-950/60 cursor-pointer"
+                className="w-full py-3.5 rounded-full font-black text-sm tracking-wider uppercase text-white bg-gradient-to-r from-[#e53950] via-[#c026d3] to-[#2563eb] hover:brightness-110 active:scale-98 transition-all duration-150 shadow-lg shadow-blue-950/80 border border-white/20 cursor-pointer"
               >
                 Confirm
               </button>
@@ -218,58 +234,62 @@ export default function PromoPopupsModal({ isOpen, initialSlide = 0, onClose, on
         {/* SLIDE 1: Referral Super Bonus ৳308,888 (Photo 2 1:1 Replica)              */}
         {/* ========================================================================= */}
         {currentSlide === 1 && (
-          <div className="w-full bg-[#0E1538] border border-[#2A3775] rounded-2xl overflow-hidden shadow-2xl flex flex-col text-white">
+          <div className="w-full bg-gradient-to-b from-[#11183f] via-[#0d1333] to-[#070b20] border-2 border-[#384996] rounded-[24px] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.95)] flex flex-col text-white">
             {/* Top Red-to-Blue Header Banner */}
-            <div className="bg-gradient-to-r from-[#e53950] via-[#c026d3] to-[#2563eb] py-2 px-3 flex items-center justify-center space-x-1.5 shadow-md">
-              <span className="text-yellow-300 text-sm">👥</span>
-              <h2 className="text-[14.5px] font-black tracking-wide uppercase drop-shadow-sm">
+            <div className="bg-gradient-to-r from-[#e53950] via-[#ba25bb] to-[#2563eb] py-2.5 px-3 flex items-center justify-center space-x-2 shadow-md relative overflow-hidden">
+              <div className="absolute inset-0 bg-white/10 opacity-30 mix-blend-overlay pointer-events-none" />
+              <span className="text-yellow-300 text-base drop-shadow-sm">👥</span>
+              <h2 className="text-[14.5px] font-black tracking-wide uppercase drop-shadow-md text-white font-sans">
                 INVITE FRIENDS TO JOIN ৳308,888
               </h2>
+              <span className="text-yellow-300 text-base drop-shadow-sm">👥</span>
             </div>
 
             {/* Security Caution Box (Yellow Highlight) */}
-            <div className="bg-[#2D2A08] border-b border-[#5E5211] p-2.5 text-center">
-              <p className="text-[10px] text-yellow-200 leading-tight font-medium">
+            <div className="bg-[#2a2608] border-b border-[#5e5211] p-2.5 text-center space-y-1">
+              <p className="text-[10px] text-yellow-200/90 leading-tight font-medium">
                 For your security, please make sure you are accessing our platform through our official domain only.
               </p>
-              <div className="my-1 inline-flex items-center space-x-1 bg-yellow-400 text-black px-2 py-0.5 rounded text-[10px] font-black tracking-wide">
+              <div className="inline-flex items-center space-x-1.5 bg-yellow-400 text-black px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-wide shadow-sm">
                 <span>🔍</span>
                 <span>Verify True ROYALCLUB-BD.COM (GO)</span>
                 <span>🔍</span>
               </div>
-              <p className="text-[9.5px] text-yellow-300/90 font-bold leading-tight">
+              <p className="text-[9.5px] text-yellow-300 font-bold leading-tight">
                 Never transfer money to any strangers !! Never send OTP to anyone claiming to be an official !!
               </p>
             </div>
 
             {/* Body: Referral Super Bonus Table */}
-            <div className="p-3.5 space-y-3 max-h-[64vh] overflow-y-auto">
+            <div className="p-3.5 space-y-3 max-h-[62vh] overflow-y-auto">
               {/* Graphic Banner */}
-              <div className="rounded-xl overflow-hidden bg-gradient-to-b from-[#1C234F] via-[#10173A] to-[#0A0F2B] p-3 text-center border border-[#303D82]/50 shadow-inner">
-                <div className="relative w-28 h-24 mx-auto flex items-center justify-center">
-                  <div className="absolute inset-0 bg-blue-500/20 blur-xl rounded-full" />
+              <div className="rounded-2xl overflow-hidden bg-gradient-to-b from-[#1c2452] via-[#10173c] to-[#0a0f29] p-3 text-center border border-[#354388]/60 shadow-inner">
+                <div className="relative w-32 h-24 mx-auto flex items-center justify-center">
+                  <div className="absolute inset-0 bg-blue-500/25 blur-xl rounded-full scale-110 pointer-events-none" />
                   <img 
                     src="/assets/promos/referral_super_bonus.jpg" 
                     alt="Referral Super Bonus"
-                    className="w-full h-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.8)]"
+                    className="w-full h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.85)] relative z-10"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
-                      e.currentTarget.parentElement.innerHTML = '<span class="text-6xl">🎁</span>';
+                      if (e.currentTarget.parentElement) {
+                        e.currentTarget.parentElement.innerHTML = '<span class="text-6xl">🎁</span>';
+                      }
                     }}
                   />
                 </div>
-                <h3 className="text-lg font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-sky-200 via-blue-400 to-sky-200 uppercase drop-shadow-sm mt-1">
+                <h3 className="text-[17px] font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-200 via-blue-400 to-sky-200 uppercase drop-shadow-md mt-1">
                   REFERRAL SUPER BONUS
                 </h3>
               </div>
 
               {/* Invite Table */}
-              <div className="bg-[#131B42] rounded-xl border border-[#27346A] overflow-hidden shadow-inner">
-                <div className="grid grid-cols-2 bg-[#1B2556] py-1.5 px-3 text-[11px] font-bold text-slate-300 border-b border-[#27346A]">
+              <div className="bg-[#0e1436] rounded-xl border border-[#273570] overflow-hidden shadow-inner">
+                <div className="grid grid-cols-2 bg-[#192252] py-2 px-3 text-[11px] font-bold text-slate-200 border-b border-[#273570] tracking-wide">
                   <span>INVITED SECOND-LEVELS</span>
                   <span className="text-right">EXTRA REWARD</span>
                 </div>
-                <div className="divide-y divide-[#27346A]/50 text-[11px] font-mono">
+                <div className="divide-y divide-[#273570]/50 text-[11px] font-mono">
                   {[
                     { count: '1', reward: '৳38' },
                     { count: '3', reward: '৳158' },
@@ -284,10 +304,13 @@ export default function PromoPopupsModal({ isOpen, initialSlide = 0, onClose, on
                   ].map((row, idx) => (
                     <div 
                       key={idx} 
-                      className={`grid grid-cols-2 py-1.5 px-3 items-center ${idx % 2 === 1 ? 'bg-[#151D47]/40' : ''}`}
+                      className={`grid grid-cols-2 py-2 px-3 items-center hover:bg-white/5 transition ${idx % 2 === 1 ? 'bg-[#131b46]/50' : ''}`}
                     >
-                      <span className="text-slate-200">{row.count} People</span>
-                      <span className="text-right font-bold text-yellow-400">{row.reward}</span>
+                      <span className="text-slate-200 flex items-center space-x-1.5">
+                        <span className="text-blue-400">👤</span>
+                        <span>{row.count} People</span>
+                      </span>
+                      <span className="text-right font-black text-yellow-400 text-xs">{row.reward}</span>
                     </div>
                   ))}
                 </div>
@@ -296,7 +319,7 @@ export default function PromoPopupsModal({ isOpen, initialSlide = 0, onClose, on
               {/* Confirm Action Button */}
               <button
                 onClick={handleGoPromotion}
-                className="w-full py-3 rounded-full font-black text-sm tracking-wide text-white bg-gradient-to-r from-[#e53950] via-[#c026d3] to-[#2563eb] hover:brightness-110 active:scale-95 transition shadow-lg shadow-blue-950/60 cursor-pointer"
+                className="w-full py-3.5 rounded-full font-black text-sm tracking-wider uppercase text-white bg-gradient-to-r from-[#e53950] via-[#c026d3] to-[#2563eb] hover:brightness-110 active:scale-98 transition-all duration-150 shadow-lg shadow-blue-950/80 border border-white/20 cursor-pointer"
               >
                 Confirm
               </button>
@@ -308,19 +331,23 @@ export default function PromoPopupsModal({ isOpen, initialSlide = 0, onClose, on
         {/* SLIDE 2: Extra First Deposit Bonus Tasks List (Photo 3 1:1 Replica)        */}
         {/* ========================================================================= */}
         {currentSlide === 2 && (
-          <div className="w-full bg-[#181D52] border border-[#30388B] rounded-2xl overflow-hidden shadow-2xl flex flex-col text-white">
+          <div className="w-full bg-gradient-to-b from-[#151a4f] via-[#101540] to-[#0a0e2d] border-2 border-[#384996] rounded-[24px] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.95)] flex flex-col text-white">
             {/* Modal Title */}
-            <div className="pt-4 pb-2 px-4 text-center">
-              <h2 className="text-base font-black text-white tracking-wide">
-                Extra first deposit bonus
-              </h2>
-              <p className="text-[11px] text-[#8EA2CD] mt-0.5">
+            <div className="pt-4 pb-2.5 px-4 text-center border-b border-[#293275]/60 bg-[#0e1338]">
+              <div className="flex items-center justify-center space-x-1.5">
+                <span className="text-amber-400">⭐</span>
+                <h2 className="text-base font-black text-white tracking-wide">
+                  Extra first deposit bonus
+                </h2>
+                <span className="text-amber-400">⭐</span>
+              </div>
+              <p className="text-[11px] text-[#8ea2cd] mt-0.5">
                 Each account can only receive rewards once
               </p>
             </div>
 
             {/* Scrollable Tasks List */}
-            <div className="p-3 space-y-2.5 max-h-[60vh] overflow-y-auto">
+            <div className="p-3 space-y-2.5 max-h-[58vh] overflow-y-auto">
               {[
                 { deposit: '300', reward: '18.00', progress: '0/300' },
                 { deposit: '600', reward: '68.00', progress: '0/600' },
@@ -331,31 +358,32 @@ export default function PromoPopupsModal({ isOpen, initialSlide = 0, onClose, on
               ].map((tier, idx) => (
                 <div 
                   key={idx}
-                  className="bg-[#12163F] border border-[#293275] rounded-xl p-3 shadow-md space-y-2"
+                  className="bg-[#121742] border border-[#2b357e] hover:border-[#3d4ca6] rounded-2xl p-3 shadow-md space-y-2 transition-all duration-200"
                 >
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-white">
-                      First deposit <span className="text-[#FBBF24] font-mono">{tier.deposit}</span>
+                    <span className="font-bold text-white flex items-center space-x-1">
+                      <span>First deposit</span>
+                      <span className="text-[#fbbf24] font-mono font-bold text-sm">{tier.deposit}</span>
                     </span>
-                    <span className="font-bold text-[#FBBF24] font-mono text-[13px]">
+                    <span className="font-black text-[#fbbf24] font-mono text-sm drop-shadow-sm">
                       + ৳{tier.reward}
                     </span>
                   </div>
 
-                  <p className="text-[10.5px] text-[#8EA2CD] leading-snug">
+                  <p className="text-[10.5px] text-[#8ea2cd] leading-snug">
                     Deposit {tier.deposit} for the first time and you will receive {tier.reward.split('.')[0]} bonus
                   </p>
 
                   <div className="flex items-center justify-between pt-1">
                     {/* Progress Pill */}
-                    <div className="px-3 py-0.5 rounded-full bg-[#1E255E] text-[10px] font-mono text-[#8EA2CD] border border-[#2B3580]">
+                    <div className="px-3 py-1 rounded-full bg-[#1b2258] text-[10.5px] font-mono text-[#8ea2cd] border border-[#2d3986] shadow-inner">
                       {tier.progress}
                     </div>
 
                     {/* Deposit Button (Gold Outline) */}
                     <button
                       onClick={handleGoDeposit}
-                      className="px-4 py-1 rounded-full border border-[#F59E0B] text-[#F59E0B] hover:bg-[#F59E0B]/10 active:scale-95 text-xs font-bold transition cursor-pointer"
+                      className="px-4.5 py-1 rounded-full border border-[#f59e0b] text-[#f59e0b] hover:bg-[#f59e0b] hover:text-[#0a0e28] active:scale-95 text-xs font-bold transition-all duration-150 cursor-pointer shadow-sm"
                     >
                       Deposit
                     </button>
@@ -365,20 +393,20 @@ export default function PromoPopupsModal({ isOpen, initialSlide = 0, onClose, on
             </div>
 
             {/* Bottom Footer: No Reminders + Activity Pill */}
-            <div className="p-3 bg-[#0F1235] border-t border-[#293275] flex items-center justify-between text-xs">
-              <label className="flex items-center space-x-2 text-[11px] text-[#8EA2CD] cursor-pointer select-none">
+            <div className="p-3 bg-[#0c1031] border-t border-[#293275] flex items-center justify-between text-xs">
+              <label className="flex items-center space-x-2 text-[11px] text-[#8ea2cd] cursor-pointer select-none">
                 <input 
                   type="checkbox"
                   checked={noRemindToday}
                   onChange={(e) => setNoRemindToday(e.target.checked)}
-                  className="rounded border-[#30388B] text-blue-600 focus:ring-0 cursor-pointer"
+                  className="rounded border-[#30388b] text-blue-600 focus:ring-0 cursor-pointer"
                 />
                 <span>No more reminders today</span>
               </label>
 
               <button
                 onClick={handleGoActivity}
-                className="px-5 py-1.5 rounded-full font-bold text-xs text-white bg-gradient-to-r from-[#e53950] to-[#2563eb] hover:brightness-110 active:scale-95 transition shadow-sm cursor-pointer"
+                className="px-5 py-1.5 rounded-full font-bold text-xs text-white bg-gradient-to-r from-[#e53950] via-[#c026d3] to-[#2563eb] hover:brightness-110 active:scale-95 transition shadow-md shadow-blue-950/60 cursor-pointer"
               >
                 Activity
               </button>
@@ -389,7 +417,7 @@ export default function PromoPopupsModal({ isOpen, initialSlide = 0, onClose, on
         {/* Circular Close Button (✕) Directly Underneath Modal (Photo 3 1:1) */}
         <button
           onClick={handleClose}
-          className="mt-4 w-10 h-10 rounded-full border-2 border-white/70 bg-black/60 hover:bg-black text-white flex items-center justify-center font-bold text-lg shadow-lg active:scale-90 transition cursor-pointer"
+          className="mt-4 w-11 h-11 rounded-full border-2 border-white/80 bg-black/75 hover:bg-black text-white flex items-center justify-center font-bold text-xl shadow-[0_4px_20px_rgba(0,0,0,0.8)] active:scale-90 hover:rotate-90 transition-all duration-200 cursor-pointer"
           aria-label="Close"
         >
           ✕

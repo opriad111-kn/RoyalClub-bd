@@ -112,8 +112,13 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
       setIsLoading(false);
       if (res && res.success) {
         setSuccessMsg('লগইন সফল হয়েছে! স্বাগতম।');
+        try {
+          sessionStorage.setItem('royalclub_promo_login_shown', 'true');
+        } catch (e) {}
         setTimeout(() => {
           onClose();
+          // User Mandate: Show promo popup exactly 1 time upon login
+          window.dispatchEvent(new CustomEvent('royalclub_open_promo', { detail: { slide: 0 } }));
         }, 800);
       } else {
         setErrorMsg(res?.message || 'ভুল ফোন নম্বর বা পাসওয়ার্ড!');

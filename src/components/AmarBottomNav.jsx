@@ -16,6 +16,16 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenAuth }) {
       }
       return;
     }
+
+    // User Mandate: When clicking account button, show promo popup 1 time
+    try {
+      const hasShownAccountPromo = sessionStorage.getItem('royalclub_promo_account_shown');
+      if (!hasShownAccountPromo) {
+        sessionStorage.setItem('royalclub_promo_account_shown', 'true');
+        window.dispatchEvent(new CustomEvent('royalclub_open_promo', { detail: { slide: 0 } }));
+      }
+    } catch (e) {}
+
     onSelectTab('account');
   }
 
