@@ -7,6 +7,9 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
   const { user, settings, requestWithdrawal, transactions, refreshSupabaseData, updateUserProfile } = useGame();
   const { lang, t } = useLanguage();
 
+  // Navigation views: 'withdraw' | 'history'
+  const [currentView, setCurrentView] = useState('withdraw');
+
   const safeSettings = settings || {
     WITHDRAWAL_FEE_PERCENT: 0,
     MIN_WITHDRAWAL_AMOUNT: 100,
@@ -18,8 +21,8 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
   };
 
   // Payment method: 'E-Wallet' (bKash/Nagad) or 'USDT'
-  const [selectedMethod, setSelectedMethod] = useState('E-Wallet'); // 'E-Wallet' or 'USDT'
-  const [eWalletType, setEWalletType] = useState('BKASH'); // 'BKASH' or 'NAGAD'
+  const [selectedMethod, setSelectedMethod] = useState('E-Wallet');
+  const [eWalletType, setEWalletType] = useState('BKASH');
   
   // Saved bank/wallet account from user profile or local state
   const [savedAccount, setSavedAccount] = useState(() => {
@@ -43,7 +46,11 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [copiedOrderId, setCopiedOrderId] = useState(null);
 
-  const safeUser = user || { username: 'Guest', is_guest: true, balance: 0, uid: '170826' };
+  // History filters
+  const [historyMethodTab, setHistoryMethodTab] = useState('All');
+  const [historyStatusFilter, setHistoryStatusFilter] = useState('All');
+
+  const safeUser = user || { username: 'Guest', is_guest: true, balance: 1.46, uid: '170826' };
   const currentBal = Number(safeUser?.balance || 0);
   const numAmount = parseFloat(amount) || 0;
   const feePercent = safeSettings.WITHDRAWAL_FEE_PERCENT || 0;
@@ -54,7 +61,6 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
   const compTurnover = Number(safeUser?.current_turnover !== undefined ? safeUser.current_turnover : (safeUser?.turnover_completed || safeUser?.total_wagered || 0));
   const turnoverRemaining = Math.max(0, reqTurnover - compTurnover);
 
-  // Masked account number helper (e.g., 014****319)
   const maskPhone = (num) => {
     if (!num) return '014****319';
     const clean = String(num).replace(/\D/g, '');
@@ -155,6 +161,130 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
     t => t.type === 'withdrawal' || t.type === 'withdraw'
   );
 
+  // Filtered list for Full History View
+  const filteredHistory = withdrawTransactions.filter(t => {
+    if (historyMethodTab !== 'All') {
+      const tMethod = (t.method || '').toLowerCase();
+      if (!tMethod.includes(historyMethodTab.toLowerCase())) return false;
+    }
+    if (historyStatusFilter !== 'All') {
+      const isApproved = t.status === 'approved' || t.status === 'completed';
+      const isRejected = t.status === 'rejected' || t.status === 'failed';
+      if (historyStatusFilter === 'Completed' && !isApproved) return false;
+      if (historyStatusFilter === 'Failed' && !isRejected) return false;
+    }
+    return true;
+  });
+
+  // ===========================================================================
+  // VIEW 2: FULL WITHDRAWAL HISTORY PAGE
+  // ===========================================================================
+  if (currentView === 'history') {
+    return (
+      <div className="w-full min-h-screen bg-[#14122E] text-white font-sans select-none pb-20">
+        <div className="sticky top-0 z-30 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center justify-between shadow-md">
+          <button 
+            onClick={() => setCurrentView('withdraw')}
+            className="p-1 -ml-1 text-white hover:text-amber-400 active:scale-95 transition cursor-pointer flex items-center space-x-1"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <h1 className="font-bold text-base text-white">Withdrawal history</h1>
+          <div className="w-5" />
+        </div>
+
+        <div className="p-4 space-y-3">
+          <div className="grid grid-cols-3 gap-2">
+            {['All', 'E-Wallet', 'USDT'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setHistoryMethodTab(tab)}
+                className={`py-2 rounded-xl font-bold text-xs transition cursor-pointer active:scale-95 ${
+                  historyMethodTab === tab
+                    ? 'bg-[#F5BE00] text-[#14122E] shadow-[0_0_10px_rgba(245,190,0,0.3)]'
+                    : 'bg-[#1C2063] border border-[#30358B] text-[#7098C5] hover:text-white'
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          <div className="space-y-3 pt-1">
+            {filteredHistory.length === 0 ? (
+              <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-8 text-center text-xs text-[#7098C5] shadow-md">
+                No withdrawal records found
+              </div>
+            ) : (
+              filteredHistory.map((w, idx) => {
+                const orderId = w.order_id || w.id || `WD20261023${idx}1081272c`;
+                const isApproved = w.status === 'approved' || w.status === 'completed';
+                const isRejected = w.status === 'rejected' || w.status === 'failed';
+                const statusText = isApproved ? 'Completed' : isRejected ? 'Failed' : 'Pending';
+                const statusColor = isApproved ? 'text-emerald-400' : isRejected ? 'text-rose-400' : 'text-amber-400';
+
+                return (
+                  <div key={idx} className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2.5 text-xs shadow-md">
+                    <div className="flex items-center justify-between">
+                      <span className="px-2.5 py-0.5 rounded-md bg-[#E92A23] text-white font-bold text-[10.5px]">
+                        Withdraw
+                      </span>
+                      <span className={`font-bold text-xs ${statusColor}`}>
+                        {statusText}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-[#7098C5]">Balance</span>
+                      <span className="text-[#F5BE00] font-black text-sm">৳{Number(w.amount).toFixed(2)}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-[#7098C5]">Type</span>
+                      <span className="text-white font-medium">{w.method || 'E-Wallet'}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-[#7098C5]">Time</span>
+                      <span className="text-white/90 font-mono text-[11px]">
+                        {w.created_at ? new Date(w.created_at).toLocaleString('en-US', { hour12: false }) : '2026-10-23 04:10:47'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs border-t border-[#30358B]/50 pt-2">
+                      <span className="text-[#7098C5]">Order number</span>
+                      <div className="flex items-center space-x-1.5 font-mono text-[11px] text-white/80">
+                        <span className="truncate max-w-[160px]">{orderId}</span>
+                        <button
+                          onClick={() => handleCopyOrder(orderId)}
+                          className="text-[#629EFF] hover:text-white transition active:scale-95 cursor-pointer p-0.5"
+                        >
+                          {copiedOrderId === orderId ? (
+                            <span className="text-emerald-400 text-[10px]">Copied</span>
+                          ) : (
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" strokeWidth="2" />
+                              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" strokeWidth="2" />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ===========================================================================
+  // VIEW 1: MAIN WITHDRAW PAGE (Screenshot 10 1:1 REPLICA)
+  // ===========================================================================
   return (
     <div className="w-full min-h-screen bg-[#14122E] text-white font-sans select-none pb-28">
       {/* ------------------------------------------------------------------------- */}
@@ -173,10 +303,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
         <h1 className="font-bold text-base text-white">Withdraw</h1>
 
         <button 
-          onClick={() => {
-            const histEl = document.getElementById('withdraw-history-section');
-            if (histEl) histEl.scrollIntoView({ behavior: 'smooth' });
-          }}
+          onClick={() => setCurrentView('history')}
           className="text-xs text-[#7098C5] hover:text-[#629EFF] font-medium active:scale-95 transition cursor-pointer"
         >
           Withdrawal history
@@ -185,7 +312,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
 
       <div className="p-4 space-y-4">
         {/* ----------------------------------------------------------------------- */}
-        {/* 2. Top Available Balance Gold Card (Matching Screenshot 10 1:1)         */}
+        {/* 2. Top Available Balance Gold Card                                      */}
         {/* ----------------------------------------------------------------------- */}
         <div 
           className="w-full rounded-2xl p-4 shadow-xl relative overflow-hidden text-[#2E1E00]"
@@ -215,13 +342,12 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
             </button>
           </div>
 
-          {/* Background decorative curved wave */}
           <div className="absolute -bottom-6 -right-6 w-32 h-32 rounded-full bg-white/10 pointer-events-none" />
           <div className="absolute -bottom-10 -right-2 w-40 h-40 rounded-full bg-black/5 pointer-events-none" />
         </div>
 
         {/* ----------------------------------------------------------------------- */}
-        {/* 3. Method Selector: E-Wallet (Gold active) & USDT (Screenshot 10)       */}
+        {/* 3. Method Selector: E-Wallet (Gold active) & USDT                       */}
         {/* ----------------------------------------------------------------------- */}
         <div className="grid grid-cols-2 gap-3">
           {/* E-Wallet Card */}
@@ -265,7 +391,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
         </div>
 
         {/* ----------------------------------------------------------------------- */}
-        {/* 4. Selected E-Wallet Account Row (Screenshot 10 & 3 Modal Trigger)       */}
+        {/* 4. Selected E-Wallet Account Row                                        */}
         {/* ----------------------------------------------------------------------- */}
         {selectedMethod === 'E-Wallet' && (
           <div 
@@ -297,7 +423,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
         )}
 
         {/* ----------------------------------------------------------------------- */}
-        {/* 5. Withdrawal Amount Input Container (Screenshot 10 1:1)                */}
+        {/* 5. Withdrawal Amount Input Container                                    */}
         {/* ----------------------------------------------------------------------- */}
         <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-3.5 shadow-md">
           {/* Input pill */}
@@ -331,14 +457,12 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
             <span className="text-[#F5BE00] font-black text-sm">৳{netReceive.toFixed(2)}</span>
           </div>
 
-          {/* Toast feedback */}
           {toastMsg.text && (
             <div className={`p-2.5 rounded-lg text-xs font-semibold ${toastMsg.type === 'success' ? 'bg-emerald-950/80 text-emerald-300' : 'bg-rose-950/80 text-rose-300'}`}>
               {toastMsg.text}
             </div>
           )}
 
-          {/* Big Withdraw Button (Pill button matching screenshot) */}
           <button
             onClick={handleSubmitWithdrawal}
             disabled={isSubmitting || currentBal < 100}
@@ -349,7 +473,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
         </div>
 
         {/* ----------------------------------------------------------------------- */}
-        {/* 6. Diamond Bullet Rules (Exact 6 Bullets matching Screenshot 10)         */}
+        {/* 6. Diamond Bullet Rules (Exact 6 Bullets)                                */}
         {/* ----------------------------------------------------------------------- */}
         <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2.5 text-[11px] text-[#7098C5] leading-relaxed shadow-md">
           <p className="flex items-start space-x-2">
@@ -379,9 +503,9 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
         </div>
 
         {/* ----------------------------------------------------------------------- */}
-        {/* 7. Withdrawal History Section (Exact cards matching Screenshot 10)      */}
+        {/* 7. Withdrawal History Section                                           */}
         {/* ----------------------------------------------------------------------- */}
-        <div id="withdraw-history-section" className="space-y-3 pt-2">
+        <div className="space-y-3 pt-2">
           <div className="flex items-center space-x-2 text-sm text-white font-bold">
             <span className="w-4 h-4 rounded-xs bg-[#F5BE00] text-[#14122E] flex items-center justify-center text-[10px] font-black">
               ≡
@@ -390,17 +514,12 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
           </div>
 
           {withdrawTransactions.length === 0 ? (
-            <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-8 text-center space-y-3 shadow-md">
-              <div className="w-14 h-14 mx-auto opacity-40 flex items-center justify-center text-[#7098C5]">
-                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <p className="text-xs text-[#7098C5]">No withdrawal history</p>
+            <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-6 text-center text-xs text-[#7098C5] shadow-md">
+              No withdrawal history
             </div>
           ) : (
-            withdrawTransactions.map((w, idx) => {
-              const orderId = w.order_id || w.id || `WD${Date.now()}${idx}`;
+            withdrawTransactions.slice(0, 3).map((w, idx) => {
+              const orderId = w.order_id || w.id || `WD20261023${idx}1081272c`;
               const isApproved = w.status === 'approved' || w.status === 'completed';
               const isRejected = w.status === 'rejected' || w.status === 'failed';
               const statusText = isApproved ? 'Completed' : isRejected ? 'Failed' : 'Pending';
@@ -408,7 +527,6 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
 
               return (
                 <div key={idx} className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2.5 text-xs shadow-md">
-                  {/* Top Badge & Status */}
                   <div className="flex items-center justify-between">
                     <span className="px-2.5 py-0.5 rounded-md bg-[#E92A23] text-white font-bold text-[10.5px]">
                       Withdraw
@@ -418,19 +536,16 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
                     </span>
                   </div>
 
-                  {/* Balance Row */}
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-[#7098C5]">Balance</span>
                     <span className="text-[#F5BE00] font-black text-sm">৳{Number(w.amount).toFixed(2)}</span>
                   </div>
 
-                  {/* Type Row */}
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-[#7098C5]">Type</span>
                     <span className="text-white font-medium">{w.method || 'E-Wallet'}</span>
                   </div>
 
-                  {/* Time Row */}
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-[#7098C5]">Time</span>
                     <span className="text-white/90 font-mono text-[11px]">
@@ -438,15 +553,13 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
                     </span>
                   </div>
 
-                  {/* Order Number Row with Copy */}
                   <div className="flex items-center justify-between text-xs border-t border-[#30358B]/50 pt-2">
                     <span className="text-[#7098C5]">Order number</span>
                     <div className="flex items-center space-x-1.5 font-mono text-[11px] text-white/80">
-                      <span>{orderId}</span>
+                      <span className="truncate max-w-[160px]">{orderId}</span>
                       <button
                         onClick={() => handleCopyOrder(orderId)}
                         className="text-[#629EFF] hover:text-white transition active:scale-95 cursor-pointer p-0.5"
-                        title="Copy Order ID"
                       >
                         {copiedOrderId === orderId ? (
                           <span className="text-emerald-400 text-[10px]">Copied</span>
@@ -467,11 +580,10 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
       </div>
 
       {/* ------------------------------------------------------------------------- */}
-      {/* 8. MODAL: E-Wallet Payment Method (Screenshot 3 1:1 Replica)              */}
+      {/* 8. MODAL: E-Wallet Payment Method (Screenshot 3)                          */}
       {/* ------------------------------------------------------------------------- */}
       {showAccountModal && (
         <div className="fixed inset-0 z-50 bg-[#14122E] flex flex-col overflow-y-auto">
-          {/* Header */}
           <div className="sticky top-0 z-10 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center">
             <button 
               onClick={() => setShowAccountModal(false)}
@@ -487,7 +599,6 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
           </div>
 
           <div className="p-4 space-y-4 flex-1">
-            {/* Payment Method Selector (BKASH / NAGAD) */}
             <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-3 shadow-md">
               <label className="text-xs font-bold text-white block">
                 Choose a payment method
@@ -526,7 +637,6 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
               </div>
             </div>
 
-            {/* Inputs: Full Name & Account Number */}
             <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-4 shadow-md">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-white">Full name</label>
@@ -551,7 +661,6 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
               </div>
             </div>
 
-            {/* Confirm Save Button */}
             <button
               onClick={handleSaveAccount}
               className="w-full py-3.5 rounded-full font-bold text-xs text-[#14122E] bg-gradient-to-r from-[#F5BE00] to-[#E0A000] shadow-xl active:scale-98 transition cursor-pointer hover:brightness-105"
