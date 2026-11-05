@@ -2,40 +2,22 @@ import React from 'react';
 import { useGame } from '../context/GameContext';
 import { useLanguage } from '../context/LanguageContext';
 import { ShieldAlert, Download, Headphones, Bell } from 'lucide-react';
+import RoyalClubLogo from './RoyalClubLogo';
 
 export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenDeposit, onOpenAdmin }) {
   const { user, notifications, markAllNotificationsRead } = useGame();
-  const { t } = useLanguage();
+  const { lang, t } = useLanguage();
   const isGuest = !user || user.username === 'Guest' || user.is_guest;
   const unreadCount = (notifications || []).filter(n => !n.isRead).length;
 
   return (
     <header className="sticky top-0 z-40 bg-[#0c1328]/95 backdrop-blur-md text-white px-3 sm:px-4 py-2.5 flex items-center justify-between shadow-lg select-none border-b border-[#1f2b4d]">
       
-      {/* Official Royal Club BD Crest Logo */}
-      <div 
-        onClick={() => { window.location.hash = '#/home'; }}
-        className="flex items-center space-x-2 shrink-0 cursor-pointer group"
-      >
-        <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-400 via-yellow-300 to-amber-600 flex items-center justify-center shadow-[0_0_12px_rgba(245,190,0,0.45)] border border-amber-200/40 group-hover:scale-105 transition">
-          <span className="text-base select-none">👑</span>
-        </div>
-        <div className="flex flex-col">
-          <div className="flex items-center space-x-1.5">
-            <span className="font-black text-sm tracking-wide text-white font-sans leading-none">
-              ROYAL<span className="text-amber-400">CLUB</span> <span className="text-[#f43f5e] font-extrabold">BD</span>
-            </span>
-            {!isGuest && (
-              <span className="bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 text-[8.5px] font-black px-1.5 py-0.5 rounded-full uppercase shadow-xs">
-                VIP{user.vip_level || 1}
-              </span>
-            )}
-          </div>
-          <span className="text-[7.5px] text-slate-400 font-bold uppercase tracking-wider leading-none mt-1">
-            WHERE FAIRNESS FUELS THE FUN
-          </span>
-        </div>
-      </div>
+      {/* Official Royal Club BD 3D Casino Crest Logo */}
+      <RoyalClubLogo 
+        variant="header" 
+        onClick={() => { window.location.hash = '#/home'; }} 
+      />
 
       {/* Right Controls: Exactly matching APK Screenshots */}
       <div className="flex items-center space-x-2 shrink-0">
@@ -46,7 +28,7 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenDeposit, on
               onClick={() => onOpenAuth('login')}
               className="h-9 min-w-[78px] px-[16px] rounded-full border border-[#2b4c8f] bg-[#122252]/90 hover:bg-[#1a2e6e] text-white font-medium text-[13px] tracking-wide flex items-center justify-center transition active:scale-95 cursor-pointer shadow-sm whitespace-nowrap"
             >
-              Log in
+              {lang === 'bn' ? 'লগইন' : 'Log in'}
             </button>
 
             {/* Register Button: 1:1 Replica of Screenshot 12 */}
@@ -54,7 +36,7 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenDeposit, on
               onClick={() => onOpenAuth('register')}
               className="h-9 min-w-[84px] px-[18px] rounded-full bg-gradient-to-r from-[#d93850] to-[#f43f5e] hover:brightness-110 text-white font-medium text-[13px] tracking-wide flex items-center justify-center transition active:scale-95 cursor-pointer shadow-md shadow-rose-950/40 whitespace-nowrap"
             >
-              Register
+              {lang === 'bn' ? 'রেজিস্টার' : 'Register'}
             </button>
           </>
         ) : (

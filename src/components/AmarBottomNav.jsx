@@ -4,7 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 
 export default function AmarBottomNav({ activeTab, onSelectTab, onOpenAuth }) {
   const { user } = useGame();
-  const { t } = useLanguage();
+  const { lang, t } = useLanguage();
   const isGuest = !user || user.username === 'Guest' || user.is_guest;
 
   function handleAccountClick() {
@@ -68,7 +68,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenAuth }) {
             className="w-6 h-6 mb-0.5 object-contain"
           />
           <span className={`text-[10px] leading-none ${activeTab === 'home' ? 'text-amber-400 font-black' : 'text-slate-400'}`}>
-            Home
+            {lang === 'bn' ? 'হোম' : 'Home'}
           </span>
         </button>
 
@@ -88,7 +88,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenAuth }) {
             <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-[#0a0e23]" />
           </div>
           <span className={`text-[10px] leading-none ${activeTab === 'activity' ? 'text-amber-400 font-black' : 'text-slate-400'}`}>
-            Activity
+            {lang === 'bn' ? 'অ্যাক্টিভিটি' : 'Activity'}
           </span>
         </button>
 
@@ -117,7 +117,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenAuth }) {
           {/* Promotion Label */}
           <div className="relative z-20 -mt-2">
             <span className={`text-[10.5px] font-black tracking-tight ${activeTab === 'promotion' ? 'text-amber-400' : 'text-blue-300'} drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]`}>
-              Promotion
+              {lang === 'bn' ? 'প্রমোশন' : 'Promotion'}
             </span>
           </div>
         </div>
@@ -135,7 +135,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenAuth }) {
             className="w-6 h-6 mb-0.5 object-contain"
           />
           <span className={`text-[10px] leading-none ${activeTab === 'wallet' ? 'text-amber-400 font-black' : 'text-slate-400'}`}>
-            Wallet
+            {lang === 'bn' ? 'ওয়ালেট' : 'Wallet'}
           </span>
         </button>
 
@@ -152,7 +152,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenAuth }) {
             className="w-6 h-6 mb-0.5 object-contain"
           />
           <span className={`text-[10px] leading-none ${activeTab === 'account' ? 'text-amber-400 font-black' : 'text-slate-400'}`}>
-            Account
+            {lang === 'bn' ? 'অ্যাকাউন্ট' : 'Account'}
           </span>
         </button>
 

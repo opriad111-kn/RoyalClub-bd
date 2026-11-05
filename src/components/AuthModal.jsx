@@ -15,6 +15,7 @@ import {
   User,
   Crown
 } from 'lucide-react';
+import RoyalClubLogo from './RoyalClubLogo';
 
 // Exact Khelv Vector Circular Flags (Zero OS emoji font fallback)
 export function CircularFlag({ country = 'US', className = 'w-5 h-5' }) {
@@ -234,7 +235,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#070b19] flex justify-center items-start overflow-y-auto no-scrollbar">
+    <div className="fixed inset-0 z-50 bg-[#161e31] flex justify-center items-start overflow-y-auto no-scrollbar">
       <div 
         className="w-full sm:max-w-[420px] bg-[#0b102b] min-h-screen flex flex-col text-white select-none overflow-x-hidden shadow-2xl relative mx-auto"
       >
@@ -247,15 +248,8 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
           <ChevronLeft className="w-6 h-6 stroke-[2.5]" />
         </button>
 
-        {/* Center Logo */}
-        <div className="flex items-center space-x-1.5">
-          <div className="w-6 h-6 rounded bg-gradient-to-tr from-amber-500 to-yellow-400 flex items-center justify-center shadow-xs">
-            <Crown className="w-4 h-4 text-slate-950 fill-current" />
-          </div>
-          <span className="font-black text-sm tracking-wider text-white font-sans">
-            ROYAL<span className="text-amber-400">CLUB</span> <span className="text-red-500">BD</span>
-          </span>
-        </div>
+        {/* Center 3D Casino Logo (KhelV Replica Quality) */}
+        <RoyalClubLogo variant="modal" />
 
         {/* Language Button (Exact Khelv Vector Circular Flag + Bold White Text) */}
         <button
@@ -271,16 +265,18 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
       {/* 2. Red-to-Blue Gradient Banner Card (Screenshot 1 1:1 Match) */}
       <div className="bg-gradient-to-r from-[#F03848] to-[#1E6DEB] px-5 py-4 text-white relative shadow-md shrink-0">
         <h2 className="text-[22px] font-black tracking-tight text-white font-sans">
-          {activeTab === 'login' ? 'Log in' : 'Register'}
-        </h2>
-        <p className="text-[12px] text-white/95 leading-normal mt-1 font-medium">
           {activeTab === 'login' 
-            ? 'Please log in with your phone number or email' 
-            : 'Please register by phone number or email'}
+            ? (lang === 'bn' ? 'লগইন' : 'Log in') 
+            : (lang === 'bn' ? 'রেজিস্ট্রেশন' : 'Register')}
+        </h2>
+        <p className="text-[12px] text-white/95 leading-normal mt-1 font-medium font-sans">
+          {activeTab === 'login' 
+            ? (lang === 'bn' ? 'আপনার ফোন নম্বর বা ইমেইল দিয়ে লগইন করুন' : 'Please log in with your phone number or email') 
+            : (lang === 'bn' ? 'মোবাইল নম্বর দিয়ে বিনামূল্যে একাউন্ট খুলুন' : 'Please register by phone number or email')}
         </p>
         {activeTab === 'login' && (
-          <p className="text-[10.5px] text-white/80 leading-normal mt-1 font-normal">
-            If you forget your password, please contact customer service
+          <p className="text-[10.5px] text-white/80 leading-normal mt-1 font-normal font-sans">
+            {lang === 'bn' ? 'পাসওয়ার্ড ভুলে গেলে কাস্টমার সার্ভিসের সাথে যোগাযোগ করুন' : 'If you forget your password, please contact customer service'}
           </p>
         )}
       </div>
@@ -296,7 +292,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
             }`}
           >
             <Phone className={`w-4 h-4 ${loginMethod === 'phone' ? 'text-[#3882FA]' : 'text-[#6C7BA8]'}`} />
-            <span className="tracking-wide">Phone Number</span>
+            <span className="tracking-wide font-sans">{lang === 'bn' ? 'ফোন নম্বর' : 'Phone Number'}</span>
             {loginMethod === 'phone' && (
               <div className="absolute bottom-0 left-6 right-6 h-0.5 bg-[#3882FA] rounded-full" />
             )}
@@ -309,7 +305,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
             }`}
           >
             <Mail className={`w-4 h-4 ${loginMethod === 'email' ? 'text-[#3882FA]' : 'text-[#6C7BA8]'}`} />
-            <span className="tracking-wide">Email</span>
+            <span className="tracking-wide font-sans">{lang === 'bn' ? 'ইমেইল' : 'Email'}</span>
             {loginMethod === 'email' && (
               <div className="absolute bottom-0 left-6 right-6 h-0.5 bg-[#3882FA] rounded-full" />
             )}
@@ -318,7 +314,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
       ) : (
         <div className="bg-[#0f1730] py-2.5 border-b border-slate-800/80 flex flex-col items-center justify-center space-y-1 text-xs font-bold text-[#3882FA] relative shrink-0">
           <Phone className="w-4 h-4 text-[#3882FA]" />
-          <span className="tracking-wide">Register your phone</span>
+          <span className="tracking-wide font-sans">{lang === 'bn' ? 'মোবাইল দিয়ে রেজিস্ট্রেশন' : 'Register your phone'}</span>
           <div className="absolute bottom-0 left-16 right-16 h-0.5 bg-[#3882FA] rounded-full" />
         </div>
       )}
@@ -347,9 +343,9 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
             {/* Phone or Email Input */}
             {loginMethod === 'phone' ? (
               <div className="space-y-1.5">
-                <label className="text-[13px] font-semibold text-white flex items-center space-x-1.5 tracking-wide">
+                <label className="text-[13px] font-semibold text-white flex items-center space-x-1.5 tracking-wide font-sans">
                   <Phone className="w-4 h-4 text-[#3882FA]" />
-                  <span>Phone number</span>
+                  <span>{lang === 'bn' ? 'ফোন নম্বর' : 'Phone number'}</span>
                 </label>
                 <div className="flex items-center space-x-2">
                   {/* Separate Country Code Box */}
@@ -363,7 +359,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                       type="tel"
                       value={loginPhone}
                       onChange={e => setLoginPhone(e.target.value)}
-                      placeholder="Please enter the phone number"
+                      placeholder={lang === 'bn' ? 'অনুগ্রহ করে ফোন নম্বর দিন' : 'Please enter the phone number'}
                       className="w-full text-[14px] bg-transparent text-white placeholder-[#5A6890] outline-none focus:outline-none focus:ring-0 border-none font-sans font-semibold tracking-wide"
                     />
                   </div>
@@ -371,16 +367,16 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
               </div>
             ) : (
               <div className="space-y-1.5">
-                <label className="text-[13px] font-semibold text-white flex items-center space-x-1.5 tracking-wide">
+                <label className="text-[13px] font-semibold text-white flex items-center space-x-1.5 tracking-wide font-sans">
                   <Mail className="w-4 h-4 text-[#3882FA]" />
-                  <span>Email</span>
+                  <span>{lang === 'bn' ? 'ইমেইল' : 'Email'}</span>
                 </label>
                 <div className="h-[48px] bg-[#1C254A] border border-[#2A3764] focus-within:border-[#3882FA] rounded-xl flex items-center px-4 shadow-xs transition">
                   <input 
                     type="email"
                     value={loginEmail}
                     onChange={e => setLoginEmail(e.target.value)}
-                    placeholder="Please enter the email address"
+                    placeholder={lang === 'bn' ? 'অনুগ্রহ করে ইমেইল দিন' : 'Please enter the email address'}
                     className="w-full text-[14px] bg-transparent text-white placeholder-[#5A6890] outline-none focus:outline-none focus:ring-0 border-none font-sans font-medium"
                   />
                 </div>
@@ -389,16 +385,16 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
             {/* Password */}
             <div className="space-y-1.5">
-              <label className="text-[13px] font-semibold text-white flex items-center space-x-1.5 tracking-wide">
+              <label className="text-[13px] font-semibold text-white flex items-center space-x-1.5 tracking-wide font-sans">
                 <Lock className="w-4 h-4 text-[#3882FA]" />
-                <span>Password</span>
+                <span>{lang === 'bn' ? 'পাসওয়ার্ড' : 'Password'}</span>
               </label>
               <div className="h-[48px] bg-[#1C254A] border border-[#2A3764] focus-within:border-[#3882FA] rounded-xl flex items-center justify-between px-4 shadow-xs transition">
                 <input 
                   type={showLoginPassword ? 'text' : 'password'}
                   value={loginPassword}
                   onChange={e => setLoginPassword(e.target.value)}
-                  placeholder="Password"
+                  placeholder={lang === 'bn' ? 'পাসওয়ার্ড দিন' : 'Password'}
                   className="w-full text-[14px] bg-transparent text-white placeholder-[#5A6890] outline-none focus:outline-none focus:ring-0 border-none font-sans font-medium"
                 />
                 <button 
@@ -412,7 +408,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
             </div>
 
             {/* Remember & Forgot Password (Screenshot 1 Match: Circular Checkbox) */}
-            <div className="flex items-center justify-between text-xs pt-1 select-none">
+            <div className="flex items-center justify-between text-xs pt-1 select-none font-sans">
               <label 
                 onClick={() => setRememberPassword(!rememberPassword)}
                 className="flex items-center space-x-2 cursor-pointer text-slate-300"
@@ -428,14 +424,14 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                     </svg>
                   )}
                 </div>
-                <span className="text-[12px] text-slate-200">Remember password</span>
+                <span className="text-[12px] text-slate-200">{lang === 'bn' ? 'পাসওয়ার্ড মনে রাখুন' : 'Remember password'}</span>
               </label>
               <button 
                 type="button" 
                 onClick={() => window.open('https://t.me/ROYALCLUB_Support', '_blank')}
-                className="text-[#3882FA] hover:underline cursor-pointer font-medium text-xs"
+                className="text-[#3882FA] hover:underline cursor-pointer font-medium text-xs font-sans"
               >
-                Forgot password?
+                {lang === 'bn' ? 'পাসওয়ার্ড ভুলে গেছেন?' : 'Forgot password?'}
               </button>
             </div>
 
@@ -446,7 +442,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                 disabled={isLoading}
                 className="w-full h-[48px] rounded-full bg-gradient-to-r from-[#F03541] to-[#2268E6] hover:brightness-110 active:scale-[0.98] text-white font-bold text-[15px] tracking-wide shadow-lg shadow-blue-950/50 transition cursor-pointer disabled:opacity-50 flex items-center justify-center font-sans"
               >
-                Log in
+                {lang === 'bn' ? 'লগইন করুন' : 'Log in'}
               </button>
             </div>
 
@@ -461,7 +457,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                 }}
                 className="w-full h-[48px] rounded-full border border-[#204CA3] bg-transparent hover:bg-white/[0.03] text-white font-medium text-[13.5px] tracking-wide shadow-sm transition active:scale-[0.98] cursor-pointer text-center flex items-center justify-center font-sans"
               >
-                Register
+                {lang === 'bn' ? 'রেজিস্টার' : 'Register'}
               </button>
             </div>
 
@@ -472,9 +468,9 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
             
             {/* Phone Number Field */}
             <div className="space-y-1.5">
-              <label className="text-[13px] font-semibold text-white flex items-center space-x-1.5 tracking-wide">
+              <label className="text-[13px] font-semibold text-white flex items-center space-x-1.5 tracking-wide font-sans">
                 <Phone className="w-4 h-4 text-[#3882FA]" />
-                <span>Phone number</span>
+                <span>{lang === 'bn' ? 'ফোন নম্বর' : 'Phone number'}</span>
               </label>
               <div className="flex items-center space-x-2">
                 <div className="h-[48px] px-3.5 bg-[#1C254A] border border-[#2A3764] rounded-xl flex items-center space-x-1.5 text-xs font-sans font-bold text-white shrink-0 cursor-pointer shadow-xs">
@@ -486,7 +482,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                     type="tel"
                     value={regPhone}
                     onChange={e => setRegPhone(e.target.value)}
-                    placeholder="Please enter the phone number"
+                    placeholder={lang === 'bn' ? 'অনুগ্রহ করে ফোন নম্বর দিন' : 'Please enter the phone number'}
                     className="w-full text-[14px] bg-transparent text-white placeholder-[#5A6890] outline-none focus:outline-none focus:ring-0 border-none font-sans font-semibold tracking-wide"
                   />
                 </div>
@@ -495,16 +491,16 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
             {/* Set Password Field */}
             <div className="space-y-1.5">
-              <label className="text-[13px] font-semibold text-white flex items-center space-x-1.5 tracking-wide">
+              <label className="text-[13px] font-semibold text-white flex items-center space-x-1.5 tracking-wide font-sans">
                 <Lock className="w-4 h-4 text-[#3882FA]" />
-                <span>Set password</span>
+                <span>{lang === 'bn' ? 'পাসওয়ার্ড নির্ধারণ করুন' : 'Set password'}</span>
               </label>
               <div className="h-[48px] bg-[#1C254A] border border-[#2A3764] focus-within:border-[#3882FA] rounded-xl flex items-center justify-between px-4 shadow-xs transition">
                 <input 
                   type={showRegPassword ? 'text' : 'password'}
                   value={regPassword}
                   onChange={e => setRegPassword(e.target.value)}
-                  placeholder="Set password"
+                  placeholder={lang === 'bn' ? 'পাসওয়ার্ড দিন' : 'Set password'}
                   className="w-full text-[14px] bg-transparent text-white placeholder-[#5A6890] outline-none focus:outline-none focus:ring-0 border-none font-sans font-medium"
                 />
                 <button 
@@ -519,16 +515,16 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
             {/* Confirm Password Field */}
             <div className="space-y-1.5">
-              <label className="text-[13px] font-semibold text-white flex items-center space-x-1.5 tracking-wide">
+              <label className="text-[13px] font-semibold text-white flex items-center space-x-1.5 tracking-wide font-sans">
                 <Lock className="w-4 h-4 text-[#3882FA]" />
-                <span>Confirm password</span>
+                <span>{lang === 'bn' ? 'কনফার্ম পাসওয়ার্ড' : 'Confirm password'}</span>
               </label>
               <div className="h-[48px] bg-[#1C254A] border border-[#2A3764] focus-within:border-[#3882FA] rounded-xl flex items-center justify-between px-4 shadow-xs transition">
                 <input 
                   type={showRegConfirmPassword ? 'text' : 'password'}
                   value={regConfirmPassword}
                   onChange={e => setRegConfirmPassword(e.target.value)}
-                  placeholder="Confirm password"
+                  placeholder={lang === 'bn' ? 'কনফার্ম পাসওয়ার্ড দিন' : 'Confirm password'}
                   className="w-full text-[14px] bg-transparent text-white placeholder-[#5A6890] outline-none focus:outline-none focus:ring-0 border-none font-sans font-medium"
                 />
                 <button 
@@ -543,23 +539,23 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
             {/* Invite Code Field (Image 2 Exact Match) */}
             <div className="space-y-1.5">
-              <label className="text-[13px] font-semibold text-white flex items-center space-x-1.5 tracking-wide">
+              <label className="text-[13px] font-semibold text-white flex items-center space-x-1.5 tracking-wide font-sans">
                 <User className="w-4 h-4 text-[#3882FA]" />
-                <span>Invite code</span>
+                <span>{lang === 'bn' ? 'ইনভাইট কোড' : 'Invite code'}</span>
               </label>
               <div className="h-[48px] bg-[#1C254A] border border-[#2A3764] focus-within:border-[#3882FA] rounded-xl flex items-center px-4 shadow-xs transition">
                 <input 
                   type="text"
                   value={regInviteCode}
                   onChange={e => setRegInviteCode(e.target.value)}
-                  placeholder="Invite code"
+                  placeholder={lang === 'bn' ? 'ইনভাইট কোড দিন' : 'Invite code'}
                   className="w-full text-[15px] bg-transparent text-white placeholder-[#5A6890] outline-none focus:outline-none focus:ring-0 border-none font-sans font-bold tracking-wider"
                 />
               </div>
             </div>
 
             {/* Privacy Agreement Checkbox (Image 2 Match: 【Privacy Agreement】 in red) */}
-            <div className="pt-1 select-none">
+            <div className="pt-1 select-none font-sans">
               <label 
                 onClick={() => setAgreedTerms(!agreedTerms)}
                 className="flex items-center space-x-2 text-[12px] text-slate-200 cursor-pointer"
@@ -576,7 +572,10 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                   )}
                 </div>
                 <span>
-                  I have read and agree <span className="text-[#FF334B] font-bold">【Privacy Agreement】</span>
+                  {lang === 'bn' ? 'আমি পড়েছি এবং সম্মত ' : 'I have read and agree '}
+                  <span className="text-[#FF334B] font-bold">
+                    {lang === 'bn' ? '【প্রাইভেসি পলিসি】' : '【Privacy Agreement】'}
+                  </span>
                 </span>
               </label>
             </div>
@@ -588,7 +587,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                 disabled={isLoading}
                 className="w-full h-[48px] rounded-full bg-gradient-to-r from-[#F03541] to-[#2268E6] hover:brightness-110 active:scale-[0.98] text-white font-bold text-[15px] tracking-wide shadow-lg shadow-blue-950/50 transition cursor-pointer disabled:opacity-50 tracking-wide flex items-center justify-center font-sans"
               >
-                Register
+                {lang === 'bn' ? 'রেজিস্ট্রেশন সম্পন্ন করুন' : 'Register'}
               </button>
             </div>
 
@@ -603,7 +602,8 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                 }}
                 className="w-full h-[48px] rounded-full border border-[#204CA3] bg-transparent hover:bg-white/[0.03] text-white font-medium text-[13.5px] tracking-wide shadow-sm transition active:scale-[0.98] cursor-pointer text-center flex items-center justify-center font-sans"
               >
-                I have an account <span className="text-[#2268E6] font-bold ml-1.5">Login</span>
+                {lang === 'bn' ? 'আমার একাউন্ট আছে ' : 'I have an account '}
+                <span className="text-[#2268E6] font-bold ml-1.5">{lang === 'bn' ? 'লগইন' : 'Login'}</span>
               </button>
             </div>
 
@@ -633,15 +633,8 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
       {isLoading && (
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-xs flex items-center justify-center animate-in fade-in duration-200">
           <div className="relative w-36 h-36 flex items-center justify-center">
-            {/* Center Logo */}
-            <div className="flex flex-col items-center justify-center pointer-events-none select-none z-10 scale-95">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-400 via-yellow-300 to-amber-600 flex items-center justify-center shadow-lg border border-amber-200/50">
-                <span className="text-2xl">👑</span>
-              </div>
-              <div className="text-[11px] font-black text-white tracking-wider mt-1 drop-shadow font-sans">
-                ROYAL<span className="text-amber-400">CLUB</span> <span className="text-red-500 font-extrabold">BD</span>
-              </div>
-            </div>
+            {/* Center 3D Casino Logo (Khelv Replica Quality) */}
+            <RoyalClubLogo variant="animation" />
 
             {/* Orbiting Ring with Head Bead (Image 1 Match) */}
             <svg 

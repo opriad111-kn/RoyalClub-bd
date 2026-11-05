@@ -582,7 +582,7 @@ export default function AccountPage({
               <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#1E50A0] to-[#122E60] border border-[#3A70D0]/40 shadow-[0_2px_8px_rgba(20,50,150,0.3)] flex items-center justify-center shrink-0">
                 <KhelvIcon name="notification" className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xs font-bold text-white tracking-wide">Notification</span>
+              <span className="text-xs font-bold text-white tracking-wide">{lang === 'bn' ? 'নোটিফিকেশন' : 'Notification'}</span>
             </div>
             <div className="flex items-center space-x-2">
               {(notifications || []).filter(n => !n.isRead).length > 0 && (
@@ -605,7 +605,7 @@ export default function AccountPage({
               <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#7B2CBF] to-[#4A107A] border border-[#9D4EDD]/40 shadow-[0_2px_8px_rgba(120,40,190,0.3)] flex items-center justify-center shrink-0">
                 <KhelvIcon name="gifts" className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xs font-bold text-white tracking-wide">Gifts</span>
+              <span className="text-xs font-bold text-white tracking-wide">{lang === 'bn' ? 'উপহার কোড' : 'Gifts'}</span>
             </div>
             <svg className="w-4 h-4 text-[#7098C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
@@ -621,7 +621,7 @@ export default function AccountPage({
               <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#028090] to-[#004E64] border border-[#00A896]/40 shadow-[0_2px_8px_rgba(0,160,150,0.3)] flex items-center justify-center shrink-0">
                 <KhelvIcon name="login_list_icon" className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xs font-bold text-white tracking-wide">My Top-Up Coupons</span>
+              <span className="text-xs font-bold text-white tracking-wide">{lang === 'bn' ? 'টপ-আপ কুপন' : 'My Top-Up Coupons'}</span>
             </div>
             <svg className="w-4 h-4 text-[#7098C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
@@ -637,7 +637,7 @@ export default function AccountPage({
               <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#277DA1] to-[#1D3557] border border-[#4EA8DE]/40 shadow-[0_2px_8px_rgba(30,100,160,0.3)] flex items-center justify-center shrink-0">
                 <KhelvIcon name="statsIcon" className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xs font-bold text-white tracking-wide">Game statistics</span>
+              <span className="text-xs font-bold text-white tracking-wide">{lang === 'bn' ? 'গেম পরিসংখ্যান' : 'Game statistics'}</span>
             </div>
             <svg className="w-4 h-4 text-[#7098C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
@@ -668,7 +668,7 @@ export default function AccountPage({
         {/* Service Center Grid (Prominent Large 3D Icons - Screenshot 1 1:1)       */}
         {/* ----------------------------------------------------------------------- */}
         <div className="space-y-2 pt-1">
-          <h3 className="text-xs font-bold text-white px-1">Service center</h3>
+          <h3 className="text-xs font-bold text-white px-1">{lang === 'bn' ? 'সার্ভিস সেন্টার' : 'Service center'}</h3>
           <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 shadow-sm">
             <div className="grid grid-cols-3 gap-y-5 gap-x-2 text-center">
               {/* Settings (Opens Screenshot 4 Settings Center) */}
@@ -680,7 +680,7 @@ export default function AccountPage({
                   <KhelvIcon name="settingCenter" className="w-6 h-6 text-[#629EFF]" />
                 </div>
                 <span className="text-[11px] text-[#D4E8FF] font-medium group-hover:text-white transition">
-                  Settings
+                  {lang === 'bn' ? 'সেটিংস' : 'Settings'}
                 </span>
               </div>
 
@@ -693,7 +693,7 @@ export default function AccountPage({
                   <KhelvIcon name="feedback" className="w-6 h-6 text-[#629EFF]" />
                 </div>
                 <span className="text-[11px] text-[#D4E8FF] font-medium group-hover:text-white transition">
-                  Feedback
+                  {lang === 'bn' ? 'ফিডব্যাক' : 'Feedback'}
                 </span>
               </div>
 
@@ -706,7 +706,7 @@ export default function AccountPage({
                   <KhelvIcon name="notificationCenter" className="w-6 h-6 text-[#629EFF]" />
                 </div>
                 <span className="text-[11px] text-[#D4E8FF] font-medium group-hover:text-white transition">
-                  Announcement
+                  {lang === 'bn' ? 'ঘোষণা' : 'Announcement'}
                 </span>
               </div>
 
@@ -719,7 +719,7 @@ export default function AccountPage({
                   <KhelvIcon name="server" className="w-6 h-6 text-[#629EFF]" />
                 </div>
                 <span className="text-[11px] text-[#D4E8FF] font-medium group-hover:text-white transition">
-                  Customer Service
+                  {lang === 'bn' ? 'কাস্টমার সার্ভিস' : 'Customer Service'}
                 </span>
               </div>
 
@@ -732,7 +732,7 @@ export default function AccountPage({
                   <KhelvIcon name="guide" className="w-6 h-6 text-[#629EFF]" />
                 </div>
                 <span className="text-[11px] text-[#D4E8FF] font-medium group-hover:text-white transition">
-                  Beginner's Guide
+                  {lang === 'bn' ? 'নতুনদের গাইড' : "Beginner's Guide"}
                 </span>
               </div>
 
@@ -748,7 +748,7 @@ export default function AccountPage({
                   <KhelvIcon name="about" className="w-6 h-6 text-[#629EFF]" />
                 </div>
                 <span className="text-[11px] text-[#D4E8FF] font-medium group-hover:text-white transition">
-                  About us
+                  {lang === 'bn' ? 'আমাদের সম্পর্কে' : 'About us'}
                 </span>
               </div>
             </div>
@@ -764,7 +764,7 @@ export default function AccountPage({
             className="w-full py-3 rounded-full border border-[#30358B] bg-transparent text-[#7098C5] flex items-center justify-center space-x-2 font-semibold text-xs active:scale-98 transition hover:border-[#629EFF] hover:text-white cursor-pointer shadow-sm"
           >
             <KhelvIcon name="logout" className="w-4 h-4 text-[#7098C5]" />
-            <span>Log out</span>
+            <span>{lang === 'bn' ? 'লগআউট' : 'Log out'}</span>
           </button>
         </div>
 

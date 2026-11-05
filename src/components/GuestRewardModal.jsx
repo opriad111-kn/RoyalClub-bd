@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../context/LanguageContext';
 
 /**
  * GuestRewardModal
@@ -8,6 +9,7 @@ import React from 'react';
  */
 export default function GuestRewardModal({ isOpen, onClose, onOpenLogin }) {
   if (!isOpen) return null;
+  const { lang } = useLanguage();
 
   return (
     <div 
@@ -59,16 +61,26 @@ export default function GuestRewardModal({ isOpen, onClose, onOpenLogin }) {
           <div className="flex items-center justify-center space-x-2">
             <span className="text-base select-none">🎉</span>
             <h2 className="text-xl font-black text-white tracking-wide font-sans">
-              Event Rewards
+              {lang === 'bn' ? 'ইভেন্ট রিওয়ার্ডস' : 'Event Rewards'}
             </h2>
             <span className="text-base select-none">🎉</span>
           </div>
 
           {/* Subtitle with highlighted blue text */}
           <p className="text-xs sm:text-[13px] text-slate-300 leading-relaxed font-medium px-2 max-w-[320px] mx-auto">
-            Log in to participate in the{' '}
-            <span className="text-[#3B82F6] font-bold">event rewards</span>{' '}
-            and unlock all 8 exclusive rewards
+            {lang === 'bn' ? (
+              <>
+                সকল ৮টি এক্সক্লুসিভ রিওয়ার্ড আনলক করতে{' '}
+                <span className="text-[#3B82F6] font-bold">ইভেন্টে অংশগ্রহণ</span>{' '}
+                করতে লগইন করুন
+              </>
+            ) : (
+              <>
+                Log in to participate in the{' '}
+                <span className="text-[#3B82F6] font-bold">event rewards</span>{' '}
+                and unlock all 8 exclusive rewards
+              </>
+            )}
           </p>
         </div>
 
@@ -79,17 +91,17 @@ export default function GuestRewardModal({ isOpen, onClose, onOpenLogin }) {
               onClose();
               if (onOpenLogin) onOpenLogin();
             }}
-            className="w-full h-12 rounded-full font-bold text-sm text-white bg-gradient-to-r from-[#e53950] via-[#85299b] to-[#2563eb] hover:brightness-110 active:scale-95 transition shadow-lg shadow-blue-950/60 cursor-pointer tracking-wide flex items-center justify-center"
+            className="w-full h-12 rounded-full font-bold text-sm text-white bg-gradient-to-r from-[#e53950] via-[#85299b] to-[#2563eb] hover:brightness-110 active:scale-95 transition shadow-lg shadow-blue-950/60 cursor-pointer tracking-wide flex items-center justify-center font-sans"
           >
-            Log in now to participate
+            {lang === 'bn' ? 'অংশগ্রহণ করতে এখনই লগইন করুন' : 'Log in now to participate'}
           </button>
 
           {/* Dismiss Link */}
           <button
             onClick={onClose}
-            className="text-xs text-[#8a9bb5] hover:text-white transition cursor-pointer py-1.5 block w-full text-center"
+            className="text-xs text-[#8a9bb5] hover:text-white transition cursor-pointer py-1.5 block w-full text-center font-sans"
           >
-            Don't log in yet, continue browsing
+            {lang === 'bn' ? 'এখনই নয়, ব্রাউজ চালিয়ে যান' : "Don't log in yet, continue browsing"}
           </button>
         </div>
       </div>
