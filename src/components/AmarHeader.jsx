@@ -23,18 +23,18 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenDeposit, on
       <div className="flex items-center space-x-2 shrink-0">
         {isGuest ? (
           <>
-            {/* Log in Button: 1:1 Replica of Screenshot 12 */}
+            {/* Log in Button: 1:1 Exact Khelv Replica */}
             <button
               onClick={() => onOpenAuth('login')}
-              className="h-9 min-w-[78px] px-[16px] rounded-full border border-[#2b4c8f] bg-[#122252]/90 hover:bg-[#1a2e6e] text-white font-medium text-[13px] tracking-wide flex items-center justify-center transition active:scale-95 cursor-pointer shadow-sm whitespace-nowrap"
+              className="h-8 min-w-[72px] px-3.5 rounded-full border border-[#2a4585] bg-[#14234f] hover:bg-[#1a2d66] text-white font-medium text-xs tracking-wide flex items-center justify-center transition active:scale-95 cursor-pointer shadow-xs whitespace-nowrap font-sans"
             >
               {lang === 'bn' ? 'লগইন' : 'Log in'}
             </button>
 
-            {/* Register Button: 1:1 Replica of Screenshot 12 */}
+            {/* Register Button: 1:1 Exact Khelv Replica (Refined Crimson Red, NOT Bright Neon) */}
             <button
               onClick={() => onOpenAuth('register')}
-              className="h-9 min-w-[84px] px-[18px] rounded-full bg-gradient-to-r from-[#d93850] to-[#f43f5e] hover:brightness-110 text-white font-medium text-[13px] tracking-wide flex items-center justify-center transition active:scale-95 cursor-pointer shadow-md shadow-rose-950/40 whitespace-nowrap"
+              className="h-8 min-w-[76px] px-4 rounded-full bg-gradient-to-r from-[#BA2B3E] to-[#9E2032] hover:brightness-110 text-white font-medium text-xs tracking-wide flex items-center justify-center transition active:scale-95 cursor-pointer shadow-xs whitespace-nowrap font-sans"
             >
               {lang === 'bn' ? 'রেজিস্টার' : 'Register'}
             </button>
