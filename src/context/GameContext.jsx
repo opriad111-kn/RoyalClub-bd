@@ -984,21 +984,42 @@ export function GameProvider({ children }) {
     });
   }
 
-  // 3G. Notification System (Module J)
+  // 3G. Notification System (Module J - Photo 13 Exact Match)
   const [notifications, setNotifications] = useState(() => {
     const saved = localStorage.getItem('royalclub_notifications');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
+      try { 
+        const parsed = JSON.parse(saved); 
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {}
     }
     return [
+      {
+        id: 'NTF-DAILY',
+        targetUid: 'all',
+        title: '"Daily Reward" reward to claim 🎁',
+        message: 'Welcome to Royal Club BD! Your daily rewards and welcome bonuses are waiting to be claimed. Play WinGo and slots to level up!',
+        type: 'reward',
+        isRead: false,
+        created_at: new Date().toISOString()
+      },
+      {
+        id: 'NTF-RECHARGE',
+        targetUid: 'all',
+        title: 'Recharge Arrival Notification',
+        message: 'Instant 24/7 automated deposit system with 0 fees is active. Top up via bKash, Nagad, or USDT to receive up to +৳388 first deposit bonus.',
+        type: 'system',
+        isRead: true,
+        created_at: new Date(Date.now() - 3600000).toISOString()
+      },
       {
         id: 'NTF-1',
         targetUid: 'all',
         title: '🎉 মেগা টুর্নামেন্ট শুরু হয়েছে!',
         message: 'আজকের Aviator ও WinGo গেমে ডাবল এক্সপি ও বিশেষ উইনিং রিওয়ার্ড চালু হয়েছে!',
         type: 'reward',
-        isRead: false,
-        created_at: new Date().toISOString()
+        isRead: true,
+        created_at: new Date(Date.now() - 7200000).toISOString()
       },
       {
         id: 'NTF-2',
@@ -1007,7 +1028,7 @@ export function GameProvider({ children }) {
         message: 'নতুন JILI স্টাইল স্লট গেম সুপার এস ডিলাক্স এখন লাইভ। এখনই উপভোগ করুন!',
         type: 'info',
         isRead: true,
-        created_at: new Date(Date.now() - 7200000).toISOString()
+        created_at: new Date(Date.now() - 14400000).toISOString()
       }
     ];
   });
@@ -1025,7 +1046,7 @@ export function GameProvider({ children }) {
     };
     setNotifications(prev => {
       const updated = [newNotif, ...prev];
-      localStorage.setItem('royalclub_notifications', JSON.stringify(updated));
+      try { localStorage.setItem('royalclub_notifications', JSON.stringify(updated)); } catch (e) {}
       return updated;
     });
     return true;
@@ -1034,7 +1055,7 @@ export function GameProvider({ children }) {
   function markNotificationRead(id) {
     setNotifications(prev => {
       const updated = prev.map(n => n.id === id ? { ...n, isRead: true } : n);
-      localStorage.setItem('royalclub_notifications', JSON.stringify(updated));
+      try { localStorage.setItem('royalclub_notifications', JSON.stringify(updated)); } catch (e) {}
       return updated;
     });
   }
@@ -1042,7 +1063,7 @@ export function GameProvider({ children }) {
   function markAllNotificationsRead() {
     setNotifications(prev => {
       const updated = prev.map(n => ({ ...n, isRead: true }));
-      localStorage.setItem('royalclub_notifications', JSON.stringify(updated));
+      try { localStorage.setItem('royalclub_notifications', JSON.stringify(updated)); } catch (e) {}
       return updated;
     });
   }
@@ -1050,7 +1071,7 @@ export function GameProvider({ children }) {
   function deleteNotification(id) {
     setNotifications(prev => {
       const updated = prev.filter(n => n.id !== id);
-      localStorage.setItem('royalclub_notifications', JSON.stringify(updated));
+      try { localStorage.setItem('royalclub_notifications', JSON.stringify(updated)); } catch (e) {}
       return updated;
     });
   }

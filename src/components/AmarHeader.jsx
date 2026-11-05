@@ -4,9 +4,10 @@ import { useLanguage } from '../context/LanguageContext';
 import { ShieldAlert, Download, Headphones, Bell } from 'lucide-react';
 
 export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenDeposit, onOpenAdmin }) {
-  const { user } = useGame();
+  const { user, notifications, markAllNotificationsRead } = useGame();
   const { t } = useLanguage();
   const isGuest = !user || user.username === 'Guest' || user.is_guest;
+  const unreadCount = (notifications || []).filter(n => !n.isRead).length;
 
   return (
     <header className="sticky top-0 z-40 bg-[#0c1328]/95 backdrop-blur-md text-white px-3 sm:px-4 py-2.5 flex items-center justify-between shadow-lg select-none border-b border-[#1f2b4d]">
@@ -78,15 +79,20 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenDeposit, on
             {/* Notification Icon */}
             <button
               onClick={() => {
-                if (typeof window !== 'undefined') {
-                  const event = new CustomEvent('royalclub_show_toast', { detail: { message: "কোনো নতুন নোটিফিকেশন নেই।" } });
-                  window.dispatchEvent(event);
+                if (typeof markAllNotificationsRead === 'function') {
+                  markAllNotificationsRead();
                 }
+                window.dispatchEvent(new CustomEvent('royalclub_open_notifications'));
               }}
               title="Notifications"
-              className="w-7 h-7 rounded-full bg-[#162142] text-slate-300 hover:text-amber-400 flex items-center justify-center transition active:scale-95 cursor-pointer shrink-0 border border-[#23335d]"
+              className="relative w-7 h-7 rounded-full bg-[#162142] text-slate-300 hover:text-amber-400 flex items-center justify-center transition active:scale-95 cursor-pointer shrink-0 border border-[#23335d]"
             >
               <Bell className="w-3.5 h-3.5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center shadow-md animate-pulse">
+                  {unreadCount}
+                </span>
+              )}
             </button>
 
             {/* Customer Support Icon */}

@@ -185,10 +185,16 @@ function AppContent() {
       window.addEventListener('royalclub_show_toast', handleCustomToast);
       window.addEventListener('royalclub_switch_tab', handleSwitchTab);
       window.addEventListener('royalclub_open_promo', handleOpenPromo);
+      const handleOpenNotifications = () => {
+        setActiveTab('account');
+        window.location.hash = '#/account?modal=notifications';
+      };
+      window.addEventListener('royalclub_open_notifications', handleOpenNotifications);
       return () => {
         window.removeEventListener('royalclub_show_toast', handleCustomToast);
         window.removeEventListener('royalclub_switch_tab', handleSwitchTab);
         window.removeEventListener('royalclub_open_promo', handleOpenPromo);
+        window.removeEventListener('royalclub_open_notifications', handleOpenNotifications);
       };
     }
   }, []);

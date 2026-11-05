@@ -56,7 +56,15 @@ export default function AccountPage({
   const { lang, setLang, toggleLang, t } = useLanguage();
 
   // Active sub-views & modals
-  const [activeModal, setActiveModal] = useState(null); 
+  const [activeModal, setActiveModal] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash || '';
+      if (hash.includes('modal=notifications') || hash.includes('tab=notifications')) {
+        return 'notifications';
+      }
+    }
+    return null;
+  }); 
   // 'avatar', 'settings', 'transaction', 'gameHistory', 'depositBonus', 'firstDeposit', 'depositRecords', 'withdrawRecords', 'notifications', 'gifts', 'feedback', 'guide', 'about', 'logoutConfirm', 'changePassword', 'safe', 'coupons', 'gameStats', 'selfService'
 
   // Auto-mark notifications read when viewing notifications modal (clears unread badge)
@@ -64,7 +72,19 @@ export default function AccountPage({
     if (activeModal === 'notifications' && typeof markAllNotificationsRead === 'function') {
       markAllNotificationsRead();
     }
-  }, [activeModal]);
+  }, [activeModal, markAllNotificationsRead]);
+
+  // Listen to open notifications event from Header Bell
+  useEffect(() => {
+    const handleOpenNotifs = () => {
+      setActiveModal('notifications');
+      if (typeof markAllNotificationsRead === 'function') {
+        markAllNotificationsRead();
+      }
+    };
+    window.addEventListener('royalclub_open_notifications', handleOpenNotifs);
+    return () => window.removeEventListener('royalclub_open_notifications', handleOpenNotifs);
+  }, [markAllNotificationsRead]);
 
   const [copied, setCopied] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -2216,82 +2236,93 @@ export default function AccountPage({
 
               {/* Message Cards (photo_13) */}
               <div className="space-y-3">
-                {/* Default Welcome Notification */}
-                <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2.5 shadow-md">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-7 h-7 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center">
-                        <svg className="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
-                          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                          <polyline points="22,6 12,13 2,6" />
-                        </svg>
-                      </div>
-                      <h4 className="text-xs font-bold text-white">"Daily Reward" reward to claim 🎁</h4>
+                {notifTab === 'notification' ? (
+                  (notifications || []).length === 0 ? (
+                    <div className="text-center py-10 text-slate-400 text-xs font-medium">
+                      কোনো নোটিফিকেশন নেই (No notifications)
                     </div>
-                  </div>
-                  <p className="text-[11px] text-[#D4E8FF] leading-relaxed">
-                    Welcome to Royal Club BD! Your daily rewards and welcome bonuses are waiting to be claimed. Play WinGo and slots to level up!
-                  </p>
-                  <div className="text-[10px] text-[#7098C5] pt-1 border-t border-[#30358B]/40">
-                    {formattedLastLogin}
-                  </div>
-                </div>
-
-                {/* Recharge Arrival Notification */}
-                <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2.5 shadow-md">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                        <svg className="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
-                          <circle cx="12" cy="12" r="10" />
-                          <path d="M12 6v6l4 2" />
-                        </svg>
-                      </div>
-                      <h4 className="text-xs font-bold text-white">Recharge Arrival Notification</h4>
-                    </div>
-                  </div>
-                  <p className="text-[11px] text-[#D4E8FF] leading-relaxed">
-                    Instant 24/7 automated deposit system with 0 fees is active. Top up via bKash, Nagad, or USDT to receive up to +৳388 first deposit bonus.
-                  </p>
-                  <div className="text-[10px] text-[#7098C5] pt-1 border-t border-[#30358B]/40">
-                    System Broadcast
-                  </div>
-                </div>
-
-                {/* Live notifications from Context */}
-                {(notifications || []).map((n, idx) => (
-                  <div key={idx} className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2.5 shadow-md">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-7 h-7 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center">
-                          <svg className="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
-                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                            <polyline points="22,6 12,13 2,6" />
-                          </svg>
+                  ) : (
+                    (notifications || []).map((n, idx) => (
+                      <div 
+                        key={n.id || idx} 
+                        onClick={() => markNotificationRead && markNotificationRead(n.id)}
+                        className={`bg-[#1C2063] border rounded-2xl p-4 space-y-2.5 shadow-md transition cursor-pointer relative ${
+                          n.isRead ? 'border-[#30358B]' : 'border-amber-400/60 ring-1 ring-amber-400/30'
+                        }`}
+                      >
+                        {!n.isRead && (
+                          <div className="absolute top-3 right-9 w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                        )}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <div className={`w-7 h-7 rounded-full flex items-center justify-center ${
+                              n.type === 'system' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-blue-500/20 text-blue-400'
+                            }`}>
+                              {n.type === 'system' ? (
+                                <svg className="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                                  <circle cx="12" cy="12" r="10" />
+                                  <path d="M12 6v6l4 2" />
+                                </svg>
+                              ) : (
+                                <svg className="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                  <polyline points="22,6 12,13 2,6" />
+                                </svg>
+                              )}
+                            </div>
+                            <h4 className="text-xs font-bold text-white flex items-center space-x-1.5">
+                              <span>{n.title || 'Notice'}</span>
+                              {!n.isRead && (
+                                <span className="bg-red-500 text-white text-[8px] font-black px-1.5 py-0.2 rounded-full uppercase">
+                                  NEW
+                                </span>
+                              )}
+                            </h4>
+                          </div>
+                          {typeof deleteNotification === 'function' && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteNotification(n.id);
+                              }}
+                              className="p-1 text-[#7098C5] hover:text-rose-400 transition cursor-pointer"
+                              title="Delete notification"
+                            >
+                              <svg className="w-3.5 h-3.5 stroke-current stroke-2 fill-none" viewBox="0 0 24 24">
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                              </svg>
+                            </button>
+                          )}
                         </div>
-                        <h4 className="text-xs font-bold text-white">{n.title || 'Notice'}</h4>
+                        <p className="text-[11px] text-[#D4E8FF] leading-relaxed">
+                          {n.message || n.content}
+                        </p>
+                        <div className="flex items-center justify-between text-[10px] text-[#7098C5] pt-1 border-t border-[#30358B]/40">
+                          <span>{n.time || formattedLastLogin}</span>
+                          <span className={n.isRead ? 'text-slate-400' : 'text-emerald-400 font-bold'}>
+                            {n.isRead ? 'পঠিত (Read)' : 'অপঠিত (Unread)'}
+                          </span>
+                        </div>
                       </div>
-                      {typeof deleteNotification === 'function' && (
-                        <button
-                          onClick={() => deleteNotification(n.id)}
-                          className="p-1 text-[#7098C5] hover:text-rose-400 transition cursor-pointer"
-                          title="Delete notification"
-                        >
-                          <svg className="w-3.5 h-3.5 stroke-current stroke-2 fill-none" viewBox="0 0 24 24">
-                            <polyline points="3 6 5 6 21 6" />
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                          </svg>
-                        </button>
-                      )}
+                    ))
+                  )
+                ) : (
+                  <div className="space-y-3">
+                    <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2 shadow-md">
+                      <h4 className="text-xs font-bold text-amber-300">🛡️ Platform Security & Fair Play</h4>
+                      <p className="text-[11px] text-[#D4E8FF] leading-relaxed">
+                        Royal Club BD uses 100% SHA-256 verifiable hash blockchain algorithms for WinGo and TRX lottery outcomes. No single entity can predict or alter the game results.
+                      </p>
                     </div>
-                    <p className="text-[11px] text-[#D4E8FF] leading-relaxed">
-                      {n.message || n.content}
-                    </p>
-                    <div className="text-[10px] text-[#7098C5] pt-1 border-t border-[#30358B]/40">
-                      {n.time || formattedLastLogin}
+                    <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 space-y-2 shadow-md">
+                      <h4 className="text-xs font-bold text-blue-400">⚡ 24/7 Instant Recharge & Withdrawal</h4>
+                      <p className="text-[11px] text-[#D4E8FF] leading-relaxed">
+                        bKash, Nagad, and Rocket automated deposits reflect in 1 to 5 minutes. Withdrawals are processed 24/7 without delays.
+                      </p>
                     </div>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>

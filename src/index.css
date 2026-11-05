@@ -99,3 +99,15 @@ body {
   animation: revealBounce 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   will-change: transform, opacity;
 }
+
+/* Official Swiper Carousel Styles for KhelV Game Grids */
+.myGameSwiper {
+  width: 100%;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.swiper-slide {
+  width: auto;
+  flex-shrink: 0;
+}

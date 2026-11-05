@@ -1,7 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '../context/GameContext';
 import { useLanguage } from '../context/LanguageContext';
 import NoticeModal from '../components/NoticeModal';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { FreeMode, Pagination, Autoplay } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/free-mode';
+import 'swiper/css/pagination';
 import { 
   Volume2, 
   Search, 
@@ -34,6 +39,13 @@ export default function HomePage({
   const [showNotice, setShowNotice] = useState(false);
   const [activeBanner, setActiveBanner] = useState(0);
   const [showDesktopWidget, setShowDesktopWidget] = useState(true);
+
+  // Swiper instances for smooth finger swipe and button control
+  const popularSwiperRef = useRef(null);
+  const slotsSwiperRef = useRef(null);
+  const lotterySwiperRef = useRef(null);
+  const originalSwiperRef = useRef(null);
+  const bannerSwiperRef = useRef(null);
 
   // Pagination state for each section (6 cards per page = 3x2 grid)
   const [popularPage, setPopularPage] = useState(0);
@@ -458,39 +470,84 @@ export default function HomePage({
     </div>
   );
 
-  // 3x2 Game Cards Grid (Screenshot 1 & 10 Aspect Ratio 37/50 Match)
+  // Single Game Card Component (Aspect ratio 37/50, matching KhelV 1:1)
+  const renderGameCard = (game, idx) => (
+    <div
+      key={`${game.id}-${game.title}-${idx}`}
+      onClick={() => onOpenGame(game.id)}
+      className="relative aspect-[37/50] w-full rounded-2xl overflow-hidden cursor-pointer active:scale-95 transition group bg-gradient-to-b from-[#182046] to-[#0e1330] border border-[#2b3575]/60 shadow-md flex flex-col justify-between select-none"
+    >
+      {/* Studio Badge Top Right */}
+      {game.provider && (
+        <div className="absolute top-1.5 right-1.5 bg-black/75 backdrop-blur-xs text-amber-300 border border-amber-400/30 text-[7.5px] font-black px-1.5 py-0.2 rounded shadow-xs z-10 uppercase tracking-wider">
+          {game.provider}
+        </div>
+      )}
+
+      {/* High-Res 3D Artwork Poster */}
+      <div className="w-full h-full flex items-center justify-center p-1 overflow-hidden">
+        <img 
+          src={game.image} 
+          alt={game.title} 
+          className="w-full h-full object-contain group-hover:scale-108 transition duration-300 drop-shadow-[0_4px_10px_rgba(0,0,0,0.6)] pointer-events-none" 
+          loading="lazy"
+        />
+      </div>
+
+      {/* Bottom Title Bar */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent py-1.5 px-1 text-center pointer-events-none">
+        <span className="text-white font-black text-[9px] tracking-tight block truncate uppercase drop-shadow-sm">
+          {game.title}
+        </span>
+      </div>
+    </div>
+  );
+
+  // Swiper Component: 2-Row Stacked Columns (Screenshot 3 Match: Aviator, Fortune Gems, Aviator...)
+  // Slides smoothly with fingers on mobile touchscreens and reacts to < > buttons
+  const renderGameSwiper = (games, swiperRef) => {
+    const columns = [];
+    for (let i = 0; i < games.length; i += 2) {
+      columns.push(games.slice(i, i + 2));
+    }
+
+    return (
+      <div className="w-full overflow-hidden px-1">
+        <Swiper
+          modules={[FreeMode]}
+          className="swiper myGameSwiper"
+          slidesPerView={3.1}
+          spaceBetween={10}
+          freeMode={{
+            enabled: true,
+            momentum: true,
+            momentumRatio: 0.8,
+          }}
+          breakpoints={{
+            280: { slidesPerView: 2.1, spaceBetween: 6 },
+            320: { slidesPerView: 2.3, spaceBetween: 8 },
+            360: { slidesPerView: 2.8, spaceBetween: 10 },
+            410: { slidesPerView: 3.1, spaceBetween: 10 },
+            540: { slidesPerView: 3.6, spaceBetween: 12 },
+          }}
+          onSwiper={(swiper) => {
+            if (swiperRef) swiperRef.current = swiper;
+          }}
+        >
+          {columns.map((col, cIdx) => (
+            <SwiperSlide key={`col-${cIdx}`} className="swiper-slide !w-[105px] sm:!w-[125px] flex flex-col space-y-2">
+              {col.map((game, gIdx) => renderGameCard(game, gIdx))}
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </div>
+    );
+  };
+
+  // 3x2 Game Cards Grid (Used for Search Results fallback)
   const renderGameGrid = (games) => (
     <div className="grid grid-cols-3 gap-2 px-1">
-      {games.map((game, idx) => (
-        <div
-          key={`${game.id}-${game.title}-${idx}`}
-          onClick={() => onOpenGame(game.id)}
-          className="relative aspect-[37/50] rounded-2xl overflow-hidden cursor-pointer active:scale-95 transition group bg-gradient-to-b from-[#182046] to-[#0e1330] border border-[#2b3575]/60 shadow-md flex flex-col justify-between"
-        >
-          {/* Studio Badge Top Right */}
-          {game.provider && (
-            <div className="absolute top-1.5 right-1.5 bg-black/75 backdrop-blur-xs text-amber-300 border border-amber-400/30 text-[7.5px] font-black px-1.5 py-0.2 rounded shadow-xs z-10 uppercase tracking-wider">
-              {game.provider}
-            </div>
-          )}
-
-          {/* High-Res 3D Artwork Poster */}
-          <div className="w-full h-full flex items-center justify-center p-1 overflow-hidden">
-            <img 
-              src={game.image} 
-              alt={game.title} 
-              className="w-full h-full object-contain group-hover:scale-108 transition duration-300 drop-shadow-[0_4px_10px_rgba(0,0,0,0.6)]" 
-            />
-          </div>
-
-          {/* Bottom Title Bar */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent py-1.5 px-1 text-center">
-            <span className="text-white font-black text-[9px] tracking-tight block truncate uppercase drop-shadow-sm">
-              {game.title}
-            </span>
-          </div>
-        </div>
-      ))}
+      {games.map((game, idx) => renderGameCard(game, idx))}
     </div>
   );
 
@@ -512,28 +569,40 @@ export default function HomePage({
   return (
     <div className="space-y-3 pb-24 text-white select-none font-sans bg-[#14122E] relative">
       
-      {/* 1. Promotional High-Res Banner Carousel (Authentic APK Graphic) */}
+      {/* 1. Promotional High-Res Banner Swiper Carousel (Touch & Autoplay) */}
       <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[702/330] bg-[#14122E] border border-slate-800/80">
-        <div 
-          onClick={() => handleBannerClick(banners[activeBanner])}
-          className="w-full h-full cursor-pointer relative overflow-hidden"
+        <Swiper
+          modules={[Autoplay, Pagination]}
+          className="w-full h-full"
+          autoplay={{ delay: 3500, disableOnInteraction: false }}
+          loop={true}
+          onSwiper={(swiper) => { bannerSwiperRef.current = swiper; }}
+          onSlideChange={(swiper) => setActiveBanner(swiper.realIndex)}
         >
-          <img 
-            src={banners[activeBanner].img} 
-            alt={banners[activeBanner].title}
-            className="w-full h-full object-cover transition-opacity duration-500 animate-in fade-in"
-          />
-        </div>
+          {banners.map((b, idx) => (
+            <SwiperSlide 
+              key={idx} 
+              onClick={() => handleBannerClick(b)}
+              className="w-full h-full cursor-pointer relative overflow-hidden"
+            >
+              <img 
+                src={b.img} 
+                alt={b.title}
+                className="w-full h-full object-cover transition-opacity duration-500 animate-in fade-in"
+              />
+            </SwiperSlide>
+          ))}
+        </Swiper>
 
         {/* Carousel indicators */}
-        <div className="absolute bottom-2 left-0 right-0 flex justify-center space-x-1.5 z-20">
+        <div className="absolute bottom-2 left-0 right-0 flex justify-center space-x-1.5 z-20 pointer-events-none">
           {banners.map((_, i) => (
             <div 
               key={i} 
-              onClick={() => setActiveBanner(i)}
-              className={`h-1.5 rounded-full transition-all cursor-pointer ${
+              className={`h-1.5 rounded-full transition-all pointer-events-auto cursor-pointer ${
                 activeBanner === i ? 'w-5 bg-amber-400' : 'w-1.5 bg-white/40'
-              }`} 
+              }`}
+              onClick={() => bannerSwiperRef.current?.slideToLoop(i)}
             />
           ))}
         </div>
@@ -607,44 +676,44 @@ export default function HomePage({
           <div id="section-popular">
             {renderSectionHeader(
               'Popular',
-              () => setPopularPage(p => p - 1),
-              () => setPopularPage(p => p + 1),
+              () => popularSwiperRef.current?.slidePrev(),
+              () => popularSwiperRef.current?.slideNext(),
               () => setSelectedCategory('Popular')
             )}
-            {renderGameGrid(currentPopular.cards)}
+            {renderGameSwiper(popularGamesList, popularSwiperRef)}
           </div>
 
           {/* SECTION 2: SLOTS */}
           <div id="section-slots">
             {renderSectionHeader(
               'Slots',
-              () => setSlotsPage(p => p - 1),
-              () => setSlotsPage(p => p + 1),
+              () => slotsSwiperRef.current?.slidePrev(),
+              () => slotsSwiperRef.current?.slideNext(),
               () => setSelectedCategory('Slots')
             )}
-            {renderGameGrid(currentSlots.cards)}
+            {renderGameSwiper(slotsGamesList, slotsSwiperRef)}
           </div>
 
           {/* SECTION 3: LOTTERY */}
           <div id="section-lottery">
             {renderSectionHeader(
               'Lottery',
-              () => setLotteryPage(p => p - 1),
-              () => setLotteryPage(p => p + 1),
+              () => lotterySwiperRef.current?.slidePrev(),
+              () => lotterySwiperRef.current?.slideNext(),
               () => setSelectedCategory('Lottery')
             )}
-            {renderGameGrid(currentLottery.cards)}
+            {renderGameSwiper(lotteryGamesList, lotterySwiperRef)}
           </div>
 
           {/* SECTION 4: ORIGINAL / FLASH */}
           <div id="section-original">
             {renderSectionHeader(
               'Original',
-              () => setOriginalPage(p => p - 1),
-              () => setOriginalPage(p => p + 1),
+              () => originalSwiperRef.current?.slidePrev(),
+              () => originalSwiperRef.current?.slideNext(),
               () => setSelectedCategory('Original')
             )}
-            {renderGameGrid(currentOriginal.cards)}
+            {renderGameSwiper(originalGamesList, originalSwiperRef)}
           </div>
 
         </div>
