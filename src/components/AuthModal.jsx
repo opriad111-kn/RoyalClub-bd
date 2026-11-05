@@ -183,9 +183,9 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex justify-center overflow-y-auto">
       <div 
-        className="w-full sm:max-w-[480px] bg-[#0b102b] min-h-screen flex flex-col text-white select-none overflow-y-auto no-scrollbar shadow-2xl relative"
+        className="w-full max-w-[400px] bg-[#0b102b] min-h-screen flex flex-col text-white select-none overflow-y-auto no-scrollbar shadow-2xl relative mx-auto"
       >
-      {/* 1. Top Header Bar (Exact Screenshot 11 Match) */}
+      {/* 1. Top Header Bar (Screenshot 1 1:1 Match) */}
       <div className="bg-[#0b102b] px-4 py-3 flex items-center justify-between border-b border-slate-800/80 shrink-0">
         <button 
           onClick={onClose}
@@ -204,68 +204,69 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
           </span>
         </div>
 
-        {/* Language Pill */}
+        {/* Language Button (Screenshot 1 1:1 Match: Round Flag + White Bold Text EN) */}
         <button
           type="button"
           onClick={toggleLang}
-          className="flex items-center space-x-1 bg-[#141d40] border border-[#24356e] px-2.5 py-1 rounded-full text-xs font-bold text-slate-200 cursor-pointer active:scale-95 transition"
+          className="flex items-center space-x-1.5 text-white hover:text-amber-400 transition cursor-pointer select-none"
         >
-          <span>{lang === 'en' ? '🇺🇸 EN' : '🇧🇩 BN'}</span>
+          <span className="text-lg leading-none">{lang === 'en' ? '🇺🇸' : '🇧🇩'}</span>
+          <span className="font-bold text-sm tracking-wide text-white">{lang === 'en' ? 'EN' : 'BN'}</span>
         </button>
       </div>
 
-      {/* 2. Red-to-Blue Gradient Banner Card (Exact Screenshot 3 Match) */}
-      <div className="bg-gradient-to-r from-[#d82a35] via-[#85299b] to-[#1e5ec8] px-5 py-4 text-white relative shadow-md shrink-0">
-        <h2 className="text-xl font-black tracking-tight">
+      {/* 2. Red-to-Blue Gradient Banner Card (Screenshot 1 1:1 Match) */}
+      <div className="bg-gradient-to-r from-[#F03848] to-[#1E6DEB] px-5 py-4 text-white relative shadow-md shrink-0">
+        <h2 className="text-[22px] font-black tracking-tight text-white font-sans">
           {activeTab === 'login' ? 'Log in' : 'Register'}
         </h2>
-        <p className="text-[11px] text-white/90 leading-tight mt-1">
+        <p className="text-[12px] text-white/95 leading-normal mt-1 font-medium">
           {activeTab === 'login' 
             ? 'Please log in with your phone number or email' 
             : 'Please register by phone number or email'}
         </p>
         {activeTab === 'login' && (
-          <p className="text-[9.5px] text-yellow-200 mt-1">
+          <p className="text-[10.5px] text-white/80 leading-normal mt-1 font-normal">
             If you forget your password, please contact customer service
           </p>
         )}
       </div>
 
-      {/* 3. Phone / Email Tabs (Matching Screenshot 3) */}
+      {/* 3. Phone / Email Tabs (Screenshot 1 1:1 Match: Icon stacked on top of label) */}
       {activeTab === 'login' ? (
-        <div className="bg-[#0f1730] flex border-b border-slate-800 shrink-0">
+        <div className="bg-[#0f1730] flex border-b border-slate-800/80 shrink-0">
           <button
             type="button"
             onClick={() => setLoginMethod('phone')}
-            className={`flex-1 py-3 text-xs font-bold flex items-center justify-center space-x-1.5 relative transition cursor-pointer ${
-              loginMethod === 'phone' ? 'text-blue-400 font-black' : 'text-slate-400'
+            className={`flex-1 py-2.5 text-xs font-bold flex flex-col items-center justify-center space-y-1 relative transition cursor-pointer ${
+              loginMethod === 'phone' ? 'text-[#3882FA]' : 'text-[#6C7BA8] hover:text-slate-300'
             }`}
           >
-            <Phone className="w-4 h-4" />
-            <span>Phone Number</span>
+            <Phone className={`w-4 h-4 ${loginMethod === 'phone' ? 'text-[#3882FA]' : 'text-[#6C7BA8]'}`} />
+            <span className="tracking-wide">Phone Number</span>
             {loginMethod === 'phone' && (
-              <div className="absolute bottom-0 left-6 right-6 h-0.5 bg-blue-500 rounded-full" />
+              <div className="absolute bottom-0 left-6 right-6 h-0.5 bg-[#3882FA] rounded-full" />
             )}
           </button>
           <button
             type="button"
             onClick={() => setLoginMethod('email')}
-            className={`flex-1 py-3 text-xs font-bold flex items-center justify-center space-x-1.5 relative transition cursor-pointer ${
-              loginMethod === 'email' ? 'text-blue-400 font-black' : 'text-slate-400'
+            className={`flex-1 py-2.5 text-xs font-bold flex flex-col items-center justify-center space-y-1 relative transition cursor-pointer ${
+              loginMethod === 'email' ? 'text-[#3882FA]' : 'text-[#6C7BA8] hover:text-slate-300'
             }`}
           >
-            <Mail className="w-4 h-4" />
-            <span>Email</span>
+            <Mail className={`w-4 h-4 ${loginMethod === 'email' ? 'text-[#3882FA]' : 'text-[#6C7BA8]'}`} />
+            <span className="tracking-wide">Email</span>
             {loginMethod === 'email' && (
-              <div className="absolute bottom-0 left-6 right-6 h-0.5 bg-blue-500 rounded-full" />
+              <div className="absolute bottom-0 left-6 right-6 h-0.5 bg-[#3882FA] rounded-full" />
             )}
           </button>
         </div>
       ) : (
-        <div className="bg-[#0f1730] py-3 border-b border-slate-800 flex items-center justify-center space-x-1.5 text-xs font-black text-blue-400 relative shrink-0">
-          <Phone className="w-4 h-4" />
-          <span>Register your phone</span>
-          <div className="absolute bottom-0 left-16 right-16 h-0.5 bg-blue-500 rounded-full" />
+        <div className="bg-[#0f1730] py-2.5 border-b border-slate-800/80 flex flex-col items-center justify-center space-y-1 text-xs font-bold text-[#3882FA] relative shrink-0">
+          <Phone className="w-4 h-4 text-[#3882FA]" />
+          <span className="tracking-wide">Register your phone</span>
+          <div className="absolute bottom-0 left-16 right-16 h-0.5 bg-[#3882FA] rounded-full" />
         </div>
       )}
 
@@ -286,105 +287,117 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
           </div>
         )}
 
-        {/* LOGIN FORM */}
+        {/* LOGIN FORM (Screenshot 1 Exact 1:1 Match) */}
         {activeTab === 'login' ? (
           <form onSubmit={handleLogin} className="space-y-4">
             
             {/* Phone or Email Input */}
             {loginMethod === 'phone' ? (
-              <div>
-                <label className="text-xs font-bold text-slate-300 flex items-center space-x-1.5 mb-1.5">
-                  <Phone className="w-3.5 h-3.5 text-blue-400" />
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-white flex items-center space-x-1.5">
+                  <Phone className="w-3.5 h-3.5 text-[#3882FA]" />
                   <span>Phone number</span>
                 </label>
-                <div className="flex rounded-xl overflow-hidden border border-[#232b5e] bg-[#12183a] focus-within:border-blue-500">
-                  <div className="px-3 bg-[#161e48] flex items-center space-x-1 text-xs font-mono font-bold text-slate-200 border-r border-[#232b5e]">
+                <div className="flex items-center space-x-2">
+                  {/* Separate Country Code Box */}
+                  <div className="h-12 px-3.5 bg-[#1B244A] border border-[#2B3868] rounded-xl flex items-center space-x-1.5 text-xs font-mono font-bold text-white shrink-0 cursor-pointer shadow-xs">
                     <span>+880</span>
-                    <ChevronDown className="w-3 h-3 text-slate-400" />
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                   </div>
-                  <input 
-                    type="tel"
-                    value={loginPhone}
-                    onChange={e => setLoginPhone(e.target.value)}
-                    placeholder="Please enter the phone number"
-                    className="w-full px-3 py-3 text-xs bg-transparent text-white placeholder-slate-500 focus:outline-hidden font-mono"
-                  />
+                  {/* Separate Phone Input Box */}
+                  <div className="flex-1 h-12 bg-[#1B244A] border border-[#2B3868] focus-within:border-[#3882FA] rounded-xl flex items-center px-4 shadow-xs transition">
+                    <input 
+                      type="tel"
+                      value={loginPhone}
+                      onChange={e => setLoginPhone(e.target.value)}
+                      placeholder="Please enter the phone number"
+                      className="w-full text-xs bg-transparent text-white placeholder-[#6C7BA8] focus:outline-none font-mono"
+                    />
+                  </div>
                 </div>
               </div>
             ) : (
-              <div>
-                <label className="text-xs font-bold text-slate-300 flex items-center space-x-1.5 mb-1.5">
-                  <Mail className="w-3.5 h-3.5 text-blue-400" />
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-white flex items-center space-x-1.5">
+                  <Mail className="w-3.5 h-3.5 text-[#3882FA]" />
                   <span>Email</span>
                 </label>
-                <div className="flex rounded-xl overflow-hidden border border-[#232b5e] bg-[#12183a] focus-within:border-blue-500 px-3 py-3">
+                <div className="h-12 bg-[#1B244A] border border-[#2B3868] focus-within:border-[#3882FA] rounded-xl flex items-center px-4 shadow-xs transition">
                   <input 
                     type="email"
                     value={loginEmail}
                     onChange={e => setLoginEmail(e.target.value)}
                     placeholder="Please enter the email address"
-                    className="w-full text-xs bg-transparent text-white placeholder-slate-500 focus:outline-hidden"
+                    className="w-full text-xs bg-transparent text-white placeholder-[#6C7BA8] focus:outline-none"
                   />
                 </div>
               </div>
             )}
 
             {/* Password */}
-            <div>
-              <label className="text-xs font-bold text-slate-300 flex items-center space-x-1.5 mb-1.5">
-                <Lock className="w-3.5 h-3.5 text-blue-400" />
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-white flex items-center space-x-1.5">
+                <Lock className="w-3.5 h-3.5 text-[#3882FA]" />
                 <span>Password</span>
               </label>
-              <div className="flex items-center rounded-xl overflow-hidden border border-[#232b5e] bg-[#12183a] focus-within:border-blue-500 px-3 py-2.5">
+              <div className="h-12 bg-[#1B244A] border border-[#2B3868] focus-within:border-[#3882FA] rounded-xl flex items-center justify-between px-4 shadow-xs transition">
                 <input 
                   type={showLoginPassword ? 'text' : 'password'}
                   value={loginPassword}
                   onChange={e => setLoginPassword(e.target.value)}
                   placeholder="Password"
-                  className="w-full text-xs bg-transparent text-white placeholder-slate-500 focus:outline-hidden"
+                  className="w-full text-xs bg-transparent text-white placeholder-[#6C7BA8] focus:outline-none"
                 />
                 <button 
                   type="button" 
                   onClick={() => setShowLoginPassword(!showLoginPassword)}
-                  className="text-slate-400 hover:text-white p-1"
+                  className="text-[#7584B0] hover:text-white p-1 cursor-pointer transition shrink-0"
                 >
-                  {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showLoginPassword ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
-            {/* Remember & Forgot Password */}
-            <div className="flex items-center justify-between text-xs pt-1">
-              <label className="flex items-center space-x-2 cursor-pointer text-slate-300">
-                <input 
-                  type="checkbox"
-                  checked={rememberPassword}
-                  onChange={e => setRememberPassword(e.target.checked)}
-                  className="w-4 h-4 rounded accent-blue-600 bg-slate-900 border-slate-700"
-                />
-                <span>Remember password</span>
+            {/* Remember & Forgot Password (Screenshot 1 Match: Circular Checkbox) */}
+            <div className="flex items-center justify-between text-xs pt-1 select-none">
+              <label 
+                onClick={() => setRememberPassword(!rememberPassword)}
+                className="flex items-center space-x-2 cursor-pointer text-slate-300"
+              >
+                <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition ${
+                  rememberPassword 
+                    ? 'border-[#3882FA] bg-[#3882FA]' 
+                    : 'border-[#4B5880] bg-transparent'
+                }`}>
+                  {rememberPassword && (
+                    <svg className="w-2.5 h-2.5 text-white stroke-[3] fill-none" viewBox="0 0 24 24" stroke="currentColor">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </div>
+                <span className="text-xs text-slate-200">Remember password</span>
               </label>
               <button 
                 type="button" 
                 onClick={() => window.open('https://t.me/ROYALCLUB_Support', '_blank')}
-                className="text-blue-400 hover:underline cursor-pointer"
+                className="text-[#3882FA] hover:underline cursor-pointer font-medium text-xs"
               >
                 Forgot password?
               </button>
             </div>
 
-            {/* Red-to-Blue Gradient Log In Button */}
+            {/* Red-to-Blue Gradient Log In Button (Screenshot 1 Exact Match) */}
             <div className="pt-2">
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3.5 rounded-full bg-gradient-to-r from-[#e73945] via-[#85299b] to-[#2563eb] hover:brightness-110 text-white font-black text-sm shadow-xl transition active:scale-98 cursor-pointer disabled:opacity-50 uppercase tracking-wide"
+                className="w-full h-12 rounded-full bg-gradient-to-r from-[#F03848] to-[#1E6DEB] hover:brightness-110 active:scale-[0.98] text-white font-bold text-base shadow-lg shadow-blue-950/50 transition cursor-pointer disabled:opacity-50 tracking-wide flex items-center justify-center font-sans"
               >
                 {isLoading ? 'Logging in...' : 'Log in'}
               </button>
             </div>
 
-            {/* Outline Register Button */}
+            {/* Outline Register Button (Screenshot 1 Exact Match) */}
             <div className="pt-1">
               <button
                 type="button"
@@ -393,7 +406,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                   setErrorMsg('');
                   setSuccessMsg('');
                 }}
-                className="w-full py-3 rounded-full border border-[#2b3a72] text-slate-200 hover:border-blue-500 font-bold text-xs shadow-sm transition active:scale-98 cursor-pointer text-center"
+                className="w-full h-12 rounded-full border border-[#285BB8] bg-transparent hover:bg-[#285BB8]/10 text-white font-bold text-sm tracking-wide shadow-sm transition active:scale-[0.98] cursor-pointer text-center flex items-center justify-center font-sans"
               >
                 Register
               </button>
@@ -401,122 +414,132 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
           </form>
         ) : (
-          /* REGISTER FORM (Exact Screenshot 3 Match) */
+          /* REGISTER FORM (Screenshot 1 Styling Match) */
           <form onSubmit={handleRegister} className="space-y-3.5">
             
             {/* Phone Number Field */}
-            <div>
-              <label className="text-xs font-bold text-slate-300 flex items-center space-x-1.5 mb-1.5">
-                <Phone className="w-3.5 h-3.5 text-blue-400" />
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-white flex items-center space-x-1.5">
+                <Phone className="w-3.5 h-3.5 text-[#3882FA]" />
                 <span>Phone number</span>
               </label>
-              <div className="flex rounded-xl overflow-hidden border border-[#232b5e] bg-[#12183a] focus-within:border-blue-500">
-                <div className="px-3 bg-[#161e48] flex items-center space-x-1 text-xs font-mono font-bold text-slate-200 border-r border-[#232b5e]">
+              <div className="flex items-center space-x-2">
+                <div className="h-12 px-3.5 bg-[#1B244A] border border-[#2B3868] rounded-xl flex items-center space-x-1.5 text-xs font-mono font-bold text-white shrink-0 cursor-pointer shadow-xs">
                   <span>+880</span>
-                  <ChevronDown className="w-3 h-3 text-slate-400" />
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                 </div>
-                <input 
-                  type="tel"
-                  value={regPhone}
-                  onChange={e => setRegPhone(e.target.value)}
-                  placeholder="Please enter the phone number"
-                  className="w-full px-3 py-3 text-xs bg-transparent text-white placeholder-slate-500 focus:outline-hidden font-mono"
-                />
+                <div className="flex-1 h-12 bg-[#1B244A] border border-[#2B3868] focus-within:border-[#3882FA] rounded-xl flex items-center px-4 shadow-xs transition">
+                  <input 
+                    type="tel"
+                    value={regPhone}
+                    onChange={e => setRegPhone(e.target.value)}
+                    placeholder="Please enter the phone number"
+                    className="w-full text-xs bg-transparent text-white placeholder-[#6C7BA8] focus:outline-none font-mono"
+                  />
+                </div>
               </div>
             </div>
 
             {/* Set Password Field */}
-            <div>
-              <label className="text-xs font-bold text-slate-300 flex items-center space-x-1.5 mb-1.5">
-                <Lock className="w-3.5 h-3.5 text-blue-400" />
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-white flex items-center space-x-1.5">
+                <Lock className="w-3.5 h-3.5 text-[#3882FA]" />
                 <span>Set password</span>
               </label>
-              <div className="flex items-center rounded-xl overflow-hidden border border-[#232b5e] bg-[#12183a] focus-within:border-blue-500 px-3 py-2.5">
+              <div className="h-12 bg-[#1B244A] border border-[#2B3868] focus-within:border-[#3882FA] rounded-xl flex items-center justify-between px-4 shadow-xs transition">
                 <input 
                   type={showRegPassword ? 'text' : 'password'}
                   value={regPassword}
                   onChange={e => setRegPassword(e.target.value)}
                   placeholder="Set password"
-                  className="w-full text-xs bg-transparent text-white placeholder-slate-500 focus:outline-hidden"
+                  className="w-full text-xs bg-transparent text-white placeholder-[#6C7BA8] focus:outline-none"
                 />
                 <button 
                   type="button" 
                   onClick={() => setShowRegPassword(!showRegPassword)}
-                  className="text-slate-400 hover:text-white p-1 cursor-pointer"
+                  className="text-[#7584B0] hover:text-white p-1 cursor-pointer transition shrink-0"
                 >
-                  {showRegPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showRegPassword ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
             {/* Confirm Password Field */}
-            <div>
-              <label className="text-xs font-bold text-slate-300 flex items-center space-x-1.5 mb-1.5">
-                <Lock className="w-3.5 h-3.5 text-blue-400" />
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-white flex items-center space-x-1.5">
+                <Lock className="w-3.5 h-3.5 text-[#3882FA]" />
                 <span>Confirm password</span>
               </label>
-              <div className="flex items-center rounded-xl overflow-hidden border border-[#232b5e] bg-[#12183a] focus-within:border-blue-500 px-3 py-2.5">
+              <div className="h-12 bg-[#1B244A] border border-[#2B3868] focus-within:border-[#3882FA] rounded-xl flex items-center justify-between px-4 shadow-xs transition">
                 <input 
                   type={showRegConfirmPassword ? 'text' : 'password'}
                   value={regConfirmPassword}
                   onChange={e => setRegConfirmPassword(e.target.value)}
                   placeholder="Confirm password"
-                  className="w-full text-xs bg-transparent text-white placeholder-slate-500 focus:outline-hidden"
+                  className="w-full text-xs bg-transparent text-white placeholder-[#6C7BA8] focus:outline-none"
                 />
                 <button 
                   type="button" 
                   onClick={() => setShowRegConfirmPassword(!showRegConfirmPassword)}
-                  className="text-slate-400 hover:text-white p-1 cursor-pointer"
+                  className="text-[#7584B0] hover:text-white p-1 cursor-pointer transition shrink-0"
                 >
-                  {showRegConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showRegConfirmPassword ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
-            {/* Invite Code Field (Screenshot 3 Match) */}
-            <div>
-              <label className="text-xs font-bold text-slate-300 flex items-center space-x-1.5 mb-1.5">
-                <User className="w-3.5 h-3.5 text-blue-400" />
+            {/* Invite Code Field */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-white flex items-center space-x-1.5">
+                <User className="w-3.5 h-3.5 text-[#3882FA]" />
                 <span>Invite code</span>
               </label>
-              <div className="flex rounded-xl overflow-hidden border border-[#232b5e] bg-[#12183a] focus-within:border-blue-500 px-3 py-3">
+              <div className="h-12 bg-[#1B244A] border border-[#2B3868] focus-within:border-[#3882FA] rounded-xl flex items-center px-4 shadow-xs transition">
                 <input 
                   type="text"
                   value={regInviteCode}
                   onChange={e => setRegInviteCode(e.target.value)}
                   placeholder="Invite code"
-                  className="w-full text-xs bg-transparent text-white placeholder-slate-500 focus:outline-hidden font-mono"
+                  className="w-full text-xs bg-transparent text-white placeholder-[#6C7BA8] focus:outline-none font-mono"
                 />
               </div>
             </div>
 
-            {/* Privacy Agreement Checkbox (Screenshot 3 Match) */}
-            <div className="pt-1">
-              <label className="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer">
-                <input 
-                  type="checkbox"
-                  checked={agreedTerms}
-                  onChange={e => setAgreedTerms(e.target.checked)}
-                  className="w-4 h-4 rounded accent-blue-600 bg-slate-900 border-slate-700 cursor-pointer"
-                />
+            {/* Privacy Agreement Checkbox */}
+            <div className="pt-1 select-none">
+              <label 
+                onClick={() => setAgreedTerms(!agreedTerms)}
+                className="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer"
+              >
+                <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition shrink-0 ${
+                  agreedTerms 
+                    ? 'border-[#3882FA] bg-[#3882FA]' 
+                    : 'border-[#4B5880] bg-transparent'
+                }`}>
+                  {agreedTerms && (
+                    <svg className="w-2.5 h-2.5 text-white stroke-[3] fill-none" viewBox="0 0 24 24" stroke="currentColor">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </div>
                 <span>
                   I have read and agree <span className="text-red-500 font-bold">[Privacy Agreement]</span>
                 </span>
               </label>
             </div>
 
-            {/* Red-to-Blue Gradient Register Button (Screenshot 3 Match) */}
+            {/* Red-to-Blue Gradient Register Button */}
             <div className="pt-2">
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3.5 rounded-full bg-gradient-to-r from-[#e73945] via-[#85299b] to-[#2563eb] hover:brightness-110 text-white font-black text-sm shadow-xl transition active:scale-98 cursor-pointer disabled:opacity-50 tracking-wide"
+                className="w-full h-12 rounded-full bg-gradient-to-r from-[#F03848] to-[#1E6DEB] hover:brightness-110 active:scale-[0.98] text-white font-bold text-base shadow-lg shadow-blue-950/50 transition cursor-pointer disabled:opacity-50 tracking-wide flex items-center justify-center font-sans"
               >
                 {isLoading ? 'Registering...' : 'Register'}
               </button>
             </div>
 
-            {/* Outline Button: I have an account Login (Screenshot 3 Match) */}
+            {/* Outline Button: I have an account Login */}
             <div className="pt-1">
               <button
                 type="button"
@@ -525,9 +548,9 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                   setErrorMsg('');
                   setSuccessMsg('');
                 }}
-                className="w-full py-3 rounded-full border border-[#2b3a72] text-slate-300 hover:border-blue-500 font-bold text-xs shadow-sm transition active:scale-98 cursor-pointer text-center"
+                className="w-full h-12 rounded-full border border-[#285BB8] bg-transparent hover:bg-[#285BB8]/10 text-white font-bold text-sm shadow-sm transition active:scale-[0.98] cursor-pointer text-center flex items-center justify-center font-sans"
               >
-                I have an account <span className="text-blue-400 font-black">Login</span>
+                I have an account <span className="text-[#3882FA] font-black ml-1.5">Login</span>
               </button>
             </div>
 
@@ -536,10 +559,10 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
       </div>
 
-      {/* Floating Customer Service Bot (APK Screenshot 11 Match) */}
+      {/* Floating Customer Service Bot (APK Screenshot 1 Match) */}
       <div 
         onClick={() => window.open('https://t.me/ROYALCLUB_Support', '_blank')}
-        className="fixed bottom-6 right-5 sm:right-[max(1.25rem,calc(50%-240px+1.25rem))] z-[70] cursor-pointer active:scale-95 transition drop-shadow-2xl"
+        className="fixed bottom-6 right-5 sm:right-[max(1.25rem,calc(50%-200px+1.25rem))] z-[70] cursor-pointer active:scale-95 transition drop-shadow-2xl"
         title="Live Customer Service"
       >
         <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-cyan-400 p-0.5 shadow-lg shadow-blue-500/40">
