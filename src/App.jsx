@@ -365,8 +365,8 @@ function AppContent() {
       {/* Official Injected KhelV Vector SVG Sprite */}
       <KhelvSvgSprite />
 
-      {/* Main Container: Full width on mobile, responsive max-480px shell on tablet/desktop */}
-      <div className={`w-full ${activeTab === 'admin' ? 'max-w-full bg-[#0d1117]' : 'sm:max-w-[480px] bg-[#14122E] text-white sm:border-x sm:border-[#30358B]/50 sm:shadow-2xl'} min-h-screen flex flex-col justify-between relative transition-all duration-200`}>
+      {/* Main Container: Full width on mobile, responsive max-420px shell on tablet/desktop */}
+      <div className={`w-full ${activeTab === 'admin' ? 'max-w-full bg-[#0d1117]' : 'sm:max-w-[420px] bg-[#14122E] text-white sm:border-x sm:border-[#30358B]/50 sm:shadow-2xl'} min-h-screen flex flex-col justify-between relative transition-all duration-200 mx-auto`}>
         
         {/* Sticky Top Header (Hidden in Game, WinGo, Account, Activity, Deposit, Withdraw, Admin) */}
         {!activeGame && activeTab !== 'admin' && activeTab !== 'wingo' && activeTab !== 'account' && activeTab !== 'activity' && activeTab !== 'deposit' && activeTab !== 'withdraw' && (

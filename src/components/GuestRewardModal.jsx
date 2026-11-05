@@ -15,7 +15,7 @@ export default function GuestRewardModal({ isOpen, onClose, onOpenLogin }) {
       onClick={onClose}
     >
       <div 
-        className="w-full sm:max-w-[480px] bg-gradient-to-b from-[#182654] via-[#121c3f] to-[#0c142c] border-t border-[#2d4b94]/70 sm:border-x rounded-t-[32px] px-5 sm:px-6 pt-[82px] pb-7 text-center shadow-[0_-15px_50px_rgba(0,0,0,0.85)] relative overflow-visible space-y-3.5 animate-in slide-in-from-bottom duration-300"
+        className="w-full sm:max-w-[420px] bg-gradient-to-b from-[#182654] via-[#121c3f] to-[#0c142c] border-t border-[#2d4b94]/70 sm:border-x rounded-t-[32px] px-5 sm:px-6 pt-[82px] pb-7 text-center shadow-[0_-15px_50px_rgba(0,0,0,0.85)] relative overflow-visible space-y-3.5 animate-in slide-in-from-bottom duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Floating 3D Gift Box with Glowing Halo Ring & Emoji Elements (Matching Screenshot 3 1:1) */}

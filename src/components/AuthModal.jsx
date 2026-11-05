@@ -16,11 +16,58 @@ import {
   Crown
 } from 'lucide-react';
 
+// Exact Khelv Vector Circular Flags (Zero OS emoji font fallback)
+export function CircularFlag({ country = 'US', className = 'w-5 h-5' }) {
+  const isEn = country === 'US' || country === 'en' || country === 'EN';
+  if (isEn) {
+    return (
+      <svg className={`${className} shrink-0 rounded-full shadow-xs`} viewBox="0 0 24 24">
+        <defs>
+          <clipPath id="circle-flag-us">
+            <circle cx="12" cy="12" r="12" />
+          </clipPath>
+        </defs>
+        <g clipPath="url(#circle-flag-us)">
+          <rect width="24" height="24" fill="#B22234" />
+          <path d="M0 1.85h24M0 5.54h24M0 9.23h24M0 12.92h24M0 16.61h24M0 20.3h24" stroke="#FFFFFF" strokeWidth="1.85" />
+          <rect width="11" height="11.1" fill="#1C3578" />
+          <circle cx="2.2" cy="2.2" r="0.7" fill="#FFFFFF" />
+          <circle cx="5.5" cy="2.2" r="0.7" fill="#FFFFFF" />
+          <circle cx="8.8" cy="2.2" r="0.7" fill="#FFFFFF" />
+          <circle cx="3.8" cy="4.5" r="0.7" fill="#FFFFFF" />
+          <circle cx="7.2" cy="4.5" r="0.7" fill="#FFFFFF" />
+          <circle cx="2.2" cy="6.8" r="0.7" fill="#FFFFFF" />
+          <circle cx="5.5" cy="6.8" r="0.7" fill="#FFFFFF" />
+          <circle cx="8.8" cy="6.8" r="0.7" fill="#FFFFFF" />
+          <circle cx="3.8" cy="9.1" r="0.7" fill="#FFFFFF" />
+          <circle cx="7.2" cy="9.1" r="0.7" fill="#FFFFFF" />
+        </g>
+      </svg>
+    );
+  }
+
+  // BD Flag (Bangladesh)
+  return (
+    <svg className={`${className} shrink-0 rounded-full shadow-xs`} viewBox="0 0 24 24">
+      <defs>
+        <clipPath id="circle-flag-bd">
+          <circle cx="12" cy="12" r="12" />
+        </clipPath>
+      </defs>
+      <g clipPath="url(#circle-flag-bd)">
+        <rect width="24" height="24" fill="#006A4E" />
+        <circle cx="10.8" cy="12" r="6.2" fill="#F42A41" />
+      </g>
+    </svg>
+  );
+}
+
 export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
   if (!isOpen) return null;
 
   const { login, registerUser } = useGame();
-  const { lang, toggleLang, t } = useLanguage();
+  const { lang, setLang, toggleLang, t } = useLanguage();
+  const [isLangSheetOpen, setIsLangSheetOpen] = useState(false);
   
   // Tab: 'login' | 'register'
   const [activeTab, setActiveTab] = useState(() => {
@@ -187,9 +234,9 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex justify-center overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-[#070b19] flex justify-center items-start overflow-y-auto no-scrollbar">
       <div 
-        className="w-full max-w-[400px] bg-[#0b102b] min-h-screen flex flex-col text-white select-none overflow-y-auto no-scrollbar shadow-2xl relative mx-auto"
+        className="w-full sm:max-w-[420px] bg-[#0b102b] min-h-screen flex flex-col text-white select-none overflow-x-hidden shadow-2xl relative mx-auto"
       >
       {/* 1. Top Header Bar (Screenshot 1 1:1 Match) */}
       <div className="bg-[#0b102b] px-4 py-3 flex items-center justify-between border-b border-slate-800/80 shrink-0">
@@ -210,14 +257,14 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
           </span>
         </div>
 
-        {/* Language Button (Screenshot 1 1:1 Match: Round Flag + White Bold Text EN) */}
+        {/* Language Button (Exact Khelv Vector Circular Flag + Bold White Text) */}
         <button
           type="button"
-          onClick={toggleLang}
-          className="flex items-center space-x-1.5 text-white hover:text-amber-400 transition cursor-pointer select-none"
+          onClick={() => setIsLangSheetOpen(true)}
+          className="flex items-center space-x-1.5 text-white hover:text-amber-400 transition cursor-pointer select-none active:scale-95"
         >
-          <span className="text-lg leading-none">{lang === 'en' ? '🇺🇸' : '🇧🇩'}</span>
-          <span className="font-bold text-sm tracking-wide text-white">{lang === 'en' ? 'EN' : 'BN'}</span>
+          <CircularFlag country={lang === 'en' ? 'US' : 'BD'} className="w-5 h-5" />
+          <span className="font-bold text-sm tracking-wide text-white uppercase font-sans">{lang === 'en' ? 'EN' : 'BN'}</span>
         </button>
       </div>
 
@@ -568,7 +615,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
       {/* Floating Customer Service Bot (APK Screenshot 1 Match) */}
       <div 
         onClick={() => window.open('https://t.me/ROYALCLUB_Support', '_blank')}
-        className="fixed bottom-6 right-5 sm:right-[max(1.25rem,calc(50%-200px+1.25rem))] z-[70] cursor-pointer active:scale-95 transition drop-shadow-2xl"
+        className="fixed bottom-6 right-5 sm:right-[max(1.25rem,calc(50%-210px+1.25rem))] z-[70] cursor-pointer active:scale-95 transition drop-shadow-2xl"
         title="Live Customer Service"
       >
         <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-cyan-400 p-0.5 shadow-lg shadow-blue-500/40">
@@ -628,6 +675,65 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                 className="filter drop-shadow-[0_0_8px_#FF5722]"
               />
             </svg>
+          </div>
+        </div>
+      )}
+
+      {/* 6. Language Bottom Sheet Drawer (Screenshot 4 & 5 1:1 Match) */}
+      {isLangSheetOpen && (
+        <div 
+          className="fixed inset-0 z-[120] bg-black/65 flex flex-col justify-end animate-in fade-in duration-150"
+          onClick={() => setIsLangSheetOpen(false)}
+        >
+          <div 
+            className="w-full sm:max-w-[420px] mx-auto bg-[#141C3B] rounded-t-2xl p-4 shadow-2xl border-t border-[#253260] space-y-1 animate-in slide-in-from-bottom duration-200 select-none"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* US EN Option */}
+            <div 
+              onClick={() => {
+                setLang('en');
+                setIsLangSheetOpen(false);
+              }}
+              className="flex items-center justify-between py-3.5 px-3 rounded-xl hover:bg-white/5 active:bg-white/10 transition cursor-pointer"
+            >
+              <div className="flex items-center space-x-3.5">
+                <CircularFlag country="US" className="w-6 h-6" />
+                <span className="font-bold text-sm text-white font-sans tracking-wide">EN</span>
+              </div>
+              {lang === 'en' ? (
+                <div className="w-5 h-5 rounded-full bg-[#2B7BFB] flex items-center justify-center text-white shadow-xs">
+                  <svg className="w-3 h-3 stroke-[3]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+              ) : (
+                <div className="w-5 h-5 rounded-full border border-slate-600 bg-transparent" />
+              )}
+            </div>
+
+            {/* BD BN Option */}
+            <div 
+              onClick={() => {
+                setLang('bn');
+                setIsLangSheetOpen(false);
+              }}
+              className="flex items-center justify-between py-3.5 px-3 rounded-xl hover:bg-white/5 active:bg-white/10 transition cursor-pointer"
+            >
+              <div className="flex items-center space-x-3.5">
+                <CircularFlag country="BD" className="w-6 h-6" />
+                <span className="font-bold text-sm text-white font-sans tracking-wide">BN</span>
+              </div>
+              {lang === 'bn' ? (
+                <div className="w-5 h-5 rounded-full bg-[#2B7BFB] flex items-center justify-center text-white shadow-xs">
+                  <svg className="w-3 h-3 stroke-[3]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+              ) : (
+                <div className="w-5 h-5 rounded-full border border-slate-600 bg-transparent" />
+              )}
+            </div>
           </div>
         </div>
       )}

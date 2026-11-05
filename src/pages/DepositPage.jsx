@@ -282,7 +282,7 @@ export default function DepositPage({ onBack, onOpenAuth }) {
 
     return (
       <div className="w-full min-h-screen bg-[#14122E] text-white font-sans select-none pb-16">
-        <div className="w-full sm:max-w-[480px] mx-auto min-h-screen flex flex-col bg-[#14122E] shadow-2xl relative">
+        <div className="w-full sm:max-w-[420px] mx-auto min-h-screen flex flex-col bg-[#14122E] shadow-2xl relative">
         {/* Gateway Top Green Bar (Screenshot 5) */}
         <div className="bg-[#0D5B3A] border-b border-[#1A774F] px-4 py-3 flex items-center justify-between shadow-lg">
           <div>
@@ -482,7 +482,7 @@ export default function DepositPage({ onBack, onOpenAuth }) {
   if (currentView === 'history') {
     return (
       <div className="w-full min-h-screen bg-[#14122E] text-white font-sans select-none pb-20">
-        <div className="w-full sm:max-w-[480px] mx-auto min-h-screen flex flex-col bg-[#14122E] shadow-2xl relative">
+        <div className="w-full sm:max-w-[420px] mx-auto min-h-screen flex flex-col bg-[#14122E] shadow-2xl relative">
         {/* Header: < Deposit history */}
         <div className="sticky top-0 z-30 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center justify-between shadow-md">
           <button 
