@@ -31,10 +31,10 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenDeposit, on
               {lang === 'bn' ? 'লগইন' : 'Log in'}
             </button>
 
-            {/* Register Button: 1:1 Exact Khelv Replica (Refined Crimson Red, NOT Bright Neon) */}
+            {/* Register Button: 1:1 Exact Khelv Replica (Signature Coral Red to Royal Blue Gradient) */}
             <button
               onClick={() => onOpenAuth('register')}
-              className="h-8 min-w-[76px] px-4 rounded-full bg-gradient-to-r from-[#BA2B3E] to-[#9E2032] hover:brightness-110 text-white font-medium text-xs tracking-wide flex items-center justify-center transition active:scale-95 cursor-pointer shadow-xs whitespace-nowrap font-sans"
+              className="h-8 min-w-[76px] px-4 rounded-full bg-gradient-to-r from-[#F03848] to-[#1E6DEB] hover:brightness-110 text-white font-bold text-xs tracking-wide flex items-center justify-center transition active:scale-95 cursor-pointer shadow-md shadow-blue-950/40 whitespace-nowrap font-sans"
             >
               {lang === 'bn' ? 'রেজিস্টার' : 'Register'}
             </button>

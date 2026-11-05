@@ -175,8 +175,12 @@ export default function VipModal({ isOpen, onClose }) {
     }
 
     setIsClaiming(true);
-    // Optimistically lock button immediately to prevent double-clicking
-    setLocalClaimed(prev => Array.from(new Set([...prev, selectedVipLevel])));
+    // Optimistically lock button and persist to localStorage immediately to prevent duplicate claims
+    const updatedClaimed = Array.from(new Set([...localClaimed, selectedVipLevel]));
+    setLocalClaimed(updatedClaimed);
+    try {
+      localStorage.setItem(userClaimKey, JSON.stringify(updatedClaimed));
+    } catch (e) {}
 
     if (typeof claimVipLevelReward === 'function') {
       const res = await claimVipLevelReward(selectedVipLevel);

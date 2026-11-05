@@ -294,9 +294,9 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#161e31] flex justify-center items-start overflow-y-auto no-scrollbar">
+    <div className="fixed inset-0 z-50 bg-[#0b102b] sm:bg-[#80899c] flex justify-center items-start overflow-y-auto no-scrollbar">
       <div 
-        className="w-full sm:max-w-[420px] bg-[#0b102b] min-h-screen flex flex-col text-white select-none overflow-x-hidden shadow-2xl relative mx-auto"
+        className="w-full sm:max-w-[420px] bg-[#0b102b] min-h-screen flex flex-col text-white select-none overflow-x-hidden shadow-2xl relative mx-auto border-x border-[#1a2542]/40"
       >
       {/* 1. Top Header Bar (Screenshot 1 1:1 Match) */}
       <div className="bg-[#0b102b] px-4 py-3 flex items-center justify-between border-b border-slate-800/80 shrink-0">
@@ -310,11 +310,12 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
         {/* Center 3D Casino Logo (KhelV Replica Quality) */}
         <RoyalClubLogo variant="modal" />
 
-        {/* Language Button (Exact Khelv Vector Circular Flag + Bold White Text) */}
+        {/* Language Button (Instant One-Click Toggle + Exact Khelv Vector Circular Flag) */}
         <button
           type="button"
-          onClick={() => setIsLangSheetOpen(true)}
-          className="flex items-center space-x-1.5 text-white hover:text-amber-400 transition cursor-pointer select-none active:scale-95"
+          onClick={() => toggleLang()}
+          className="flex items-center space-x-1.5 text-white hover:text-amber-400 transition cursor-pointer select-none active:scale-95 px-1 py-0.5"
+          title="Change language / ভাষা পরিবর্তন করুন"
         >
           <CircularFlag country={lang === 'en' ? 'US' : 'BD'} className="w-5 h-5" />
           <span className="font-bold text-sm tracking-wide text-white uppercase font-sans">{lang === 'en' ? 'EN' : 'BN'}</span>
@@ -509,9 +510,9 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-[48px] rounded-full bg-gradient-to-r from-[#F03541] to-[#2268E6] hover:brightness-110 active:scale-[0.98] text-white font-bold text-[15px] tracking-wide shadow-lg shadow-blue-950/50 transition cursor-pointer disabled:opacity-50 flex items-center justify-center font-sans"
+                className="w-full h-[46px] rounded-full bg-gradient-to-r from-[#F03541] to-[#2268E6] hover:brightness-110 active:scale-[0.98] text-white font-bold text-[15px] tracking-wide shadow-lg shadow-blue-950/50 transition cursor-pointer disabled:opacity-50 flex items-center justify-center font-sans"
               >
-                {lang === 'bn' ? 'লগইন করুন' : 'Log in'}
+                {lang === 'bn' ? 'লগইন' : 'Log in'}
               </button>
             </div>
 
@@ -524,7 +525,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                   setErrorMsg('');
                   setSuccessMsg('');
                 }}
-                className="w-full h-[48px] rounded-full border border-[#204CA3] bg-transparent hover:bg-white/[0.03] text-white font-medium text-[13.5px] tracking-wide shadow-sm transition active:scale-[0.98] cursor-pointer text-center flex items-center justify-center font-sans"
+                className="w-full h-[46px] rounded-full border border-[#204CA3] bg-[#0e1634] hover:bg-[#141f47] text-white font-bold text-[14px] tracking-wide shadow-sm transition active:scale-[0.98] cursor-pointer text-center flex items-center justify-center font-sans"
               >
                 {lang === 'bn' ? 'রেজিস্টার' : 'Register'}
               </button>
@@ -654,9 +655,9 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-[48px] rounded-full bg-gradient-to-r from-[#F03541] to-[#2268E6] hover:brightness-110 active:scale-[0.98] text-white font-bold text-[15px] tracking-wide shadow-lg shadow-blue-950/50 transition cursor-pointer disabled:opacity-50 tracking-wide flex items-center justify-center font-sans"
+                className="w-full h-[46px] rounded-full bg-gradient-to-r from-[#F03541] to-[#2268E6] hover:brightness-110 active:scale-[0.98] text-white font-bold text-[15px] tracking-wide shadow-lg shadow-blue-950/50 transition cursor-pointer disabled:opacity-50 tracking-wide flex items-center justify-center font-sans"
               >
-                {lang === 'bn' ? 'রেজিস্ট্রেশন সম্পন্ন করুন' : 'Register'}
+                {lang === 'bn' ? 'রেজিস্টার' : 'Register'}
               </button>
             </div>
 
@@ -669,10 +670,10 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                   setErrorMsg('');
                   setSuccessMsg('');
                 }}
-                className="w-full h-[48px] rounded-full border border-[#204CA3] bg-transparent hover:bg-white/[0.03] text-white font-medium text-[13.5px] tracking-wide shadow-sm transition active:scale-[0.98] cursor-pointer text-center flex items-center justify-center font-sans"
+                className="w-full h-[46px] rounded-full border border-[#204CA3] bg-[#0e1634] hover:bg-[#141f47] text-white font-bold text-[14px] tracking-wide shadow-sm transition active:scale-[0.98] cursor-pointer text-center flex items-center justify-center font-sans"
               >
                 {lang === 'bn' ? 'আমার একাউন্ট আছে ' : 'I have an account '}
-                <span className="text-[#2268E6] font-bold ml-1.5">{lang === 'bn' ? 'লগইন' : 'Login'}</span>
+                <span className="text-[#3882FA] font-bold ml-1.5">{lang === 'bn' ? 'লগইন' : 'Login'}</span>
               </button>
             </div>
 
