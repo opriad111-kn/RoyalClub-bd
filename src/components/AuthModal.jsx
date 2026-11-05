@@ -87,12 +87,46 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
     }
   }, [initialTab, isOpen]);
 
-  // Login form state
-  const [loginPhone, setLoginPhone] = useState('');
+  // Login form state with Remember Password Persistence
+  const [rememberPassword, setRememberPassword] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('royalclub_remember_me');
+      return saved !== null ? saved === 'true' : true;
+    }
+    return true;
+  });
+
+  const [loginPhone, setLoginPhone] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedPhone = localStorage.getItem('royalclub_remembered_phone') || localStorage.getItem('royalclub_remember_user');
+      return savedPhone || '';
+    }
+    return '';
+  });
   const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [rememberPassword, setRememberPassword] = useState(true);
+  const [loginPassword, setLoginPassword] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedPass = localStorage.getItem('royalclub_remembered_password');
+      return savedPass || '';
+    }
+    return '';
+  });
   const [showLoginPassword, setShowLoginPassword] = useState(false);
+
+  // Restore remembered credentials whenever AuthModal opens
+  useEffect(() => {
+    if (isOpen && typeof window !== 'undefined') {
+      const savedRemember = localStorage.getItem('royalclub_remember_me');
+      const isRemembered = savedRemember !== null ? savedRemember === 'true' : true;
+      setRememberPassword(isRemembered);
+      if (isRemembered) {
+        const savedPhone = localStorage.getItem('royalclub_remembered_phone') || localStorage.getItem('royalclub_remember_user');
+        const savedPass = localStorage.getItem('royalclub_remembered_password');
+        if (savedPhone) setLoginPhone(savedPhone);
+        if (savedPass) setLoginPassword(savedPass);
+      }
+    }
+  }, [isOpen]);
 
   // Register form state
   const [countryCode, setCountryCode] = useState('+880');
@@ -162,7 +196,23 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
       setIsLoading(false);
       if (res && res.success) {
-        setSuccessMsg('লগইন সফল হয়েছে! স্বাগতম।');
+        setSuccessMsg(lang === 'bn' ? 'লগইন সফল হয়েছে! স্বাগতম।' : 'Login successful! Welcome.');
+        
+        // Exact User Request: Remember Number and Password Persistence
+        if (typeof window !== 'undefined') {
+          if (rememberPassword) {
+            localStorage.setItem('royalclub_remember_me', 'true');
+            localStorage.setItem('royalclub_remembered_phone', identifier);
+            localStorage.setItem('royalclub_remembered_password', loginPassword);
+            localStorage.setItem('royalclub_remember_user', cleanPhone || identifier);
+          } else {
+            localStorage.setItem('royalclub_remember_me', 'false');
+            localStorage.removeItem('royalclub_remembered_phone');
+            localStorage.removeItem('royalclub_remembered_password');
+            localStorage.removeItem('royalclub_remember_user');
+          }
+        }
+
         try {
           sessionStorage.setItem('royalclub_promo_login_shown', 'true');
         } catch (e) {}
@@ -172,7 +222,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
           window.dispatchEvent(new CustomEvent('royalclub_open_promo', { detail: { type: 'first-deposit' } }));
         }, 800);
       } else {
-        setErrorMsg(res?.message || 'ভুল ফোন নম্বর বা পাসওয়ার্ড!');
+        setErrorMsg(res?.message || (lang === 'bn' ? 'ভুল ফোন নম্বর বা পাসওয়ার্ড!' : 'Invalid phone number or password!'));
       }
     } catch (err) {
       console.error('Login error detail:', err);
@@ -220,7 +270,16 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
       setIsLoading(false);
       if (res.success) {
-        setSuccessMsg(`রেজিস্ট্রেশন সফল! স্বাগতম বোনাস ৳${res.bonus || 100} আপনার ওয়ালেটে যোগ হয়েছে।`);
+        setSuccessMsg(lang === 'bn' ? `রেজিস্ট্রেশন সফল! স্বাগতম বোনাস ৳${res.bonus || 100} আপনার ওয়ালেটে যোগ হয়েছে।` : `Registration successful! Welcome bonus ৳${res.bonus || 100} added.`);
+        
+        // Save for subsequent login
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('royalclub_remember_me', 'true');
+          localStorage.setItem('royalclub_remembered_phone', regPhone.trim());
+          localStorage.setItem('royalclub_remembered_password', regPassword);
+          localStorage.setItem('royalclub_remember_user', cleanPhone);
+        }
+
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.5 } });
         setTimeout(() => {
           onClose();
@@ -410,7 +469,17 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
             {/* Remember & Forgot Password (Screenshot 1 Match: Circular Checkbox) */}
             <div className="flex items-center justify-between text-xs pt-1 select-none font-sans">
               <label 
-                onClick={() => setRememberPassword(!rememberPassword)}
+                onClick={() => {
+                  const next = !rememberPassword;
+                  setRememberPassword(next);
+                  if (typeof window !== 'undefined') {
+                    localStorage.setItem('royalclub_remember_me', next ? 'true' : 'false');
+                    if (!next) {
+                      localStorage.removeItem('royalclub_remembered_phone');
+                      localStorage.removeItem('royalclub_remembered_password');
+                    }
+                  }
+                }}
                 className="flex items-center space-x-2 cursor-pointer text-slate-300"
               >
                 <div className={`w-4 h-4 rounded-full flex items-center justify-center transition ${

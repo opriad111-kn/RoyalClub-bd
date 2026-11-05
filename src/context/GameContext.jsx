@@ -2743,7 +2743,12 @@ export function GameProvider({ children }) {
 
   function logout() {
     localStorage.setItem('royalclub_logged_out', 'true');
-    localStorage.removeItem('royalclub_remember_user');
+    const rememberMe = localStorage.getItem('royalclub_remember_me') !== 'false';
+    if (!rememberMe) {
+      localStorage.removeItem('royalclub_remember_user');
+      localStorage.removeItem('royalclub_remembered_phone');
+      localStorage.removeItem('royalclub_remembered_password');
+    }
     const guestUser = {
       uid: "100000",
       username: "Guest",
