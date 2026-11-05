@@ -105,6 +105,9 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
     }
 
     setIsLoading(true);
+    // Smooth authentic delay so user sees KhelV orbital animation (Image 1 Match)
+    await new Promise(r => setTimeout(r, 1200));
+
     try {
       const cleanPhone = identifier.replace(/[^0-9]/g, '');
       const res = await login(cleanPhone || identifier, loginPassword, rememberPassword);
@@ -155,6 +158,9 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
     }
 
     setIsLoading(true);
+    // Smooth authentic delay so user sees KhelV orbital animation (Image 1 Match)
+    await new Promise(r => setTimeout(r, 1200));
+
     try {
       const generatedUsername = 'u' + cleanPhone.slice(-6);
       const res = await registerUser({
@@ -294,41 +300,41 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
             {/* Phone or Email Input */}
             {loginMethod === 'phone' ? (
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-white flex items-center space-x-1.5">
-                  <Phone className="w-3.5 h-3.5 text-[#3882FA]" />
+                <label className="text-[13px] font-semibold text-white flex items-center space-x-1.5 tracking-wide">
+                  <Phone className="w-4 h-4 text-[#3882FA]" />
                   <span>Phone number</span>
                 </label>
                 <div className="flex items-center space-x-2">
                   {/* Separate Country Code Box */}
-                  <div className="h-12 px-3.5 bg-[#1B244A] border border-[#2B3868] rounded-xl flex items-center space-x-1.5 text-xs font-mono font-bold text-white shrink-0 cursor-pointer shadow-xs">
+                  <div className="h-[48px] px-3.5 bg-[#1C254A] border border-[#2A3764] rounded-xl flex items-center space-x-1.5 text-xs font-sans font-bold text-white shrink-0 cursor-pointer shadow-xs">
                     <span>+880</span>
                     <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                   </div>
                   {/* Separate Phone Input Box */}
-                  <div className="flex-1 h-12 bg-[#1B244A] border border-[#2B3868] focus-within:border-[#3882FA] rounded-xl flex items-center px-4 shadow-xs transition">
+                  <div className="flex-1 h-[48px] bg-[#1C254A] border border-[#2A3764] focus-within:border-[#3882FA] rounded-xl flex items-center px-4 shadow-xs transition">
                     <input 
                       type="tel"
                       value={loginPhone}
                       onChange={e => setLoginPhone(e.target.value)}
                       placeholder="Please enter the phone number"
-                      className="w-full text-xs bg-transparent text-white placeholder-[#6C7BA8] focus:outline-none font-mono"
+                      className="w-full text-[14px] bg-transparent text-white placeholder-[#5A6890] outline-none focus:outline-none focus:ring-0 border-none font-sans font-semibold tracking-wide"
                     />
                   </div>
                 </div>
               </div>
             ) : (
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-white flex items-center space-x-1.5">
-                  <Mail className="w-3.5 h-3.5 text-[#3882FA]" />
+                <label className="text-[13px] font-semibold text-white flex items-center space-x-1.5 tracking-wide">
+                  <Mail className="w-4 h-4 text-[#3882FA]" />
                   <span>Email</span>
                 </label>
-                <div className="h-12 bg-[#1B244A] border border-[#2B3868] focus-within:border-[#3882FA] rounded-xl flex items-center px-4 shadow-xs transition">
+                <div className="h-[48px] bg-[#1C254A] border border-[#2A3764] focus-within:border-[#3882FA] rounded-xl flex items-center px-4 shadow-xs transition">
                   <input 
                     type="email"
                     value={loginEmail}
                     onChange={e => setLoginEmail(e.target.value)}
                     placeholder="Please enter the email address"
-                    className="w-full text-xs bg-transparent text-white placeholder-[#6C7BA8] focus:outline-none"
+                    className="w-full text-[14px] bg-transparent text-white placeholder-[#5A6890] outline-none focus:outline-none focus:ring-0 border-none font-sans font-medium"
                   />
                 </div>
               </div>
@@ -336,22 +342,22 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
             {/* Password */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-white flex items-center space-x-1.5">
-                <Lock className="w-3.5 h-3.5 text-[#3882FA]" />
+              <label className="text-[13px] font-semibold text-white flex items-center space-x-1.5 tracking-wide">
+                <Lock className="w-4 h-4 text-[#3882FA]" />
                 <span>Password</span>
               </label>
-              <div className="h-12 bg-[#1B244A] border border-[#2B3868] focus-within:border-[#3882FA] rounded-xl flex items-center justify-between px-4 shadow-xs transition">
+              <div className="h-[48px] bg-[#1C254A] border border-[#2A3764] focus-within:border-[#3882FA] rounded-xl flex items-center justify-between px-4 shadow-xs transition">
                 <input 
                   type={showLoginPassword ? 'text' : 'password'}
                   value={loginPassword}
                   onChange={e => setLoginPassword(e.target.value)}
                   placeholder="Password"
-                  className="w-full text-xs bg-transparent text-white placeholder-[#6C7BA8] focus:outline-none"
+                  className="w-full text-[14px] bg-transparent text-white placeholder-[#5A6890] outline-none focus:outline-none focus:ring-0 border-none font-sans font-medium"
                 />
                 <button 
                   type="button" 
                   onClick={() => setShowLoginPassword(!showLoginPassword)}
-                  className="text-[#7584B0] hover:text-white p-1 cursor-pointer transition shrink-0"
+                  className="text-[#5A6890] hover:text-white p-1 cursor-pointer transition shrink-0"
                 >
                   {showLoginPassword ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </button>
@@ -364,10 +370,10 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                 onClick={() => setRememberPassword(!rememberPassword)}
                 className="flex items-center space-x-2 cursor-pointer text-slate-300"
               >
-                <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition ${
+                <div className={`w-4 h-4 rounded-full flex items-center justify-center transition ${
                   rememberPassword 
-                    ? 'border-[#3882FA] bg-[#3882FA]' 
-                    : 'border-[#4B5880] bg-transparent'
+                    ? 'bg-[#2B7BFB] text-white shadow-xs' 
+                    : 'border border-[#4B5880] bg-transparent'
                 }`}>
                   {rememberPassword && (
                     <svg className="w-2.5 h-2.5 text-white stroke-[3] fill-none" viewBox="0 0 24 24" stroke="currentColor">
@@ -375,7 +381,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                     </svg>
                   )}
                 </div>
-                <span className="text-xs text-slate-200">Remember password</span>
+                <span className="text-[12px] text-slate-200">Remember password</span>
               </label>
               <button 
                 type="button" 
@@ -391,9 +397,9 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-12 rounded-full bg-gradient-to-r from-[#F03848] to-[#1E6DEB] hover:brightness-110 active:scale-[0.98] text-white font-bold text-base shadow-lg shadow-blue-950/50 transition cursor-pointer disabled:opacity-50 tracking-wide flex items-center justify-center font-sans"
+                className="w-full h-[48px] rounded-full bg-gradient-to-r from-[#F03541] to-[#2268E6] hover:brightness-110 active:scale-[0.98] text-white font-bold text-[15px] tracking-wide shadow-lg shadow-blue-950/50 transition cursor-pointer disabled:opacity-50 flex items-center justify-center font-sans"
               >
-                {isLoading ? 'Logging in...' : 'Log in'}
+                Log in
               </button>
             </div>
 
@@ -406,7 +412,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                   setErrorMsg('');
                   setSuccessMsg('');
                 }}
-                className="w-full h-12 rounded-full border border-[#285BB8] bg-transparent hover:bg-[#285BB8]/10 text-white font-bold text-sm tracking-wide shadow-sm transition active:scale-[0.98] cursor-pointer text-center flex items-center justify-center font-sans"
+                className="w-full h-[48px] rounded-full border border-[#204CA3] bg-transparent hover:bg-white/[0.03] text-white font-medium text-[13.5px] tracking-wide shadow-sm transition active:scale-[0.98] cursor-pointer text-center flex items-center justify-center font-sans"
               >
                 Register
               </button>
@@ -414,27 +420,27 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
           </form>
         ) : (
-          /* REGISTER FORM (Screenshot 1 Styling Match) */
+          /* REGISTER FORM (Screenshot 2 Styling Match) */
           <form onSubmit={handleRegister} className="space-y-3.5">
             
             {/* Phone Number Field */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-white flex items-center space-x-1.5">
-                <Phone className="w-3.5 h-3.5 text-[#3882FA]" />
+              <label className="text-[13px] font-semibold text-white flex items-center space-x-1.5 tracking-wide">
+                <Phone className="w-4 h-4 text-[#3882FA]" />
                 <span>Phone number</span>
               </label>
               <div className="flex items-center space-x-2">
-                <div className="h-12 px-3.5 bg-[#1B244A] border border-[#2B3868] rounded-xl flex items-center space-x-1.5 text-xs font-mono font-bold text-white shrink-0 cursor-pointer shadow-xs">
+                <div className="h-[48px] px-3.5 bg-[#1C254A] border border-[#2A3764] rounded-xl flex items-center space-x-1.5 text-xs font-sans font-bold text-white shrink-0 cursor-pointer shadow-xs">
                   <span>+880</span>
                   <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                 </div>
-                <div className="flex-1 h-12 bg-[#1B244A] border border-[#2B3868] focus-within:border-[#3882FA] rounded-xl flex items-center px-4 shadow-xs transition">
+                <div className="flex-1 h-[48px] bg-[#1C254A] border border-[#2A3764] focus-within:border-[#3882FA] rounded-xl flex items-center px-4 shadow-xs transition">
                   <input 
                     type="tel"
                     value={regPhone}
                     onChange={e => setRegPhone(e.target.value)}
                     placeholder="Please enter the phone number"
-                    className="w-full text-xs bg-transparent text-white placeholder-[#6C7BA8] focus:outline-none font-mono"
+                    className="w-full text-[14px] bg-transparent text-white placeholder-[#5A6890] outline-none focus:outline-none focus:ring-0 border-none font-sans font-semibold tracking-wide"
                   />
                 </div>
               </div>
@@ -442,22 +448,22 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
             {/* Set Password Field */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-white flex items-center space-x-1.5">
-                <Lock className="w-3.5 h-3.5 text-[#3882FA]" />
+              <label className="text-[13px] font-semibold text-white flex items-center space-x-1.5 tracking-wide">
+                <Lock className="w-4 h-4 text-[#3882FA]" />
                 <span>Set password</span>
               </label>
-              <div className="h-12 bg-[#1B244A] border border-[#2B3868] focus-within:border-[#3882FA] rounded-xl flex items-center justify-between px-4 shadow-xs transition">
+              <div className="h-[48px] bg-[#1C254A] border border-[#2A3764] focus-within:border-[#3882FA] rounded-xl flex items-center justify-between px-4 shadow-xs transition">
                 <input 
                   type={showRegPassword ? 'text' : 'password'}
                   value={regPassword}
                   onChange={e => setRegPassword(e.target.value)}
                   placeholder="Set password"
-                  className="w-full text-xs bg-transparent text-white placeholder-[#6C7BA8] focus:outline-none"
+                  className="w-full text-[14px] bg-transparent text-white placeholder-[#5A6890] outline-none focus:outline-none focus:ring-0 border-none font-sans font-medium"
                 />
                 <button 
                   type="button" 
                   onClick={() => setShowRegPassword(!showRegPassword)}
-                  className="text-[#7584B0] hover:text-white p-1 cursor-pointer transition shrink-0"
+                  className="text-[#5A6890] hover:text-white p-1 cursor-pointer transition shrink-0"
                 >
                   {showRegPassword ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </button>
@@ -466,55 +472,55 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
             {/* Confirm Password Field */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-white flex items-center space-x-1.5">
-                <Lock className="w-3.5 h-3.5 text-[#3882FA]" />
+              <label className="text-[13px] font-semibold text-white flex items-center space-x-1.5 tracking-wide">
+                <Lock className="w-4 h-4 text-[#3882FA]" />
                 <span>Confirm password</span>
               </label>
-              <div className="h-12 bg-[#1B244A] border border-[#2B3868] focus-within:border-[#3882FA] rounded-xl flex items-center justify-between px-4 shadow-xs transition">
+              <div className="h-[48px] bg-[#1C254A] border border-[#2A3764] focus-within:border-[#3882FA] rounded-xl flex items-center justify-between px-4 shadow-xs transition">
                 <input 
                   type={showRegConfirmPassword ? 'text' : 'password'}
                   value={regConfirmPassword}
                   onChange={e => setRegConfirmPassword(e.target.value)}
                   placeholder="Confirm password"
-                  className="w-full text-xs bg-transparent text-white placeholder-[#6C7BA8] focus:outline-none"
+                  className="w-full text-[14px] bg-transparent text-white placeholder-[#5A6890] outline-none focus:outline-none focus:ring-0 border-none font-sans font-medium"
                 />
                 <button 
                   type="button" 
                   onClick={() => setShowRegConfirmPassword(!showRegConfirmPassword)}
-                  className="text-[#7584B0] hover:text-white p-1 cursor-pointer transition shrink-0"
+                  className="text-[#5A6890] hover:text-white p-1 cursor-pointer transition shrink-0"
                 >
                   {showRegConfirmPassword ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
-            {/* Invite Code Field */}
+            {/* Invite Code Field (Image 2 Exact Match) */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-white flex items-center space-x-1.5">
-                <User className="w-3.5 h-3.5 text-[#3882FA]" />
+              <label className="text-[13px] font-semibold text-white flex items-center space-x-1.5 tracking-wide">
+                <User className="w-4 h-4 text-[#3882FA]" />
                 <span>Invite code</span>
               </label>
-              <div className="h-12 bg-[#1B244A] border border-[#2B3868] focus-within:border-[#3882FA] rounded-xl flex items-center px-4 shadow-xs transition">
+              <div className="h-[48px] bg-[#1C254A] border border-[#2A3764] focus-within:border-[#3882FA] rounded-xl flex items-center px-4 shadow-xs transition">
                 <input 
                   type="text"
                   value={regInviteCode}
                   onChange={e => setRegInviteCode(e.target.value)}
                   placeholder="Invite code"
-                  className="w-full text-xs bg-transparent text-white placeholder-[#6C7BA8] focus:outline-none font-mono"
+                  className="w-full text-[15px] bg-transparent text-white placeholder-[#5A6890] outline-none focus:outline-none focus:ring-0 border-none font-sans font-bold tracking-wider"
                 />
               </div>
             </div>
 
-            {/* Privacy Agreement Checkbox */}
+            {/* Privacy Agreement Checkbox (Image 2 Match: 【Privacy Agreement】 in red) */}
             <div className="pt-1 select-none">
               <label 
                 onClick={() => setAgreedTerms(!agreedTerms)}
-                className="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer"
+                className="flex items-center space-x-2 text-[12px] text-slate-200 cursor-pointer"
               >
-                <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition shrink-0 ${
+                <div className={`w-4 h-4 rounded-full flex items-center justify-center transition shrink-0 ${
                   agreedTerms 
-                    ? 'border-[#3882FA] bg-[#3882FA]' 
-                    : 'border-[#4B5880] bg-transparent'
+                    ? 'bg-[#2B7BFB] text-white shadow-xs' 
+                    : 'border border-[#4B5880] bg-transparent'
                 }`}>
                   {agreedTerms && (
                     <svg className="w-2.5 h-2.5 text-white stroke-[3] fill-none" viewBox="0 0 24 24" stroke="currentColor">
@@ -523,23 +529,23 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                   )}
                 </div>
                 <span>
-                  I have read and agree <span className="text-red-500 font-bold">[Privacy Agreement]</span>
+                  I have read and agree <span className="text-[#FF334B] font-bold">【Privacy Agreement】</span>
                 </span>
               </label>
             </div>
 
-            {/* Red-to-Blue Gradient Register Button */}
+            {/* Red-to-Blue Gradient Register Button (Image 2 Match) */}
             <div className="pt-2">
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-12 rounded-full bg-gradient-to-r from-[#F03848] to-[#1E6DEB] hover:brightness-110 active:scale-[0.98] text-white font-bold text-base shadow-lg shadow-blue-950/50 transition cursor-pointer disabled:opacity-50 tracking-wide flex items-center justify-center font-sans"
+                className="w-full h-[48px] rounded-full bg-gradient-to-r from-[#F03541] to-[#2268E6] hover:brightness-110 active:scale-[0.98] text-white font-bold text-[15px] tracking-wide shadow-lg shadow-blue-950/50 transition cursor-pointer disabled:opacity-50 tracking-wide flex items-center justify-center font-sans"
               >
-                {isLoading ? 'Registering...' : 'Register'}
+                Register
               </button>
             </div>
 
-            {/* Outline Button: I have an account Login */}
+            {/* Outline Button: I have an account Login (Image 2 Match) */}
             <div className="pt-1">
               <button
                 type="button"
@@ -548,9 +554,9 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
                   setErrorMsg('');
                   setSuccessMsg('');
                 }}
-                className="w-full h-12 rounded-full border border-[#285BB8] bg-transparent hover:bg-[#285BB8]/10 text-white font-bold text-sm shadow-sm transition active:scale-[0.98] cursor-pointer text-center flex items-center justify-center font-sans"
+                className="w-full h-[48px] rounded-full border border-[#204CA3] bg-transparent hover:bg-white/[0.03] text-white font-medium text-[13.5px] tracking-wide shadow-sm transition active:scale-[0.98] cursor-pointer text-center flex items-center justify-center font-sans"
               >
-                I have an account <span className="text-[#3882FA] font-black ml-1.5">Login</span>
+                I have an account <span className="text-[#2268E6] font-bold ml-1.5">Login</span>
               </button>
             </div>
 
@@ -575,6 +581,56 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
           </div>
         </div>
       </div>
+
+      {/* 5. Authentic KhelV Loading Spinner Animation (Image 1 Exact Match) */}
+      {isLoading && (
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-xs flex items-center justify-center animate-in fade-in duration-200">
+          <div className="relative w-36 h-36 flex items-center justify-center">
+            {/* Center Logo */}
+            <div className="flex flex-col items-center justify-center pointer-events-none select-none z-10 scale-95">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-400 via-yellow-300 to-amber-600 flex items-center justify-center shadow-lg border border-amber-200/50">
+                <span className="text-2xl">👑</span>
+              </div>
+              <div className="text-[11px] font-black text-white tracking-wider mt-1 drop-shadow font-sans">
+                ROYAL<span className="text-amber-400">CLUB</span> <span className="text-red-500 font-extrabold">BD</span>
+              </div>
+            </div>
+
+            {/* Orbiting Ring with Head Bead (Image 1 Match) */}
+            <svg 
+              className="absolute inset-0 w-full h-full animate-spin pointer-events-none" 
+              viewBox="0 0 100 100" 
+              style={{ animationDuration: '1.1s', animationTimingFunction: 'linear' }}
+            >
+              <defs>
+                <linearGradient id="orbitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#1E6DEB" stopOpacity="0.1" />
+                  <stop offset="40%" stopColor="#2563EB" stopOpacity="0.8" />
+                  <stop offset="80%" stopColor="#F97316" stopOpacity="0.9" />
+                  <stop offset="100%" stopColor="#FF4D4D" stopOpacity="1" />
+                </linearGradient>
+              </defs>
+              <circle 
+                cx="50" 
+                cy="50" 
+                r="44" 
+                fill="none" 
+                stroke="url(#orbitGrad)" 
+                strokeWidth="3.2" 
+                strokeLinecap="round"
+                strokeDasharray="175 300"
+              />
+              <circle 
+                cx="86" 
+                cy="70" 
+                r="3.8" 
+                fill="#FF5722" 
+                className="filter drop-shadow-[0_0_8px_#FF5722]"
+              />
+            </svg>
+          </div>
+        </div>
+      )}
     </div>
   </div>
   );
