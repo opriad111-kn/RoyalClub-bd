@@ -187,11 +187,37 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
     setTimeout(() => setCopiedOrderId(null), 2000);
   }
 
-  const withdrawTransactions = (transactions || []).filter(
-    t => t.type === 'withdrawal' || t.type === 'withdraw'
-  );
+  const withdrawTransactions = (transactions || []).filter(t => {
+    const isWithdraw = t.type === 'withdrawal' || t.type === 'withdraw';
+    if (!isWithdraw) return false;
+    if (!user || user.username === 'Guest' || user.is_guest) return false;
 
-  const filteredHistory = withdrawTransactions.filter(t => {
+    // Match strictly by user identity
+    const matchesUser = 
+      (t.user_id && user.id && t.user_id === user.id) ||
+      (t.uid && user.uid && String(t.uid) === String(user.uid)) ||
+      (t.username && user.username && t.username.toLowerCase() === user.username.toLowerCase()) ||
+      (t.account_number && user.phone && (
+        t.account_number === user.phone || 
+        t.account_number === '0' + user.phone || 
+        '0' + t.account_number === user.phone
+      ));
+
+    return matchesUser;
+  });
+
+  // Deduplicate strictly so no order ever appears twice
+  const seenTxKeys = new Set();
+  const uniqueWithdrawals = [];
+  for (const t of withdrawTransactions) {
+    const key = String(t.trx_id || t.order_id || t.id);
+    if (!seenTxKeys.has(key)) {
+      seenTxKeys.add(key);
+      uniqueWithdrawals.push(t);
+    }
+  }
+
+  const filteredHistory = uniqueWithdrawals.filter(t => {
     if (historyMethodTab !== 'All') {
       const tMethod = (t.method || '').toLowerCase();
       if (!tMethod.includes(historyMethodTab.toLowerCase())) return false;
@@ -471,7 +497,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
                 </div>
               ) : (
                 filteredHistory.map((w, idx) => {
-                  const orderId = w.order_id || w.id || `WD20261023${idx}1081272c`;
+                  const orderId = w.trx_id || w.order_id || String(w.id);
                   const isApproved = w.status === 'approved' || w.status === 'completed';
                   const isRejected = w.status === 'rejected' || w.status === 'failed';
                   const statusText = isApproved ? 'Completed' : isRejected ? 'Failed' : 'Pending';

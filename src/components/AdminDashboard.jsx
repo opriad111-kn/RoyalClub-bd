@@ -2299,24 +2299,24 @@ export default function AdminDashboard({ onExit }) {
                               {tx.status === 'pending' ? (
                                 <>
                                   <button
-                                    onClick={() => {
-                                      approveTransaction(tx.id);
-                                      addAuditLog('TRANSACTION_APPROVED', `Approved transaction #${tx.id} of ৳${tx.amount}`);
-                                      setStatusNotice(`ট্রানজ্যাকশন #${tx.id} সফলভাবে অ্যাপ্রুভ হয়েছে!`);
+                                    onClick={async () => {
+                                      await approveTransaction(tx.id || tx.trx_id);
+                                      addAuditLog('TRANSACTION_APPROVED', `Approved transaction #${tx.id || tx.trx_id} of ৳${tx.amount}`);
+                                      setStatusNotice(`ট্রানজ্যাকশন সফলভাবে অনুমোদিত হয়েছে!`);
                                       setTimeout(() => setStatusNotice(''), 3000);
                                     }}
-                                    className="px-2.5 py-1 rounded bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black text-[11px] transition cursor-pointer"
+                                    className="px-2.5 py-1 rounded bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black text-[11px] transition cursor-pointer active:scale-95"
                                   >
                                     Approve
                                   </button>
                                   <button
-                                    onClick={() => {
-                                      rejectTransaction(tx.id);
-                                      addAuditLog('TRANSACTION_REJECTED', `Rejected transaction #${tx.id} of ৳${tx.amount}`);
-                                      setStatusNotice(`ট্রানজ্যাকশন #${tx.id} রিজেক্ট করা হয়েছে!`);
+                                    onClick={async () => {
+                                      await rejectTransaction(tx.id || tx.trx_id);
+                                      addAuditLog('TRANSACTION_REJECTED', `Rejected transaction #${tx.id || tx.trx_id} of ৳${tx.amount}`);
+                                      setStatusNotice(`ট্রানজ্যাকশন রিজেক্ট করা হয়েছে ও মূল ব্যালেন্সে টাকা রিফান্ড হয়েছে!`);
                                       setTimeout(() => setStatusNotice(''), 3000);
                                     }}
-                                    className="px-2.5 py-1 rounded bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] transition cursor-pointer"
+                                    className="px-2.5 py-1 rounded bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] transition cursor-pointer active:scale-95"
                                   >
                                     Reject
                                   </button>

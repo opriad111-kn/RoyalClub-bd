@@ -1438,19 +1438,8 @@ export function GameProvider({ children }) {
 
           if (liveMatch) {
             const localSaved = localStorage.getItem('royalclub_current_user');
-            let localBal = null;
-            if (localSaved) {
-              try {
-                const parsed = JSON.parse(localSaved);
-                if (parsed.balance !== undefined && !isNaN(parsed.balance)) {
-                  localBal = Number(parsed.balance);
-                }
-              } catch (e) {}
-            }
-
-            const finalBal = (localBal !== null && localBal < Number(liveMatch.balance))
-              ? localBal
-              : Number(liveMatch.balance ?? 0.00);
+            // SUPABASE IS THE AUTHORITATIVE SINGLE SOURCE OF TRUTH FOR BALANCES
+            const authoritativeBal = Number(liveMatch.balance ?? 0.00);
 
             const userClaimKey = `royalclub_vip_claimed_${liveMatch.phone || liveMatch.username || liveMatch.uid}`;
             let storedClaimed = [];
@@ -1471,7 +1460,7 @@ export function GameProvider({ children }) {
 
             const updatedUser = {
               ...liveMatch,
-              balance: finalBal,
+              balance: authoritativeBal,
               vip_level: Number(liveMatch.vip_level ?? 1),
               claimed_vip_levels: mergedClaimed,
               wallet_account: liveMatch.wallet_account || parsedUser.wallet_account || null,
@@ -1480,12 +1469,6 @@ export function GameProvider({ children }) {
             };
             setUser(updatedUser);
             localStorage.setItem('royalclub_current_user', JSON.stringify(updatedUser));
-            if (finalBal !== Number(liveMatch.balance)) {
-              try {
-                if (liveMatch.phone) await supabase.from('users').update({ balance: finalBal }).eq('phone', liveMatch.phone);
-                else if (liveMatch.username) await supabase.from('users').update({ balance: finalBal }).eq('username', liveMatch.username);
-              } catch (e) {}
-            }
           }
         } else {
           setSupabaseStatus('connected');
@@ -1557,18 +1540,13 @@ export function GameProvider({ children }) {
           });
         }
 
-        // 3. Fetch transactions from Supabase transactions table
+        // 3. Fetch transactions from Supabase transactions table (AUTHORITATIVE SOURCE OF TRUTH)
         const { data: supaTx, error: tErr } = await supabase.from('transactions').select('*').order('created_at', { ascending: false });
-        if (!tErr && supaTx && supaTx.length > 0) {
-          setTransactions(prev => {
-            const mergedTx = [...supaTx];
-            prev.forEach(ltx => {
-              if (!mergedTx.find(m => m.id === ltx.id || (m.trx_id && m.trx_id === ltx.trx_id))) {
-                mergedTx.push(ltx);
-              }
-            });
-            return mergedTx;
-          });
+        if (!tErr && supaTx) {
+          setTransactions(supaTx);
+          try {
+            localStorage.setItem('royalclub_transactions', JSON.stringify(supaTx));
+          } catch (e) {}
         }
       } catch (err) {
         console.warn('Supabase initial fetch notice:', err);
@@ -1578,7 +1556,7 @@ export function GameProvider({ children }) {
 
     initSupabaseData();
 
-    // Real-time continuous sync of platform settings, global controls, and targeted users
+    // Real-time continuous sync of platform settings, global controls, targeted users, and live transactions
     const syncInterval = setInterval(async () => {
       try {
         // A. Sync game_settings & global_platform_settings
@@ -1671,8 +1649,17 @@ export function GameProvider({ children }) {
             } catch (e) {}
           }
         }
-      } catch (e) {}
-    }, 6000);
+
+        // C. Sync transactions table (live updates for admin & user deposits/withdrawals)
+        const { data: supaTx } = await supabase.from('transactions').select('*').order('created_at', { ascending: false });
+        if (supaTx) {
+          setTransactions(supaTx);
+          try { localStorage.setItem('royalclub_transactions', JSON.stringify(supaTx)); } catch (e) {}
+        }
+      } catch (syncErr) {
+        console.warn('Background Supabase sync notice:', syncErr);
+      }
+    }, 4000);
 
     return () => {
       clearInterval(syncInterval);
@@ -1794,74 +1781,27 @@ export function GameProvider({ children }) {
             (u.uid && user.uid && u.uid === user.uid)
           );
           if (match) {
-            const localSaved = localStorage.getItem('royalclub_current_user');
-            let localBal = null;
-            if (localSaved) {
-              try {
-                const parsed = JSON.parse(localSaved);
-                if (parsed.balance !== undefined && !isNaN(parsed.balance)) {
-                  localBal = Number(parsed.balance);
-                }
-              } catch (e) {}
-            }
-
-            const finalBal = (localBal !== null && localBal < Number(match.balance))
-              ? localBal
-              : Number(match.balance ?? 0.00);
+            // SUPABASE IS THE SINGLE AUTHORITATIVE SOURCE OF TRUTH
+            const authoritativeBal = Number(match.balance ?? 0.00);
 
             const updatedUser = {
               ...match,
-              balance: finalBal,
+              balance: authoritativeBal,
               vip_level: Number(match.vip_level ?? 1),
               custom_win_rate: Number(match.custom_win_rate ?? 96),
               is_online: true
             };
             setUser(updatedUser);
             localStorage.setItem('royalclub_current_user', JSON.stringify(updatedUser));
-            if (finalBal !== Number(match.balance)) {
-              try {
-                if (match.phone) await supabase.from('users').update({ balance: finalBal }).eq('phone', match.phone);
-                else if (match.username) await supabase.from('users').update({ balance: finalBal }).eq('username', match.username);
-              } catch (e) {}
-            }
           }
         }
       }
       const { data: supaTx } = await supabase.from('transactions').select('*').order('created_at', { ascending: false });
-      if (supaTx && supaTx.length > 0) {
-        setTransactions(prev => {
-          const merged = [...supaTx];
-          const supaIds = new Set(supaTx.map(t => String(t.id)));
-          const supaTrxIds = new Set(supaTx.map(t => String(t.trx_id || '')).filter(Boolean));
-          
-          (prev || []).forEach(localTx => {
-            const hasId = supaIds.has(String(localTx.id));
-            const hasTrx = localTx.trx_id && supaTrxIds.has(String(localTx.trx_id));
-            const hasOrder = localTx.order_id && supaTrxIds.has(String(localTx.order_id));
-            
-            if (!hasId && !hasTrx && !hasOrder) {
-              merged.push(localTx);
-              // Auto-sync locally pending transaction to Supabase so Admin sees it immediately
-              if (localTx.status === 'pending') {
-                const orderNum = String(localTx.order_id || localTx.trx_id || localTx.id || Date.now());
-                supabase.from('transactions').insert({
-                  user_id: null,
-                  username: localTx.username,
-                  type: localTx.type || 'withdrawal',
-                  method: localTx.method || 'BKASH (Personal)',
-                  account_number: localTx.account_number || '',
-                  trx_id: orderNum,
-                  amount: parseFloat(localTx.amount),
-                  status: 'pending'
-                }).then(() => {}).catch(() => {});
-              }
-            }
-          });
-          try {
-            localStorage.setItem('royalclub_transactions', JSON.stringify(merged));
-          } catch (e) {}
-          return merged;
-        });
+      if (supaTx) {
+        setTransactions(supaTx);
+        try {
+          localStorage.setItem('royalclub_transactions', JSON.stringify(supaTx));
+        } catch (e) {}
       }
       return true;
     } catch (e) {
@@ -2371,133 +2311,151 @@ export function GameProvider({ children }) {
       } catch (e) {}
       return updated;
     });
+    await refreshSupabaseData();
     alert(`উইথড্র রিকোয়েস্ট জমা হয়েছে! পাবেন: ৳${netAmount} টাকা। অ্যাডমিন অনুমোদনের পর পেমেন্ট সম্পন্ন হবে।`);
     return { success: true, transaction: newTx };
   }
 
   // Admin Approvals with Supabase Real-time Balance Sync
   async function approveTransaction(txId, adminNote = "") {
-    let affectedTx = null;
+    // 1. Identify target transaction
+    let targetTx = (transactions || []).find(t => 
+      String(t.id) === String(txId) || 
+      (t.trx_id && String(t.trx_id) === String(txId)) ||
+      (t.order_id && String(t.order_id) === String(txId))
+    );
 
-    setTransactions(prev => {
-      const updated = prev.map(tx => {
-        if (tx.id === txId) {
-          affectedTx = tx;
-          if (tx.type === 'deposit') {
-            const addAmount = Number(tx.amount || 0);
-            const mult = Number(gameControl?.turnoverMultiplier || 2.0);
-            const addTurnover = parseFloat((addAmount * mult).toFixed(2));
-            setUser(u => {
-              if (u.uid === tx.uid || u.username === tx.username) {
-                const updatedUser = { 
-                  ...u, 
-                  balance: parseFloat((u.balance + addAmount).toFixed(2)),
-                  total_deposited: parseFloat(((u.total_deposited || 0) + addAmount).toFixed(2)),
-                  turnover_required: parseFloat(((u.turnover_required || 0) + addTurnover).toFixed(2))
-                };
-                localStorage.setItem('royalclub_current_user', JSON.stringify(updatedUser));
-                return updatedUser;
-              }
-              return u;
-            });
-            setAllUsers(users => users.map(u => 
-              (u.uid === tx.uid || u.username === tx.username) 
-                ? { 
-                    ...u, 
-                    balance: parseFloat((u.balance + addAmount).toFixed(2)),
-                    total_deposited: parseFloat(((u.total_deposited || 0) + addAmount).toFixed(2)),
-                    turnover_required: parseFloat(((u.turnover_required || 0) + addTurnover).toFixed(2))
-                  } 
-                : u
-            ));
-          }
-          return { ...tx, status: 'approved', admin_note: adminNote };
-        }
-        return tx;
-      });
-      try {
-        localStorage.setItem('royalclub_transactions', JSON.stringify(updated));
-        window.dispatchEvent(new Event('storage'));
-      } catch (e) {}
-      return updated;
-    });
-
-    // Sync approval to Supabase
     try {
-      if (typeof txId === 'number' || /^\d+$/.test(String(txId))) {
-        await supabase.from('transactions').update({ status: 'approved' }).or(`id.eq.${txId},trx_id.eq.${txId}`);
+      const numId = Number(txId);
+      const isSmallInt = !isNaN(numId) && numId > 0 && numId < 2147483647;
+
+      let updateQuery = supabase.from('transactions').update({ 
+        status: 'approved', 
+        admin_note: adminNote 
+      });
+
+      if (isSmallInt) {
+        updateQuery = updateQuery.eq('id', numId);
       } else {
-        await supabase.from('transactions').update({ status: 'approved' }).eq('trx_id', String(txId));
+        updateQuery = updateQuery.eq('trx_id', String(txId));
       }
-      if (affectedTx && affectedTx.type === 'deposit') {
-        const targetUsername = affectedTx.username || (allUsers.find(u => u.uid === affectedTx.uid)?.username);
-        if (targetUsername) {
-          const { data: uData } = await supabase.from('users').select('balance').eq('username', targetUsername).single();
-          if (uData) {
-            const nextBal = parseFloat((Number(uData.balance || 0) + Number(affectedTx.amount)).toFixed(2));
-            await supabase.from('users').update({ balance: nextBal }).eq('username', targetUsername);
-          }
+
+      const { data: updatedRows } = await updateQuery.select();
+      const activeTx = (updatedRows && updatedRows.length > 0) ? updatedRows[0] : targetTx;
+
+      // 2. Deposit Approval -> Add funds & turnover to user balance in Supabase
+      if (activeTx && (activeTx.type === 'deposit' || activeTx.type === 'topup')) {
+        const addAmount = Number(activeTx.amount || 0);
+        const mult = Number(gameControl?.turnoverMultiplier || 2.0);
+        const addTurnover = parseFloat((addAmount * mult).toFixed(2));
+
+        let uQuery = supabase.from('users').select('*');
+        if (activeTx.user_id) {
+          uQuery = uQuery.eq('id', activeTx.user_id);
+        } else if (activeTx.username) {
+          uQuery = uQuery.ilike('username', activeTx.username);
+        } else if (activeTx.account_number) {
+          uQuery = uQuery.eq('phone', activeTx.account_number);
+        }
+
+        const { data: uList } = await uQuery;
+        if (uList && uList.length > 0) {
+          const targetUser = uList[0];
+          const nextBal = parseFloat((Number(targetUser.balance || 0) + addAmount).toFixed(2));
+          const nextDeposited = parseFloat((Number(targetUser.total_deposited || 0) + addAmount).toFixed(2));
+          const nextTurnover = parseFloat((Number(targetUser.required_turnover || 0) + addTurnover).toFixed(2));
+
+          await supabase.from('users').update({
+            balance: nextBal,
+            total_deposited: nextDeposited,
+            required_turnover: nextTurnover
+          }).eq('id', targetUser.id);
+        }
+      }
+
+      // 3. Withdrawal Approval -> Finalize total_withdrawn in Supabase
+      if (activeTx && (activeTx.type === 'withdrawal' || activeTx.type === 'withdraw')) {
+        const withdrawAmount = Number(activeTx.amount || 0);
+        let uQuery = supabase.from('users').select('*');
+        if (activeTx.user_id) {
+          uQuery = uQuery.eq('id', activeTx.user_id);
+        } else if (activeTx.username) {
+          uQuery = uQuery.ilike('username', activeTx.username);
+        }
+        const { data: uList } = await uQuery;
+        if (uList && uList.length > 0) {
+          const targetUser = uList[0];
+          const nextWithdrawn = parseFloat((Number(targetUser.total_withdrawn || 0) + withdrawAmount).toFixed(2));
+          await supabase.from('users').update({
+            total_withdrawn: nextWithdrawn
+          }).eq('id', targetUser.id);
         }
       }
     } catch (e) {
-      console.warn('Supabase approve tx sync notice:', e);
+      console.error('Supabase approve tx error:', e);
     }
+
+    // Refresh application state immediately from Supabase
+    await refreshSupabaseData();
   }
 
   async function rejectTransaction(txId, adminNote = "") {
-    let affectedTx = null;
+    // 1. Identify target transaction
+    let targetTx = (transactions || []).find(t => 
+      String(t.id) === String(txId) || 
+      (t.trx_id && String(t.trx_id) === String(txId)) ||
+      (t.order_id && String(t.order_id) === String(txId))
+    );
 
-    setTransactions(prev => {
-      const updated = prev.map(tx => {
-        if (tx.id === txId) {
-          affectedTx = tx;
-          if (tx.type === 'withdrawal') {
-            const refundAmount = Number(tx.amount || 0);
-            setUser(u => {
-              if (u.uid === tx.uid || u.username === tx.username) {
-                const updatedUser = { ...u, balance: parseFloat((u.balance + refundAmount).toFixed(2)) };
-                localStorage.setItem('royalclub_current_user', JSON.stringify(updatedUser));
-                return updatedUser;
-              }
-              return u;
-            });
-            setAllUsers(users => users.map(u => 
-              (u.uid === tx.uid || u.username === tx.username) 
-                ? { ...u, balance: parseFloat((u.balance + refundAmount).toFixed(2)) } 
-                : u
-            ));
-          }
-          return { ...tx, status: 'rejected', admin_note: adminNote };
-        }
-        return tx;
-      });
-      try {
-        localStorage.setItem('royalclub_transactions', JSON.stringify(updated));
-        window.dispatchEvent(new Event('storage'));
-      } catch (e) {}
-      return updated;
-    });
-
-    // Sync rejection to Supabase
     try {
-      if (typeof txId === 'number' || /^\d+$/.test(String(txId))) {
-        await supabase.from('transactions').update({ status: 'rejected' }).or(`id.eq.${txId},trx_id.eq.${txId}`);
+      const numId = Number(txId);
+      const isSmallInt = !isNaN(numId) && numId > 0 && numId < 2147483647;
+
+      let updateQuery = supabase.from('transactions').update({ 
+        status: 'rejected', 
+        admin_note: adminNote 
+      });
+
+      if (isSmallInt) {
+        updateQuery = updateQuery.eq('id', numId);
       } else {
-        await supabase.from('transactions').update({ status: 'rejected' }).eq('trx_id', String(txId));
+        updateQuery = updateQuery.eq('trx_id', String(txId));
       }
-      if (affectedTx && affectedTx.type === 'withdrawal') {
-        const targetUsername = affectedTx.username || (allUsers.find(u => u.uid === affectedTx.uid)?.username);
-        if (targetUsername) {
-          const { data: uData } = await supabase.from('users').select('balance').eq('username', targetUsername).single();
-          if (uData) {
-            const refundedBal = parseFloat((Number(uData.balance || 0) + Number(affectedTx.amount)).toFixed(2));
-            await supabase.from('users').update({ balance: refundedBal }).eq('username', targetUsername);
-          }
+
+      const { data: updatedRows } = await updateQuery.select();
+      const activeTx = (updatedRows && updatedRows.length > 0) ? updatedRows[0] : targetTx;
+
+      // 2. Withdrawal Rejected -> REFUND MONEY BACK TO USER'S BALANCE IN SUPABASE!
+      if (activeTx && (activeTx.type === 'withdrawal' || activeTx.type === 'withdraw')) {
+        const refundAmount = Number(activeTx.amount || 0);
+
+        let uQuery = supabase.from('users').select('*');
+        if (activeTx.user_id) {
+          uQuery = uQuery.eq('id', activeTx.user_id);
+        } else if (activeTx.username) {
+          uQuery = uQuery.ilike('username', activeTx.username);
+        } else if (activeTx.account_number) {
+          uQuery = uQuery.eq('phone', activeTx.account_number);
+        }
+
+        const { data: uList } = await uQuery;
+        if (uList && uList.length > 0) {
+          const targetUser = uList[0];
+          const refundedBal = parseFloat((Number(targetUser.balance || 0) + refundAmount).toFixed(2));
+          const reducedWithdrawn = Math.max(0, parseFloat((Number(targetUser.total_withdrawn || 0) - refundAmount).toFixed(2)));
+
+          await supabase.from('users').update({
+            balance: refundedBal,
+            total_withdrawn: reducedWithdrawn
+          }).eq('id', targetUser.id);
         }
       }
     } catch (e) {
-      console.warn('Supabase reject tx sync notice:', e);
+      console.error('Supabase reject tx error:', e);
     }
+
+    // Refresh application state immediately from Supabase
+    await refreshSupabaseData();
   }
 
   // Banner Management
