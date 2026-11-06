@@ -1,7 +1,7 @@
 import React from 'react';
 import { useGame } from '../context/GameContext';
 import { useLanguage } from '../context/LanguageContext';
-import { ShieldAlert, Download, Headphones, Bell } from 'lucide-react';
+import { ShieldAlert, Download, MessageCircle, Bell } from 'lucide-react';
 import RoyalClubLogo from './RoyalClubLogo';
 
 export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenDeposit, onOpenAdmin }) {
@@ -58,35 +58,7 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenDeposit, on
               </span>
             </div>
 
-            {/* Notification Icon */}
-            <button
-              onClick={() => {
-                if (typeof markAllNotificationsRead === 'function') {
-                  markAllNotificationsRead();
-                }
-                window.dispatchEvent(new CustomEvent('royalclub_open_notifications'));
-              }}
-              title="Notifications"
-              className="relative w-7 h-7 rounded-full bg-[#162142] text-slate-300 hover:text-amber-400 flex items-center justify-center transition active:scale-95 cursor-pointer shrink-0 border border-[#23335d]"
-            >
-              <Bell className="w-3.5 h-3.5" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center shadow-md animate-pulse">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-
-            {/* Customer Support Icon */}
-            <button
-              onClick={() => window.open('https://t.me/ROYALCLUB_Support', '_blank')}
-              title={t('support')}
-              className="w-7 h-7 rounded-full bg-[#162142] text-amber-400 hover:bg-[#1d2d59] flex items-center justify-center transition active:scale-95 cursor-pointer shrink-0 border border-[#23335d]"
-            >
-              <Headphones className="w-3.5 h-3.5" />
-            </button>
-
-            {/* App Download Icon */}
+            {/* App Download Icon (1:1 KhelV Screenshot 1 Match) */}
             <button
               onClick={() => {
                 if (typeof window !== 'undefined') {
@@ -95,9 +67,18 @@ export default function AmarHeader({ onOpenAuth, onOpenWallet, onOpenDeposit, on
                 }
               }}
               title="Download App"
-              className="w-7 h-7 rounded-full bg-[#162142] text-emerald-400 hover:bg-[#1d2d59] flex items-center justify-center transition active:scale-95 cursor-pointer shrink-0 border border-[#23335d]"
+              className="w-7 h-7 rounded-lg bg-[#18234c] hover:bg-[#202f66] text-rose-400 border border-[#2b3a78] flex items-center justify-center transition active:scale-95 cursor-pointer shrink-0 shadow-xs outline-none focus:outline-none"
             >
               <Download className="w-3.5 h-3.5" />
+            </button>
+
+            {/* Customer Support Icon (1:1 KhelV Screenshot 1 Red Chat Bubble Match) */}
+            <button
+              onClick={() => window.open('https://t.me/ROYALCLUB_Support', '_blank')}
+              title={t('support')}
+              className="w-7 h-7 rounded-lg bg-[#b72435] hover:bg-[#d12c3f] text-white border border-[#e04555]/60 flex items-center justify-center transition active:scale-95 cursor-pointer shrink-0 shadow-sm outline-none focus:outline-none"
+            >
+              <MessageCircle className="w-3.5 h-3.5 fill-white" />
             </button>
 
             {/* Master Admin Panel Button (Restricted to Admin/Owner) */}

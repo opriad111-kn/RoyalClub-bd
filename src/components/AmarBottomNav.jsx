@@ -59,7 +59,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenAuth }) {
         {/* 1. Home Tab */}
         <button
           onClick={() => onSelectTab('home')}
-          className={`flex flex-col items-center justify-center flex-1 py-1 transition cursor-pointer ${
+          className={`flex flex-col items-center justify-center flex-1 py-1 transition cursor-pointer outline-none focus:outline-none focus:ring-0 focus-visible:outline-none active:outline-none ${
             activeTab === 'home' ? 'text-amber-400 font-bold' : 'text-slate-400 hover:text-white'
           }`}
         >
@@ -76,7 +76,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenAuth }) {
         {/* 2. Activity Tab with Red Dot */}
         <button
           onClick={() => onSelectTab('activity')}
-          className={`flex flex-col items-center justify-center flex-1 py-1 transition relative cursor-pointer ${
+          className={`flex flex-col items-center justify-center flex-1 py-1 transition relative cursor-pointer outline-none focus:outline-none focus:ring-0 focus-visible:outline-none active:outline-none ${
             activeTab === 'activity' ? 'text-amber-400 font-bold' : 'text-slate-400 hover:text-white'
           }`}
         >
@@ -96,7 +96,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenAuth }) {
         {/* 3. Center Elevated 3D Blue Diamond Promotion Throne (Matching Image 10 1:1) */}
         <div 
           onClick={() => onSelectTab('promotion')}
-          className="relative -top-3.5 flex flex-col items-center justify-center shrink-0 w-20 sm:w-[88px] cursor-pointer active:scale-95 transition group"
+          className="relative -top-3.5 flex flex-col items-center justify-center shrink-0 w-20 sm:w-[88px] cursor-pointer active:scale-95 transition group outline-none select-none"
         >
           {/* Raised Pedestal Graphic */}
           <div className="relative w-20 h-16 flex items-center justify-center">
@@ -126,7 +126,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenAuth }) {
         {/* 4. Wallet Tab (Matching Image 10) */}
         <button
           onClick={handleWalletClick}
-          className={`flex flex-col items-center justify-center flex-1 py-1 transition cursor-pointer ${
+          className={`flex flex-col items-center justify-center flex-1 py-1 transition cursor-pointer outline-none focus:outline-none focus:ring-0 focus-visible:outline-none active:outline-none ${
             activeTab === 'wallet' ? 'text-amber-400 font-bold' : 'text-slate-400 hover:text-white'
           }`}
         >
@@ -143,7 +143,7 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenAuth }) {
         {/* 5. Account Tab (Matching Image 10) */}
         <button
           onClick={handleAccountClick}
-          className={`flex flex-col items-center justify-center flex-1 py-1 transition cursor-pointer ${
+          className={`flex flex-col items-center justify-center flex-1 py-1 transition cursor-pointer outline-none focus:outline-none focus:ring-0 focus-visible:outline-none active:outline-none ${
             activeTab === 'account' ? 'text-amber-400 font-bold' : 'text-slate-400 hover:text-white'
           }`}
         >

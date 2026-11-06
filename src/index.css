@@ -15,6 +15,13 @@
   --text_color_L3: #7098C5;
 }
 
+/* Zero browser focus outline on buttons & inputs for authentic mobile/PWA feel */
+button, button:focus, button:focus-visible, a, a:focus, a:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
   margin: 0;
   background-color: #14122E;

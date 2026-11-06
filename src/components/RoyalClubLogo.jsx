@@ -183,7 +183,7 @@ export default function RoyalClubLogo({ variant = 'header', className = '', onCl
         </svg>
       </div>
 
-      {/* Brand Typography & Slogan */}
+      {/* Brand Typography (Compact, Matches KhelV 1:1) */}
       <div className="flex flex-col text-left">
         <div className="flex items-center space-x-1.5 leading-none">
           <span className="font-black text-sm tracking-wide text-transparent bg-clip-text bg-gradient-to-b from-white via-[#F0F4F8] to-[#BAC7D5] font-sans drop-shadow-sm">
@@ -196,9 +196,6 @@ export default function RoyalClubLogo({ variant = 'header', className = '', onCl
             BD
           </span>
         </div>
-        <span className="text-[7.5px] text-amber-300/80 font-bold uppercase tracking-widest leading-none mt-1">
-          WHERE FAIRNESS FUELS THE FUN
-        </span>
       </div>
     </div>
   );

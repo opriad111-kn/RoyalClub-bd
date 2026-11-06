@@ -38,7 +38,12 @@ export default function HomePage({
   const [showSearch, setShowSearch] = useState(false);
   const [showNotice, setShowNotice] = useState(false);
   const [activeBanner, setActiveBanner] = useState(0);
-  const [showDesktopWidget, setShowDesktopWidget] = useState(true);
+  const [showDesktopWidget, setShowDesktopWidget] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !sessionStorage.getItem('royalclub_desktop_widget_dismissed');
+    }
+    return true;
+  });
 
   // Swiper instances for smooth finger swipe and button control
   const popularSwiperRef = useRef(null);
@@ -720,12 +725,15 @@ export default function HomePage({
       )}
 
       {/* 5. FLOATING RIGHT ACTION STACK (Authentic KhelV 3D Icons, Zero Duplicate) */}
-      <aside aria-label="Floating Actions" className="fixed right-2 sm:right-[max(0.5rem,calc(50%-210px+0.5rem))] bottom-20 z-40 flex flex-col space-y-2.5 pointer-events-auto">
+      <aside 
+        aria-label="Floating Actions" 
+        className="fixed right-1.5 bottom-24 sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 sm:right-4 md:right-6 lg:right-8 z-40 flex flex-col space-y-1.5 sm:space-y-3 pointer-events-auto"
+      >
         {/* 1. Gift Box */}
         <button
           onClick={() => onOpenGift && onOpenGift()}
           title="Daily Gift Code"
-          className="w-11 h-11 flex items-center justify-center transition active:scale-90 cursor-pointer drop-shadow-xl hover:scale-105"
+          className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center transition active:scale-90 cursor-pointer drop-shadow-xl hover:scale-105 outline-none"
         >
           <img 
             src="/assets/official_khelv/gift-CowApwMN.png" 
@@ -738,7 +746,7 @@ export default function HomePage({
         <button
           onClick={() => onOpenWheel && onOpenWheel()}
           title="Lucky Wheel"
-          className="w-11 h-11 flex items-center justify-center transition active:scale-90 cursor-pointer drop-shadow-xl hover:scale-105"
+          className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center transition active:scale-90 cursor-pointer drop-shadow-xl hover:scale-105 outline-none"
         >
           <img 
             src="/assets/official_khelv/turntable_icon-BEB6XBBJ.png" 
@@ -751,7 +759,7 @@ export default function HomePage({
         <button
           onClick={() => window.open('https://t.me/ROYALCLUB_Support', '_blank')}
           title="Official Telegram"
-          className="w-11 h-11 flex items-center justify-center transition active:scale-90 cursor-pointer drop-shadow-xl hover:scale-105"
+          className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center transition active:scale-90 cursor-pointer drop-shadow-xl hover:scale-105 outline-none"
         >
           <img 
             src="/assets/official_khelv/telegram-i-2nefHz.png" 
@@ -764,7 +772,7 @@ export default function HomePage({
         <button
           onClick={() => onOpenPartnerReward && onOpenPartnerReward()}
           title="VIP Rewards"
-          className="w-11 h-11 flex items-center justify-center transition active:scale-90 cursor-pointer drop-shadow-xl hover:scale-105"
+          className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center transition active:scale-90 cursor-pointer drop-shadow-xl hover:scale-105 outline-none"
         >
           <img 
             src="/assets/official_khelv/crown1-CW-EnqsM.png" 
@@ -777,7 +785,7 @@ export default function HomePage({
         <button
           onClick={() => window.open('https://t.me/ROYALCLUB_Support', '_blank')}
           title="Customer Service"
-          className="w-11 h-11 flex items-center justify-center transition active:scale-90 cursor-pointer drop-shadow-xl hover:scale-105"
+          className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center transition active:scale-90 cursor-pointer drop-shadow-xl hover:scale-105 outline-none"
         >
           <img 
             src="/assets/official_khelv/icon_sevice-CTlFP_dx.png" 
@@ -787,35 +795,44 @@ export default function HomePage({
         </button>
       </aside>
 
-      {/* 6. Floating "Get ৳100 / Add to Desktop" Pill */}
+      {/* 6. Floating "Get ৳17 / Add to Desktop" Pill (1:1 Replica of Screenshot 1) */}
       {showDesktopWidget && (
-        <aside aria-label="Desktop Download" className="sticky bottom-16 z-30 flex justify-center px-3 pointer-events-auto">
-          <div className="bg-[#10193d]/95 backdrop-blur-md border border-blue-500/60 rounded-full px-4 py-2 shadow-2xl flex items-center space-x-3 text-xs">
-            <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-amber-400 to-yellow-500 flex items-center justify-center text-sm shadow-xs">
-              👑
+        <aside aria-label="Desktop Download" className="fixed bottom-[74px] left-1/2 -translate-x-1/2 z-30 w-[92%] max-w-[340px] pointer-events-auto select-none animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div 
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                const event = new CustomEvent('royalclub_show_toast', { 
+                  detail: { message: "ব্রাউজার মেনু থেকে 'Add to Home screen' বা 'Install' সিলেক্ট করে ৳১৭ বোনাস নিন!" } 
+                });
+                window.dispatchEvent(event);
+              }
+            }}
+            className="w-full bg-[#1b255e]/90 hover:bg-[#222f74]/95 backdrop-blur-md border border-[#374b9e]/80 rounded-full py-1.5 px-3.5 shadow-[0_8px_30px_rgba(0,0,0,0.85)] flex items-center justify-between cursor-pointer active:scale-98 transition group"
+          >
+            {/* Left: Small Logo & Text */}
+            <div className="flex items-center space-x-2.5">
+              <div className="w-8 h-8 rounded-lg bg-[#0e1538] border border-[#2d3d82] flex items-center justify-center p-1 shrink-0 shadow-xs">
+                <span className="text-sm font-black text-amber-400">👑</span>
+              </div>
+              <div className="flex flex-col text-left leading-tight">
+                <span className="text-[#facc15] font-black text-[13px] tracking-tight drop-shadow-xs">Get ৳17</span>
+                <span className="text-white font-bold text-[10.5px] tracking-wide">Add to Desktop</span>
+              </div>
             </div>
-            <div className="flex flex-col">
-              <span className="text-amber-300 font-black text-xs leading-none">Get ৳100</span>
-              <span className="text-slate-300 font-bold text-[10px] leading-tight">Add to Desktop</span>
-            </div>
-            <button
-              onClick={() => {
-                if (typeof window !== 'undefined') {
-                  const event = new CustomEvent('royalclub_show_toast', { 
-                    detail: { message: "ব্রাউজারের মেনু থেকে 'Add to Home screen' সিলেক্ট করুন এবং বোনাস পান!" } 
-                  });
-                  window.dispatchEvent(event);
-                }
-              }}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:brightness-110 text-white font-black text-[11px] px-3 py-1 rounded-full shadow-sm cursor-pointer"
-            >
-              Install
-            </button>
+
+            {/* Right: Circular Close Button */}
             <button 
-              onClick={() => setShowDesktopWidget(false)}
-              className="text-slate-400 hover:text-white p-0.5 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDesktopWidget(false);
+                try {
+                  sessionStorage.setItem('royalclub_desktop_widget_dismissed', 'true');
+                } catch (err) {}
+              }}
+              className="w-5 h-5 rounded-full bg-[#2f3f87] hover:bg-[#3d52b0] text-slate-200 hover:text-white flex items-center justify-center transition active:scale-90 cursor-pointer shadow-xs ml-2 shrink-0 outline-none"
+              aria-label="Close"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="w-3 h-3 stroke-[2.5]" />
             </button>
           </div>
         </aside>
