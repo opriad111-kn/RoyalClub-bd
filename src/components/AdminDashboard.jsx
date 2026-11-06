@@ -263,6 +263,17 @@ export default function AdminDashboard({ onExit }) {
     }
   }, [settings]);
 
+  // Auto-refresh live data from Supabase every 6 seconds so incoming deposits & withdrawals appear live
+  useEffect(() => {
+    if (typeof refreshSupabaseData === 'function') {
+      refreshSupabaseData();
+      const interval = setInterval(() => {
+        refreshSupabaseData();
+      }, 6000);
+      return () => clearInterval(interval);
+    }
+  }, [refreshSupabaseData]);
+
   function handleSaveCasinoControls() {
     updateGameControl({
       houseMode,
@@ -2254,8 +2265,8 @@ export default function AdminDashboard({ onExit }) {
                     <thead className="bg-[#0d1117] text-[#8b949e] border-b border-[#21262d] uppercase text-[10px]">
                       <tr>
                         <th className="p-3.5">Method</th>
-                        <th className="p-3.5">User Phone</th>
-                        <th className="p-3.5">TrxID / Account</th>
+                        <th className="p-3.5">User / Account</th>
+                        <th className="p-3.5">TrxID / Order ID</th>
                         <th className="p-3.5">Amount (৳)</th>
                         <th className="p-3.5">Status</th>
                         <th className="p-3.5 text-right">Actions</th>
@@ -2263,13 +2274,16 @@ export default function AdminDashboard({ onExit }) {
                     </thead>
                     <tbody className="divide-y divide-[#21262d]">
                       {(transactions || [])
-                        .filter(t => t.type === (activeNav === 'deposits' ? 'deposit' : 'withdraw') || (activeNav === 'withdrawals' && t.type === 'withdrawal'))
+                        .filter(t => t.type === (activeNav === 'deposits' ? 'deposit' : 'withdraw') || (activeNav === 'withdrawals' && (t.type === 'withdrawal' || t.type === 'withdraw')))
                         .map(tx => (
-                          <tr key={tx.id} className="hover:bg-[#1f242c] transition">
+                          <tr key={tx.id || tx.trx_id} className="hover:bg-[#1f242c] transition">
                             <td className="p-3.5 font-bold text-white">{tx.method}</td>
-                            <td className="p-3.5 font-mono text-[#8b949e]">{tx.sender_phone || tx.account_number || 'N/A'}</td>
-                            <td className="p-3.5 font-mono text-amber-400">{tx.trx_id || 'DIRECT'}</td>
-                            <td className="p-3.5 font-mono font-black text-white">৳{tx.amount}</td>
+                            <td className="p-3.5">
+                              <div className="font-bold text-white text-xs">{tx.username || 'User'}</div>
+                              <div className="font-mono text-[#8b949e] text-[11px]">{tx.sender_phone || tx.account_number || 'N/A'}</div>
+                            </td>
+                            <td className="p-3.5 font-mono text-amber-400">{tx.trx_id || tx.order_id || tx.id || 'DIRECT'}</td>
+                            <td className="p-3.5 font-mono font-black text-white">৳{Number(tx.amount || 0).toFixed(2)}</td>
                             <td className="p-3.5">
                               <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                                 tx.status === 'approved' 

@@ -1832,10 +1832,29 @@ export function GameProvider({ children }) {
         setTransactions(prev => {
           const merged = [...supaTx];
           const supaIds = new Set(supaTx.map(t => String(t.id)));
-          const supaTrxIds = new Set(supaTx.map(t => t.trx_id).filter(Boolean));
+          const supaTrxIds = new Set(supaTx.map(t => String(t.trx_id || '')).filter(Boolean));
+          
           (prev || []).forEach(localTx => {
-            if (!supaIds.has(String(localTx.id)) && (!localTx.trx_id || !supaTrxIds.has(localTx.trx_id))) {
+            const hasId = supaIds.has(String(localTx.id));
+            const hasTrx = localTx.trx_id && supaTrxIds.has(String(localTx.trx_id));
+            const hasOrder = localTx.order_id && supaTrxIds.has(String(localTx.order_id));
+            
+            if (!hasId && !hasTrx && !hasOrder) {
               merged.push(localTx);
+              // Auto-sync locally pending transaction to Supabase so Admin sees it immediately
+              if (localTx.status === 'pending') {
+                const orderNum = String(localTx.order_id || localTx.trx_id || localTx.id || Date.now());
+                supabase.from('transactions').insert({
+                  user_id: null,
+                  username: localTx.username,
+                  type: localTx.type || 'withdrawal',
+                  method: localTx.method || 'BKASH (Personal)',
+                  account_number: localTx.account_number || '',
+                  trx_id: orderNum,
+                  amount: parseFloat(localTx.amount),
+                  status: 'pending'
+                }).then(() => {}).catch(() => {});
+              }
             }
           });
           try {
@@ -1922,6 +1941,28 @@ export function GameProvider({ children }) {
 
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  // Realtime Supabase Subscription for Transactions (Zero-Lag Admin Synchronization)
+  useEffect(() => {
+    try {
+      const channel = supabase
+        .channel('realtime_transactions')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'transactions' },
+          () => {
+            refreshSupabaseData();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } catch (e) {
+      console.warn('Realtime tx channel setup notice:', e);
+    }
   }, []);
 
   // Master Synchronized 1-minute Clock (WinGo background simulation without noisy auto-sounds)
@@ -2113,10 +2154,23 @@ export function GameProvider({ children }) {
     }
 
     let insertedId = `DEP-${Date.now()}`;
-    // 1. Direct write to Supabase transactions table
+    // 1. Direct write to Supabase transactions table with safe UUID check
     try {
+      const isValidUuid = (val) => typeof val === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+      let supaUserId = isValidUuid(user.id) ? user.id : (isValidUuid(user.uid) ? user.uid : null);
+      if (!supaUserId && allUsers && allUsers.length > 0) {
+        const found = allUsers.find(u => 
+          (u.username && user.username && u.username.toLowerCase() === user.username.toLowerCase()) ||
+          (u.phone && user.phone && u.phone === user.phone) ||
+          (u.uid && user.uid && u.uid === user.uid)
+        );
+        if (found && isValidUuid(found.id)) {
+          supaUserId = found.id;
+        }
+      }
+
       const { data, error } = await supabase.from('transactions').insert({
-        user_id: user.uid,
+        user_id: supaUserId,
         username: user.username,
         type: 'deposit',
         method: method || 'bKash',
@@ -2170,35 +2224,54 @@ export function GameProvider({ children }) {
     };
   }
 
-  // Withdrawal Request with Supabase persistence & Daily Limit Enforcement
+  // Withdrawal Request with Supabase persistence & Anti-Fraud Requirement (Min ৳200 Deposit & 100% Turnover)
   async function requestWithdrawal({ method, amount, accountNumber, accountType }) {
     if (!user || user.username === 'Guest' || user.is_guest) {
       alert("উইথড্র রিকোয়েস্ট করতে অনুগ্রহ করে লগইন করুন।");
-      return false;
+      return { success: false, message: "উইথড্র রিকোয়েস্ট করতে অনুগ্রহ করে লগইন করুন।" };
     }
+
+    // USER MANDATE RULE 1: Minimum deposit of ৳200 required to withdraw bonus or winnings
+    const totalDeposited = Number(user.total_deposited || 0);
+    if (totalDeposited < 200) {
+      const msg = "বোনাস বা ব্যালেন্স উইথড্র করতে হলে অ্যাকাউন্টে ন্যূনতম ৳২০০ ডিপোজিট করতে হবে। অনুগ্রহ করে আগে ডিপোজিট সম্পন্ন করুন।";
+      alert(msg);
+      return { success: false, message: msg, needsDeposit: true };
+    }
+
+    // USER MANDATE RULE 2: Turnover requirement must be 100% completed
+    const reqTurnover = Number(user.required_turnover !== undefined ? user.required_turnover : (user.turnover_required || 0));
+    const compTurnover = Number(user.current_turnover !== undefined ? user.current_turnover : (user.turnover_completed || user.total_wagered || 0));
+    const turnoverRemaining = Math.max(0, reqTurnover - compTurnover);
+    if (turnoverRemaining > 0) {
+      const msg = `উইথড্র করতে প্রয়োজনীয় টার্নওভার পূরণ হয়নি! অবশিষ্ট টার্নওভার: ৳${turnoverRemaining.toFixed(2)} টাকা। গেম খেলে টার্নওভার সম্পন্ন করুন।`;
+      alert(msg);
+      return { success: false, message: msg, needsTurnover: true };
+    }
+
     if (amount < (settings.MIN_WITHDRAWAL_AMOUNT || 200)) {
       alert(`সর্বনিম্ন উইথড্র ৳${settings.MIN_WITHDRAWAL_AMOUNT || 200} টাকা।`);
-      return false;
+      return { success: false, message: `সর্বনিম্ন উইথড্র ৳${settings.MIN_WITHDRAWAL_AMOUNT || 200} টাকা।` };
     }
     if (amount > (user?.balance || 0)) {
       alert("পর্যাপ্ত ব্যালেন্স নেই!");
-      return false;
+      return { success: false, message: "পর্যাপ্ত ব্যালেন্স নেই!" };
     }
     if (!accountNumber) {
       alert("টাকা তোলার নম্বর লিখুন।");
-      return false;
+      return { success: false, message: "টাকা তোলার নম্বর লিখুন।" };
     }
 
     const today = new Date().toDateString();
     const todayWithdrawals = transactions
-      .filter(tx => tx.uid === user.uid && tx.type === 'withdrawal' && new Date(tx.created_at).toDateString() === today)
-      .reduce((sum, tx) => sum + tx.amount, 0);
+      .filter(tx => tx.uid === user.uid && (tx.type === 'withdrawal' || tx.type === 'withdraw') && new Date(tx.created_at).toDateString() === today)
+      .reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
 
-    const dailyLimit = settings.DAILY_WITHDRAWAL_LIMIT || 5000;
+    const dailyLimit = settings.DAILY_WITHDRAWAL_LIMIT || 25000;
     if (todayWithdrawals + amount > dailyLimit) {
       const remainingLimit = Math.max(0, dailyLimit - todayWithdrawals);
-      alert(`দৈনিক উইথড্র লিমিট ৫,০০০ টাকা অতিক্রম করেছে! আজকের অবশিষ্ট লিমিট: ৳${remainingLimit} টাকা।`);
-      return false;
+      alert(`দৈনিক উইথড্র লিমিট অতিক্রম করেছে! আজকের অবশিষ্ট লিমিট: ৳${remainingLimit} টাকা।`);
+      return { success: false, message: `দৈনিক উইথড্র লিমিট অতিক্রম করেছে! আজকের অবশিষ্ট লিমিট: ৳${remainingLimit} টাকা।` };
     }
 
     const fee = parseFloat((((amount * (settings.WITHDRAWAL_FEE_PERCENT || 0)) / 100)).toFixed(2));
@@ -2231,24 +2304,46 @@ export function GameProvider({ children }) {
         await supabase.from('users').update({ balance: nextUserBal }).eq('username', user.username);
       }
       if (user.uid) {
-        await supabase.from('users').update({ balance: nextUserBal }).eq('id', user.uid);
+        await supabase.from('users').update({ balance: nextUserBal }).eq('uid', user.uid);
+      }
+      if (user.id) {
+        await supabase.from('users').update({ balance: nextUserBal }).eq('id', user.id);
       }
     } catch (e) {}
 
-    let insertedId = Date.now();
+    const orderNumber = String(Date.now());
+    let insertedId = orderNumber;
+
+    // Resilient Supabase write with valid UUID validation
     try {
+      const isValidUuid = (val) => typeof val === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+      let supaUserId = isValidUuid(user.id) ? user.id : (isValidUuid(user.uid) ? user.uid : null);
+      if (!supaUserId && allUsers && allUsers.length > 0) {
+        const found = allUsers.find(u => 
+          (u.username && user.username && u.username.toLowerCase() === user.username.toLowerCase()) ||
+          (u.phone && user.phone && u.phone === user.phone) ||
+          (u.uid && user.uid && u.uid === user.uid)
+        );
+        if (found && isValidUuid(found.id)) {
+          supaUserId = found.id;
+        }
+      }
+
       const { data, error } = await supabase.from('transactions').insert({
-        user_id: user.uid,
+        user_id: supaUserId,
         username: user.username,
         type: 'withdrawal',
         method: `${method} (${accountType || 'Personal'})`,
         account_number: accountNumber,
+        trx_id: orderNumber,
         amount: parseFloat(amount),
         status: 'pending'
       }).select().single();
 
       if (!error && data) {
         insertedId = data.id;
+      } else if (error) {
+        console.error('Supabase withdrawal insert notice:', error);
       }
     } catch (e) {
       console.warn('Supabase withdrawal insert notice:', e);
@@ -2256,6 +2351,8 @@ export function GameProvider({ children }) {
 
     const newTx = {
       id: insertedId,
+      order_id: orderNumber,
+      trx_id: orderNumber,
       uid: user.uid,
       username: user.username,
       type: "withdrawal",
@@ -2275,7 +2372,7 @@ export function GameProvider({ children }) {
       return updated;
     });
     alert(`উইথড্র রিকোয়েস্ট জমা হয়েছে! পাবেন: ৳${netAmount} টাকা। অ্যাডমিন অনুমোদনের পর পেমেন্ট সম্পন্ন হবে।`);
-    return true;
+    return { success: true, transaction: newTx };
   }
 
   // Admin Approvals with Supabase Real-time Balance Sync
@@ -2327,7 +2424,11 @@ export function GameProvider({ children }) {
 
     // Sync approval to Supabase
     try {
-      await supabase.from('transactions').update({ status: 'approved' }).eq('id', txId);
+      if (typeof txId === 'number' || /^\d+$/.test(String(txId))) {
+        await supabase.from('transactions').update({ status: 'approved' }).or(`id.eq.${txId},trx_id.eq.${txId}`);
+      } else {
+        await supabase.from('transactions').update({ status: 'approved' }).eq('trx_id', String(txId));
+      }
       if (affectedTx && affectedTx.type === 'deposit') {
         const targetUsername = affectedTx.username || (allUsers.find(u => u.uid === affectedTx.uid)?.username);
         if (targetUsername) {
@@ -2379,7 +2480,11 @@ export function GameProvider({ children }) {
 
     // Sync rejection to Supabase
     try {
-      await supabase.from('transactions').update({ status: 'rejected' }).eq('id', txId);
+      if (typeof txId === 'number' || /^\d+$/.test(String(txId))) {
+        await supabase.from('transactions').update({ status: 'rejected' }).or(`id.eq.${txId},trx_id.eq.${txId}`);
+      } else {
+        await supabase.from('transactions').update({ status: 'rejected' }).eq('trx_id', String(txId));
+      }
       if (affectedTx && affectedTx.type === 'withdrawal') {
         const targetUsername = affectedTx.username || (allUsers.find(u => u.uid === affectedTx.uid)?.username);
         if (targetUsername) {
