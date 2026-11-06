@@ -2317,7 +2317,7 @@ export function GameProvider({ children }) {
   }
 
   // Admin Approvals with Supabase Real-time Balance Sync
-  async function approveTransaction(txId, adminNote = "") {
+  async function approveTransaction(txId) {
     // 1. Identify target transaction
     let targetTx = (transactions || []).find(t => 
       String(t.id) === String(txId) || 
@@ -2325,13 +2325,24 @@ export function GameProvider({ children }) {
       (t.order_id && String(t.order_id) === String(txId))
     );
 
+    // Instant local state update
+    setTransactions(prev => {
+      const updated = (prev || []).map(t => {
+        if (String(t.id) === String(txId) || (t.trx_id && String(t.trx_id) === String(txId)) || (t.order_id && String(t.order_id) === String(txId))) {
+          return { ...t, status: 'approved' };
+        }
+        return t;
+      });
+      try { localStorage.setItem('royalclub_transactions', JSON.stringify(updated)); } catch (e) {}
+      return updated;
+    });
+
     try {
       const numId = Number(txId);
       const isSmallInt = !isNaN(numId) && numId > 0 && numId < 2147483647;
 
       let updateQuery = supabase.from('transactions').update({ 
-        status: 'approved', 
-        admin_note: adminNote 
+        status: 'approved'
       });
 
       if (isSmallInt) {
@@ -2370,6 +2381,15 @@ export function GameProvider({ children }) {
             total_deposited: nextDeposited,
             required_turnover: nextTurnover
           }).eq('id', targetUser.id);
+
+          setUser(prev => {
+            if (prev && (prev.id === targetUser.id || (prev.username && prev.username.toLowerCase() === targetUser.username.toLowerCase()) || prev.phone === targetUser.phone)) {
+              const u = { ...prev, balance: nextBal, total_deposited: nextDeposited, required_turnover: nextTurnover };
+              try { localStorage.setItem('royalclub_current_user', JSON.stringify(u)); } catch (e) {}
+              return u;
+            }
+            return prev;
+          });
         }
       }
 
@@ -2389,6 +2409,15 @@ export function GameProvider({ children }) {
           await supabase.from('users').update({
             total_withdrawn: nextWithdrawn
           }).eq('id', targetUser.id);
+
+          setUser(prev => {
+            if (prev && (prev.id === targetUser.id || (prev.username && prev.username.toLowerCase() === targetUser.username.toLowerCase()) || prev.phone === targetUser.phone)) {
+              const u = { ...prev, total_withdrawn: nextWithdrawn };
+              try { localStorage.setItem('royalclub_current_user', JSON.stringify(u)); } catch (e) {}
+              return u;
+            }
+            return prev;
+          });
         }
       }
     } catch (e) {
@@ -2399,7 +2428,7 @@ export function GameProvider({ children }) {
     await refreshSupabaseData();
   }
 
-  async function rejectTransaction(txId, adminNote = "") {
+  async function rejectTransaction(txId) {
     // 1. Identify target transaction
     let targetTx = (transactions || []).find(t => 
       String(t.id) === String(txId) || 
@@ -2407,13 +2436,24 @@ export function GameProvider({ children }) {
       (t.order_id && String(t.order_id) === String(txId))
     );
 
+    // Instant local state update
+    setTransactions(prev => {
+      const updated = (prev || []).map(t => {
+        if (String(t.id) === String(txId) || (t.trx_id && String(t.trx_id) === String(txId)) || (t.order_id && String(t.order_id) === String(txId))) {
+          return { ...t, status: 'rejected' };
+        }
+        return t;
+      });
+      try { localStorage.setItem('royalclub_transactions', JSON.stringify(updated)); } catch (e) {}
+      return updated;
+    });
+
     try {
       const numId = Number(txId);
       const isSmallInt = !isNaN(numId) && numId > 0 && numId < 2147483647;
 
       let updateQuery = supabase.from('transactions').update({ 
-        status: 'rejected', 
-        admin_note: adminNote 
+        status: 'rejected'
       });
 
       if (isSmallInt) {
@@ -2448,6 +2488,15 @@ export function GameProvider({ children }) {
             balance: refundedBal,
             total_withdrawn: reducedWithdrawn
           }).eq('id', targetUser.id);
+
+          setUser(prev => {
+            if (prev && (prev.id === targetUser.id || (prev.username && prev.username.toLowerCase() === targetUser.username.toLowerCase()) || prev.phone === targetUser.phone)) {
+              const u = { ...prev, balance: refundedBal, total_withdrawn: reducedWithdrawn };
+              try { localStorage.setItem('royalclub_current_user', JSON.stringify(u)); } catch (e) {}
+              return u;
+            }
+            return prev;
+          });
         }
       }
     } catch (e) {
