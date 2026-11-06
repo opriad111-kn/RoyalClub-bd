@@ -1827,8 +1827,12 @@ export default function AccountPage({
                 onClick={() => {
                   setActiveModal(null);
                   if (typeof logout === 'function') logout();
+                  if (typeof onOpenAuth === 'function') {
+                    onOpenAuth('login');
+                  }
+                  window.location.hash = '#/home';
                 }}
-                className="py-2.5 rounded-full text-white font-bold text-xs shadow-md active:scale-95 transition"
+                className="py-2.5 rounded-full text-white font-bold text-xs shadow-md active:scale-95 transition cursor-pointer"
                 style={{
                   background: 'linear-gradient(90deg, #E92A23 0%, #1374EC 100%)'
                 }}

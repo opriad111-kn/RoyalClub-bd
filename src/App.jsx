@@ -108,20 +108,11 @@ function AppContent() {
   });
   const [toast, setToast] = useState({ show: false, message: '' });
 
-  // Unified Auth Trigger: For guests, ALWAYS show the bottom sheet first (Screenshot 2),
-  // and clicking 'Log in now to participate' navigates to the login screen (Screenshot 1).
+  // Unified Auth Trigger: Navigates directly to authentic Login / Register screen
   const handleOpenAuth = (tab = 'login') => {
-    if (tab === 'register') {
-      setAuthTab('register');
-      setIsAuthOpen(true);
-      return;
-    }
-    if (!user || user.username === 'Guest' || user.is_guest) {
-      setIsGuestRewardOpen(true);
-    } else {
-      setAuthTab('login');
-      setIsAuthOpen(true);
-    }
+    setAuthTab(tab);
+    setIsAuthOpen(true);
+    setIsGuestRewardOpen(false);
   };
 
   // Single Initial Check for Popups (Mount only - Zero repeated popups)
@@ -243,12 +234,9 @@ function AppContent() {
         setAuthTab('register');
         setIsAuthOpen(true);
       } else if (cleanTab === 'login' || cleanTab === 'auth' || rawHash.startsWith('login')) {
-        if (!user || user.username === 'Guest' || user.is_guest) {
-          setIsGuestRewardOpen(true);
-        } else {
-          setAuthTab('login');
-          setIsAuthOpen(true);
-        }
+        setAuthTab('login');
+        setIsAuthOpen(true);
+        setIsGuestRewardOpen(false);
       }
 
       if (VALID_TABS.includes(cleanTab)) {
@@ -622,72 +610,6 @@ function AppContent() {
           onClose={() => setIsVipOpen(false)}
         />
 
-      </div>
-
-      {/* Khelv6 Desktop Right Floating Quick Sidebar (Visible on Desktop >= lg, Hidden on Mobile) */}
-      <div className="hidden lg:flex fixed top-1/2 -translate-y-1/2 left-[calc(50%+225px)] z-40 flex-col space-y-3.5 select-none pointer-events-auto">
-        {/* 1. Mystery Gift Box */}
-        <button
-          onClick={() => setIsGiftOpen(true)}
-          title="Gift Redemption / উপহার কোড"
-          className="group relative w-12 h-12 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-400 p-0.5 shadow-xl hover:scale-110 active:scale-95 transition cursor-pointer flex items-center justify-center"
-        >
-          <div className="w-full h-full rounded-full bg-[#0d1633] flex items-center justify-center text-xl overflow-hidden group-hover:bg-[#142252] transition">
-            🎁
-          </div>
-          <span className="absolute -bottom-1 -right-1 px-1.5 py-0.5 bg-red-600 text-[9px] font-black rounded-full text-white leading-none shadow">
-            HOT
-          </span>
-        </button>
-
-        {/* 2. Lucky Spin Wheel */}
-        <button
-          onClick={() => setIsWheelOpen(true)}
-          title="Lucky Spin Wheel / লাকি স্পিন"
-          className="group relative w-12 h-12 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 p-0.5 shadow-xl hover:scale-110 active:scale-95 transition cursor-pointer flex items-center justify-center"
-        >
-          <div className="w-full h-full rounded-full bg-[#0d1633] flex items-center justify-center text-xl overflow-hidden group-hover:bg-[#142252] transition">
-            🎡
-          </div>
-        </button>
-
-        {/* 3. Official Telegram Channel */}
-        <button
-          onClick={() => window.open('https://t.me/royalclubbd_official', '_blank')}
-          title="Official Telegram Channel / অফিসিয়াল টেলিগ্রাম"
-          className="group relative w-12 h-12 rounded-full bg-gradient-to-tr from-sky-400 to-blue-600 p-0.5 shadow-xl hover:scale-110 active:scale-95 transition cursor-pointer flex items-center justify-center"
-        >
-          <div className="w-full h-full rounded-full bg-[#0d1633] flex items-center justify-center text-xl overflow-hidden group-hover:bg-[#142252] transition">
-            ✈️
-          </div>
-        </button>
-
-        {/* 4. VIP Club */}
-        <button
-          onClick={() => setIsVipOpen(true)}
-          title="VIP Privileges / ভিআইপি ক্লাব"
-          className="group relative w-12 h-12 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-600 p-0.5 shadow-xl hover:scale-110 active:scale-95 transition cursor-pointer flex items-center justify-center"
-        >
-          <div className="w-full h-full rounded-full bg-[#0d1633] flex items-center justify-center text-xl overflow-hidden group-hover:bg-[#142252] transition">
-            👑
-          </div>
-          <span className="absolute -bottom-1 -right-1 px-1.5 py-0.5 bg-amber-500 text-[9px] font-black rounded-full text-slate-950 leading-none shadow">
-            VIP
-          </span>
-        </button>
-
-        {/* 5. 24/7 Live Customer Service Bot */}
-        <button
-          onClick={() => window.open('https://t.me/ROYALCLUB_Support', '_blank')}
-          title="24/7 Live Support / লাইভ সাপোর্ট"
-          className="group relative w-12 h-12 rounded-full bg-gradient-to-tr from-cyan-400 to-blue-600 p-0.5 shadow-xl hover:scale-110 active:scale-95 transition cursor-pointer flex items-center justify-center"
-        >
-          <div className="w-full h-full rounded-full bg-[#0d1633] flex items-center justify-center text-xl overflow-hidden group-hover:bg-[#142252] transition">
-            🤖
-          </div>
-          <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#0d1633] animate-ping" />
-          <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#0d1633]" />
-        </button>
       </div>
     </div>
   );

@@ -719,8 +719,8 @@ export default function HomePage({
         </div>
       )}
 
-      {/* 5. FLOATING RIGHT ACTION STACK (Matching Screenshot 10 1:1) */}
-      <aside aria-label="Floating Actions" className="fixed right-2 sm:right-[max(0.5rem,calc(50%-240px+0.5rem))] bottom-20 z-40 flex flex-col space-y-2 pointer-events-auto">
+      {/* 5. FLOATING RIGHT ACTION STACK (Authentic KhelV 3D Icons, Zero Duplicate) */}
+      <aside aria-label="Floating Actions" className="fixed right-2 sm:right-[max(0.5rem,calc(50%-210px+0.5rem))] bottom-20 z-40 flex flex-col space-y-2.5 pointer-events-auto">
         {/* 1. Gift Box */}
         <button
           onClick={() => onOpenGift && onOpenGift()}
