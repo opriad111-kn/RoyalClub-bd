@@ -215,10 +215,12 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
 
         try {
           sessionStorage.setItem('royalclub_promo_login_shown', 'true');
+          sessionStorage.removeItem('royalclub_promo_referral_shown');
+          sessionStorage.removeItem('royalclub_promo_extra_shown_login');
         } catch (e) {}
         setTimeout(() => {
           onClose();
-          // User Mandate: Show First Deposit Bonus popup (Screenshot 3 & Photo 4) exactly 1 time upon login
+          // User Mandate: Show First Deposit Bonus popup (Screenshot 8 1:1) exactly 1 time upon login
           window.dispatchEvent(new CustomEvent('royalclub_open_promo', { detail: { type: 'first-deposit' } }));
         }, 800);
       } else {
@@ -281,8 +283,14 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login' }) {
         }
 
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.5 } });
+        try {
+          sessionStorage.setItem('royalclub_promo_login_shown', 'true');
+          sessionStorage.removeItem('royalclub_promo_referral_shown');
+          sessionStorage.removeItem('royalclub_promo_extra_shown_login');
+        } catch (e) {}
         setTimeout(() => {
           onClose();
+          window.dispatchEvent(new CustomEvent('royalclub_open_promo', { detail: { type: 'first-deposit' } }));
         }, 1200);
       } else {
         setErrorMsg(res.message);

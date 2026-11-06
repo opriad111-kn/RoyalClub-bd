@@ -17,10 +17,11 @@ export default function AmarBottomNav({ activeTab, onSelectTab, onOpenAuth }) {
       return;
     }
 
-    // User Mandate: When clicking account button, show Screenshot 2 (extra-tasks popup) 1 time
+    // User Mandate: When clicking account button, show Screenshot 4 (extra-tasks popup) 1 time
     try {
+      const noRemind = localStorage.getItem('royalclub_promo_no_remind');
       const hasShownAccountPromo = sessionStorage.getItem('royalclub_promo_account_shown');
-      if (!hasShownAccountPromo) {
+      if (noRemind !== new Date().toDateString() && !hasShownAccountPromo) {
         sessionStorage.setItem('royalclub_promo_account_shown', 'true');
         window.dispatchEvent(new CustomEvent('royalclub_open_promo', { detail: { type: 'extra-tasks' } }));
       }

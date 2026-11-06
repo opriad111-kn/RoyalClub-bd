@@ -267,6 +267,18 @@ function AppContent() {
     setActiveGame(null);
     setActiveTab(tab);
     window.location.hash = `#/${tab}`;
+
+    if (tab === 'account') {
+      try {
+        const isGuest = !user || user.username === 'Guest' || user.is_guest;
+        const noRemind = localStorage.getItem('royalclub_promo_no_remind');
+        const hasShownAccountPromo = sessionStorage.getItem('royalclub_promo_account_shown');
+        if (!isGuest && noRemind !== new Date().toDateString() && !hasShownAccountPromo) {
+          sessionStorage.setItem('royalclub_promo_account_shown', 'true');
+          setPromoModal({ isOpen: true, type: 'extra-tasks' });
+        }
+      } catch (e) {}
+    }
   }
 
   // Auto Balance Transfer States
