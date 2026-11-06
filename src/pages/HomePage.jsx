@@ -108,11 +108,11 @@ export default function HomePage({
       provider: 'SPRIBE'
     },
     { 
-      id: 'fortunegems', 
-      title: 'FORTUNE GEMS', 
-      display: 'Fortune Gems', 
+      id: 'fortunegems2', 
+      title: 'FORTUNE GEMS 2', 
+      display: 'Fortune Gems 2', 
       category: 'Slots',
-      image: '/assets/official_khelv/game_fortunegems.png', 
+      image: '/assets/official_khelv/game_fortunegems2.png', 
       provider: 'JILI'
     },
     { 
@@ -129,7 +129,7 @@ export default function HomePage({
       display: 'Mines JILI', 
       category: 'Original',
       image: '/assets/official_khelv/game_mines_jili.png', 
-      provider: 'JILI'
+      provider: 'SPRIBE'
     },
     { 
       id: 'goldenempire', 
@@ -149,12 +149,12 @@ export default function HomePage({
     },
     // Page 2
     { 
-      id: 'megaace', 
-      title: 'MEGA ACE', 
-      display: 'Mega Ace', 
+      id: 'gatesofolympus', 
+      title: 'GATES OF OLYMPUS', 
+      display: 'Gates of Olympus', 
       category: 'Slots',
-      image: '/assets/official_khelv/game_megaace.png', 
-      provider: 'JILI'
+      image: '/assets/games/gatesofolympus.svg', 
+      provider: 'PRAGMATIC PLAY'
     },
     { 
       id: 'boxingking', 
@@ -181,20 +181,20 @@ export default function HomePage({
       provider: 'PG SOFT'
     },
     { 
-      id: 'wildbounty', 
-      title: 'WILD BOUNTY', 
-      display: 'Wild Bounty', 
+      id: 'sweetbonanza', 
+      title: 'SWEET BONANZA', 
+      display: 'Sweet Bonanza', 
       category: 'Slots',
-      image: '/assets/official_khelv/game_wildbounty.png', 
-      provider: 'PG SOFT'
+      image: '/assets/games/sweetbonanza.svg', 
+      provider: 'PRAGMATIC PLAY'
     },
     { 
-      id: 'aztec', 
-      title: 'TREASURES OF AZTEC', 
-      display: 'Aztec', 
+      id: 'megaace', 
+      title: 'MEGA ACE', 
+      display: 'Mega Ace', 
       category: 'Slots',
-      image: '/assets/official_khelv/game_aztec.png', 
-      provider: 'PG SOFT'
+      image: '/assets/official_khelv/game_megaace.png', 
+      provider: 'JILI'
     }
   ];
 
@@ -217,12 +217,12 @@ export default function HomePage({
       provider: 'JILI'
     },
     { 
-      id: 'boom', 
-      title: 'BOOM EXPLODE', 
-      display: 'Boom Explode', 
+      id: 'gatesofolympus', 
+      title: 'GATES OF OLYMPUS', 
+      display: 'Gates of Olympus', 
       category: 'Slots',
-      image: '/assets/official_khelv/game_boom.png', 
-      provider: 'JILI'
+      image: '/assets/games/gatesofolympus.svg', 
+      provider: 'PRAGMATIC PLAY'
     },
     { 
       id: 'crazy777', 
@@ -266,6 +266,14 @@ export default function HomePage({
       provider: 'JILI'
     },
     { 
+      id: 'sweetbonanza', 
+      title: 'SWEET BONANZA', 
+      display: 'Sweet Bonanza', 
+      category: 'Slots',
+      image: '/assets/games/sweetbonanza.svg', 
+      provider: 'PRAGMATIC PLAY'
+    },
+    { 
       id: 'fortuneox', 
       title: 'FORTUNE OX GOLD', 
       display: 'Fortune Ox Gold', 
@@ -279,14 +287,6 @@ export default function HomePage({
       display: 'Wild Bounty Showdown', 
       category: 'Slots',
       image: '/assets/official_khelv/game_wildbounty.png', 
-      provider: 'PG SOFT'
-    },
-    { 
-      id: 'aztec', 
-      title: 'TREASURES OF AZTEC 3D', 
-      display: 'Treasures of Aztec 3D', 
-      category: 'Slots',
-      image: '/assets/official_khelv/game_aztec.png', 
       provider: 'PG SOFT'
     },
     { 
@@ -307,7 +307,7 @@ export default function HomePage({
       display: 'Win Go 30s', 
       category: 'Lottery',
       image: '/assets/official_khelv/lottery_wingo.png', 
-      provider: 'ORIGINAL'
+      provider: 'DKWIN LOTTERY'
     },
     { 
       id: 'trxwingo', 
@@ -315,7 +315,7 @@ export default function HomePage({
       display: 'TRX WinGo 1M', 
       category: 'Lottery',
       image: '/assets/official_khelv/lottery_trx.png', 
-      provider: 'TRON'
+      provider: 'DKWIN LOTTERY'
     },
     { 
       id: 'k3', 
@@ -323,7 +323,7 @@ export default function HomePage({
       display: 'K3 3D Lottery', 
       category: 'Lottery',
       image: '/assets/official_khelv/lottery_k3.png', 
-      provider: 'ORIGINAL'
+      provider: 'DKWIN LOTTERY'
     },
     { 
       id: '5d', 
@@ -331,7 +331,7 @@ export default function HomePage({
       display: '5D Lottery', 
       category: 'Lottery',
       image: '/assets/official_khelv/lottery_5d.png', 
-      provider: 'ORIGINAL'
+      provider: 'DKWIN LOTTERY'
     },
     { 
       id: 'motoracing', 
@@ -339,7 +339,7 @@ export default function HomePage({
       display: 'Moto Racing', 
       category: 'Lottery',
       image: '/assets/official_khelv/moto-CEkWKW6j.png', 
-      provider: 'ORIGINAL'
+      provider: 'DKWIN LOTTERY'
     },
     { 
       id: 'tierx', 
@@ -347,7 +347,7 @@ export default function HomePage({
       display: 'Tron Block', 
       category: 'Lottery',
       image: '/assets/official_khelv/icon-5d-Bfyu8HJa.png', 
-      provider: 'TRON'
+      provider: 'DKWIN LOTTERY'
     }
   ];
 
@@ -476,37 +476,50 @@ export default function HomePage({
   );
 
   // Single Game Card Component (Aspect ratio 37/50, matching KhelV 1:1)
-  const renderGameCard = (game, idx) => (
-    <div
-      key={`${game.id}-${game.title}-${idx}`}
-      onClick={() => onOpenGame(game.id)}
-      className="relative aspect-[37/50] w-full rounded-2xl overflow-hidden cursor-pointer active:scale-95 transition group bg-gradient-to-b from-[#182046] to-[#0e1330] border border-[#2b3575]/60 shadow-md flex flex-col justify-between select-none"
-    >
-      {/* Studio Badge Top Right */}
-      {game.provider && (
-        <div className="absolute top-1.5 right-1.5 bg-black/75 backdrop-blur-xs text-amber-300 border border-amber-400/30 text-[7.5px] font-black px-1.5 py-0.2 rounded shadow-xs z-10 uppercase tracking-wider">
-          {game.provider}
+  const renderGameCard = (game, idx) => {
+    const prov = (game.provider || '').toUpperCase();
+    const badgeColor = prov.includes('SPRIBE') 
+      ? 'text-rose-400 border-rose-500/40 bg-black/85' 
+      : prov.includes('PRAGMATIC') 
+      ? 'text-orange-300 border-orange-400/40 bg-black/85' 
+      : prov.includes('PG') 
+      ? 'text-cyan-300 border-cyan-400/40 bg-black/85' 
+      : prov.includes('DKWIN') || prov.includes('LOTTERY') 
+      ? 'text-purple-300 border-purple-400/40 bg-black/85' 
+      : 'text-amber-300 border-amber-400/40 bg-black/85';
+
+    return (
+      <div
+        key={`${game.id}-${game.title}-${idx}`}
+        onClick={() => onOpenGame(game.id)}
+        className="relative aspect-[37/50] w-full rounded-2xl overflow-hidden cursor-pointer active:scale-95 transition group bg-gradient-to-b from-[#182046] to-[#0e1330] border border-[#2b3575]/60 shadow-md flex flex-col justify-between select-none"
+      >
+        {/* Studio Official Watermark Badge Top Right */}
+        {game.provider && (
+          <div className={`absolute top-1.5 right-1.5 border text-[7.5px] font-black px-1.5 py-0.2 rounded shadow-sm z-10 uppercase tracking-wider backdrop-blur-xs ${badgeColor}`}>
+            {game.provider}
+          </div>
+        )}
+
+        {/* High-Res 3D Artwork Poster */}
+        <div className="w-full h-full flex items-center justify-center p-1 overflow-hidden">
+          <img 
+            src={game.image} 
+            alt={game.title} 
+            className="w-full h-full object-contain group-hover:scale-108 transition duration-300 drop-shadow-[0_4px_10px_rgba(0,0,0,0.6)] pointer-events-none" 
+            loading="lazy"
+          />
         </div>
-      )}
 
-      {/* High-Res 3D Artwork Poster */}
-      <div className="w-full h-full flex items-center justify-center p-1 overflow-hidden">
-        <img 
-          src={game.image} 
-          alt={game.title} 
-          className="w-full h-full object-contain group-hover:scale-108 transition duration-300 drop-shadow-[0_4px_10px_rgba(0,0,0,0.6)] pointer-events-none" 
-          loading="lazy"
-        />
+        {/* Bottom Title Bar */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent py-1.5 px-1 text-center pointer-events-none">
+          <span className="text-white font-black text-[9px] tracking-tight block truncate uppercase drop-shadow-sm">
+            {game.title}
+          </span>
+        </div>
       </div>
-
-      {/* Bottom Title Bar */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent py-1.5 px-1 text-center pointer-events-none">
-        <span className="text-white font-black text-[9px] tracking-tight block truncate uppercase drop-shadow-sm">
-          {game.title}
-        </span>
-      </div>
-    </div>
-  );
+    );
+  };
 
   // Swiper Component: 2-Row Stacked Columns (Screenshot 3 Match: Aviator, Fortune Gems, Aviator...)
   // Slides smoothly with fingers on mobile touchscreens and reacts to < > buttons

@@ -317,6 +317,356 @@ const SLOT_CONFIGS = {
   }
 };
 
+function SlotSymbol({ symbol, theme, isSpinning }) {
+  if (!symbol) return null;
+  const sid = symbol.id;
+
+  // 1. Fortune Gems & Aztec Mayan Theme
+  if (theme === 'aztec') {
+    if (sid === 'garuda') {
+      return (
+        <div className="w-full h-full flex items-center justify-center relative p-0.5">
+          <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_2px_8px_rgba(251,191,36,0.85)]">
+            <defs>
+              <linearGradient id="goldGaruda" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#fffbeb" />
+                <stop offset="30%" stopColor="#fbbf24" />
+                <stop offset="70%" stopColor="#d97706" />
+                <stop offset="100%" stopColor="#78350f" />
+              </linearGradient>
+              <linearGradient id="rubyEyeG" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#f87171" />
+                <stop offset="100%" stopColor="#991b1b" />
+              </linearGradient>
+            </defs>
+            <circle cx="50" cy="50" r="42" fill="#1c1106" stroke="url(#goldGaruda)" strokeWidth="4" />
+            {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => (
+              <polygon key={i} points="50,10 46,2 54,2" fill="url(#goldGaruda)" transform={`rotate(${angle} 50 50)`} />
+            ))}
+            <path d="M50 20 L66 40 L60 62 L50 78 L40 62 L34 40 Z" fill="url(#goldGaruda)" />
+            <polygon points="50,56 56,66 50,78 44,66" fill="#fbbf24" stroke="#78350f" strokeWidth="1.5" />
+            <circle cx="43" cy="46" r="4" fill="url(#rubyEyeG)" stroke="#fef08a" strokeWidth="1" />
+            <circle cx="57" cy="46" r="4" fill="url(#rubyEyeG)" stroke="#fef08a" strokeWidth="1" />
+            <rect x="22" y="74" width="56" height="16" rx="4" fill="#dc2626" stroke="#fef08a" strokeWidth="1" />
+            <text x="50" y="86" fontSize="10" fontWeight="900" fill="#fff" textAnchor="middle" fontFamily="sans-serif">WILD</text>
+          </svg>
+        </div>
+      );
+    }
+    if (sid === 'red_gem') {
+      return (
+        <div className="w-full h-full flex items-center justify-center p-0.5">
+          <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_2px_8px_rgba(239,68,68,0.8)]">
+            <defs>
+              <linearGradient id="rubyG" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#fca5a5" />
+                <stop offset="40%" stopColor="#ef4444" />
+                <stop offset="80%" stopColor="#991b1b" />
+                <stop offset="100%" stopColor="#450a0a" />
+              </linearGradient>
+            </defs>
+            <polygon points="50,6 88,28 88,72 50,94 12,72 12,28" fill="#1c0707" stroke="#fbbf24" strokeWidth="4" />
+            <polygon points="50,15 80,32 80,68 50,85 20,68 20,32" fill="url(#rubyG)" />
+            <polygon points="50,15 50,85 20,68 20,32" fill="#fff" opacity="0.18" />
+            <polygon points="50,30 68,42 68,58 50,70 32,58 32,42" fill="#f87171" opacity="0.4" stroke="#fef08a" strokeWidth="1" />
+          </svg>
+        </div>
+      );
+    }
+    if (sid === 'blue_gem') {
+      return (
+        <div className="w-full h-full flex items-center justify-center p-0.5">
+          <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_2px_8px_rgba(59,130,246,0.8)]">
+            <defs>
+              <linearGradient id="sapphireG" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#93c5fd" />
+                <stop offset="40%" stopColor="#3b82f6" />
+                <stop offset="80%" stopColor="#1e3a8a" />
+                <stop offset="100%" stopColor="#0f172a" />
+              </linearGradient>
+            </defs>
+            <polygon points="50,8 92,50 50,92 8,50" fill="#0b172a" stroke="#fbbf24" strokeWidth="4" />
+            <polygon points="50,16 84,50 50,84 16,50" fill="url(#sapphireG)" />
+            <polygon points="50,30 70,50 50,70 30,50" fill="#60a5fa" opacity="0.5" stroke="#93c5fd" strokeWidth="1" />
+          </svg>
+        </div>
+      );
+    }
+    if (sid === 'green_gem') {
+      return (
+        <div className="w-full h-full flex items-center justify-center p-0.5">
+          <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_2px_8px_rgba(16,185,129,0.8)]">
+            <defs>
+              <linearGradient id="emeraldG" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#a7f3d0" />
+                <stop offset="40%" stopColor="#10b981" />
+                <stop offset="80%" stopColor="#065f46" />
+                <stop offset="100%" stopColor="#022c22" />
+              </linearGradient>
+            </defs>
+            <circle cx="50" cy="50" r="40" fill="#042017" stroke="#fbbf24" strokeWidth="4" />
+            <circle cx="50" cy="50" r="32" fill="url(#emeraldG)" />
+            <polygon points="50,26 68,36 68,64 50,74 32,64 32,36" fill="#34d399" opacity="0.35" stroke="#a7f3d0" strokeWidth="1" />
+          </svg>
+        </div>
+      );
+    }
+    if (sid === 'a' || sid === 'k') {
+      return (
+        <div className="w-full h-full flex items-center justify-center p-0.5">
+          <div className="w-full h-full rounded-xl bg-gradient-to-b from-yellow-300 via-amber-500 to-amber-700 flex flex-col items-center justify-center shadow-lg border border-yellow-200">
+            <span className="text-2xl sm:text-3xl font-black text-slate-950 font-serif drop-shadow leading-none">
+              {sid.toUpperCase()}
+            </span>
+            <span className="text-[7.5px] font-black tracking-widest text-yellow-100 uppercase">
+              GOLD
+            </span>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  // 2. Super Ace (Casino Card Table Theme)
+  if (theme === 'cards') {
+    if (sid === 'ace') {
+      return (
+        <div className="w-full h-full p-0.5">
+          <div className="w-full h-full rounded-xl bg-gradient-to-br from-yellow-100 via-amber-300 to-yellow-600 p-1 flex flex-col justify-between shadow-[0_2px_8px_rgba(245,158,11,0.6)] border border-yellow-100">
+            <div className="flex justify-between items-center text-[11px] font-black text-slate-950 leading-none">
+              <span>A</span>
+              <span className="text-amber-950">♠</span>
+            </div>
+            <div className="flex items-center justify-center">
+              <span className="text-2xl sm:text-3xl text-slate-950 drop-shadow">♠</span>
+            </div>
+            <div className="text-center bg-red-600 text-[6.5px] font-black text-white rounded py-0.2 uppercase tracking-wider">
+              WILD ACE
+            </div>
+          </div>
+        </div>
+      );
+    }
+    if (sid === 'king') {
+      return (
+        <div className="w-full h-full p-0.5">
+          <div className="w-full h-full rounded-xl bg-gradient-to-br from-red-600 to-rose-900 p-1 flex flex-col justify-between shadow-md border border-red-400">
+            <div className="flex justify-between items-center text-[11px] font-black text-white leading-none">
+              <span>K</span>
+              <span>♥️</span>
+            </div>
+            <div className="flex items-center justify-center">
+              <span className="text-2xl sm:text-3xl text-yellow-300 drop-shadow">👑</span>
+            </div>
+            <div className="flex justify-between items-center text-[7.5px] font-bold text-red-200 leading-none">
+              <span>♥️</span>
+              <span>K</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    if (sid === 'queen') {
+      return (
+        <div className="w-full h-full p-0.5">
+          <div className="w-full h-full rounded-xl bg-gradient-to-br from-slate-700 to-slate-950 p-1 flex flex-col justify-between shadow-md border border-slate-500">
+            <div className="flex justify-between items-center text-[11px] font-black text-yellow-400 leading-none">
+              <span>Q</span>
+              <span>♣️</span>
+            </div>
+            <div className="flex items-center justify-center">
+              <span className="text-2xl sm:text-3xl text-amber-300 drop-shadow">👸</span>
+            </div>
+            <div className="flex justify-between items-center text-[7.5px] font-bold text-slate-400 leading-none">
+              <span>♣️</span>
+              <span>Q</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    if (sid === 'jack') {
+      return (
+        <div className="w-full h-full p-0.5">
+          <div className="w-full h-full rounded-xl bg-gradient-to-br from-blue-700 to-indigo-950 p-1 flex flex-col justify-between shadow-md border border-blue-400">
+            <div className="flex justify-between items-center text-[11px] font-black text-white leading-none">
+              <span>J</span>
+              <span>♦️</span>
+            </div>
+            <div className="flex items-center justify-center">
+              <span className="text-2xl sm:text-3xl text-cyan-300 drop-shadow">💎</span>
+            </div>
+            <div className="flex justify-between items-center text-[7.5px] font-bold text-blue-200 leading-none">
+              <span>♦️</span>
+              <span>J</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    if (sid === 'ten') {
+      return (
+        <div className="w-full h-full p-0.5">
+          <div className="w-full h-full rounded-xl bg-gradient-to-br from-emerald-700 to-teal-950 p-1 flex flex-col justify-between shadow-md border border-emerald-400">
+            <div className="flex justify-between items-center text-[11px] font-black text-yellow-300 leading-none">
+              <span>10</span>
+              <span>★</span>
+            </div>
+            <div className="flex items-center justify-center">
+              <span className="text-xl sm:text-2xl font-black text-white drop-shadow">10</span>
+            </div>
+            <div className="flex justify-between items-center text-[7.5px] font-bold text-emerald-200 leading-none">
+              <span>★</span>
+              <span>10</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  // 3. Money Coming Theme
+  if (theme === 'money') {
+    if (sid === '100') {
+      return (
+        <div className="w-full h-full p-0.5">
+          <div className="w-full h-full rounded-xl bg-gradient-to-br from-yellow-300 via-amber-400 to-yellow-600 flex flex-col items-center justify-center shadow-[0_2px_10px_rgba(245,158,11,0.7)] border-2 border-yellow-100">
+            <span className="text-2xl sm:text-3xl font-black text-slate-950 font-mono tracking-tight leading-none">100</span>
+            <span className="text-[8.5px] font-black text-amber-950 uppercase tracking-widest mt-0.5">৳ CASH</span>
+          </div>
+        </div>
+      );
+    }
+    if (sid === '50') {
+      return (
+        <div className="w-full h-full p-0.5">
+          <div className="w-full h-full rounded-xl bg-gradient-to-br from-emerald-400 to-teal-700 flex flex-col items-center justify-center shadow-md border border-emerald-300">
+            <span className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight leading-none">50</span>
+            <span className="text-[7.5px] font-black text-emerald-100 uppercase tracking-wider mt-0.5">৳ TAKA</span>
+          </div>
+        </div>
+      );
+    }
+    if (sid === '20') {
+      return (
+        <div className="w-full h-full p-0.5">
+          <div className="w-full h-full rounded-xl bg-gradient-to-br from-blue-400 to-indigo-700 flex flex-col items-center justify-center shadow-md border border-blue-300">
+            <span className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight leading-none">20</span>
+            <span className="text-[7.5px] font-black text-blue-100 uppercase tracking-wider mt-0.5">৳ TAKA</span>
+          </div>
+        </div>
+      );
+    }
+    if (sid === '10') {
+      return (
+        <div className="w-full h-full p-0.5">
+          <div className="w-full h-full rounded-xl bg-gradient-to-br from-rose-400 to-red-700 flex flex-col items-center justify-center shadow-md border border-rose-300">
+            <span className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight leading-none">10</span>
+            <span className="text-[7.5px] font-black text-rose-100 uppercase tracking-wider mt-0.5">৳ TAKA</span>
+          </div>
+        </div>
+      );
+    }
+    if (sid === '00' || sid === '0') {
+      return (
+        <div className="w-full h-full p-0.5">
+          <div className="w-full h-full rounded-xl bg-gradient-to-b from-slate-700 via-slate-800 to-slate-950 flex flex-col items-center justify-center shadow-inner border border-slate-600">
+            <span className="text-3xl font-black text-slate-400 font-mono tracking-widest">{sid}</span>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  // 4. Gates of Olympus Theme
+  if (theme === 'olympus') {
+    if (sid === 'crown') {
+      return (
+        <div className="w-full h-full p-0.5 flex items-center justify-center">
+          <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_2px_10px_rgba(251,191,36,0.9)]">
+            <circle cx="50" cy="50" r="42" fill="#1e1035" stroke="#fbbf24" strokeWidth="3" />
+            <polygon points="20,40 32,66 68,66 80,40 65,52 50,30 35,52" fill="#fbbf24" stroke="#78350f" strokeWidth="1" />
+            <circle cx="50" cy="30" r="4" fill="#38bdf8" />
+            <circle cx="20" cy="40" r="3.5" fill="#ef4444" />
+            <circle cx="80" cy="40" r="3.5" fill="#ef4444" />
+            <rect x="32" y="66" width="36" height="8" rx="2" fill="#fbbf24" />
+          </svg>
+        </div>
+      );
+    }
+    if (sid === 'hourglass') {
+      return (
+        <div className="w-full h-full p-0.5 flex items-center justify-center">
+          <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_2px_8px_rgba(56,189,248,0.7)]">
+            <polygon points="26,16 74,16 56,48 74,84 26,84 44,48" fill="#0f172a" stroke="#38bdf8" strokeWidth="4" />
+            <polygon points="32,22 68,22 50,48" fill="#38bdf8" opacity="0.6" />
+            <polygon points="50,54 66,78 34,78" fill="#38bdf8" opacity="0.9" />
+          </svg>
+        </div>
+      );
+    }
+    if (sid === 'ring') {
+      return (
+        <div className="w-full h-full p-0.5 flex items-center justify-center">
+          <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_2px_8px_rgba(244,63,94,0.7)]">
+            <circle cx="50" cy="58" r="28" fill="none" stroke="#fbbf24" strokeWidth="8" />
+            <polygon points="50,14 68,32 50,50 32,32" fill="#ef4444" stroke="#fbbf24" strokeWidth="3" />
+          </svg>
+        </div>
+      );
+    }
+    if (sid === 'chalice') {
+      return (
+        <div className="w-full h-full p-0.5 flex items-center justify-center">
+          <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_2px_8px_rgba(251,191,36,0.7)]">
+            <path d="M25 22 L75 22 L65 58 Q50 68 35 58 Z" fill="#fbbf24" stroke="#b45309" strokeWidth="2" />
+            <rect x="46" y="58" width="8" height="22" fill="#fbbf24" />
+            <ellipse cx="50" cy="82" rx="20" ry="6" fill="#fbbf24" stroke="#b45309" strokeWidth="2" />
+          </svg>
+        </div>
+      );
+    }
+    return (
+      <div className="w-full h-full p-0.5 flex items-center justify-center">
+        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-purple-500 via-indigo-600 to-purple-900 border-2 border-yellow-300/80 flex items-center justify-center shadow-md">
+          <span className="text-xl">💎</span>
+        </div>
+      </div>
+    );
+  }
+
+  // 5. Crazy 777 Theme
+  if (theme === 'classic777') {
+    if (sid === 'triple7' || sid === 'double7' || sid === 'single7') {
+      return (
+        <div className="w-full h-full p-0.5 flex items-center justify-center">
+          <div className="w-full h-full rounded-xl bg-gradient-to-b from-red-600 via-amber-500 to-yellow-400 flex items-center justify-center border-2 border-yellow-200 shadow-[0_0_12px_rgba(239,68,68,0.8)]">
+            <span className="text-2xl sm:text-3xl font-black text-slate-950 font-serif drop-shadow tracking-tight">
+              {sid === 'triple7' ? '777' : sid === 'double7' ? '77' : '7'}
+            </span>
+          </div>
+        </div>
+      );
+    }
+    if (sid === 'bar') {
+      return (
+        <div className="w-full h-full p-0.5 flex items-center justify-center">
+          <div className="w-full h-full rounded-xl bg-gradient-to-b from-slate-300 via-slate-400 to-slate-700 flex items-center justify-center border-2 border-slate-100 shadow-md">
+            <span className="text-base font-black text-slate-950 font-mono tracking-widest">BAR</span>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  // Default Fallback
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center p-0.5">
+      <span className="text-2xl sm:text-3xl drop-shadow">{symbol.icon}</span>
+    </div>
+  );
+}
+
 export default function UniversalSlotEngine({ gameId = 'fortunegems2', onClose }) {
   const config = SLOT_CONFIGS[gameId] || SLOT_CONFIGS.fortunegems2;
   const { user, adjustUserBalance, recordGameHistory, getGameEffectiveSettings } = useGame();
@@ -561,34 +911,34 @@ export default function UniversalSlotEngine({ gameId = 'fortunegems2', onClose }
               row.map((cell, cIdx) => (
                 <div 
                   key={`${rIdx}-${cIdx}`}
-                  className={`aspect-square rounded-2xl bg-gradient-to-br ${cell.color} p-0.5 flex flex-col items-center justify-center shadow-md transform transition duration-150 ${isSpinning ? 'scale-95 blur-xs opacity-70' : 'hover:scale-105'}`}
+                  className={`aspect-square rounded-2xl bg-gradient-to-br ${cell.color} p-0.5 flex flex-col items-center justify-center shadow-md transform transition duration-150 ${isSpinning ? 'scale-95 blur-xs opacity-75 translate-y-1' : 'hover:scale-105'}`}
                 >
-                  <div className="w-full h-full bg-slate-950/80 rounded-[14px] flex items-center justify-center text-xl sm:text-2xl drop-shadow-md">
-                    {cell.icon}
+                  <div className="w-full h-full bg-slate-950/85 rounded-[14px] flex items-center justify-center overflow-hidden">
+                    <SlotSymbol symbol={cell} theme={config.theme} isSpinning={isSpinning} />
                   </div>
                 </div>
               ))
             )}
           </div>
 
-          {/* Win Overlay Popup */}
+          {/* Win Overlay Popup with Celebratory Golden Particles */}
           {winPayout > 0 && (
-            <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-xs flex flex-col items-center justify-center rounded-3xl p-4 text-center z-20 animate-fade-in">
-              <span className="text-3xl mb-1 animate-bounce">👑💰👑</span>
-              <span className="text-xs font-black uppercase text-yellow-300 tracking-wider">
-                MEGA PAYOUT!
-              </span>
-              <span className="text-3xl sm:text-4xl font-black font-mono text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-200 to-yellow-400 drop-shadow">
+            <div className="absolute inset-0 bg-slate-950/92 backdrop-blur-md flex flex-col items-center justify-center rounded-3xl p-4 text-center z-20 animate-fade-in border-2 border-yellow-400/80 shadow-[0_0_50px_rgba(251,191,36,0.6)]">
+              <span className="text-4xl mb-1 animate-bounce">👑 💰 👑</span>
+              <div className="text-xs font-black uppercase text-yellow-300 tracking-widest bg-yellow-400/20 border border-yellow-400/40 px-3 py-1 rounded-full mb-1">
+                {winPayout >= betAmount * 10 ? '🔥 SUPER MEGA WIN! 🔥' : '⭐ BIG WIN PAYOUT! ⭐'}
+              </div>
+              <span className="text-3xl sm:text-4xl font-black font-mono text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-200 to-yellow-400 drop-shadow-[0_2px_12px_rgba(245,190,0,0.8)]">
                 ৳{winPayout.toFixed(2)}
               </span>
-              <span className="text-[10px] text-slate-300 mt-1 max-w-[240px] truncate">
+              <span className="text-[11px] text-slate-200 mt-1 max-w-[260px] font-bold">
                 {winMessage}
               </span>
               <button 
                 onClick={() => setWinPayout(0)}
-                className="mt-3 bg-yellow-400 hover:bg-yellow-300 text-slate-950 text-xs font-black px-5 py-2 rounded-full shadow-lg cursor-pointer"
+                className="mt-3 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 text-xs font-black px-6 py-2 rounded-full shadow-lg active:scale-95 transition cursor-pointer"
               >
-                COLLECT CASH
+                COLLECT CASH ৳
               </button>
             </div>
           )}

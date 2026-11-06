@@ -35,7 +35,8 @@ export default function AccountPage({
   onOpenAuth,
   onOpenDeposit,
   onOpenWithdraw,
-  onOpenGift
+  onOpenGift,
+  onSelectTab
 }) {
   const {
     user,
@@ -1827,6 +1828,7 @@ export default function AccountPage({
                 onClick={() => {
                   setActiveModal(null);
                   if (typeof logout === 'function') logout();
+                  if (typeof onSelectTab === 'function') onSelectTab('home');
                   if (typeof onOpenAuth === 'function') {
                     onOpenAuth('login');
                   }

@@ -207,12 +207,16 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
   });
 
   // Deduplicate strictly so no order ever appears twice
+  // Strict deduplication by ID, trx_id, and timestamp
   const seenTxKeys = new Set();
+  const seenTimeKeys = new Set();
   const uniqueWithdrawals = [];
   for (const t of withdrawTransactions) {
     const key = String(t.trx_id || t.order_id || t.id);
-    if (!seenTxKeys.has(key)) {
+    const timeKey = t.created_at ? `${t.amount}_${Math.floor(new Date(t.created_at).getTime() / 60000)}` : null;
+    if (!seenTxKeys.has(key) && (!timeKey || !seenTimeKeys.has(timeKey))) {
       seenTxKeys.add(key);
+      if (timeKey) seenTimeKeys.add(timeKey);
       uniqueWithdrawals.push(t);
     }
   }

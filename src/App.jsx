@@ -287,6 +287,7 @@ function AppContent() {
     mode: 'transfer_in',
     gameTitle: '',
     serverName: '',
+    provider: 'JILI',
     pendingGameId: null,
     initialBalance: 0,
     amount: 0,
@@ -295,34 +296,40 @@ function AppContent() {
 
   function getGameInfo(gameId) {
     const map = {
-      aviator: { title: 'Aviator', server: 'SPRIBE CLUSTER' },
-      spaceman: { title: 'Spaceman', server: 'PRAGMATIC SERVER' },
-      jetx: { title: 'JetX', server: 'SMART SOFT SERVER' },
-      limbo: { title: 'Limbo Rocket', server: 'SPRIBE CLUSTER' },
-      fortunegems: { title: 'Fortune Gems 2', server: 'JILI CLOUD SERVER' },
-      fortunegems2: { title: 'Fortune Gems 2', server: 'JILI CLOUD SERVER' },
-      superace: { title: 'Super Ace', server: 'JILI CLOUD SERVER' },
-      superacedeluxe: { title: 'Super Ace Deluxe', server: 'JILI CLOUD SERVER' },
-      moneycoming: { title: 'Money Coming', server: 'JILI CLOUD SERVER' },
-      boxingking: { title: 'Boxing King', server: 'JILI CLOUD SERVER' },
-      goldenempire: { title: 'Golden Empire', server: 'JILI CLOUD SERVER' },
-      crazy777: { title: 'Crazy 777', server: 'JILI CLOUD SERVER' },
-      fortuneox: { title: 'Fortune Ox', server: 'JILI CLOUD SERVER' },
-      gatesofolympus: { title: 'Gates of Olympus', server: 'PRAGMATIC PLAY SERVER' },
-      sweetbonanza: { title: 'Sweet Bonanza', server: 'PRAGMATIC PLAY SERVER' },
-      sugarrush: { title: 'Sugar Rush', server: 'PRAGMATIC PLAY SERVER' },
-      crazytime: { title: 'Crazy Time', server: 'EVOLUTION LIVE STUDIO' },
-      lightningroulette: { title: 'Lightning Roulette', server: 'EVOLUTION LIVE STUDIO' },
-      mahjongways2: { title: 'Mahjong Ways 2', server: 'PG SOFT CLOUD SERVER' },
-      fortunetiger: { title: 'Fortune Tiger', server: 'PG SOFT CLOUD SERVER' },
-      mines: { title: 'Mines Gold', server: 'SPRIBE CLUSTER' },
-      plinko: { title: 'Plinko', server: 'SPRIBE CLUSTER' },
-      dice: { title: 'Dice Slider', server: 'SPRIBE CLUSTER' },
-      wingo: { title: 'WinGo 30s/1m', server: '91 CLUB LOTTERY VAULT' },
-      trxwingo: { title: 'TRX WinGo', server: 'TRON BLOCKCHAIN SERVER' },
-      k3: { title: 'K3 3-Dice Lottery', server: 'CASINO LOTTERY ENGINE' }
+      aviator: { title: 'Aviator', server: 'SPRIBE CLUSTER', provider: 'SPRIBE' },
+      spaceman: { title: 'Spaceman', server: 'PRAGMATIC SERVER', provider: 'PRAGMATIC PLAY' },
+      jetx: { title: 'JetX', server: 'SMART SOFT SERVER', provider: 'SPRIBE' },
+      limbo: { title: 'Limbo Rocket', server: 'SPRIBE CLUSTER', provider: 'SPRIBE' },
+      fortunegems: { title: 'Fortune Gems 2', server: 'JILI CLOUD SERVER', provider: 'JILI' },
+      fortunegems2: { title: 'Fortune Gems 2', server: 'JILI CLOUD SERVER', provider: 'JILI' },
+      fortunegems3: { title: 'Fortune Gems 3', server: 'JILI CLOUD SERVER', provider: 'JILI' },
+      superace: { title: 'Super Ace', server: 'JILI CLOUD SERVER', provider: 'JILI' },
+      superacedeluxe: { title: 'Super Ace Deluxe', server: 'JILI CLOUD SERVER', provider: 'JILI' },
+      megaace: { title: 'Mega Ace', server: 'JILI CLOUD SERVER', provider: 'JILI' },
+      moneycoming: { title: 'Money Coming', server: 'JILI CLOUD SERVER', provider: 'JILI' },
+      boxingking: { title: 'Boxing King', server: 'JILI CLOUD SERVER', provider: 'JILI' },
+      goldenempire: { title: 'Golden Empire', server: 'JILI CLOUD SERVER', provider: 'JILI' },
+      crazy777: { title: 'Crazy 777', server: 'JILI CLOUD SERVER', provider: 'JILI' },
+      fortuneox: { title: 'Fortune Ox', server: 'PG SOFT CLOUD SERVER', provider: 'PG SOFT' },
+      gatesofolympus: { title: 'Gates of Olympus', server: 'PRAGMATIC PLAY SERVER', provider: 'PRAGMATIC PLAY' },
+      sweetbonanza: { title: 'Sweet Bonanza', server: 'PRAGMATIC PLAY SERVER', provider: 'PRAGMATIC PLAY' },
+      sugarrush: { title: 'Sugar Rush', server: 'PRAGMATIC PLAY SERVER', provider: 'PRAGMATIC PLAY' },
+      crazytime: { title: 'Crazy Time', server: 'EVOLUTION LIVE STUDIO', provider: 'PRAGMATIC PLAY' },
+      lightningroulette: { title: 'Lightning Roulette', server: 'EVOLUTION LIVE STUDIO', provider: 'PRAGMATIC PLAY' },
+      mahjongways2: { title: 'Mahjong Ways 2', server: 'PG SOFT CLOUD SERVER', provider: 'PG SOFT' },
+      fortunetiger: { title: 'Fortune Tiger', server: 'PG SOFT CLOUD SERVER', provider: 'PG SOFT' },
+      mines: { title: 'Mines Gold', server: 'SPRIBE CLUSTER', provider: 'SPRIBE' },
+      plinko: { title: 'Plinko', server: 'SPRIBE CLUSTER', provider: 'SPRIBE' },
+      dice: { title: 'Dice Slider', server: 'SPRIBE CLUSTER', provider: 'SPRIBE' },
+      wingo: { title: 'WinGo 30s/1m', server: 'DKWIN LOTTERY VAULT', provider: 'DKWIN LOTTERY' },
+      trxwingo: { title: 'TRX WinGo', server: 'DKWIN LOTTERY VAULT', provider: 'DKWIN LOTTERY' },
+      k3: { title: 'K3 3-Dice Lottery', server: 'DKWIN LOTTERY VAULT', provider: 'DKWIN LOTTERY' },
+      k3lottery: { title: 'K3 3-Dice Lottery', server: 'DKWIN LOTTERY VAULT', provider: 'DKWIN LOTTERY' },
+      '5d': { title: '5D Fast Lottery', server: 'DKWIN LOTTERY VAULT', provider: 'DKWIN LOTTERY' },
+      '5dlottery': { title: '5D Fast Lottery', server: 'DKWIN LOTTERY VAULT', provider: 'DKWIN LOTTERY' },
+      jackpotfishing: { title: 'Jackpot Fishing', server: 'JILI CLOUD SERVER', provider: 'JILI' }
     };
-    return map[gameId] || { title: (gameId || '').toUpperCase(), server: 'ROYAL CLUSTER' };
+    return map[gameId] || { title: (gameId || '').toUpperCase(), server: 'JILI CLOUD SERVER', provider: 'JILI' };
   }
 
   function handleOpenGame(gameId) {
@@ -330,13 +337,41 @@ function AppContent() {
       setIsGuestRewardOpen(true);
       return;
     }
-    setActiveGame(gameId);
-    window.location.hash = `#game/${gameId}`;
+    const info = getGameInfo(gameId);
+    setTransferModal({
+      isOpen: true,
+      mode: 'transfer_in',
+      gameTitle: info.title,
+      serverName: info.server,
+      provider: info.provider,
+      pendingGameId: gameId,
+      initialBalance: Number(user?.balance || 0),
+      amount: Number(user?.balance || 0),
+      netProfit: 0
+    });
+  }
+
+  function handleTransferComplete() {
+    if (transferModal.mode === 'transfer_in' && transferModal.pendingGameId) {
+      const gId = transferModal.pendingGameId;
+      setTransferModal(prev => ({ ...prev, isOpen: false }));
+      setActiveGame(gId);
+      window.location.hash = `#game/${gId}`;
+    } else {
+      setTransferModal(prev => ({ ...prev, isOpen: false }));
+    }
   }
 
   function handleCloseGame() {
+    const curGame = activeGame;
+    const curBal = Number(user?.balance || 0);
+    const info = getGameInfo(curGame);
+
     setActiveGame(null);
     window.location.hash = `#/${activeTab || 'home'}`;
+
+    // Real-time toast confirmation of synced balance
+    showToast(`✅ ${info.title} থেকে ৳${curBal.toFixed(2)} মূল ওয়ালেটে সফলভাবে সিন্ক হয়েছে!`);
   }
 
   return (
@@ -453,6 +488,7 @@ function AppContent() {
               onOpenAdmin={() => setActiveTab('admin')}
               onOpenGift={() => setIsGiftOpen(true)}
               onOpenAuth={handleOpenAuth}
+              onSelectTab={handleSelectTab}
             />
           )}
 
@@ -506,6 +542,18 @@ function AppContent() {
             onOpenAuth={handleOpenAuth}
           />
         )}
+
+        {/* Real Balance In-Game Transfer Studio Modal */}
+        <WalletTransferModal
+          isOpen={transferModal.isOpen}
+          mode={transferModal.mode}
+          gameTitle={transferModal.gameTitle}
+          serverName={transferModal.serverName}
+          provider={transferModal.provider}
+          amount={transferModal.amount}
+          netProfit={transferModal.netProfit}
+          onComplete={handleTransferComplete}
+        />
 
         {/* Universal Master Game Engines (100% Real Balance, NO External Demo IFrames) */}
         {/* 1. Crash Master Engine (Aviator, Spaceman, JetX, Limbo) */}

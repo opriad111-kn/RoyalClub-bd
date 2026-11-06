@@ -2469,35 +2469,78 @@ export function GameProvider({ children }) {
       if (activeTx && (activeTx.type === 'withdrawal' || activeTx.type === 'withdraw')) {
         const refundAmount = Number(activeTx.amount || 0);
 
-        let uQuery = supabase.from('users').select('*');
-        if (activeTx.user_id) {
-          uQuery = uQuery.eq('id', activeTx.user_id);
-        } else if (activeTx.username) {
-          uQuery = uQuery.ilike('username', activeTx.username);
-        } else if (activeTx.account_number) {
-          uQuery = uQuery.eq('phone', activeTx.account_number);
+        // Find user from allUsers, logged in user, or Supabase
+        let targetUser = (allUsers || []).find(u => 
+          (activeTx.user_id && String(u.id) === String(activeTx.user_id)) ||
+          (activeTx.uid && String(u.uid) === String(activeTx.uid)) ||
+          (activeTx.username && u.username && u.username.toLowerCase() === activeTx.username.toLowerCase()) ||
+          (activeTx.account_number && u.phone === activeTx.account_number)
+        );
+
+        if (!targetUser && user && (
+          (activeTx.user_id && String(user.id) === String(activeTx.user_id)) ||
+          (activeTx.uid && String(user.uid) === String(activeTx.uid)) ||
+          (activeTx.username && user.username && user.username.toLowerCase() === activeTx.username.toLowerCase()) ||
+          (activeTx.account_number && user.phone === activeTx.account_number)
+        )) {
+          targetUser = user;
         }
 
-        const { data: uList } = await uQuery;
-        if (uList && uList.length > 0) {
-          const targetUser = uList[0];
-          const refundedBal = parseFloat((Number(targetUser.balance || 0) + refundAmount).toFixed(2));
-          const reducedWithdrawn = Math.max(0, parseFloat((Number(targetUser.total_withdrawn || 0) - refundAmount).toFixed(2)));
+        let dbTargetUser = targetUser;
+        try {
+          let uQuery = supabase.from('users').select('*');
+          if (activeTx.user_id) uQuery = uQuery.eq('id', activeTx.user_id);
+          else if (activeTx.username) uQuery = uQuery.ilike('username', activeTx.username);
+          else if (activeTx.account_number) uQuery = uQuery.eq('phone', activeTx.account_number);
+          const { data: uList } = await uQuery;
+          if (uList && uList.length > 0) dbTargetUser = uList[0];
+        } catch (e) {}
 
-          await supabase.from('users').update({
-            balance: refundedBal,
-            total_withdrawn: reducedWithdrawn
-          }).eq('id', targetUser.id);
+        const currentBal = Number((dbTargetUser && dbTargetUser.balance) || (targetUser && targetUser.balance) || 0);
+        const refundedBal = parseFloat((currentBal + refundAmount).toFixed(2));
+        const reducedWithdrawn = Math.max(0, parseFloat((Number((dbTargetUser && dbTargetUser.total_withdrawn) || 0) - refundAmount).toFixed(2)));
 
-          setUser(prev => {
-            if (prev && (prev.id === targetUser.id || (prev.username && prev.username.toLowerCase() === targetUser.username.toLowerCase()) || prev.phone === targetUser.phone)) {
-              const u = { ...prev, balance: refundedBal, total_withdrawn: reducedWithdrawn };
-              try { localStorage.setItem('royalclub_current_user', JSON.stringify(u)); } catch (e) {}
-              return u;
-            }
-            return prev;
-          });
+        // Update Supabase users table with refund
+        try {
+          if (dbTargetUser && dbTargetUser.id) {
+            await supabase.from('users').update({ balance: refundedBal, total_withdrawn: reducedWithdrawn }).eq('id', dbTargetUser.id);
+          }
+          if (activeTx.username) {
+            await supabase.from('users').update({ balance: refundedBal, total_withdrawn: reducedWithdrawn }).ilike('username', activeTx.username);
+          }
+          if (activeTx.account_number) {
+            await supabase.from('users').update({ balance: refundedBal, total_withdrawn: reducedWithdrawn }).eq('phone', activeTx.account_number);
+          }
+        } catch (e) {
+          console.warn('Supabase balance refund error:', e);
         }
+
+        // Update state & localStorage
+        setUser(prev => {
+          if (prev && (
+            (activeTx.user_id && String(prev.id) === String(activeTx.user_id)) ||
+            (activeTx.uid && String(prev.uid) === String(activeTx.uid)) ||
+            (activeTx.username && prev.username && prev.username.toLowerCase() === activeTx.username.toLowerCase()) ||
+            (activeTx.account_number && prev.phone === activeTx.account_number)
+          )) {
+            const u = { ...prev, balance: refundedBal, total_withdrawn: reducedWithdrawn };
+            try { localStorage.setItem('royalclub_current_user', JSON.stringify(u)); } catch (e) {}
+            return u;
+          }
+          return prev;
+        });
+
+        setAllUsers(prev => prev.map(u => {
+          if (
+            (activeTx.user_id && String(u.id) === String(activeTx.user_id)) ||
+            (activeTx.uid && String(u.uid) === String(activeTx.uid)) ||
+            (activeTx.username && u.username && u.username.toLowerCase() === activeTx.username.toLowerCase()) ||
+            (activeTx.account_number && u.phone === activeTx.account_number)
+          ) {
+            return { ...u, balance: refundedBal, total_withdrawn: reducedWithdrawn };
+          }
+          return u;
+        }));
       }
     } catch (e) {
       console.error('Supabase reject tx error:', e);
@@ -2591,12 +2634,16 @@ export function GameProvider({ children }) {
     }));
 
     // Live background sync to Supabase users table
-    if (targetName) {
-      try {
-        supabase.from('users').update({ balance: nextBal }).eq('username', targetName)
+    try {
+      if (targetName) {
+        supabase.from('users').update({ balance: nextBal }).ilike('username', targetName)
           .then(() => {}).catch(e => console.warn('Supabase balance update notice:', e));
-      } catch (e) {}
-    }
+      }
+      if (targetUid) {
+        supabase.from('users').update({ balance: nextBal }).or(`id.eq.${targetUid},uid.eq.${targetUid}`)
+          .then(() => {}).catch(e => console.warn('Supabase balance update notice:', e));
+      }
+    } catch (e) {}
   }
 
   function toggleBanUser(targetUid) {
