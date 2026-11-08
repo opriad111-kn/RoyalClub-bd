@@ -128,6 +128,7 @@ export default function AdminDashboard({ onExit }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [statusNotice, setStatusNotice] = useState('');
+  const [userFilterTab, setUserFilterTab] = useState('all'); // 'all', 'online', 'in_game', 'depositors', 'targeted', 'banned'
 
   // 3. User Management Modal State
   const [selectedUser, setSelectedUser] = useState(null);
@@ -462,56 +463,207 @@ export default function AdminDashboard({ onExit }) {
     setTimeout(() => setStatusNotice(''), 3000);
   }
 
-  // Format Account Age Helper
-  function formatAccountAge(dateStr) {
-    if (!dateStr) return 'Recently';
-    const now = Date.now();
-    const created = new Date(dateStr).getTime();
-    if (isNaN(created)) return 'Recently';
-    const diffHours = Math.max(0, Math.floor((now - created) / (1000 * 60 * 60)));
-    if (diffHours < 1) {
-      const diffMins = Math.max(1, Math.floor((now - created) / (1000 * 60)));
-      return `Joined ${diffMins}m ago`;
-    }
-    if (diffHours < 24) return `Joined ${diffHours}h ago`;
-    const diffDays = Math.floor(diffHours / 24);
-    return `Joined ${diffDays}d ago`;
-  }
-
-  // Format Last Active Helper
-  function formatLastActive(dateStr, isOnline) {
-    if (isOnline) return 'Online Now';
-    if (!dateStr) return 'Offline';
-    const now = Date.now();
-    const active = new Date(dateStr).getTime();
-    if (isNaN(active)) return 'Offline';
-    const diffMins = Math.max(1, Math.floor((now - active) / (1000 * 60)));
-    if (diffMins < 60) return `Active ${diffMins}m ago`;
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `Active ${diffHours}h ago`;
-    return `Active ${Math.floor(diffHours / 24)}d ago`;
-  }
-
+  // Real, accurate online detection: active in the last 150 seconds or created in last 2 mins
   function isUserOnline(u) {
-    if (u.is_online) return true;
-    if (!u.last_active_at) return false;
-    const diffMs = Date.now() - new Date(u.last_active_at).getTime();
-    return diffMs < 120000;
+    if (!u) return false;
+    if (u.last_active_at) {
+      const diffMs = Date.now() - new Date(u.last_active_at).getTime();
+      if (!isNaN(diffMs) && diffMs >= 0) {
+        return diffMs < 150000; // 2.5 minutes
+      }
+    }
+    if (u.created_at) {
+      const diffCreated = Date.now() - new Date(u.created_at).getTime();
+      if (!isNaN(diffCreated) && diffCreated >= 0 && diffCreated < 120000) {
+        return true;
+      }
+    }
+    return false;
   }
 
-  // Filtered Users List
-  const userList = (allUsers || []).filter(u => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      (u.username && u.username.toLowerCase().includes(q)) ||
-      (u.phone && u.phone.includes(q)) ||
-      (u.uid && u.uid.toString().includes(q))
-    );
-  });
+  // Format Account Age with Bengali & English Details
+  function formatAccountAge(dateStr) {
+    if (!dateStr) return { relative: 'অজ্ঞাত', exact: 'N/A', daysAgo: 0, badge: 'Old', badgeColor: 'bg-slate-800 text-slate-400 border-slate-700' };
+    const created = new Date(dateStr).getTime();
+    if (isNaN(created)) return { relative: 'অজ্ঞাত', exact: 'N/A', daysAgo: 0, badge: 'Old', badgeColor: 'bg-slate-800 text-slate-400 border-slate-700' };
+    const now = Date.now();
+    const diffMs = Math.max(0, now - created);
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    const d = new Date(created);
+    const exact = d.toLocaleDateString('en-GB') + ' ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
-  const onlineUsers = userList.filter(u => isUserOnline(u) || u.username === 'iueri' || (u.uid && u.uid === '722200'));
-  const inGameUsers = userList.filter(u => u.current_game && u.current_game !== 'Lobby' && isUserOnline(u));
+    if (diffMins < 60) {
+      const m = Math.max(1, diffMins);
+      return {
+        relative: m <= 2 ? 'এইমাত্র খোলা' : `${m} মিনিট আগে`,
+        exact,
+        daysAgo: 0,
+        badge: 'New (নতুন)',
+        badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+      };
+    }
+    if (diffHours < 24) {
+      return {
+        relative: `আজকে (${diffHours} ঘণ্টা আগে)`,
+        exact,
+        daysAgo: 0,
+        badge: 'Today (আজকে)',
+        badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+      };
+    }
+    if (diffDays === 1) {
+      return {
+        relative: `১ দিন আগে (গতকাল)`,
+        exact,
+        daysAgo: 1,
+        badge: '১ দিন আগে',
+        badgeColor: 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+      };
+    }
+    return {
+      relative: `${diffDays} দিন আগে`,
+      exact,
+      daysAgo: diffDays,
+      badge: `${diffDays} দিন আগে`,
+      badgeColor: 'bg-slate-800/80 text-slate-300 border-slate-700/50'
+    };
+  }
+
+  // Format Last Active with Bengali & English Details
+  function formatLastActive(dateStr, isOnline) {
+    if (isOnline) {
+      return {
+        isOnline: true,
+        label: 'Online Now',
+        bnLabel: '🟢 লাইভ অনলাইন',
+        relative: 'বর্তমানে ব্রাউজারে সক্রিয়',
+        exact: 'সরাসরি অনলাইন',
+        badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 ring-1 ring-emerald-500/20'
+      };
+    }
+    if (!dateStr) {
+      return {
+        isOnline: false,
+        label: 'Offline',
+        bnLabel: '⚪ অফলাইন',
+        relative: 'অনেক আগে এক্টিভ ছিল',
+        exact: 'লগইন রেকর্ড নেই',
+        badgeColor: 'bg-slate-800/40 text-slate-500 border-slate-700/30'
+      };
+    }
+    const active = new Date(dateStr).getTime();
+    if (isNaN(active)) {
+      return {
+        isOnline: false,
+        label: 'Offline',
+        bnLabel: '⚪ অফলাইন',
+        relative: 'অজ্ঞাত',
+        exact: 'N/A',
+        badgeColor: 'bg-slate-800/40 text-slate-500 border-slate-700/30'
+      };
+    }
+    const now = Date.now();
+    const diffMs = Math.max(0, now - active);
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    const d = new Date(active);
+    const exact = d.toLocaleDateString('en-GB') + ' ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+    if (diffMins < 1) {
+      return {
+        isOnline: false,
+        label: '1m ago',
+        bnLabel: 'এইমাত্র অফলাইন',
+        relative: '১ মিনিট আগে এক্টিভ ছিল',
+        exact,
+        badgeColor: 'bg-teal-500/10 text-teal-400 border-teal-500/30'
+      };
+    }
+    if (diffMins < 60) {
+      return {
+        isOnline: false,
+        label: `${diffMins}m ago`,
+        bnLabel: `${diffMins} মি. আগে`,
+        relative: `${diffMins} মিনিট আগে এক্টিভ ছিল`,
+        exact,
+        badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+      };
+    }
+    if (diffHours < 24) {
+      return {
+        isOnline: false,
+        label: `${diffHours}h ago`,
+        bnLabel: `${diffHours} ঘণ্টা আগে`,
+        relative: `${diffHours} ঘণ্টা আগে এক্টিভ ছিল`,
+        exact,
+        badgeColor: 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+      };
+    }
+    if (diffDays === 1) {
+      return {
+        isOnline: false,
+        label: 'Yesterday',
+        bnLabel: 'গতকাল এক্টিভ',
+        relative: '১ দিন আগে এক্টিভ ছিল',
+        exact,
+        badgeColor: 'bg-purple-500/10 text-purple-400 border-purple-500/30'
+      };
+    }
+    return {
+      isOnline: false,
+      label: `${diffDays}d ago`,
+      bnLabel: `${diffDays} দিন আগে`,
+      relative: `${diffDays} দিন আগে এক্টিভ ছিল`,
+      exact,
+      badgeColor: 'bg-slate-800/60 text-slate-400 border-slate-700/40'
+    };
+  }
+
+  // User metrics & live lists
+  const onlineUsers = (allUsers || []).filter(u => isUserOnline(u));
+  const inGameUsers = (allUsers || []).filter(u => u.current_game && u.current_game !== 'Lobby' && isUserOnline(u));
+  const depositorUsers = (allUsers || []).filter(u => Number(u.total_deposited || 0) > 0);
+  const targetedUsers = (allUsers || []).filter(u => u.force_result === 'force_lose' || u.force_mode === 'force_loss' || u.force_mode === 'drain_to_zero' || (u.custom_win_rate !== undefined && Number(u.custom_win_rate) < 20));
+  const bannedUsers = (allUsers || []).filter(u => Boolean(u.is_banned));
+
+  // Dynamic User Filter List
+  const userList = (allUsers || []).filter(u => {
+    // 1. Search Query
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const match = (
+        (u.username && u.username.toLowerCase().includes(q)) ||
+        (u.phone && String(u.phone).includes(q)) ||
+        (u.uid && String(u.uid).includes(q)) ||
+        (u.id && String(u.id).toLowerCase().includes(q)) ||
+        (u.device_info && u.device_info.toLowerCase().includes(q))
+      );
+      if (!match) return false;
+    }
+
+    // 2. Tab Filter
+    if (activeNav === 'online_users' || userFilterTab === 'online') {
+      return isUserOnline(u);
+    }
+    if (userFilterTab === 'in_game') {
+      return u.current_game && u.current_game !== 'Lobby' && isUserOnline(u);
+    }
+    if (userFilterTab === 'depositors') {
+      return Number(u.total_deposited || 0) > 0;
+    }
+    if (userFilterTab === 'targeted') {
+      return u.force_result === 'force_lose' || u.force_mode === 'force_loss' || u.force_mode === 'drain_to_zero' || (u.custom_win_rate !== undefined && Number(u.custom_win_rate) < 20);
+    }
+    if (userFilterTab === 'banned') {
+      return Boolean(u.is_banned);
+    }
+    return true;
+  });
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -1242,15 +1394,76 @@ export default function AdminDashboard({ onExit }) {
           {/* MODULE 2: USER MANAGEMENT */}
           {(activeNav === 'all_users' || activeNav === 'online_users') && (
             <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-xl font-black text-white">
-                    {activeNav === 'online_users' ? 'Live Online Users' : 'User Management Center'}
+                  <h2 className="text-xl font-black text-white flex items-center space-x-2">
+                    <span>{activeNav === 'online_users' ? '🟢 Live Online Users' : '👥 User Management Center'}</span>
+                    <span className="text-xs bg-[#F5BE00] text-slate-950 px-2 py-0.5 rounded-full font-black">
+                      {userList.length} জন
+                    </span>
                   </h2>
                   <p className="text-xs text-[#8b949e]">
-                    সকল ইউজারের তালিকা, ব্যালেন্স, ভিআইপি স্ট্যাটাস এবং অ্যাকাউন্ট অ্যাকশন হাব
+                    সকল ইউজারের অ্যাকাউন্ট বয়স, লাইভ অনলাইন উপস্থিতি, শেষ সক্রিয় সময় ও লাক কন্ট্রোল হাব
                   </p>
                 </div>
+
+                {/* Search Bar */}
+                <div className="relative min-w-[260px]">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="ইউজারনেম, UID, মোবাইল বা ডিভাইস দিয়ে খুঁজুন..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-[#161b22] border border-[#30363d] rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#F5BE00]"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* High-Level User Sub-Filter Tabs */}
+              <div className="flex items-center space-x-2 overflow-x-auto no-scrollbar pb-1 text-xs font-bold">
+                {[
+                  { id: 'all', label: '👥 সব ইউজার', count: allUsers?.length || 0, color: 'text-white' },
+                  { id: 'online', label: '🟢 লাইভ অনলাইন', count: onlineUsers.length, color: 'text-emerald-400' },
+                  { id: 'in_game', label: '🎮 গেমে আছেন', count: inGameUsers.length, color: 'text-yellow-400' },
+                  { id: 'depositors', label: '💰 ডিপোজিটর', count: depositorUsers.length, color: 'text-amber-400' },
+                  { id: 'targeted', label: '🎯 টার্গেটেড লস', count: targetedUsers.length, color: 'text-rose-400' },
+                  { id: 'banned', label: '🚫 ব্যানড', count: bannedUsers.length, color: 'text-slate-400' }
+                ].map(tab => {
+                  const isActive = (activeNav === 'online_users' && tab.id === 'online') || (activeNav === 'all_users' && userFilterTab === tab.id);
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => {
+                        if (activeNav === 'online_users') {
+                          setActiveNav('all_users');
+                        }
+                        setUserFilterTab(tab.id);
+                      }}
+                      className={`px-3 py-1.5 rounded-xl border transition flex items-center space-x-1.5 shrink-0 cursor-pointer ${
+                        isActive
+                          ? 'bg-[#F5BE00] text-slate-950 font-black border-[#F5BE00] shadow-sm'
+                          : 'bg-[#161b22] hover:bg-[#21262d] text-slate-300 border-[#21262d]'
+                      }`}
+                    >
+                      <span>{tab.label}</span>
+                      <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+                        isActive ? 'bg-slate-950 text-[#F5BE00]' : 'bg-[#0d1117] text-slate-400 border border-[#30363d]'
+                      }`}>
+                        {tab.count}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
 
               <div className="bg-[#161b22] border border-[#21262d] rounded-2xl overflow-hidden shadow-sm">
@@ -1258,8 +1471,9 @@ export default function AdminDashboard({ onExit }) {
                   <table className="w-full text-left text-xs">
                     <thead className="bg-[#0d1117] text-[#8b949e] border-b border-[#21262d] uppercase text-[10px] tracking-wider">
                       <tr>
-                        <th className="p-3.5">User & Account Info</th>
-                        <th className="p-3.5">Live Presence & Game</th>
+                        <th className="p-3.5">User Profile & ID</th>
+                        <th className="p-3.5">অ্যাকাউন্ট বয়স (Registration)</th>
+                        <th className="p-3.5">অনলাইন স্ট্যাটাস ও শেষ এক্টিভ</th>
                         <th className="p-3.5">Balance & Quick Adjust</th>
                         <th className="p-3.5">Financial Summary</th>
                         <th className="p-3.5">Turnover</th>
@@ -1269,50 +1483,79 @@ export default function AdminDashboard({ onExit }) {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#21262d]">
-                      {(activeNav === 'online_users' ? onlineUsers : userList).map(u => {
+                      {userList.map(u => {
                         const currentMode = u.force_mode || (u.force_result === 'force_lose' || u.luck_mode === 'drain' ? 'drain_to_zero' : (u.force_result === 'force_win' || u.luck_mode === 'sweetener' ? 'force_win' : 'normal'));
                         const currentRtp = u.custom_rtp !== undefined && u.custom_rtp !== null ? Number(u.custom_rtp) : (u.custom_win_rate !== undefined ? Number(u.custom_win_rate) : (currentMode === 'drain_to_zero' ? 0 : currentMode === 'force_loss' ? 5 : currentMode === 'force_win' ? 65 : 20));
                         const netUserProfit = (Number(u.total_deposited) || 0) - (Number(u.total_withdrawn) || 0);
+
+                        const ageInfo = formatAccountAge(u.created_at);
+                        const isOnline = isUserOnline(u);
+                        const activeInfo = formatLastActive(u.last_active_at, isOnline);
 
                         return (
                           <tr key={u.uid || u.id} className="hover:bg-[#1f242c] transition">
                             {/* 1. User & Account Info */}
                             <td className="p-3.5">
                               <div className="flex items-center space-x-2.5">
-                                <div className="w-9 h-9 rounded-full bg-amber-500/20 text-[#F5BE00] border border-amber-500/30 flex items-center justify-center font-black text-xs shrink-0 shadow">
-                                  {u.username ? u.username[0].toUpperCase() : 'U'}
+                                <div className="relative">
+                                  <div className="w-10 h-10 rounded-full bg-amber-500/20 text-[#F5BE00] border border-amber-500/30 flex items-center justify-center font-black text-sm shrink-0 shadow">
+                                    {u.username ? u.username[0].toUpperCase() : 'U'}
+                                  </div>
+                                  {isOnline && (
+                                    <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#161b22] animate-pulse" />
+                                  )}
                                 </div>
                                 <div className="min-w-0">
                                   <div className="flex items-center space-x-1.5">
-                                    <span className="font-bold text-white block truncate">{u.username}</span>
+                                    <span className="font-black text-white block truncate text-sm">{u.username}</span>
                                     <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0">
                                       VIP {u.vip_level || 1}
                                     </span>
+                                    {u.is_banned && (
+                                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30 shrink-0">
+                                        BANNED
+                                      </span>
+                                    )}
                                   </div>
-                                  <span className="text-[10px] text-[#8b949e] font-mono block">{u.phone || 'No Phone'} • #{u.uid}</span>
-                                  <div className="flex items-center space-x-1.5 text-[9px] text-slate-500 mt-0.5">
-                                    <span className="text-amber-400/80 font-bold">{formatAccountAge(u.created_at)}</span>
-                                    <span>•</span>
+                                  <span className="text-[11px] text-[#8b949e] font-mono block font-semibold">{u.phone || 'No Phone'} • #{u.uid}</span>
+                                  <div className="flex items-center space-x-1.5 text-[9px] text-slate-400 mt-0.5">
                                     <span className="truncate">{u.device_info || u.device || 'Android'}</span>
                                   </div>
                                 </div>
                               </div>
                             </td>
 
-                            {/* 2. Live Presence & Game */}
+                            {/* 2. Account Age & Registration Date */}
                             <td className="p-3.5">
                               <div className="space-y-1">
-                                {isUserOnline(u) ? (
-                                  <span className="inline-flex items-center space-x-1.5 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-                                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                                    <span>Online Now</span>
+                                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-black border ${ageInfo.badgeColor}`}>
+                                  {ageInfo.relative}
+                                </span>
+                                <span className="text-[10px] text-slate-400 font-mono block">
+                                  {ageInfo.exact}
+                                </span>
+                              </div>
+                            </td>
+
+                            {/* 3. Live Presence & Last Active Time */}
+                            <td className="p-3.5">
+                              <div className="space-y-1.5">
+                                {isOnline ? (
+                                  <span className="inline-flex items-center space-x-1.5 text-[10px] font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 rounded-full shadow-sm">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                                    <span>🟢 Live Online (এখন সক্রিয়)</span>
                                   </span>
                                 ) : (
-                                  <span className="text-[10px] text-slate-400 block font-mono">
-                                    {formatLastActive(u.last_active_at, false)}
-                                  </span>
+                                  <div className="space-y-0.5">
+                                    <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-black border ${activeInfo.badgeColor}`}>
+                                      {activeInfo.bnLabel}
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 block font-mono">
+                                      {activeInfo.exact}
+                                    </span>
+                                  </div>
                                 )}
-                                <div className="mt-1">
+                                <div>
                                   <span className="inline-flex items-center space-x-1 text-[10px] font-bold px-2 py-0.5 rounded bg-[#0d1117] border border-[#21262d] text-yellow-300">
                                     <span>{u.current_game && u.current_game !== 'Lobby' ? `🎮 Playing ${u.current_game}` : '🛋️ In Lobby'}</span>
                                   </span>
@@ -1320,14 +1563,14 @@ export default function AdminDashboard({ onExit }) {
                               </div>
                             </td>
 
-                            {/* 3. Balance & Quick Adjust (+/-) */}
+                            {/* 4. Balance & Quick Adjust (+/-) */}
                             <td className="p-3.5">
                               <div className="space-y-1.5">
                                 <span className="font-mono font-black text-[#F5BE00] text-sm block">
                                   ৳{(u.balance || 0).toFixed(2)}
                                 </span>
                                 <div className="flex items-center space-x-1">
-                                  {[-50, -10, 10, 50].map(amt => (
+                                  {[-50, -10, 10, 50, 200].map(amt => (
                                     <button
                                       key={amt}
                                       type="button"
@@ -1349,18 +1592,18 @@ export default function AdminDashboard({ onExit }) {
                               </div>
                             </td>
 
-                            {/* 4. Financial Summary */}
+                            {/* 5. Financial Summary */}
                             <td className="p-3.5 font-mono text-xs">
                               <div className="space-y-0.5">
-                                <span className="text-emerald-400 block">+৳{(u.total_deposited || 0).toFixed(0)} <span className="text-[9px] text-[#8b949e]">Dep</span></span>
-                                <span className="text-rose-400 block">-৳{(u.total_withdrawn || 0).toFixed(0)} <span className="text-[9px] text-[#8b949e]">Wdr</span></span>
-                                <span className={`text-[10px] font-bold block pt-0.5 border-t border-[#21262d] ${netUserProfit >= 0 ? 'text-[#F5BE00]' : 'text-rose-400'}`}>
+                                <span className="text-emerald-400 block font-bold">+৳{(u.total_deposited || 0).toFixed(0)} <span className="text-[9px] text-[#8b949e]">Dep</span></span>
+                                <span className="text-rose-400 block font-bold">-৳{(u.total_withdrawn || 0).toFixed(0)} <span className="text-[9px] text-[#8b949e]">Wdr</span></span>
+                                <span className={`text-[10px] font-black block pt-0.5 border-t border-[#21262d] ${netUserProfit >= 0 ? 'text-[#F5BE00]' : 'text-rose-400'}`}>
                                   Net: {netUserProfit >= 0 ? '+' : ''}৳{netUserProfit.toFixed(0)}
                                 </span>
                               </div>
                             </td>
 
-                            {/* 5. Turnover */}
+                            {/* 6. Turnover */}
                             <td className="p-3.5">
                               <div className="space-y-1">
                                 <div className="flex justify-between text-[9px] font-mono text-[#8b949e]">
@@ -1378,7 +1621,7 @@ export default function AdminDashboard({ onExit }) {
                               </div>
                             </td>
 
-                            {/* 6. 1-Click Luck Manipulation (4 Modes) */}
+                            {/* 7. 1-Click Luck Manipulation (4 Modes) */}
                             <td className="p-3.5">
                               <div className="grid grid-cols-2 gap-1 w-44">
                                 {[
@@ -1412,7 +1655,7 @@ export default function AdminDashboard({ onExit }) {
                               </div>
                             </td>
 
-                            {/* 7. Target RTP Slider */}
+                            {/* 8. Target RTP Slider */}
                             <td className="p-3.5">
                               <div className="w-24 space-y-1">
                                 <div className="flex justify-between items-center text-[10px]">
@@ -1434,7 +1677,7 @@ export default function AdminDashboard({ onExit }) {
                               </div>
                             </td>
 
-                            {/* 8. Actions */}
+                            {/* 9. Actions */}
                             <td className="p-3.5 text-right">
                               <button
                                 onClick={() => handleSelectUser(u)}
@@ -3174,27 +3417,93 @@ export default function AdminDashboard({ onExit }) {
             </div>
 
             {/* TAB 1: Profile & Status */}
-            {userModalTab === 'profile' && (
-              <div className="space-y-3">
-                <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-3.5 space-y-2">
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <span className="text-[#8b949e] block text-[10px]">Current Balance:</span>
-                      <span className="font-mono font-black text-[#F5BE00] text-sm">৳{(selectedUser.balance || 0).toFixed(2)}</span>
+            {userModalTab === 'profile' && (() => {
+              const selAge = formatAccountAge(selectedUser.created_at);
+              const selOnline = isUserOnline(selectedUser);
+              const selActive = formatLastActive(selectedUser.last_active_at, selOnline);
+              const selLogin = formatLastActive(selectedUser.last_login_at, false);
+
+              return (
+                <div className="space-y-3">
+                  {/* Dedicated User Timeline & Activity Hub */}
+                  <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-4 space-y-3 shadow-inner">
+                    <div className="flex items-center justify-between pb-2 border-b border-[#21262d]">
+                      <div className="flex items-center space-x-2">
+                        <Clock className="w-4 h-4 text-[#F5BE00]" />
+                        <span className="text-xs font-black text-white">অ্যাকাউন্ট উপস্থিতি ও হিস্টরি হাব</span>
+                      </div>
+                      {selOnline ? (
+                        <span className="inline-flex items-center space-x-1.5 text-[10px] font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 rounded-full shadow-sm">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                          <span>🟢 লাইভ সক্রিয় (Online Now)</span>
+                        </span>
+                      ) : (
+                        <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${selActive.badgeColor}`}>
+                          {selActive.bnLabel}
+                        </span>
+                      )}
                     </div>
-                    <div>
-                      <span className="text-[#8b949e] block text-[10px]">Total Wagered:</span>
-                      <span className="font-mono font-bold text-white">৳{(selectedUser.total_wagered || 0).toFixed(2)}</span>
-                    </div>
-                    <div>
-                      <span className="text-[#8b949e] block text-[10px]">Total Deposited:</span>
-                      <span className="font-mono font-bold text-emerald-400">৳{(selectedUser.total_deposited || 0).toFixed(2)}</span>
-                    </div>
-                    <div>
-                      <span className="text-[#8b949e] block text-[10px]">Total Withdrawn:</span>
-                      <span className="font-mono font-bold text-rose-400">৳{(selectedUser.total_withdrawn || 0).toFixed(2)}</span>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                      {/* 1. Account Age */}
+                      <div className="bg-[#161b22] border border-[#21262d] rounded-xl p-2.5">
+                        <span className="text-[10px] text-[#8b949e] block font-medium">📅 অ্যাকাউন্ট খোলার সময়:</span>
+                        <span className="text-white font-black block mt-0.5 text-xs">{selAge.relative}</span>
+                        <span className="text-[10px] text-slate-400 font-mono block mt-0.5">{selAge.exact}</span>
+                      </div>
+
+                      {/* 2. Last Active */}
+                      <div className="bg-[#161b22] border border-[#21262d] rounded-xl p-2.5">
+                        <span className="text-[10px] text-[#8b949e] block font-medium">⏱️ সর্বশেষ সক্রিয় ছিল:</span>
+                        <span className={`font-black block mt-0.5 text-xs ${selOnline ? 'text-emerald-400' : 'text-slate-200'}`}>
+                          {selActive.relative}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-mono block mt-0.5">{selActive.exact}</span>
+                      </div>
+
+                      {/* 3. Last Login */}
+                      <div className="bg-[#161b22] border border-[#21262d] rounded-xl p-2.5">
+                        <span className="text-[10px] text-[#8b949e] block font-medium">🔑 সর্বশেষ লগইন:</span>
+                        <span className="text-white font-bold block mt-0.5 text-xs">
+                          {selectedUser.last_login_at ? selLogin.relative : 'লগইন রেকর্ড নেই'}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
+                          {selectedUser.last_login_at ? selLogin.exact : 'N/A'}
+                        </span>
+                      </div>
+
+                      {/* 4. Current Game / Location & Device */}
+                      <div className="bg-[#161b22] border border-[#21262d] rounded-xl p-2.5">
+                        <span className="text-[10px] text-[#8b949e] block font-medium">🎮 বর্তমান অবস্থান ও ডিভাইস:</span>
+                        <span className="text-yellow-300 font-bold block mt-0.5 text-xs">
+                          {selectedUser.current_game && selectedUser.current_game !== 'Lobby' ? `🕹️ ${selectedUser.current_game}` : '🛋️ মেইন লবি (Lobby)'}
+                        </span>
+                        <span className="text-[10px] text-slate-400 block mt-0.5">
+                          {selectedUser.device_info || selectedUser.device || 'Android Mobile'} • IP: {selectedUser.ip || '103.147.218.44'}
+                        </span>
+                      </div>
                     </div>
                   </div>
+
+                  <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-3.5 space-y-2">
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-[#8b949e] block text-[10px]">Current Balance:</span>
+                        <span className="font-mono font-black text-[#F5BE00] text-sm">৳{(selectedUser.balance || 0).toFixed(2)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[#8b949e] block text-[10px]">Total Wagered:</span>
+                        <span className="font-mono font-bold text-white">৳{(selectedUser.total_wagered || 0).toFixed(2)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[#8b949e] block text-[10px]">Total Deposited:</span>
+                        <span className="font-mono font-bold text-emerald-400">৳{(selectedUser.total_deposited || 0).toFixed(2)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[#8b949e] block text-[10px]">Total Withdrawn:</span>
+                        <span className="font-mono font-bold text-rose-400">৳{(selectedUser.total_withdrawn || 0).toFixed(2)}</span>
+                      </div>
+                    </div>
 
                   <div className="pt-2 border-t border-[#21262d] flex justify-between text-[10px] text-[#8b949e]">
                     <span>IP: {selectedUser.ip || '103.147.218.44'}</span>
@@ -3370,7 +3679,8 @@ export default function AdminDashboard({ onExit }) {
                   Toggle Account Ban Status
                 </button>
               </div>
-            )}
+            );
+          })()}
 
             {/* TAB 2: Balance Adjust with Reason */}
             {userModalTab === 'balance' && (
@@ -3465,18 +3775,80 @@ export default function AdminDashboard({ onExit }) {
             {/* TAB 4: User Betting & Transaction History */}
             {userModalTab === 'history' && (
               <div className="space-y-3">
+                {/* 1. Transactions */}
                 <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-3.5 space-y-2">
-                  <span className="font-bold text-xs text-white block">Recent User Transactions:</span>
-                  <div className="max-h-40 overflow-y-auto space-y-1.5 text-[11px]">
+                  <span className="font-bold text-xs text-white flex items-center justify-between">
+                    <span>Recent Transactions (ডিপোজিট ও উইথড্র):</span>
+                    <span className="text-[10px] text-amber-400 font-mono">{selectedUserTxs.length} records</span>
+                  </span>
+                  <div className="max-h-44 overflow-y-auto space-y-1.5 text-[11px] pr-1">
                     {selectedUserTxs.length > 0 ? (
                       selectedUserTxs.map(tx => (
-                        <div key={tx.id} className="flex justify-between p-2 rounded-lg bg-[#161b22]">
-                          <span>{tx.type.toUpperCase()} ({tx.method})</span>
-                          <span className="font-mono text-[#F5BE00] font-bold">৳{tx.amount}</span>
+                        <div key={tx.id || tx.trx_id} className="flex justify-between items-center p-2 rounded-xl bg-[#161b22] border border-[#21262d]">
+                          <div>
+                            <div className="flex items-center space-x-1.5">
+                              <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${
+                                tx.type === 'deposit' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'
+                              }`}>
+                                {tx.type.toUpperCase()}
+                              </span>
+                              <span className="text-white font-medium">{tx.method || 'E-Wallet'}</span>
+                              <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${
+                                tx.status === 'approved' || tx.status === 'completed'
+                                  ? 'bg-emerald-500/10 text-emerald-400'
+                                  : tx.status === 'rejected'
+                                  ? 'bg-rose-500/10 text-rose-400'
+                                  : 'bg-yellow-500/10 text-yellow-400'
+                              }`}>
+                                {tx.status}
+                              </span>
+                            </div>
+                            <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
+                              {tx.created_at ? new Date(tx.created_at).toLocaleString('en-GB') : 'Recently'}
+                            </span>
+                          </div>
+                          <span className="font-mono text-[#F5BE00] font-black text-xs">৳{tx.amount}</span>
                         </div>
                       ))
                     ) : (
-                      <span className="text-[#8b949e]">কোনো ট্রানজেকশন রেকর্ড পাওয়া যায়নি</span>
+                      <span className="text-[#8b949e] text-xs block py-2 text-center">কোনো ট্রানজেকশন রেকর্ড পাওয়া যায়নি</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* 2. Betting Records */}
+                <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-3.5 space-y-2">
+                  <span className="font-bold text-xs text-white flex items-center justify-between">
+                    <span>Recent Game Bets (খেলার রেকর্ড):</span>
+                    <span className="text-[10px] text-amber-400 font-mono">{selectedUserBets.length} bets</span>
+                  </span>
+                  <div className="max-h-44 overflow-y-auto space-y-1.5 text-[11px] pr-1">
+                    {selectedUserBets.length > 0 ? (
+                      selectedUserBets.map((b, idx) => (
+                        <div key={b.id || idx} className="flex justify-between items-center p-2 rounded-xl bg-[#161b22] border border-[#21262d]">
+                          <div>
+                            <div className="flex items-center space-x-1.5">
+                              <span className="text-white font-bold">{b.game || 'Game'}</span>
+                              <span className="text-[10px] text-amber-400 font-mono">{b.mult || '1.00x'}</span>
+                              <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${
+                                (Number(b.win) || 0) > 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'
+                              }`}>
+                                {(Number(b.win) || 0) > 0 ? 'WIN' : 'LOST'}
+                              </span>
+                            </div>
+                            <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
+                              বেট: ৳{b.bet} {b.time ? `• ${b.time}` : ''}
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <span className="font-mono text-emerald-400 font-bold block text-xs">
+                              {(Number(b.win) || 0) > 0 ? `+৳${b.win}` : '৳0'}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <span className="text-[#8b949e] text-xs block py-2 text-center">কোনো গেম খেলার রেকর্ড পাওয়া যায়নি</span>
                     )}
                   </div>
                 </div>
