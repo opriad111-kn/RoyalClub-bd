@@ -219,7 +219,7 @@ export function GameProvider({ children }) {
       maxMultiplier: 3.5, // Strict max multiplier cap across all games
       maxProfitPerRound: 150, // Capped max profit per round in Taka
       microWinEnabled: true, // 70% of wins are micro-wins (0.3x - 1.2x) giving ৳1, ৳2, ৳3 on ৳5 bets
-      turnoverMultiplier: 2.0, // 2x deposit turnover required
+      turnoverMultiplier: 1.0, // 1x deposit turnover required (৳200 deposit = ৳200 turnover)
       aviatorMode: 'standard', // 'standard', 'early_crash', 'always_high'
       serverRtp: {
         JILI: 20,
@@ -530,6 +530,18 @@ export function GameProvider({ children }) {
         turnover_completed: nextTurnover
       };
       try { localStorage.setItem('royalclub_current_user', JSON.stringify(updated)); } catch (e) {}
+
+      // ✅ Persist turnover to Supabase so withdrawal check works correctly
+      const uid = prev.uid || prev.id;
+      if (uid) {
+        const patch = { current_turnover: nextTurnover, spins_since_deposit: nextSpinsSince, total_spins: nextTotalSpins };
+        // Use id if available, else uid
+        const q = prev.id
+          ? supabase.from('users').update(patch).eq('id', prev.id)
+          : supabase.from('users').update(patch).eq('uid', String(uid));
+        q.then(({ error }) => { if (error) console.warn('Turnover sync error:', error.message); });
+      }
+
       return updated;
     });
 
@@ -2601,19 +2613,27 @@ export function GameProvider({ children }) {
 
   function adjustUserBalance(targetUid, amount) {
     let nextBal = 0;
+    let nextTurnover = 0;
+    let targetId = null;
     let targetName = null;
+    // যখন টাকা কাটা হয় (বেট), সেটা টার্নওভারে যোগ হবে
     const addTurnover = amount < 0 ? Math.abs(amount) : 0;
 
     setUser(u => {
       if (u.uid === targetUid || u.id === targetUid) {
         nextBal = Math.max(0, parseFloat((u.balance + amount).toFixed(2)));
+        nextTurnover = parseFloat(((u.current_turnover || u.turnover_completed || 0) + addTurnover).toFixed(2));
         targetName = u.username;
-        return { 
+        targetId = u.id;
+        const updated = { 
           ...u, 
           balance: nextBal,
-          turnover_completed: parseFloat(((u.turnover_completed || 0) + addTurnover).toFixed(2)),
+          current_turnover: nextTurnover,
+          turnover_completed: nextTurnover,
           total_wagered: parseFloat(((u.total_wagered || 0) + addTurnover).toFixed(2))
         };
+        try { localStorage.setItem('royalclub_current_user', JSON.stringify(updated)); } catch (_) {}
+        return updated;
       }
       return u;
     });
@@ -2621,27 +2641,39 @@ export function GameProvider({ children }) {
     setAllUsers(prev => prev.map(u => {
       if (u.uid === targetUid || u.id === targetUid) {
         const b = Math.max(0, parseFloat((u.balance + amount).toFixed(2)));
+        const nt = parseFloat(((u.current_turnover || u.turnover_completed || 0) + addTurnover).toFixed(2));
         nextBal = b;
+        nextTurnover = nt;
         targetName = u.username;
+        targetId = u.id;
         return { 
           ...u, 
           balance: b,
-          turnover_completed: parseFloat(((u.turnover_completed || 0) + addTurnover).toFixed(2)),
+          current_turnover: nt,
+          turnover_completed: nt,
           total_wagered: parseFloat(((u.total_wagered || 0) + addTurnover).toFixed(2))
         };
       }
       return u;
     }));
 
-    // Live background sync to Supabase users table
+    // ✅ Supabase-এ ব্যালেন্স + টার্নওভার দুটোই sync করো
+    const supabasePatch = { balance: nextBal };
+    if (addTurnover > 0) supabasePatch.current_turnover = nextTurnover;
+
     try {
-      if (targetName) {
-        supabase.from('users').update({ balance: nextBal }).ilike('username', targetName)
-          .then(() => {}).catch(e => console.warn('Supabase balance update notice:', e));
-      }
-      if (targetUid) {
-        supabase.from('users').update({ balance: nextBal }).or(`id.eq.${targetUid},uid.eq.${targetUid}`)
-          .then(() => {}).catch(e => console.warn('Supabase balance update notice:', e));
+      if (targetId) {
+        supabase.from('users').update(supabasePatch).eq('id', targetId)
+          .then(({ error }) => { if (error) console.warn('Balance+Turnover sync error:', error.message); });
+      } else {
+        if (targetName) {
+          supabase.from('users').update(supabasePatch).ilike('username', targetName)
+            .then(() => {}).catch(e => console.warn('Supabase sync notice:', e));
+        }
+        if (targetUid) {
+          supabase.from('users').update(supabasePatch).or(`id.eq.${targetUid},uid.eq.${targetUid}`)
+            .then(() => {}).catch(e => console.warn('Supabase sync notice:', e));
+        }
       }
     } catch (e) {}
   }

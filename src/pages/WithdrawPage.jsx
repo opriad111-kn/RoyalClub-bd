@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import { useLanguage } from '../context/LanguageContext';
 import { KhelvIcon } from '../components/common/KhelvIcon';
+import { supabase } from '../lib/supabase';
 
 export default function WithdrawPage({ onBack, onOpenAuth }) {
   const { user, settings, requestWithdrawal, transactions, refreshSupabaseData, saveUserWalletAccount } = useGame();
@@ -9,6 +10,8 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
 
   // Navigation views: 'withdraw' | 'history' | 'wallet_list' | 'add_wallet'
   const [currentView, setCurrentView] = useState('withdraw');
+  // Live turnover from Supabase (always fresh)
+  const [liveTurnover, setLiveTurnover] = useState(null);
 
   const safeSettings = settings || {
     WITHDRAWAL_FEE_PERCENT: 0,
@@ -56,8 +59,29 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
   const netReceive = Math.max(0, numAmount - feeAmount);
 
   const reqTurnover = Number(safeUser?.required_turnover !== undefined ? safeUser.required_turnover : (safeUser?.turnover_required || 0.5));
-  const compTurnover = Number(safeUser?.current_turnover !== undefined ? safeUser.current_turnover : (safeUser?.turnover_completed || safeUser?.total_wagered || 0));
+  // liveTurnover থেকে নাও, না হলে user state থেকে
+  const compTurnover = liveTurnover !== null
+    ? liveTurnover
+    : Number(safeUser?.current_turnover !== undefined ? safeUser.current_turnover : (safeUser?.turnover_completed || safeUser?.total_wagered || 0));
   const turnoverRemaining = Math.max(0, reqTurnover - compTurnover);
+
+  // ✅ Supabase থেকে সরাসরি latest current_turnover নিয়ে আসো
+  useEffect(() => {
+    if (!safeUser?.id && !safeUser?.uid) return;
+    const fetchLiveTurnover = async () => {
+      const q = safeUser.id
+        ? supabase.from('users').select('current_turnover, required_turnover, balance').eq('id', safeUser.id).single()
+        : supabase.from('users').select('current_turnover, required_turnover, balance').eq('uid', String(safeUser.uid)).single();
+      const { data } = await q;
+      if (data) {
+        setLiveTurnover(Number(data.current_turnover || 0));
+      }
+    };
+    fetchLiveTurnover();
+    // প্রতি ১০ সেকেন্ডে আপডেট করো
+    const interval = setInterval(fetchLiveTurnover, 10000);
+    return () => clearInterval(interval);
+  }, [safeUser?.id, safeUser?.uid]);
 
   // Mask phone helper (e.g. 014*****319 matching Screenshot 1)
   const maskPhone = (num) => {
