@@ -43,7 +43,7 @@ export default function AviatorGame({ onClose }) {
 
   // Panel 1 Bet
   const [bet1, setBet1] = useState(50);
-  const [queuedBet1, setQueuedBet1] = useState(true);
+  const [queuedBet1, setQueuedBet1] = useState(false);
   const [isInRound1, setIsInRound1] = useState(false);
   const [cashed1, setCashed1] = useState(false);
   const [win1, setWin1] = useState(0);
@@ -104,28 +104,10 @@ export default function AviatorGame({ onClose }) {
 
   // Determine Next Crash Point (with Admin Rigging Controls & Dynamic Profit Engine)
   function calculateCrashPoint(activeBetPlaced) {
-    // 1. Emergency Admin Crash Override
-    if (settings?.AVIATOR_FORCE_CRASH_NOW) return 1.00;
-
-    // 2. Pre-set Crash Multiplier from Admin Controller
-    if (settings?.AVIATOR_NEXT_CRASH && Number(settings.AVIATOR_NEXT_CRASH) > 1.0) {
-      return parseFloat(Number(settings.AVIATOR_NEXT_CRASH).toFixed(2));
-    }
-
     const anyActiveBet = activeBetPlaced !== undefined 
       ? activeBetPlaced 
       : (queuedBet1 || queuedBet2 || isInRound1 || isInRound2);
 
-    // 3. User Mandate: When NO real player bets, let plane FLY HIGH (looks super enticing, 3.5x to 28x+)
-    if (!anyActiveBet) {
-      const r = Math.random();
-      if (r < 0.35) return parseFloat((3.50 + Math.random() * 4.5).toFixed(2)); // 3.5x - 8.0x
-      if (r < 0.75) return parseFloat((8.00 + Math.random() * 8.0).toFixed(2)); // 8.0x - 16.0x
-      return parseFloat((16.00 + Math.random() * 12.0).toFixed(2)); // 16.0x - 28.0x
-    }
-
-    // 4. Real Player HAS placed a bet in this round:
-    // Check if user is targeted for loss, drain-to-zero, custom win rate 0, or has active deposit turnover
     const isTargetedLoss = 
       user?.force_result === 'force_lose' ||
       user?.force_mode === 'force_loss' ||
@@ -135,39 +117,25 @@ export default function AviatorGame({ onClose }) {
       Number(user?.custom_rtp) === 0 ||
       (Number(user?.required_turnover || 0) > 0 && Number(user?.current_turnover || 0) < Number(user?.required_turnover || 0) && Number(user?.balance || 0) > 0);
 
-    if (isTargetedLoss) {
-      // User Mandate: Crash IMMEDIATELY at 1.00x at takeoff so they cannot cash out!
+    // 1. MANDATORY RULE: If real player bets OR is in targeted loss -> STRICT 1.00x TAKEOFF CRASH!
+    if (anyActiveBet || isTargetedLoss) {
       return 1.00;
     }
 
-    // 5. Anti-Exploit: Check if user has Auto Cash Out set (e.g., 1.20x - 1.25x)
-    const activeTargets = [];
-    if (autoCash1 && queuedBet1 && targetMult1 > 1.0) activeTargets.push(targetMult1);
-    if (autoCash2 && queuedBet2 && targetMult2 > 1.0) activeTargets.push(targetMult2);
-    if (cashIntent1Ref.current && cashIntent1Ref.current > 1.0) activeTargets.push(cashIntent1Ref.current);
-    if (cashIntent2Ref.current && cashIntent2Ref.current > 1.0) activeTargets.push(cashIntent2Ref.current);
+    // 2. Emergency Admin Crash Override
+    if (settings?.AVIATOR_FORCE_CRASH_NOW) return 1.00;
 
-    if (activeTargets.length > 0) {
-      const minTarget = Math.min(...activeTargets);
-      // Strictly crash BEFORE their target (at 1.00x to 1.08x)
-      const earlyCrash = parseFloat(Math.max(1.00, minTarget - (0.05 + Math.random() * 0.15)).toFixed(2));
-      return Math.min(1.08, earlyCrash);
+    // 3. Pre-set Crash Multiplier ONLY when explicitly set above 1.30 (not default 1.25)
+    if (settings?.AVIATOR_NEXT_CRASH && Number(settings.AVIATOR_NEXT_CRASH) > 1.30) {
+      return parseFloat(Number(settings.AVIATOR_NEXT_CRASH).toFixed(2));
     }
 
-    // 6. General Player Bet Rigging (House Edge Protection):
-    // 85% of rounds crash early between 1.00x and 1.08x
-    // 12% crash between 1.08x and 1.18x (strictly below 1.20x/1.25x)
-    // 3% rare micro-climb up to 1.35x (only if bet is under ৳25)
-    const roll = Math.random();
-    const totalBetAmt = (queuedBet1 ? bet1 : 0) + (queuedBet2 ? bet2 : 0);
-
-    if (totalBetAmt > 50 || roll < 0.85) {
-      return parseFloat((1.00 + Math.random() * 0.08).toFixed(2)); // 1.00x - 1.08x crash
-    }
-    if (roll < 0.97) {
-      return parseFloat((1.08 + Math.random() * 0.10).toFixed(2)); // 1.08x - 1.18x crash
-    }
-    return parseFloat((1.20 + Math.random() * 0.15).toFixed(2)); // 1.20x - 1.35x rare micro
+    // 4. When NO player bets, let plane FLY HIGH (realistic casino distribution: 2.2x to 35x+, 5x, 7x, 10x!)
+    const r = Math.random();
+    if (r < 0.20) return parseFloat((2.10 + Math.random() * 1.5).toFixed(2)); // 2.1x - 3.6x
+    if (r < 0.55) return parseFloat((4.80 + Math.random() * 3.2).toFixed(2)); // 4.8x - 8.0x (5x, 7x!)
+    if (r < 0.85) return parseFloat((8.50 + Math.random() * 7.5).toFixed(2)); // 8.5x - 16.0x
+    return parseFloat((16.00 + Math.random() * 18.0).toFixed(2)); // 16.0x - 34.0x
   }
 
   // Cash Out Panel 1

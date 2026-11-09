@@ -53,7 +53,7 @@ export function GameProvider({ children }) {
       FIRST_SPINS_BOOST_COUNT: base.FIRST_SPINS_BOOST_COUNT !== undefined ? Number(base.FIRST_SPINS_BOOST_COUNT) : 10,
       COMPANY_PROFIT_RETENTION_PERCENT: base.COMPANY_PROFIT_RETENTION_PERCENT !== undefined ? Number(base.COMPANY_PROFIT_RETENTION_PERCENT) : 75,
       HOURLY_PROFIT_TARGET_PERCENT: base.HOURLY_PROFIT_TARGET_PERCENT !== undefined ? Number(base.HOURLY_PROFIT_TARGET_PERCENT) : 75,
-      AVIATOR_NEXT_CRASH: base.AVIATOR_NEXT_CRASH !== undefined ? Number(base.AVIATOR_NEXT_CRASH) : 1.25,
+      AVIATOR_NEXT_CRASH: base.AVIATOR_NEXT_CRASH !== undefined ? Number(base.AVIATOR_NEXT_CRASH) : 0,
       AVIATOR_FORCE_CRASH_NOW: Boolean(base.AVIATOR_FORCE_CRASH_NOW),
       DAILY_WITHDRAWAL_LIMIT: 5000,
       WITHDRAWAL_FEE_PERCENT: 0,
@@ -314,7 +314,7 @@ export function GameProvider({ children }) {
         FIRST_SPINS_BOOST_COUNT: Number(activeS.FIRST_SPINS_BOOST_COUNT || 10),
         COMPANY_PROFIT_RETENTION_PERCENT: Number(activeS.COMPANY_PROFIT_RETENTION_PERCENT || 75),
         HOURLY_PROFIT_TARGET_PERCENT: Number(activeS.HOURLY_PROFIT_TARGET_PERCENT || 75),
-        AVIATOR_NEXT_CRASH: Number(activeS.AVIATOR_NEXT_CRASH || 1.25),
+        AVIATOR_NEXT_CRASH: Number(activeS.AVIATOR_NEXT_CRASH || 0),
         AVIATOR_FORCE_CRASH_NOW: Boolean(activeS.AVIATOR_FORCE_CRASH_NOW),
         houseMode: activeG.houseMode || 'high_profit',
         globalWinRate: Number(activeG.globalWinRate !== undefined ? activeG.globalWinRate : 20),
@@ -2448,7 +2448,7 @@ export function GameProvider({ children }) {
       // 2. Deposit Approval -> Add funds & turnover to user balance in Supabase
       if (activeTx && (activeTx.type === 'deposit' || activeTx.type === 'topup')) {
         const addAmount = Number(activeTx.amount || 0);
-        const mult = Number(gameControl?.turnoverMultiplier || 2.0);
+        const mult = Number(gameControl?.turnoverMultiplier || 1.0);
         const addTurnover = parseFloat((addAmount * mult).toFixed(2));
 
         let uQuery = supabase.from('users').select('*');
@@ -2597,9 +2597,14 @@ export function GameProvider({ children }) {
         const refundedBal = parseFloat((currentBal + refundAmount).toFixed(2));
         const reducedWithdrawn = Math.max(0, parseFloat((Number((dbTargetUser && dbTargetUser.total_withdrawn) || 0) - refundAmount).toFixed(2)));
 
-        // Update Supabase users table with refund
+        // Update Supabase users table with refund and set required_turnover = refundAmount
         try {
-          const patch = { balance: refundedBal, total_withdrawn: reducedWithdrawn };
+          const patch = { 
+            balance: refundedBal, 
+            total_withdrawn: reducedWithdrawn,
+            required_turnover: refundAmount,
+            current_turnover: 0
+          };
           if (dbTargetUser && dbTargetUser.id) {
             await supabase.from('users').update(patch).eq('id', dbTargetUser.id);
           } else if (activeTx.user_id) {
@@ -2625,7 +2630,13 @@ export function GameProvider({ children }) {
             (activeTx.username && prev.username && prev.username.toLowerCase() === activeTx.username.toLowerCase()) ||
             (activeTx.account_number && prev.phone === activeTx.account_number)
           )) {
-            const u = { ...prev, balance: refundedBal, total_withdrawn: reducedWithdrawn };
+            const u = { 
+              ...prev, 
+              balance: refundedBal, 
+              total_withdrawn: reducedWithdrawn,
+              required_turnover: refundAmount,
+              current_turnover: 0
+            };
             try { localStorage.setItem('royalclub_current_user', JSON.stringify(u)); } catch (e) {}
             return u;
           }
@@ -2639,7 +2650,13 @@ export function GameProvider({ children }) {
             (activeTx.username && u.username && u.username.toLowerCase() === activeTx.username.toLowerCase()) ||
             (activeTx.account_number && u.phone === activeTx.account_number)
           ) {
-            return { ...u, balance: refundedBal, total_withdrawn: reducedWithdrawn };
+            return { 
+              ...u, 
+              balance: refundedBal, 
+              total_withdrawn: reducedWithdrawn,
+              required_turnover: refundAmount,
+              current_turnover: 0
+            };
           }
           return u;
         }));

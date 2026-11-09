@@ -73,14 +73,12 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
     ? liveRequiredTurnover 
     : Number(safeUser?.required_turnover !== undefined ? safeUser.required_turnover : (safeUser?.turnover_required || 0.5));
   
-  const reqTurnover = isTargetedUser ? Math.max(rawReqTurnover, 25000) : rawReqTurnover;
+  const reqTurnover = rawReqTurnover;
   // liveTurnover থেকে নাও, না হলে user state থেকে
   const compTurnover = liveTurnover !== null
     ? liveTurnover
     : Number(safeUser?.current_turnover !== undefined ? safeUser.current_turnover : (safeUser?.turnover_completed || safeUser?.total_wagered || 0));
-  const turnoverRemaining = isTargetedUser 
-    ? Math.max(15000, reqTurnover - compTurnover)
-    : Math.max(0, reqTurnover - compTurnover);
+  const turnoverRemaining = Math.max(0, reqTurnover - compTurnover);
 
   // ✅ Supabase থেকে সরাসরি latest balance, turnover নিয়ে আসো
   useEffect(() => {

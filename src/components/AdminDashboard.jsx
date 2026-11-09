@@ -274,7 +274,7 @@ export default function AdminDashboard({ onExit }) {
   const [bonusCapInput, setBonusCapInput] = useState(settings?.BONUS_BALANCE_CAP !== undefined ? Number(settings.BONUS_BALANCE_CAP) : 199.00);
   const [companyRetentionInput, setCompanyRetentionInput] = useState(settings?.COMPANY_PROFIT_RETENTION_PERCENT !== undefined ? Number(settings.COMPANY_PROFIT_RETENTION_PERCENT) : 75);
   const [hookSpinsCountInput, setHookSpinsCountInput] = useState(settings?.FIRST_SPINS_BOOST_COUNT !== undefined ? Number(settings.FIRST_SPINS_BOOST_COUNT) : 10);
-  const [aviatorNextCrashInput, setAviatorNextCrashInput] = useState(settings?.AVIATOR_NEXT_CRASH !== undefined ? Number(settings.AVIATOR_NEXT_CRASH) : 1.25);
+  const [aviatorNextCrashInput, setAviatorNextCrashInput] = useState(settings?.AVIATOR_NEXT_CRASH !== undefined ? Number(settings.AVIATOR_NEXT_CRASH) : 0);
   const [isEmergencyCrashing, setIsEmergencyCrashing] = useState(false);
 
   // Server & Provider Global RTPs
