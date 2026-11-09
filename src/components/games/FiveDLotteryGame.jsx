@@ -216,9 +216,13 @@ export default function FiveDLotteryGame({ onClose }) {
       if (hasBets && recordGameHistory) {
         recordGameHistory({
           game: '5D Lottery',
+          gameName: '5D Lottery',
           bet: totalBetAmt,
+          amount: totalBetAmt,
           win: winPayout,
-          mult: winPayout > 0 ? (winPayout / totalBetAmt).toFixed(2) + 'x' : '0.00x'
+          payout: winPayout,
+          mult: winPayout > 0 ? (winPayout / Math.max(1, totalBetAmt)).toFixed(2) + 'x' : '0.00x',
+          betOption: winPayout > 0 ? `Win ৳${winPayout}` : 'Lost Bet'
         });
       }
     }, 1500);

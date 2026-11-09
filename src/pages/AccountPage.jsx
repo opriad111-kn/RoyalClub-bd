@@ -4,6 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { KhelvIcon } from '../components/common/KhelvIcon';
 import VipModal from '../components/VipModal';
 import { CircularFlag } from '../components/AuthModal';
+import { supabase } from '../lib/supabase';
 
 // 20 Official Avatar assets extracted from KhelV APK (Matching Screenshot 2)
 const OFFICIAL_AVATARS = [
@@ -93,6 +94,35 @@ export default function AccountPage({
   const [selectedAvatarId, setSelectedAvatarId] = useState(() => {
     return user?.avatar_id || 1;
   });
+
+  // Real-time Supabase Game Logs for current user
+  const [supabaseGameLogs, setSupabaseGameLogs] = useState([]);
+  const [loadingGameLogs, setLoadingGameLogs] = useState(false);
+
+  useEffect(() => {
+    if (activeModal === 'gameHistory' && (safeUser?.id || safeUser?.username)) {
+      setLoadingGameLogs(true);
+      const fetchLogs = async () => {
+        try {
+          let q = supabase.from('game_logs').select('*');
+          if (safeUser.id && String(safeUser.id).length === 36) {
+            q = q.or(`user_id.eq.${safeUser.id},username.ilike.${safeUser.username || ''}`);
+          } else if (safeUser.username) {
+            q = q.ilike('username', safeUser.username);
+          }
+          const { data } = await q.order('created_at', { ascending: false }).limit(50);
+          if (data && data.length > 0) {
+            setSupabaseGameLogs(data);
+          }
+        } catch (e) {
+          console.warn('Game logs fetch notice:', e);
+        } finally {
+          setLoadingGameLogs(false);
+        }
+      };
+      fetchLogs();
+    }
+  }, [activeModal, safeUser?.id, safeUser?.username]);
 
   // Settings & Edit states
   const [nicknameInput, setNicknameInput] = useState('');
@@ -1209,28 +1239,61 @@ export default function AccountPage({
             </h2>
           </div>
 
-          <div className="p-4 space-y-3 flex-1">
-            {(!gameHistory || gameHistory.length === 0) ? (
+          <div className="p-4 space-y-3 flex-1 overflow-y-auto">
+            {loadingGameLogs ? (
               <div className="text-center py-16 space-y-2">
-                <KhelvIcon name="betHistory" className="w-12 h-12 mx-auto text-[#7098C5] opacity-50" />
-                <p className="text-xs text-[#7098C5]">No bet records yet</p>
+                <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto" />
+                <p className="text-xs text-[#7098C5]">খেলার হিস্ট্রি লোড হচ্ছে...</p>
               </div>
-            ) : (
-              gameHistory.map((g, idx) => (
-                <div key={idx} className="bg-[#1C2063] border border-[#30358B] rounded-xl p-3.5 space-y-2 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-white">{g.gameName || 'WinGo 1M'}</span>
-                    <span className={`font-bold ${g.win ? 'text-emerald-400' : 'text-rose-400'}`}>
-                      {g.win ? `+৳${g.payout}` : `-৳${g.amount}`}
-                    </span>
+            ) : (() => {
+              const sourceLogs = (supabaseGameLogs && supabaseGameLogs.length > 0) 
+                ? supabaseGameLogs 
+                : (gameHistory || []);
+              
+              if (!sourceLogs || sourceLogs.length === 0) {
+                return (
+                  <div className="text-center py-16 space-y-2">
+                    <KhelvIcon name="betHistory" className="w-12 h-12 mx-auto text-[#7098C5] opacity-50" />
+                    <p className="text-xs text-[#7098C5]">কোনো খেলার রেকর্ড নেই (No bet records yet)</p>
                   </div>
-                  <div className="flex items-center justify-between text-[10.5px] text-[#7098C5]">
-                    <span>Bet: {g.betOption || 'Green'}</span>
-                    <span>{new Date(g.timestamp || Date.now()).toLocaleTimeString()}</span>
+                );
+              }
+
+              return sourceLogs.map((g, idx) => {
+                const gameTitle = g.game_name || g.game || g.gameName || 'Casino Game';
+                const betAmt = Number(g.bet_amount ?? g.bet ?? g.amount ?? 0);
+                const winAmt = Number(g.win_amount ?? g.win ?? g.payout ?? 0);
+                const isWon = winAmt > 0 || (typeof g.status === 'string' && g.status.toUpperCase() === 'WIN') || (typeof g.result === 'string' && g.result.toUpperCase().includes('WIN'));
+                
+                // Formatted real time string (individual unique timestamp)
+                let timeFormatted = g.time;
+                if (g.created_at || g.timestamp) {
+                  try {
+                    const dt = new Date(g.created_at || g.timestamp);
+                    timeFormatted = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                  } catch (_) {}
+                }
+                if (!timeFormatted) timeFormatted = 'Just now';
+
+                const multLabel = g.result || g.mult || (isWon && betAmt > 0 ? `${(winAmt / betAmt).toFixed(2)}x` : '0.00x');
+                const betOption = g.betOption || g.option || (multLabel ? multLabel : `Bet: ৳${betAmt.toFixed(2)}`);
+
+                return (
+                  <div key={g.id || idx} className="bg-[#1C2063] border border-[#30358B] rounded-xl p-3.5 space-y-2 text-xs shadow-md">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-white tracking-wide">{gameTitle}</span>
+                      <span className={`font-black font-mono text-sm ${isWon ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        {isWon ? `+৳${winAmt.toFixed(2)}` : `-৳${betAmt.toFixed(2)}`}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] text-[#7098C5] pt-1 border-t border-[#30358B]/40">
+                      <span className="font-medium">{betOption}</span>
+                      <span className="font-mono text-[#8ca3c7]">{timeFormatted}</span>
+                    </div>
                   </div>
-                </div>
-              ))
-            )}
+                );
+              });
+            })()}
           </div>
           </div>
         </div>

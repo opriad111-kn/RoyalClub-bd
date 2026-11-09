@@ -226,9 +226,13 @@ export default function K3LotteryGame({ onClose, onOpenDeposit, onOpenWithdraw }
         const totalRoundBet = myBets.filter(b => b.period === periodId).reduce((s, b) => s + (b.amount || 0), 0);
         recordGameHistory({
           game: 'K3 Lottery',
+          gameName: 'K3 Lottery',
           bet: totalRoundBet,
+          amount: totalRoundBet,
           win: winPayout,
-          mult: winPayout > 0 ? (winPayout / Math.max(1, totalRoundBet)).toFixed(2) + 'x' : '0.00x'
+          payout: winPayout,
+          mult: winPayout > 0 ? (winPayout / Math.max(1, totalRoundBet)).toFixed(2) + 'x' : '0.00x',
+          betOption: winPayout > 0 ? `Win ৳${winPayout}` : 'Lost Bet'
         });
       }
 

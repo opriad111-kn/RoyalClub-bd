@@ -145,29 +145,38 @@ export function GameProvider({ children }) {
       if (saved) return JSON.parse(saved);
     } catch (e) {}
     return [
-      { id: 'GH-1092', game: 'Aviator', bet: 50, win: 112.50, status: 'WIN', mult: '2.25x', time: '10:45 PM' },
-      { id: 'GH-1091', game: 'Fortune Gems 2', bet: 20, win: 80.00, status: 'WIN', mult: '4.00x', time: '10:40 PM' },
-      { id: 'GH-1090', game: 'Boxing King', bet: 50, win: 150.00, status: 'WIN', mult: '3.00x', time: '10:32 PM' },
-      { id: 'GH-1089', game: 'Aviator', bet: 100, win: 0.00, status: 'LOSS', mult: '1.12x', time: '10:25 PM' },
-      { id: 'GH-1088', game: 'Super Ace', bet: 30, win: 90.00, status: 'WIN', mult: '3.00x', time: '10:15 PM' }
+      { id: 'GH-1092', game: 'Aviator', gameName: 'Aviator', bet: 50, amount: 50, win: 112.50, payout: 112.50, status: 'WIN', mult: '2.25x', betOption: 'Cashout @ 2.25x', time: '10:45 PM', timestamp: Date.now() - 3600000 },
+      { id: 'GH-1091', game: 'Fortune Gems 2', gameName: 'Fortune Gems 2', bet: 20, amount: 20, win: 80.00, payout: 80.00, status: 'WIN', mult: '4.00x', betOption: 'Spin', time: '10:40 PM', timestamp: Date.now() - 4200000 },
+      { id: 'GH-1090', game: 'Boxing King', gameName: 'Boxing King', bet: 50, amount: 50, win: 150.00, payout: 150.00, status: 'WIN', mult: '3.00x', betOption: 'Spin', time: '10:32 PM', timestamp: Date.now() - 4800000 },
+      { id: 'GH-1089', game: 'Aviator', gameName: 'Aviator', bet: 100, amount: 100, win: 0.00, payout: 0, status: 'LOSS', mult: '1.12x (CRASHED)', betOption: 'Crash @ 1.12x', time: '10:25 PM', timestamp: Date.now() - 5400000 },
+      { id: 'GH-1088', game: 'Super Ace', gameName: 'Super Ace', bet: 30, amount: 30, win: 90.00, payout: 90.00, status: 'WIN', mult: '3.00x', betOption: 'Spin', time: '10:15 PM', timestamp: Date.now() - 6000000 }
     ];
   });
 
-  function recordGameHistory({ game, bet, win, mult }) {
-    const bAmt = parseFloat(bet) || 0;
-    const wAmt = parseFloat(win) || 0;
+  function recordGameHistory({ game, gameName, bet, amount, win, payout, mult, betOption, option }) {
+    const bAmt = parseFloat(bet ?? amount) || 0;
+    const wAmt = parseFloat(win ?? payout) || 0;
+    const gName = game || gameName || 'Casino Game';
+    const opt = betOption || option || '';
+    const now = new Date();
     const newEntry = {
       id: 'GH-' + Math.floor(1000 + Math.random() * 9000),
       uid: user?.uid,
       username: user?.username || 'Guest',
       user_id: user?.id,
-      game,
+      game: gName,
+      gameName: gName,
       bet: bAmt,
+      amount: bAmt,
       win: wAmt,
+      payout: wAmt,
+      betOption: opt,
+      option: opt,
       status: wAmt > 0 ? 'WIN' : 'LOSS',
-      mult: mult ? mult.toString() : (wAmt > 0 ? (wAmt / bAmt).toFixed(2) + 'x' : '0.00x'),
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      created_at: new Date().toISOString()
+      mult: mult ? mult.toString() : (wAmt > 0 ? (wAmt / Math.max(1, bAmt)).toFixed(2) + 'x' : '0.00x'),
+      time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      timestamp: now.getTime(),
+      created_at: now.toISOString()
     };
     setGameHistory(prev => {
       const updated = [newEntry, ...prev.slice(0, 99)];

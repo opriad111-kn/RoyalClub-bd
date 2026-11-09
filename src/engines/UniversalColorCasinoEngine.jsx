@@ -170,9 +170,13 @@ export default function UniversalColorCasinoEngine({ gameId = 'wingo', onClose }
     if (activeBets.length > 0 && recordGameHistory) {
       recordGameHistory({
         game: 'WinGo Casino',
+        gameName: 'WinGo Casino',
         bet: totalBetAmount,
+        amount: totalBetAmount,
         win: totalPayout,
-        mult: totalPayout > 0 ? (totalPayout / Math.max(1, totalBetAmount)).toFixed(2) + 'x' : '0.00x'
+        payout: totalPayout,
+        mult: totalPayout > 0 ? (totalPayout / Math.max(1, totalBetAmount)).toFixed(2) + 'x' : '0.00x',
+        betOption: totalPayout > 0 ? `Win ৳${totalPayout}` : 'Lost Bet'
       });
     }
 
