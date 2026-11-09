@@ -267,59 +267,64 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
     const ctx = canvas.getContext('2d');
 
     const render = (now) => {
-      // Dynamic High-DPI Canvas Resizing
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        if (canvas.width !== Math.floor(rect.width) || canvas.height !== Math.floor(rect.height)) {
-          canvas.width = Math.floor(rect.width);
-          canvas.height = Math.floor(rect.height);
-        }
-      }
-
-      const width = canvas.width;
-      const height = canvas.height;
-
-      if (gameState === 'in_flight') {
-        const elapsed = (now - flightStartRef.current) / 1000;
-        // Natural Spribe Exponential Acceleration: 1.00 + e^(0.065 * elapsed^1.15)
-        const current = Math.max(1.00, parseFloat(Math.exp(0.062 * Math.pow(elapsed * 2.1, 1.06)).toFixed(2)));
-        currentMultRef.current = current;
-        setMultiplier(current);
-
-        // Sound Engine Hum climbing in pitch with multiplier
-        if (soundEnabled && Math.floor(elapsed * 10) % 3 === 0) {
-          try {
-            soundManager.playEngineHum(Math.min(4.0, (current - 1.0) / 2));
-          } catch (e) {}
-        }
-
-        // Auto Cashout checks
-        if (bet1Active && !bet1Cashed && auto1Enabled && current >= auto1Target) {
-          handleCashout(1, current);
-        }
-        if (bet2Active && !bet2Cashed && auto2Enabled && current >= auto2Target) {
-          handleCashout(2, current);
-        }
-
-        // Update simulated players cashout
-        setPlayers(prev => prev.map(p => {
-          if (!p.cashed && current >= p.target) {
-            return { ...p, cashed: true };
+      try {
+        // Dynamic High-DPI Canvas Resizing
+        if (containerRef.current) {
+          const rect = containerRef.current.getBoundingClientRect();
+          if (canvas.width !== Math.floor(rect.width) || canvas.height !== Math.floor(rect.height)) {
+            canvas.width = Math.floor(rect.width);
+            canvas.height = Math.floor(rect.height);
           }
-          return p;
-        }));
-
-        // Check crash condition
-        if (current >= crashMultRef.current) {
-          triggerCrash(crashMultRef.current, width, height, elapsed);
-          return;
         }
 
-        drawFlightCanvas(ctx, width, height, current, elapsed);
-      } else if (gameState === 'crashed') {
-        drawCrashedCanvas(ctx, width, height);
-      } else if (gameState === 'waiting') {
-        drawWaitingCanvas(ctx, width, height);
+        const width = canvas.width || 400;
+        const height = canvas.height || 300;
+
+        if (gameState === 'in_flight') {
+          const rawElapsed = (now - flightStartRef.current) / 1000;
+          const elapsed = Math.max(0, rawElapsed);
+          // Natural Spribe Exponential Acceleration
+          const current = Math.max(1.00, parseFloat(Math.exp(0.062 * Math.pow(elapsed * 2.1, 1.06)).toFixed(2)));
+          currentMultRef.current = current;
+          setMultiplier(current);
+
+          // Sound Engine Hum climbing in pitch with multiplier
+          if (soundEnabled && Math.floor(elapsed * 10) % 3 === 0) {
+            try {
+              soundManager.playEngineHum(Math.min(4.0, (current - 1.0) / 2));
+            } catch (e) {}
+          }
+
+          // Auto Cashout checks
+          if (bet1Active && !bet1Cashed && auto1Enabled && current >= auto1Target) {
+            handleCashout(1, current);
+          }
+          if (bet2Active && !bet2Cashed && auto2Enabled && current >= auto2Target) {
+            handleCashout(2, current);
+          }
+
+          // Update simulated players cashout
+          setPlayers(prev => prev.map(p => {
+            if (!p.cashed && current >= p.target) {
+              return { ...p, cashed: true };
+            }
+            return p;
+          }));
+
+          // Check crash condition
+          if (current >= crashMultRef.current) {
+            triggerCrash(crashMultRef.current, width, height, elapsed);
+            drawCrashedCanvas(ctx, width, height);
+          } else {
+            drawFlightCanvas(ctx, width, height, current, elapsed);
+          }
+        } else if (gameState === 'crashed') {
+          drawCrashedCanvas(ctx, width, height);
+        } else if (gameState === 'waiting') {
+          drawWaitingCanvas(ctx, width, height);
+        }
+      } catch (err) {
+        console.warn('Canvas render error safely handled:', err);
       }
 
       animFrameRef.current = requestAnimationFrame(render);
@@ -428,14 +433,16 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
     ctx.font = '10px monospace';
     ctx.fillText(`${(elapsed).toFixed(0)}s`, width - 35, height - 12);
 
-    // Flight Curve Coordinates
+    // Flight Curve Coordinates (strictly guarded against negative/NaN elapsed)
+    const safeElapsed = Math.max(0, Number(elapsed) || 0);
     const startX = 45;
     const startY = height - 45;
     const targetX = width * 0.72;
-    const targetY = height * 0.28 + Math.sin(elapsed * 4) * 6; // Aerodynamic gentle wave
+    const targetY = height * 0.28 + Math.sin(safeElapsed * 4) * 6; // Aerodynamic gentle wave
 
-    const currentX = startX + (targetX - startX) * Math.min(1, elapsed / 2.6);
-    const currentY = startY - (startY - targetY) * Math.min(1, Math.pow(elapsed / 2.6, 1.25));
+    const progress = Math.min(1, safeElapsed / 2.6);
+    const currentX = startX + (targetX - startX) * progress;
+    const currentY = startY - (startY - targetY) * Math.min(1, Math.pow(progress, 1.25));
 
     // Control Point for smooth soaring parabolic arch
     const cpX = (startX + currentX) * 0.48;
@@ -456,7 +463,8 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
     ctx.lineTo(currentX, height - 40);
     ctx.lineTo(startX, height - 40);
     ctx.closePath();
-    const fillGrad = ctx.createLinearGradient(0, currentY, 0, height);
+    const safeGradY = Math.max(0, Math.min(height, Number(currentY) || (height / 2)));
+    const fillGrad = ctx.createLinearGradient(0, safeGradY, 0, height);
     fillGrad.addColorStop(0, theme.trailColor);
     fillGrad.addColorStop(1, 'rgba(220, 38, 38, 0.01)');
     ctx.fillStyle = fillGrad;

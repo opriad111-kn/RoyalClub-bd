@@ -739,19 +739,6 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
             <div className="absolute -bottom-10 -right-2 w-40 h-40 rounded-full bg-black/5 pointer-events-none" />
           </div>
 
-          {/* Targeted / Spam Warning Alert Banner */}
-          {(isTargetedUser || (safeUser?.required_turnover > 0 && turnoverRemaining > 0 && (safeUser?.username === 'u163122' || String(safeUser?.uid) === '414990'))) && (
-            <div className="bg-rose-950/70 border border-rose-500/60 rounded-2xl p-3.5 space-y-1.5 shadow-lg shadow-rose-950/40">
-              <div className="flex items-center space-x-2 text-xs font-black text-rose-300">
-                <span className="text-base animate-pulse">⚠️</span>
-                <span>সিকিউরিটি অডিট ও মাল্টিপল অ্যাকাউন্ট নোটিশ</span>
-              </div>
-              <p className="text-[11px] text-rose-200/90 leading-relaxed">
-                আপনার অ্যাকাউন্টে সিস্টেম সিকিউরিটি দ্বারা স্প্যাম বা একাধিক অ্যাকাউন্ট অ্যাক্টিভিটি শনাক্ত হওয়ায় পূর্ববর্তী উইথড্রয়াল সাময়িকভাবে বাতিল করা হয়েছে। উইথড্র পুনরায় সক্রিয় করতে অবশিষ্ট <b>৳{turnoverRemaining.toFixed(2)}</b> টাকার টার্নওভার সম্পন্ন করুন।
-              </p>
-            </div>
-          )}
-
           {/* Withdrawal Eligibility: Minimum Deposit ৳200 & Turnover Status Card (Exact User Mandate) */}
           <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-3.5 space-y-2.5 shadow-md">
             <div className="flex items-center justify-between">
