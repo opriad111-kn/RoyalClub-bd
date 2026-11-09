@@ -464,7 +464,8 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
 
       if (hadBetsInRound && selectedMode === modeKey) {
         if (roundTotalWin > 0) {
-          adjustUserBalance(user.uid, roundTotalWin);
+          const userIdentifier = user?.uid || user?.id || user?.username;
+          adjustUserBalance(userIdentifier, roundTotalWin);
           soundManager.playWin();
           confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
           setWinningModal({
@@ -510,7 +511,8 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
         return;
       }
 
-      adjustUserBalance(user.uid, -instantAmount);
+      const userIdentifier = user?.uid || user?.id || user?.username;
+      adjustUserBalance(userIdentifier, -instantAmount);
 
       const newBetEntry = {
         id: `BET-${Date.now().toString().slice(-6)}`,
@@ -555,7 +557,8 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
       return;
     }
 
-    adjustUserBalance(user.uid, -totalBet);
+    const userIdentifier = user?.uid || user?.id || user?.username;
+    adjustUserBalance(userIdentifier, -totalBet);
 
     const newBetEntry = {
       id: `BET-${Date.now().toString().slice(-6)}`,

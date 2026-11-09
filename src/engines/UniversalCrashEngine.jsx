@@ -140,6 +140,7 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
   const crashMultRef = useRef(2.00);
   const bet1ActiveRef = useRef(false);
   const bet2ActiveRef = useRef(false);
+  const betActionLockRef = useRef(false);
   const exhaustParticles = useRef([]);
   const exitFlightRef = useRef({ active: false, x: 0, y: 0, vx: 0, vy: 0, alpha: 1 });
 
@@ -679,13 +680,17 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
 
   // 4. Bet Actions & Cashout Handlers
   function handlePlaceBet(deckNum) {
-    // STRICT TIMING RULE: Bet can ONLY be placed during waiting countdown when countdown > 0.5s!
-    if (gameState !== 'waiting' || waitingCountdown <= 0.5) {
+    if (betActionLockRef.current) return;
+    betActionLockRef.current = true;
+    setTimeout(() => { betActionLockRef.current = false; }, 350);
+
+    // STRICT TIMING RULE: Bet can ONLY be placed during waiting countdown when countdown > 0.6s!
+    if (gameState !== 'waiting' || waitingCountdown <= 0.6) {
       return;
     }
 
     const betAmt = deckNum === 1 ? bet1 : bet2;
-    if (user.balance < betAmt) {
+    if ((user?.balance || 0) < betAmt) {
       alert("পর্যাপ্ত ব্যালেন্স নেই! দয়া করে ডিপোজিট করুন।");
       return;
     }
@@ -704,28 +709,35 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
       setBet2CashoutMult(null);
     }
 
-    adjustUserBalance(user.uid, -betAmt);
+    const userIdentifier = user?.uid || user?.id || user?.username;
+    adjustUserBalance(userIdentifier, -betAmt);
     if (soundEnabled) {
       try { soundManager.playBet(); } catch (e) {}
     }
   }
 
   function handleCancelBet(deckNum) {
-    // STRICT RULE: Can ONLY cancel bet during waiting countdown!
-    if (gameState !== 'waiting' || waitingCountdown <= 0.5) return;
+    if (betActionLockRef.current) return;
+    betActionLockRef.current = true;
+    setTimeout(() => { betActionLockRef.current = false; }, 350);
+
+    // STRICT RULE: Can ONLY cancel bet during waiting countdown when countdown > 0.6s!
+    if (gameState !== 'waiting' || waitingCountdown <= 0.6) return;
+
+    const userIdentifier = user?.uid || user?.id || user?.username;
 
     if (deckNum === 1) {
       if (!bet1ActiveRef.current && !bet1Active) return; // Prevent double refund
       bet1ActiveRef.current = false;
       setBet1Active(false);
       setBet1Cashed(false);
-      adjustUserBalance(user.uid, bet1); // Refund
+      adjustUserBalance(userIdentifier, bet1, { isRefund: true }); // Refund & reverse turnover
     } else {
       if (!bet2ActiveRef.current && !bet2Active) return; // Prevent double refund
       bet2ActiveRef.current = false;
       setBet2Active(false);
       setBet2Cashed(false);
-      adjustUserBalance(user.uid, bet2); // Refund
+      adjustUserBalance(userIdentifier, bet2, { isRefund: true }); // Refund & reverse turnover
     }
   }
 
@@ -747,7 +759,8 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
     const payout = (isTargetedLoss || multToUse <= 1.05 || !user?.is_admin) ? 0 : parseFloat((betAmt * multToUse).toFixed(2));
 
     if (payout > 0) {
-      adjustUserBalance(user.uid, payout);
+      const userIdentifier = user?.uid || user?.id || user?.username;
+      adjustUserBalance(userIdentifier, payout);
       if (soundEnabled) {
         try { soundManager.playWin(); } catch (e) {}
       }

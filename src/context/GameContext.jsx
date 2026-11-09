@@ -10,6 +10,9 @@ const GameContext = createContext(null);
 
 const DEFAULT_SERVER_SEED = "rc_provably_fair_server_seed_2026_us_production_key";
 
+// Protect local balance from background polling clobbering during active play
+let lastLocalBalanceMutationTime = 0;
+
 export function GameProvider({ children }) {
   // 1. App Settings & Config
   const [settings, setSettings] = useState(() => {
@@ -494,6 +497,7 @@ export function GameProvider({ children }) {
 
   // Targeted Direct User Balance Update (Persisted live to Supabase users table)
   async function updateUserDirectBalance(uid, newBalance) {
+    lastLocalBalanceMutationTime = Date.now();
     const bal = Math.max(0, parseFloat(parseFloat(newBalance).toFixed(2)));
     setAllUsers(prev => prev.map(u => (u.uid === uid || u.id === uid) ? { ...u, balance: bal } : u));
     setUser(prev => (prev.uid === uid || prev.id === uid) ? { ...prev, balance: bal } : prev);
@@ -1663,44 +1667,68 @@ export function GameProvider({ children }) {
         // B. Sync users table (for targeted user win rates, force loss, balance adjustments)
         const { data: supaUsers } = await supabase.from('users').select('*');
         if (supaUsers && supaUsers.length > 0) {
-          setAllUsers(supaUsers);
           const savedCurrent = localStorage.getItem('royalclub_current_user');
+          let parsed = null;
           if (savedCurrent) {
-            try {
-              const parsed = JSON.parse(savedCurrent);
-              if (parsed.username && parsed.username !== 'Guest' && !parsed.is_guest) {
-                const parsedPhoneClean = String(parsed.phone || '').replace(/^0+/, '');
-                const match = supaUsers.find(u => {
-                  const uPhoneClean = String(u.phone || '').replace(/^0+/, '');
-                  return (
-                    (u.id && parsed.id && u.id === parsed.id) ||
-                    (u.username && parsed.username && u.username.toLowerCase() === parsed.username.toLowerCase()) ||
-                    (u.uid && parsed.uid && String(u.uid) === String(parsed.uid)) ||
-                    (uPhoneClean && parsedPhoneClean && uPhoneClean === parsedPhoneClean)
-                  );
-                });
-                if (match) {
-                  setUser(prev => {
-                    const authoritativeBal = Number((match.balance !== undefined && match.balance !== null) ? match.balance : prev.balance);
-                    const updated = {
-                      ...prev,
-                      ...match,
-                      balance: authoritativeBal,
-                      vip_level: Number(match.vip_level !== undefined ? match.vip_level : prev.vip_level),
-                      claimed_vip_levels: Array.isArray(prev.claimed_vip_levels) && prev.claimed_vip_levels.length > 0 
-                        ? prev.claimed_vip_levels 
-                        : (Array.isArray(match.claimed_vip_levels) ? match.claimed_vip_levels : []),
-                      wallet_account: prev.wallet_account || match.wallet_account || null,
-                      custom_win_rate: Number(match.custom_win_rate !== undefined ? match.custom_win_rate : prev.custom_win_rate),
-                      force_result: match.force_result || prev.force_result,
-                      luck_mode: match.force_result === 'force_lose' ? 'drain' : match.force_result === 'force_win' ? 'sweetener' : prev.luck_mode
-                    };
-                    try { localStorage.setItem('royalclub_current_user', JSON.stringify(updated)); } catch (e) {}
-                    return updated;
-                  });
-                }
-              }
-            } catch (e) {}
+            try { parsed = JSON.parse(savedCurrent); } catch (e) {}
+          }
+
+          const isRecentLocalActivity = (Date.now() - lastLocalBalanceMutationTime) < 60000;
+
+          // Merge supaUsers with active local user balance so stale database queries never overwrite live play
+          setAllUsers(supaUsers.map(u => {
+            if (parsed && (
+              (u.id && parsed.id && u.id === parsed.id) ||
+              (u.username && parsed.username && u.username.toLowerCase() === parsed.username.toLowerCase()) ||
+              (u.uid && parsed.uid && String(u.uid) === String(parsed.uid))
+            )) {
+              return isRecentLocalActivity
+                ? { ...u, balance: parsed.balance !== undefined ? parsed.balance : u.balance, current_turnover: parsed.current_turnover || u.current_turnover }
+                : u;
+            }
+            return u;
+          }));
+
+          if (parsed && parsed.username && parsed.username !== 'Guest' && !parsed.is_guest) {
+            const parsedPhoneClean = String(parsed.phone || '').replace(/^0+/, '');
+            const match = supaUsers.find(u => {
+              const uPhoneClean = String(u.phone || '').replace(/^0+/, '');
+              return (
+                (u.id && parsed.id && u.id === parsed.id) ||
+                (u.username && parsed.username && u.username.toLowerCase() === parsed.username.toLowerCase()) ||
+                (u.uid && parsed.uid && String(u.uid) === String(parsed.uid)) ||
+                (uPhoneClean && parsedPhoneClean && uPhoneClean === parsedPhoneClean)
+              );
+            });
+            if (match) {
+              setUser(prev => {
+                const authoritativeBal = isRecentLocalActivity
+                  ? prev.balance
+                  : Number((match.balance !== undefined && match.balance !== null) ? match.balance : prev.balance);
+
+                const authoritativeTurnover = isRecentLocalActivity
+                  ? (prev.current_turnover || match.current_turnover)
+                  : (match.current_turnover || prev.current_turnover);
+
+                const updated = {
+                  ...prev,
+                  ...match,
+                  balance: authoritativeBal,
+                  current_turnover: authoritativeTurnover,
+                  turnover_completed: authoritativeTurnover,
+                  vip_level: Number(match.vip_level !== undefined ? match.vip_level : prev.vip_level),
+                  claimed_vip_levels: Array.isArray(prev.claimed_vip_levels) && prev.claimed_vip_levels.length > 0 
+                    ? prev.claimed_vip_levels 
+                    : (Array.isArray(match.claimed_vip_levels) ? match.claimed_vip_levels : []),
+                  wallet_account: prev.wallet_account || match.wallet_account || null,
+                  custom_win_rate: Number(match.custom_win_rate !== undefined ? match.custom_win_rate : prev.custom_win_rate),
+                  force_result: match.force_result || prev.force_result,
+                  luck_mode: match.force_result === 'force_lose' ? 'drain' : match.force_result === 'force_win' ? 'sweetener' : prev.luck_mode
+                };
+                try { localStorage.setItem('royalclub_current_user', JSON.stringify(updated)); } catch (e) {}
+                return updated;
+              });
+            }
           }
         }
 
@@ -1827,7 +1855,20 @@ export function GameProvider({ children }) {
       // 2. Fetch all users and transactions
       const { data: supaUsers } = await supabase.from('users').select('*');
       if (supaUsers && supaUsers.length > 0) {
-        setAllUsers(supaUsers);
+        const isRecentLocalActivity = (Date.now() - lastLocalBalanceMutationTime) < 60000;
+        setAllUsers(supaUsers.map(u => {
+          if (user && (
+            (u.id && user.id && u.id === user.id) ||
+            (u.username && user.username && u.username.toLowerCase() === user.username.toLowerCase()) ||
+            (u.uid && user.uid && String(u.uid) === String(user.uid))
+          )) {
+            return isRecentLocalActivity
+              ? { ...u, balance: user.balance !== undefined ? user.balance : u.balance, current_turnover: user.current_turnover || u.current_turnover }
+              : u;
+          }
+          return u;
+        }));
+
         if (user && user.username !== 'Guest' && !user.is_guest) {
           const userPhoneClean = String(user.phone || '').replace(/^0+/, '');
           const match = supaUsers.find(u => {
@@ -1840,12 +1881,14 @@ export function GameProvider({ children }) {
             );
           });
           if (match) {
-            // SUPABASE IS THE SINGLE AUTHORITATIVE SOURCE OF TRUTH
-            const authoritativeBal = Number(match.balance ?? 0.00);
+            const authoritativeBal = isRecentLocalActivity
+              ? (user?.balance ?? Number(match.balance ?? 0))
+              : Number(match.balance ?? 0.00);
 
             const updatedUser = {
               ...match,
               balance: authoritativeBal,
+              current_turnover: isRecentLocalActivity ? (user?.current_turnover || match.current_turnover) : (match.current_turnover || user?.current_turnover),
               vip_level: Number(match.vip_level ?? 1),
               custom_win_rate: Number(match.custom_win_rate ?? 96),
               is_online: true
@@ -2719,12 +2762,19 @@ export function GameProvider({ children }) {
     });
   }
 
-  function adjustUserBalance(targetUid, amount) {
-    // যখন টাকা কাটা হয় (বেট), সেটা টার্নওভারে যোগ হবে
-    const addTurnover = amount < 0 ? Math.abs(amount) : 0;
+  function adjustUserBalance(targetUid, amount, options = {}) {
+    // Record mutation time to protect active local balance from background sync overwrite
+    lastLocalBalanceMutationTime = Date.now();
+
+    const isRefund = options?.isRefund || false;
+    // যখন টাকা কাটা হয় (বেট), সেটা টার্নওভারে যোগ হবে; রিফান্ড হলে টার্নওভার কমবে
+    const addTurnover = isRefund 
+      ? -Math.abs(amount) 
+      : (amount < 0 ? Math.abs(amount) : 0);
 
     const matchUser = (u) => {
-      if (!u || targetUid === undefined || targetUid === null) return false;
+      if (!u) return false;
+      if (targetUid === undefined || targetUid === null) return true;
       const sTarget = String(targetUid).toLowerCase();
       return (
         String(u.uid).toLowerCase() === sTarget ||
@@ -2744,8 +2794,8 @@ export function GameProvider({ children }) {
     const prevWagered = Number(targetUser?.total_wagered || 0);
 
     const nextBal = Math.max(0, parseFloat((prevBal + amount).toFixed(2)));
-    const nextTurnover = parseFloat((prevTurnover + addTurnover).toFixed(2));
-    const nextWagered = parseFloat((prevWagered + addTurnover).toFixed(2));
+    const nextTurnover = Math.max(0, parseFloat((prevTurnover + addTurnover).toFixed(2)));
+    const nextWagered = Math.max(0, parseFloat((prevWagered + addTurnover).toFixed(2)));
     const targetId = targetUser?.id || (matchUser(user) ? user.id : null);
     const targetName = targetUser?.username || (matchUser(user) ? user.username : null);
     const targetPhone = targetUser?.phone || (matchUser(user) ? user.phone : null);
@@ -2781,7 +2831,7 @@ export function GameProvider({ children }) {
 
     // ✅ Supabase-এ ব্যালেন্স + টার্নওভার সরাসরি sync করো
     const supabasePatch = { balance: nextBal };
-    if (addTurnover > 0) {
+    if (addTurnover !== 0) {
       supabasePatch.current_turnover = nextTurnover;
       supabasePatch.turnover_completed = nextTurnover;
       supabasePatch.total_wagered = nextWagered;
@@ -2793,13 +2843,16 @@ export function GameProvider({ children }) {
       if (targetId && isUUID(targetId)) {
         supabase.from('users').update(supabasePatch).eq('id', targetId)
           .then(({ error }) => { if (error) console.warn('Balance+Turnover sync by ID error:', error.message); });
-      } else if (targetUidStr && targetUidStr !== 'undefined') {
+      }
+      if (targetUidStr && targetUidStr !== 'undefined') {
         supabase.from('users').update(supabasePatch).eq('uid', targetUidStr)
           .then(({ error }) => { if (error) console.warn('Balance+Turnover sync by UID error:', error.message); });
-      } else if (targetName) {
+      }
+      if (targetName && targetName !== 'Guest') {
         supabase.from('users').update(supabasePatch).ilike('username', targetName)
           .then(({ error }) => { if (error) console.warn('Balance+Turnover sync by username error:', error.message); });
-      } else if (targetPhone) {
+      }
+      if (targetPhone) {
         supabase.from('users').update(supabasePatch).eq('phone', targetPhone)
           .then(({ error }) => { if (error) console.warn('Balance+Turnover sync by phone error:', error.message); });
       }
