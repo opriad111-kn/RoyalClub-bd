@@ -175,6 +175,15 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
       return;
     }
 
+    // USER MANDATE RULE 3: Daily withdrawal limit (Max 3 times per day)
+    if (remainingWithdrawalsToday <= 0) {
+      setToastMsg({ 
+        text: 'আজকের দৈনিক উইথড্র সীমা (সর্বোচ্চ ৩ বার) পূর্ণ হয়েছে! অনুগ্রহ করে আগামীকাল আবার চেষ্টা করুন।', 
+        type: 'error' 
+      });
+      return;
+    }
+
     if (selectedMethod === 'E-Wallet' && (!savedAccount || !savedAccount.accountNumber)) {
       setToastMsg({ text: 'Please add your E-Wallet account first', type: 'error' });
       setCurrentView('wallet_list');
@@ -244,6 +253,16 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
       uniqueWithdrawals.push(t);
     }
   }
+
+  // Calculate today's withdrawal count and remaining allowed times
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const todayWithdrawalsCount = uniqueWithdrawals.filter(t => {
+    if (!t.created_at) return false;
+    return new Date(t.created_at) >= todayStart;
+  }).length;
+  const maxDailyWithdrawals = Number(safeSettings.DAILY_WITHDRAWAL_LIMIT || 3);
+  const remainingWithdrawalsToday = Math.max(0, maxDailyWithdrawals - todayWithdrawalsCount);
 
   const filteredHistory = uniqueWithdrawals.filter(t => {
     if (historyMethodTab !== 'All') {
@@ -904,10 +923,10 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
 
             <button
               onClick={handleSubmitWithdrawal}
-              disabled={isSubmitting || currentBal < (selectedMethod === 'USDT' ? 1270 : 100)}
+              disabled={isSubmitting || currentBal < (selectedMethod === 'USDT' ? 1270 : 100) || remainingWithdrawalsToday <= 0}
               className="w-full py-3.5 rounded-full font-bold text-xs text-[#14122E] bg-gradient-to-r from-[#F5BE00] to-[#E0A000] shadow-xl active:scale-98 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-105"
             >
-              {isSubmitting ? 'Processing...' : 'Withdraw'}
+              {isSubmitting ? 'Processing...' : remainingWithdrawalsToday <= 0 ? 'Daily Limit Reached (0 left)' : 'Withdraw'}
             </button>
           </div>
 
@@ -927,7 +946,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
             </p>
             <p className="flex items-start space-x-2">
               <span className="text-[#F5BE00] text-xs">◆</span>
-              <span>Inday Remaining Withdrawal Times <b className="text-rose-400">3</b></span>
+              <span>Inday Remaining Withdrawal Times <b className="text-rose-400">{remainingWithdrawalsToday}</b></span>
             </p>
             <p className="flex items-start space-x-2">
               <span className="text-[#F5BE00] text-xs">◆</span>

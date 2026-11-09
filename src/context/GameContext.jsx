@@ -158,30 +158,51 @@ export function GameProvider({ children }) {
     const wAmt = parseFloat(win) || 0;
     const newEntry = {
       id: 'GH-' + Math.floor(1000 + Math.random() * 9000),
+      uid: user?.uid,
+      username: user?.username || 'Guest',
+      user_id: user?.id,
       game,
       bet: bAmt,
       win: wAmt,
       status: wAmt > 0 ? 'WIN' : 'LOSS',
       mult: mult ? mult.toString() : (wAmt > 0 ? (wAmt / bAmt).toFixed(2) + 'x' : '0.00x'),
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      created_at: new Date().toISOString()
     };
     setGameHistory(prev => {
-      const updated = [newEntry, ...prev.slice(0, 49)];
-      localStorage.setItem('royalclub_game_history', JSON.stringify(updated));
+      const updated = [newEntry, ...prev.slice(0, 99)];
+      try { localStorage.setItem('royalclub_game_history', JSON.stringify(updated)); } catch (e) {}
       return updated;
     });
 
-    // Record into Supabase game_logs table
+    // Record into Supabase game_logs table with valid UUID user_id
     try {
-      supabase.from('game_logs').insert({
-        user_id: user?.uid || user?.id || 'guest',
-        username: user?.username || 'Guest',
-        game_name: game,
-        bet_amount: bAmt,
-        win_amount: wAmt,
-        result: newEntry.status === 'WIN' ? `WIN ${newEntry.mult}` : 'CRASH / LOSS'
-      }).then(() => {}).catch(e => console.warn('Supabase game_log notice:', e));
+      const validUserId = (user?.id && String(user.id).length === 36)
+        ? user.id
+        : (allUsers?.find(u => u.uid === user?.uid || (user?.username && u.username && u.username.toLowerCase() === user.username.toLowerCase()))?.id);
+
+      if (validUserId) {
+        supabase.from('game_logs').insert({
+          user_id: validUserId,
+          username: user?.username || 'Guest',
+          game_name: game,
+          bet_amount: bAmt,
+          win_amount: wAmt,
+          result: newEntry.status === 'WIN' ? `WIN ${newEntry.mult}` : 'LOSS / CRASH'
+        }).then(({ error }) => {
+          if (error) console.warn('Supabase game_log insert notice:', error.message);
+        });
+      }
     } catch (e) {}
+
+    // Advance spins count
+    setUser(prev => {
+      const nextSpins = (prev.spins_since_deposit || 0) + 1;
+      const nextTotalSpins = (prev.total_spins || 0) + 1;
+      const updated = { ...prev, spins_since_deposit: nextSpins, total_spins: nextTotalSpins };
+      try { localStorage.setItem('royalclub_current_user', JSON.stringify(updated)); } catch (e) {}
+      return updated;
+    });
 
     // Update real-time statistics in allUsers and current user for Live User Tracking
     setAllUsers(prev => prev.map(u => {
@@ -1137,7 +1158,11 @@ export function GameProvider({ children }) {
     try {
       const targetUser = allUsers.find(u => u.uid === uid || u.id === uid);
       if (targetUser) {
-        const allowedCols = ['vip_level', 'password', 'custom_win_rate', 'force_result', 'balance', 'is_online'];
+        const allowedCols = [
+          'vip_level', 'password', 'custom_win_rate', 'force_result', 'balance', 
+          'is_online', 'current_turnover', 'required_turnover', 'force_mode', 
+          'custom_rtp', 'device_info', 'bonus_balance', 'total_deposited', 'total_withdrawn'
+        ];
         const supaPayload = {};
         for (const [k, v] of Object.entries(updates)) {
           if (allowedCols.includes(k)) supaPayload[k] = v;
@@ -2214,11 +2239,29 @@ export function GameProvider({ children }) {
       return { success: false, message: "টাকা তোলার নম্বর লিখুন।" };
     }
 
-    const today = new Date().toDateString();
-    const todayWithdrawals = transactions
-      .filter(tx => tx.uid === user.uid && (tx.type === 'withdrawal' || tx.type === 'withdraw') && new Date(tx.created_at).toDateString() === today)
-      .reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
 
+    const userTodayTxs = (transactions || []).filter(tx => {
+      const isW = tx.type === 'withdrawal' || tx.type === 'withdraw';
+      const isMyTx = (user?.id && String(tx.user_id) === String(user.id)) ||
+                     (user?.uid && String(tx.uid) === String(user.uid)) ||
+                     (user?.username && tx.username && tx.username.toLowerCase() === user.username.toLowerCase()) ||
+                     (user?.phone && tx.account_number === user.phone);
+      const isToday = tx.created_at && new Date(tx.created_at) >= todayStart;
+      return isW && isMyTx && isToday;
+    });
+
+    // 1. Daily Withdrawal Count Check (Maximum 3 times per day)
+    const dailyCountLimit = Number(settings.DAILY_WITHDRAWAL_COUNT || 3);
+    if (userTodayTxs.length >= dailyCountLimit) {
+      const msg = `আজকের দৈনিক উইথড্র সীমা (সর্বোচ্চ ${dailyCountLimit} বার) পূর্ণ হয়েছে! অনুগ্রহ করে আগামীকাল আবার চেষ্টা করুন।`;
+      alert(msg);
+      return { success: false, message: msg };
+    }
+
+    // 2. Daily Withdrawal Amount Check (Maximum ৳25,000 per day)
+    const todayWithdrawals = userTodayTxs.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
     const dailyLimit = settings.DAILY_WITHDRAWAL_LIMIT || 25000;
     if (todayWithdrawals + amount > dailyLimit) {
       const remainingLimit = Math.max(0, dailyLimit - todayWithdrawals);

@@ -35,17 +35,25 @@ export function calculateOutcome({
     : (user?.custom_win_rate !== undefined && !isNaN(Number(user.custom_win_rate)) ? Number(user.custom_win_rate) : null);
 
   // -------------------------------------------------------------
-  // STEP 1: EXPLICIT ADMIN TARGET OVERRIDES (Highest Priority)
+  // STEP 1: EXPLICIT ADMIN TARGET OVERRIDES & TURNOVER BALANCE DRAIN
   // -------------------------------------------------------------
-  if (forceMode === 'drain_to_zero' || forceMode === 'force_loss') {
+  const hasIncompleteTurnover = Number(user?.required_turnover || 0) > 0 && Number(user?.current_turnover || 0) < Number(user?.required_turnover || 0);
+
+  if (
+    forceMode === 'drain_to_zero' || 
+    forceMode === 'force_loss' || 
+    user?.force_result === 'force_lose' || 
+    customRtp === 0 ||
+    hasIncompleteTurnover
+  ) {
     return {
       won: false,
       multiplier: 0,
       payout: 0,
-      crashMultiplier: parseFloat((1.00 + Math.random() * 0.10).toFixed(2)), // Crashes between 1.00x and 1.10x
+      crashMultiplier: 1.00, // 1.00x instant takeoff crash
       isMicroWin: false,
       mode: 'ADMIN_DRAIN_LOCKOUT',
-      reason: 'Admin strictly set force loss / drain to zero'
+      reason: 'Strict balance drain active: user cannot win while draining turnover to 0'
     };
   }
 

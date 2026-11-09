@@ -56,6 +56,7 @@ import GuestRewardModal from './components/GuestRewardModal';
 import PromoPopupsModal from './components/PromoPopupsModal';
 import SplashScreen from './components/SplashScreen';
 import VipModal from './components/VipModal';
+import SecurityWarningModal from './components/SecurityWarningModal';
 import { KhelvSvgSprite } from './components/common/KhelvIcon';
 
 const VALID_TABS = ['home', 'activity', 'promotion', 'account', 'deposit', 'withdraw', 'wallet', 'admin', 'wingo'];
@@ -669,6 +670,9 @@ function AppContent() {
           isOpen={isVipOpen}
           onClose={() => setIsVipOpen(false)}
         />
+
+        {/* 1-Time Security & Anti-Fraud Spam Warning Modal */}
+        <SecurityWarningModal />
 
       </div>
     </div>

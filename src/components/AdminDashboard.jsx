@@ -141,12 +141,44 @@ export default function AdminDashboard({ onExit }) {
   const [userTargetLuckMode, setUserTargetLuckMode] = useState('controlled');
   const [userTargetWinRate, setUserTargetWinRate] = useState(20);
   const [isSavingTarget, setIsSavingTarget] = useState(false);
+  const [userGameLogs, setUserGameLogs] = useState([]);
+  const [loadingGameLogs, setLoadingGameLogs] = useState(false);
+  const [customTurnoverInput, setCustomTurnoverInput] = useState('');
+
+  // Live Supabase Game Logs for selected user
+  useEffect(() => {
+    if (!selectedUser) {
+      setUserGameLogs([]);
+      return;
+    }
+    const fetchUserGameLogs = async () => {
+      setLoadingGameLogs(true);
+      try {
+        let q = supabase.from('game_logs').select('*');
+        if (selectedUser.id) {
+          q = q.or(`user_id.eq.${selectedUser.id},username.eq.${selectedUser.username}`);
+        } else if (selectedUser.username) {
+          q = q.eq('username', selectedUser.username);
+        }
+        const { data, error } = await q.order('created_at', { ascending: false }).limit(60);
+        if (!error && data) {
+          setUserGameLogs(data);
+        }
+      } catch (err) {
+        console.warn('Error fetching user game logs:', err);
+      } finally {
+        setLoadingGameLogs(false);
+      }
+    };
+    fetchUserGameLogs();
+  }, [selectedUser?.id, selectedUser?.username, userModalTab]);
 
   function handleSelectUser(u) {
     setSelectedUser(u);
     setUserModalTab('profile');
     setBalanceEditVal(u.balance?.toString() || '0');
     setUserVipEditVal(Number(u.vip_level || 1));
+    setCustomTurnoverInput(u.required_turnover?.toString() || u.turnover_required?.toString() || '');
     
     // Support 4 targeted luck modes: 'normal', 'force_win', 'force_loss', 'drain_to_zero'
     let mode = 'normal';
@@ -749,9 +781,30 @@ export default function AdminDashboard({ onExit }) {
     );
   });
 
-  // Selected User Specific Records
-  const selectedUserBets = (gameHistory || []).filter(b => b.uid === selectedUser?.uid || b.username === selectedUser?.username);
-  const selectedUserTxs = (transactions || []).filter(t => t.uid === selectedUser?.uid || t.username === selectedUser?.username);
+  // Selected User Specific Records (Live Supabase game_logs + local history)
+  const selectedUserBets = [
+    ...(userGameLogs || []).map(l => ({
+      id: l.id,
+      game: l.game_name || 'Casino Game',
+      bet: Number(l.bet_amount || 0),
+      win: Number(l.win_amount || 0),
+      mult: l.result || (Number(l.win_amount) > 0 ? `${(Number(l.win_amount) / Math.max(1, Number(l.bet_amount || 1))).toFixed(2)}x` : '0.00x'),
+      created_at: l.created_at,
+      time: l.created_at ? new Date(l.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recently'
+    })),
+    ...(gameHistory || []).filter(b => 
+      (selectedUser?.uid && String(b.uid) === String(selectedUser.uid)) ||
+      (selectedUser?.username && b.username && b.username.toLowerCase() === selectedUser.username.toLowerCase()) ||
+      (selectedUser?.id && b.user_id && String(b.user_id) === String(selectedUser.id))
+    )
+  ].filter((b, idx, self) => idx === self.findIndex(t => t.id === b.id || (t.game === b.game && t.created_at === b.created_at)));
+
+  const selectedUserTxs = (transactions || []).filter(t => 
+    (selectedUser?.id && t.user_id && String(t.user_id) === String(selectedUser.id)) ||
+    (selectedUser?.uid && t.uid && String(t.uid) === String(selectedUser.uid)) ||
+    (selectedUser?.username && t.username && t.username.toLowerCase() === selectedUser.username.toLowerCase()) ||
+    (selectedUser?.phone && t.account_number && (t.account_number === selectedUser.phone || t.account_number === '0' + selectedUser.phone))
+  );
 
   // If not authenticated, show Secure Admin Login Gate
   if (!isAdminAuth) {
@@ -3493,7 +3546,7 @@ export default function AdminDashboard({ onExit }) {
                       </div>
                       <div>
                         <span className="text-[#8b949e] block text-[10px]">Total Wagered:</span>
-                        <span className="font-mono font-bold text-white">৳{(selectedUser.total_wagered || 0).toFixed(2)}</span>
+                        <span className="font-mono font-bold text-white">৳{(selectedUser.current_turnover !== undefined ? Number(selectedUser.current_turnover) : (selectedUser.total_wagered || 0)).toFixed(2)}</span>
                       </div>
                       <div>
                         <span className="text-[#8b949e] block text-[10px]">Total Deposited:</span>
@@ -3511,32 +3564,63 @@ export default function AdminDashboard({ onExit }) {
                   </div>
                 </div>
 
-                {/* Turnover Progress & Clear */}
-                <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-3.5 space-y-2">
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="font-bold text-white">Turnover Status:</span>
-                    <span className="font-mono font-bold text-[#F5BE00]">
-                      ৳{(selectedUser.turnover_completed || selectedUser.total_wagered || 0).toFixed(0)} / ৳{(selectedUser.turnover_required || 0).toFixed(0)}
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                    <div 
-                      className="bg-[#F5BE00] h-full rounded-full"
-                      style={{ 
-                        width: `${selectedUser.turnover_required > 0 ? Math.min(100, Math.round(((selectedUser.turnover_completed || selectedUser.total_wagered || 0) / selectedUser.turnover_required) * 100)) : 100}%` 
-                      }}
-                    />
-                  </div>
-                  <button
-                    onClick={() => {
-                      editUserProfile(selectedUser.uid, { turnover_required: 0 });
-                      setStatusNotice('ইউজারের টার্নওভার ক্লিয়ার করা হয়েছে!');
-                      setTimeout(() => setStatusNotice(''), 3000);
-                    }}
-                    className="text-[10px] text-amber-400 hover:underline block cursor-pointer"
-                  >
-                    Clear / Bypass Turnover Requirement
-                  </button>
+                {/* Turnover Progress & Controls */}
+                <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-3.5 space-y-2.5">
+                  {(() => {
+                    const curT = Number(selectedUser.current_turnover !== undefined ? selectedUser.current_turnover : (selectedUser.turnover_completed || selectedUser.total_wagered || 0));
+                    const reqT = Number(selectedUser.required_turnover !== undefined ? selectedUser.required_turnover : (selectedUser.turnover_required || 0));
+                    const pct = reqT > 0 ? Math.min(100, Math.round((curT / reqT) * 100)) : 100;
+                    return (
+                      <>
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="font-bold text-white">Turnover Status (টার্নওভার অগ্রগতি):</span>
+                          <span className="font-mono font-bold text-[#F5BE00]">
+                            ৳{curT.toFixed(0)} / ৳{reqT.toFixed(0)} ({pct}%)
+                          </span>
+                        </div>
+                        <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                          <div 
+                            className="bg-[#F5BE00] h-full rounded-full transition-all duration-300"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <div className="flex items-center space-x-2 pt-1">
+                          <input 
+                            type="number"
+                            value={customTurnoverInput}
+                            onChange={(e) => setCustomTurnoverInput(e.target.value)}
+                            placeholder="Set Required Turnover (৳)"
+                            className="flex-1 bg-[#161b22] border border-[#30363d] rounded-xl px-2.5 py-1 text-xs text-white font-mono"
+                          />
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              const newReq = Number(customTurnoverInput) || 0;
+                              await editUserProfile(selectedUser.uid, { required_turnover: newReq, turnover_required: newReq });
+                              setSelectedUser(prev => ({ ...prev, required_turnover: newReq, turnover_required: newReq }));
+                              setStatusNotice(`টার্নওভার ৳${newReq} নির্ধারণ করা হয়েছে!`);
+                              setTimeout(() => setStatusNotice(''), 3000);
+                            }}
+                            className="bg-[#F5BE00] hover:bg-yellow-400 text-slate-950 font-black px-3 py-1 rounded-xl text-[11px] cursor-pointer"
+                          >
+                            Set
+                          </button>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              await editUserProfile(selectedUser.uid, { required_turnover: 0, turnover_required: 0 });
+                              setSelectedUser(prev => ({ ...prev, required_turnover: 0, turnover_required: 0 }));
+                              setStatusNotice('ইউজারের টার্নওভার ক্লিয়ার করা হয়েছে!');
+                              setTimeout(() => setStatusNotice(''), 3000);
+                            }}
+                            className="bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 px-2.5 py-1 rounded-xl text-[11px] cursor-pointer"
+                          >
+                            Clear
+                          </button>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
 
                 {/* Personal Player Luck Mode Override (4 Distinct Operational Modes) */}
@@ -3820,10 +3904,16 @@ export default function AdminDashboard({ onExit }) {
                 <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-3.5 space-y-2">
                   <span className="font-bold text-xs text-white flex items-center justify-between">
                     <span>Recent Game Bets (খেলার রেকর্ড):</span>
-                    <span className="text-[10px] text-amber-400 font-mono">{selectedUserBets.length} bets</span>
+                    <span className="text-[10px] text-amber-400 font-mono">
+                      {loadingGameLogs ? 'লোড হচ্ছে...' : `${selectedUserBets.length} bets`}
+                    </span>
                   </span>
                   <div className="max-h-44 overflow-y-auto space-y-1.5 text-[11px] pr-1">
-                    {selectedUserBets.length > 0 ? (
+                    {loadingGameLogs ? (
+                      <div className="text-center py-4 text-xs text-[#8b949e]">
+                        <span className="inline-block animate-spin mr-1">⚡</span> ডাটাবেজ থেকে বেটিং হিস্টরি আনা হচ্ছে...
+                      </div>
+                    ) : selectedUserBets.length > 0 ? (
                       selectedUserBets.map((b, idx) => (
                         <div key={b.id || idx} className="flex justify-between items-center p-2 rounded-xl bg-[#161b22] border border-[#21262d]">
                           <div>
