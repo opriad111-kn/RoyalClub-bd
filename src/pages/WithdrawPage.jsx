@@ -50,22 +50,26 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
   // History filters
   const [historyMethodTab, setHistoryMethodTab] = useState('All');
   const [historyStatusFilter, setHistoryStatusFilter] = useState('All');
+  const [liveBalance, setLiveBalance] = useState(null);
+  const [liveRequiredTurnover, setLiveRequiredTurnover] = useState(null);
 
   const safeUser = user || { username: 'Guest', is_guest: true, balance: 1.46, uid: '170826' };
-  const currentBal = Number(safeUser?.balance || 0);
+  const currentBal = liveBalance !== null ? liveBalance : Number(safeUser?.balance || 0);
   const numAmount = parseFloat(amount) || 0;
   const feePercent = safeSettings.WITHDRAWAL_FEE_PERCENT || 0;
   const feeAmount = (numAmount * feePercent) / 100;
   const netReceive = Math.max(0, numAmount - feeAmount);
 
-  const reqTurnover = Number(safeUser?.required_turnover !== undefined ? safeUser.required_turnover : (safeUser?.turnover_required || 0.5));
+  const reqTurnover = liveRequiredTurnover !== null 
+    ? liveRequiredTurnover 
+    : Number(safeUser?.required_turnover !== undefined ? safeUser.required_turnover : (safeUser?.turnover_required || 0.5));
   // liveTurnover থেকে নাও, না হলে user state থেকে
   const compTurnover = liveTurnover !== null
     ? liveTurnover
     : Number(safeUser?.current_turnover !== undefined ? safeUser.current_turnover : (safeUser?.turnover_completed || safeUser?.total_wagered || 0));
   const turnoverRemaining = Math.max(0, reqTurnover - compTurnover);
 
-  // ✅ Supabase থেকে সরাসরি latest current_turnover নিয়ে আসো
+  // ✅ Supabase থেকে সরাসরি latest balance, turnover নিয়ে আসো
   useEffect(() => {
     if (!safeUser?.id && !safeUser?.uid) return;
     const fetchLiveTurnover = async () => {
@@ -75,11 +79,17 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
       const { data } = await q;
       if (data) {
         setLiveTurnover(Number(data.current_turnover || 0));
+        if (data.required_turnover !== undefined && data.required_turnover !== null) {
+          setLiveRequiredTurnover(Number(data.required_turnover));
+        }
+        if (data.balance !== undefined && data.balance !== null) {
+          setLiveBalance(Number(data.balance));
+        }
       }
     };
     fetchLiveTurnover();
-    // প্রতি ১০ সেকেন্ডে আপডেট করো
-    const interval = setInterval(fetchLiveTurnover, 10000);
+    // প্রতি ৫ সেকেন্ডে আপডেট করো
+    const interval = setInterval(fetchLiveTurnover, 5000);
     return () => clearInterval(interval);
   }, [safeUser?.id, safeUser?.uid]);
 

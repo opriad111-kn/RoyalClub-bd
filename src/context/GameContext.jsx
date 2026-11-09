@@ -1659,16 +1659,23 @@ export function GameProvider({ children }) {
             try {
               const parsed = JSON.parse(savedCurrent);
               if (parsed.username && parsed.username !== 'Guest' && !parsed.is_guest) {
-                const match = supaUsers.find(u => 
-                  (u.username && parsed.username && u.username.toLowerCase() === parsed.username.toLowerCase()) ||
-                  (u.phone && parsed.phone && u.phone === parsed.phone) ||
-                  (u.uid && parsed.uid && u.uid === parsed.uid)
-                );
+                const parsedPhoneClean = String(parsed.phone || '').replace(/^0+/, '');
+                const match = supaUsers.find(u => {
+                  const uPhoneClean = String(u.phone || '').replace(/^0+/, '');
+                  return (
+                    (u.id && parsed.id && u.id === parsed.id) ||
+                    (u.username && parsed.username && u.username.toLowerCase() === parsed.username.toLowerCase()) ||
+                    (u.uid && parsed.uid && String(u.uid) === String(parsed.uid)) ||
+                    (uPhoneClean && parsedPhoneClean && uPhoneClean === parsedPhoneClean)
+                  );
+                });
                 if (match) {
                   setUser(prev => {
+                    const authoritativeBal = Number((match.balance !== undefined && match.balance !== null) ? match.balance : prev.balance);
                     const updated = {
                       ...prev,
-                      balance: Number(match.balance !== undefined ? match.balance : prev.balance),
+                      ...match,
+                      balance: authoritativeBal,
                       vip_level: Number(match.vip_level !== undefined ? match.vip_level : prev.vip_level),
                       claimed_vip_levels: Array.isArray(prev.claimed_vip_levels) && prev.claimed_vip_levels.length > 0 
                         ? prev.claimed_vip_levels 
@@ -1812,11 +1819,16 @@ export function GameProvider({ children }) {
       if (supaUsers && supaUsers.length > 0) {
         setAllUsers(supaUsers);
         if (user && user.username !== 'Guest' && !user.is_guest) {
-          const match = supaUsers.find(u => 
-            (u.username && user.username && u.username.toLowerCase() === user.username.toLowerCase()) ||
-            (u.phone && user.phone && u.phone === user.phone) ||
-            (u.uid && user.uid && u.uid === user.uid)
-          );
+          const userPhoneClean = String(user.phone || '').replace(/^0+/, '');
+          const match = supaUsers.find(u => {
+            const uPhoneClean = String(u.phone || '').replace(/^0+/, '');
+            return (
+              (u.id && user.id && u.id === user.id) ||
+              (u.username && user.username && u.username.toLowerCase() === user.username.toLowerCase()) ||
+              (u.uid && user.uid && String(u.uid) === String(user.uid)) ||
+              (uPhoneClean && userPhoneClean && uPhoneClean === userPhoneClean)
+            );
+          });
           if (match) {
             // SUPABASE IS THE SINGLE AUTHORITATIVE SOURCE OF TRUTH
             const authoritativeBal = Number(match.balance ?? 0.00);
@@ -2544,27 +2556,38 @@ export function GameProvider({ children }) {
         let dbTargetUser = targetUser;
         try {
           let uQuery = supabase.from('users').select('*');
-          if (activeTx.user_id) uQuery = uQuery.eq('id', activeTx.user_id);
-          else if (activeTx.username) uQuery = uQuery.ilike('username', activeTx.username);
-          else if (activeTx.account_number) uQuery = uQuery.eq('phone', activeTx.account_number);
+          if (activeTx.user_id) {
+            uQuery = uQuery.eq('id', activeTx.user_id);
+          } else if (activeTx.username) {
+            uQuery = uQuery.ilike('username', activeTx.username);
+          } else if (activeTx.account_number) {
+            const rawPhone = String(activeTx.account_number).trim();
+            const cleanPhone = rawPhone.replace(/^0+/, '');
+            uQuery = uQuery.or(`phone.eq.${rawPhone},phone.eq.${cleanPhone},phone.eq.0${cleanPhone}`);
+          }
           const { data: uList } = await uQuery;
           if (uList && uList.length > 0) dbTargetUser = uList[0];
         } catch (e) {}
 
-        const currentBal = Number((dbTargetUser && dbTargetUser.balance) || (targetUser && targetUser.balance) || 0);
+        const currentBal = Number((dbTargetUser && dbTargetUser.balance !== undefined && dbTargetUser.balance !== null) ? dbTargetUser.balance : ((targetUser && targetUser.balance) || 0));
         const refundedBal = parseFloat((currentBal + refundAmount).toFixed(2));
         const reducedWithdrawn = Math.max(0, parseFloat((Number((dbTargetUser && dbTargetUser.total_withdrawn) || 0) - refundAmount).toFixed(2)));
 
         // Update Supabase users table with refund
         try {
+          const patch = { balance: refundedBal, total_withdrawn: reducedWithdrawn };
           if (dbTargetUser && dbTargetUser.id) {
-            await supabase.from('users').update({ balance: refundedBal, total_withdrawn: reducedWithdrawn }).eq('id', dbTargetUser.id);
+            await supabase.from('users').update(patch).eq('id', dbTargetUser.id);
+          } else if (activeTx.user_id) {
+            await supabase.from('users').update(patch).eq('id', activeTx.user_id);
           }
           if (activeTx.username) {
-            await supabase.from('users').update({ balance: refundedBal, total_withdrawn: reducedWithdrawn }).ilike('username', activeTx.username);
+            await supabase.from('users').update(patch).ilike('username', activeTx.username);
           }
           if (activeTx.account_number) {
-            await supabase.from('users').update({ balance: refundedBal, total_withdrawn: reducedWithdrawn }).eq('phone', activeTx.account_number);
+            const rawPhone = String(activeTx.account_number).trim();
+            const cleanPhone = rawPhone.replace(/^0+/, '');
+            await supabase.from('users').update(patch).or(`phone.eq.${rawPhone},phone.eq.${cleanPhone},phone.eq.0${cleanPhone}`);
           }
         } catch (e) {
           console.warn('Supabase balance refund error:', e);

