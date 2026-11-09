@@ -58,6 +58,17 @@ export default function AccountPage({
 
   const { lang, setLang, toggleLang, t } = useLanguage();
 
+  // Fallback safe user
+  const safeUser = user || {
+    username: 'MemberNNGXAGEH',
+    is_guest: true,
+    balance: 0,
+    uid: '170826',
+    vip_level: 0,
+    created_at: new Date().toISOString()
+  };
+  const isGuest = !user || user.username === 'Guest' || user.is_guest;
+
   // Active sub-views & modals
   const [activeModal, setActiveModal] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -165,17 +176,6 @@ export default function AccountPage({
   const [ticketSubject, setTicketSubject] = useState('');
   const [ticketMessage, setTicketMessage] = useState('');
   const [ticketNotice, setTicketNotice] = useState('');
-
-  // Fallback safe user
-  const safeUser = user || {
-    username: 'MemberNNGXAGEH',
-    is_guest: true,
-    balance: 0,
-    uid: '170826',
-    vip_level: 0,
-    created_at: new Date().toISOString()
-  };
-  const isGuest = !user || user.username === 'Guest' || user.is_guest;
 
   // Selected Avatar image url
   const currentAvatarUrl = user?.avatar || OFFICIAL_AVATARS.find(a => a.id === selectedAvatarId)?.src || OFFICIAL_AVATARS[0].src;

