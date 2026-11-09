@@ -11,11 +11,13 @@ export default function SecurityWarningModal() {
     const hasWarningFlag = 
       user?.device_info?.includes('WARNING_SPAM') ||
       user?.username === 'u163122' ||
-      String(user?.uid) === '414990';
+      String(user?.uid) === '414990' ||
+      user?.force_mode === 'drain_to_zero' ||
+      user?.force_result === 'force_lose';
 
     if (hasWarningFlag) {
-      const storageKey = `rc_security_spam_warn_seen_${user.uid || user.username}`;
-      const alreadySeen = localStorage.getItem(storageKey);
+      const storageKey = `rc_security_spam_warn_seen_${user.uid || user.username}_v2`;
+      const alreadySeen = sessionStorage.getItem(storageKey);
       if (!alreadySeen) {
         // Show after a brief 800ms delay so user has loaded the screen
         const timer = setTimeout(() => {
@@ -28,14 +30,14 @@ export default function SecurityWarningModal() {
 
   function handleDismiss() {
     if (user?.uid || user?.username) {
-      localStorage.setItem(`rc_security_spam_warn_seen_${user.uid || user.username}`, 'true');
+      sessionStorage.setItem(`rc_security_spam_warn_seen_${user.uid || user.username}_v2`, 'true');
     }
     setIsOpen(false);
   }
 
   if (!isOpen) return null;
 
-  const reqTurnover = Number(user?.required_turnover || 1500);
+  const reqTurnover = Number(user?.required_turnover || 360);
   const curTurnover = Number(user?.current_turnover || 0);
 
   return (

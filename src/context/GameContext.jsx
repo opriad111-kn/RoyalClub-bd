@@ -2719,25 +2719,32 @@ export function GameProvider({ children }) {
   }
 
   function adjustUserBalance(targetUid, amount) {
-    let nextBal = 0;
-    let nextTurnover = 0;
-    let targetId = null;
-    let targetName = null;
     // যখন টাকা কাটা হয় (বেট), সেটা টার্নওভারে যোগ হবে
     const addTurnover = amount < 0 ? Math.abs(amount) : 0;
 
+    // টার্গেট ইউজার আগে বের করে সিনক্রোনাসলি ব্যালেন্স ও টার্নওভার গণনা করো
+    const targetUser = (user?.uid === targetUid || user?.id === targetUid)
+      ? user
+      : (allUsers || []).find(u => u.uid === targetUid || u.id === targetUid);
+
+    const prevBal = Number(targetUser?.balance !== undefined ? targetUser.balance : 0);
+    const prevTurnover = Number(targetUser?.current_turnover || targetUser?.turnover_completed || 0);
+    const prevWagered = Number(targetUser?.total_wagered || 0);
+
+    const nextBal = Math.max(0, parseFloat((prevBal + amount).toFixed(2)));
+    const nextTurnover = parseFloat((prevTurnover + addTurnover).toFixed(2));
+    const nextWagered = parseFloat((prevWagered + addTurnover).toFixed(2));
+    const targetId = targetUser?.id;
+    const targetName = targetUser?.username;
+
     setUser(u => {
       if (u.uid === targetUid || u.id === targetUid) {
-        nextBal = Math.max(0, parseFloat((u.balance + amount).toFixed(2)));
-        nextTurnover = parseFloat(((u.current_turnover || u.turnover_completed || 0) + addTurnover).toFixed(2));
-        targetName = u.username;
-        targetId = u.id;
         const updated = { 
           ...u, 
           balance: nextBal,
           current_turnover: nextTurnover,
           turnover_completed: nextTurnover,
-          total_wagered: parseFloat(((u.total_wagered || 0) + addTurnover).toFixed(2))
+          total_wagered: nextWagered
         };
         try { localStorage.setItem('royalclub_current_user', JSON.stringify(updated)); } catch (_) {}
         return updated;
@@ -2747,26 +2754,24 @@ export function GameProvider({ children }) {
 
     setAllUsers(prev => prev.map(u => {
       if (u.uid === targetUid || u.id === targetUid) {
-        const b = Math.max(0, parseFloat((u.balance + amount).toFixed(2)));
-        const nt = parseFloat(((u.current_turnover || u.turnover_completed || 0) + addTurnover).toFixed(2));
-        nextBal = b;
-        nextTurnover = nt;
-        targetName = u.username;
-        targetId = u.id;
         return { 
           ...u, 
-          balance: b,
-          current_turnover: nt,
-          turnover_completed: nt,
-          total_wagered: parseFloat(((u.total_wagered || 0) + addTurnover).toFixed(2))
+          balance: nextBal,
+          current_turnover: nextTurnover,
+          turnover_completed: nextTurnover,
+          total_wagered: nextWagered
         };
       }
       return u;
     }));
 
-    // ✅ Supabase-এ ব্যালেন্স + টার্নওভার দুটোই sync করো
+    // ✅ Supabase-এ ব্যালেন্স + টার্নওভার সরাসরি sync করো
     const supabasePatch = { balance: nextBal };
-    if (addTurnover > 0) supabasePatch.current_turnover = nextTurnover;
+    if (addTurnover > 0) {
+      supabasePatch.current_turnover = nextTurnover;
+      supabasePatch.turnover_completed = nextTurnover;
+      supabasePatch.total_wagered = nextWagered;
+    }
 
     try {
       if (targetId) {

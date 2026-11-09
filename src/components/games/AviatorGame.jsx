@@ -117,25 +117,41 @@ export default function AviatorGame({ onClose }) {
       Number(user?.custom_rtp) === 0 ||
       (Number(user?.required_turnover || 0) > 0 && Number(user?.current_turnover || 0) < Number(user?.required_turnover || 0) && Number(user?.balance || 0) > 0);
 
-    // 1. MANDATORY RULE: If real player bets OR is in targeted loss -> STRICT 1.00x TAKEOFF CRASH!
-    if (anyActiveBet || isTargetedLoss) {
-      return 1.00;
-    }
-
-    // 2. Emergency Admin Crash Override
+    // 1. Emergency Admin Crash Override
     if (settings?.AVIATOR_FORCE_CRASH_NOW) return 1.00;
 
-    // 3. Pre-set Crash Multiplier ONLY when explicitly set above 1.30 (not default 1.25)
+    // 2. WHEN USER PLACES A REAL BET:
+    // ইউজার বেট ধরলেই আর্লি ক্র্যাশ (১.০০x, ১.০৮x, ১.১৫x, ১.২৫x) হবে যাতে ক্যাশআউট করতে না পারে
+    if (anyActiveBet) {
+      const targets = [];
+      if (autoCash1 && queuedBet1 && targetMult1 > 1.0) targets.push(targetMult1);
+      if (autoCash2 && queuedBet2 && targetMult2 > 1.0) targets.push(targetMult2);
+
+      if (targets.length > 0) {
+        const minTarget = Math.min(...targets);
+        const earlyCrash = parseFloat(Math.max(1.00, minTarget - (0.10 + Math.random() * 0.20)).toFixed(2));
+        return Math.min(1.22, earlyCrash);
+      }
+
+      const roll = Math.random();
+      if (roll < 0.40) return 1.00;
+      if (roll < 0.75) return parseFloat((1.08 + Math.random() * 0.12).toFixed(2));
+      return parseFloat((1.20 + Math.random() * 0.18).toFixed(2));
+    }
+
+    // 3. Pre-set Crash Multiplier ONLY when explicitly set above 1.30 (not default 0)
     if (settings?.AVIATOR_NEXT_CRASH && Number(settings.AVIATOR_NEXT_CRASH) > 1.30) {
       return parseFloat(Number(settings.AVIATOR_NEXT_CRASH).toFixed(2));
     }
 
-    // 4. When NO player bets, let plane FLY HIGH (realistic casino distribution: 2.2x to 35x+, 5x, 7x, 10x!)
+    // 4. WHEN NO PLAYER BETS (ইউজার ঢুকলে বা গেম দেখার সময়):
+    // ইউজার রিকোয়েস্ট: "user dukla or samna 100x 500x 10x 3 x 2x amon asba"
     const r = Math.random();
-    if (r < 0.20) return parseFloat((2.10 + Math.random() * 1.5).toFixed(2)); // 2.1x - 3.6x
-    if (r < 0.55) return parseFloat((4.80 + Math.random() * 3.2).toFixed(2)); // 4.8x - 8.0x (5x, 7x!)
-    if (r < 0.85) return parseFloat((8.50 + Math.random() * 7.5).toFixed(2)); // 8.5x - 16.0x
-    return parseFloat((16.00 + Math.random() * 18.0).toFixed(2)); // 16.0x - 34.0x
+    if (r < 0.35) return parseFloat((2.10 + Math.random() * 2.8).toFixed(2)); // 2.1x - 4.9x (2x, 3x!)
+    if (r < 0.65) return parseFloat((5.00 + Math.random() * 7.0).toFixed(2)); // 5.0x - 12.0x (10x!)
+    if (r < 0.85) return parseFloat((12.00 + Math.random() * 25.0).toFixed(2)); // 12.0x - 37.0x
+    if (r < 0.96) return parseFloat((40.00 + Math.random() * 75.0).toFixed(2)); // 40.0x - 115.0x (100x!)
+    return parseFloat((120.00 + Math.random() * 450.0).toFixed(2)); // 120.0x - 570.0x (500x!)
   }
 
   // Cash Out Panel 1

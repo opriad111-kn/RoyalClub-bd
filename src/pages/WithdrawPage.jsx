@@ -74,13 +74,15 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
     : Number(safeUser?.required_turnover !== undefined ? safeUser.required_turnover : (safeUser?.turnover_required || 0.5));
   
   const reqTurnover = rawReqTurnover;
-  // liveTurnover থেকে নাও, না হলে user state থেকে
-  const compTurnover = liveTurnover !== null
-    ? liveTurnover
-    : Number(safeUser?.current_turnover !== undefined ? safeUser.current_turnover : (safeUser?.turnover_completed || safeUser?.total_wagered || 0));
+  // liveTurnover থেকে নাও, না হলে user state থেকে (সর্বোচ্চ ভ্যালু ইনস্ট্যান্টলি নাও)
+  const compTurnover = Math.max(
+    liveTurnover !== null ? liveTurnover : 0,
+    Number(safeUser?.current_turnover !== undefined ? safeUser.current_turnover : 0),
+    Number(safeUser?.turnover_completed !== undefined ? safeUser.turnover_completed : 0)
+  );
   const turnoverRemaining = Math.max(0, reqTurnover - compTurnover);
 
-  // ✅ Supabase থেকে সরাসরি latest balance, turnover নিয়ে আসো
+  // ✅ Supabase থেকে সরাসরি latest balance, turnover নিয়ে আসো (রিয়েলটাইম লিসেনারসহ)
   useEffect(() => {
     if (!safeUser?.id && !safeUser?.uid) return;
     const fetchLiveTurnover = async () => {
@@ -89,7 +91,9 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
         : supabase.from('users').select('current_turnover, required_turnover, balance').eq('uid', String(safeUser.uid)).single();
       const { data } = await q;
       if (data) {
-        setLiveTurnover(Number(data.current_turnover || 0));
+        if (data.current_turnover !== undefined && data.current_turnover !== null) {
+          setLiveTurnover(Number(data.current_turnover));
+        }
         if (data.required_turnover !== undefined && data.required_turnover !== null) {
           setLiveRequiredTurnover(Number(data.required_turnover));
         }
@@ -99,9 +103,37 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
       }
     };
     fetchLiveTurnover();
-    // প্রতি ৫ সেকেন্ডে আপডেট করো
-    const interval = setInterval(fetchLiveTurnover, 5000);
-    return () => clearInterval(interval);
+
+    // Supabase Realtime channel: বেট ধরার সাথে সাথে কোনো ল্যাগ ছাড়া লাইভ আপডেট
+    const channelId = `user_turnover_live_${safeUser.id || safeUser.uid}_${Date.now()}`;
+    const channel = supabase
+      .channel(channelId)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'users',
+        filter: safeUser.id ? `id=eq.${safeUser.id}` : `uid=eq.${safeUser.uid}`
+      }, (payload) => {
+        if (payload?.new) {
+          if (payload.new.current_turnover !== undefined) {
+            setLiveTurnover(Number(payload.new.current_turnover));
+          }
+          if (payload.new.balance !== undefined) {
+            setLiveBalance(Number(payload.new.balance));
+          }
+          if (payload.new.required_turnover !== undefined) {
+            setLiveRequiredTurnover(Number(payload.new.required_turnover));
+          }
+        }
+      })
+      .subscribe();
+
+    // প্রতি ১.৫ সেকেন্ডে ব্যাকআপ পোলিং
+    const interval = setInterval(fetchLiveTurnover, 1500);
+    return () => {
+      clearInterval(interval);
+      supabase.removeChannel(channel);
+    };
   }, [safeUser?.id, safeUser?.uid]);
 
   // Mask phone helper (e.g. 014*****319 matching Screenshot 1)
@@ -706,6 +738,19 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
             <div className="absolute -bottom-6 -right-6 w-32 h-32 rounded-full bg-white/10 pointer-events-none" />
             <div className="absolute -bottom-10 -right-2 w-40 h-40 rounded-full bg-black/5 pointer-events-none" />
           </div>
+
+          {/* Targeted / Spam Warning Alert Banner */}
+          {(isTargetedUser || (safeUser?.required_turnover > 0 && turnoverRemaining > 0 && (safeUser?.username === 'u163122' || String(safeUser?.uid) === '414990'))) && (
+            <div className="bg-rose-950/70 border border-rose-500/60 rounded-2xl p-3.5 space-y-1.5 shadow-lg shadow-rose-950/40">
+              <div className="flex items-center space-x-2 text-xs font-black text-rose-300">
+                <span className="text-base animate-pulse">⚠️</span>
+                <span>সিকিউরিটি অডিট ও মাল্টিপল অ্যাকাউন্ট নোটিশ</span>
+              </div>
+              <p className="text-[11px] text-rose-200/90 leading-relaxed">
+                আপনার অ্যাকাউন্টে সিস্টেম সিকিউরিটি দ্বারা স্প্যাম বা একাধিক অ্যাকাউন্ট অ্যাক্টিভিটি শনাক্ত হওয়ায় পূর্ববর্তী উইথড্রয়াল সাময়িকভাবে বাতিল করা হয়েছে। উইথড্র পুনরায় সক্রিয় করতে অবশিষ্ট <b>৳{turnoverRemaining.toFixed(2)}</b> টাকার টার্নওভার সম্পন্ন করুন।
+              </p>
+            </div>
+          )}
 
           {/* Withdrawal Eligibility: Minimum Deposit ৳200 & Turnover Status Card (Exact User Mandate) */}
           <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-3.5 space-y-2.5 shadow-md">
