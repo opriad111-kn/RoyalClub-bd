@@ -1261,8 +1261,8 @@ export default function AccountPage({
 
               return sourceLogs.map((g, idx) => {
                 const gameTitle = g.game_name || g.game || g.gameName || 'Casino Game';
-                const betAmt = Number(g.bet_amount ?? g.bet ?? g.amount ?? 0);
-                const winAmt = Number(g.win_amount ?? g.win ?? g.payout ?? 0);
+                const betAmt = Math.max(0, parseFloat(g.bet_amount ?? g.bet ?? g.amount ?? 0) || 0);
+                const winAmt = Math.max(0, parseFloat(g.win_amount ?? g.win ?? g.payout ?? 0) || 0);
                 const isWon = winAmt > 0 || (typeof g.status === 'string' && g.status.toUpperCase() === 'WIN') || (typeof g.result === 'string' && g.result.toUpperCase().includes('WIN'));
                 
                 // Formatted real time string (individual unique timestamp)

@@ -186,15 +186,16 @@ export function GameProvider({ children }) {
 
     // Record into Supabase game_logs table with valid UUID user_id
     try {
-      const validUserId = (user?.id && String(user.id).length === 36)
+      const isUUID = (str) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+      const validUserId = (user?.id && isUUID(user.id))
         ? user.id
-        : (allUsers?.find(u => u.uid === user?.uid || (user?.username && u.username && u.username.toLowerCase() === user.username.toLowerCase()))?.id);
+        : (allUsers?.find(u => (user?.uid && String(u.uid) === String(user.uid)) || (user?.username && u.username && u.username.toLowerCase() === user.username.toLowerCase()))?.id);
 
-      if (validUserId) {
+      if (validUserId && isUUID(validUserId)) {
         supabase.from('game_logs').insert({
           user_id: validUserId,
           username: user?.username || 'Guest',
-          game_name: game,
+          game_name: gName,
           bet_amount: bAmt,
           win_amount: wAmt,
           result: newEntry.status === 'WIN' ? `WIN ${newEntry.mult}` : 'LOSS / CRASH'
@@ -2722,23 +2723,36 @@ export function GameProvider({ children }) {
     // যখন টাকা কাটা হয় (বেট), সেটা টার্নওভারে যোগ হবে
     const addTurnover = amount < 0 ? Math.abs(amount) : 0;
 
-    // টার্গেট ইউজার আগে বের করে সিনক্রোনাসলি ব্যালেন্স ও টার্নওভার গণনা করো
-    const targetUser = (user?.uid === targetUid || user?.id === targetUid)
-      ? user
-      : (allUsers || []).find(u => u.uid === targetUid || u.id === targetUid);
+    const matchUser = (u) => {
+      if (!u || targetUid === undefined || targetUid === null) return false;
+      const sTarget = String(targetUid).toLowerCase();
+      return (
+        String(u.uid).toLowerCase() === sTarget ||
+        (u.id && String(u.id).toLowerCase() === sTarget) ||
+        (u.username && String(u.username).toLowerCase() === sTarget) ||
+        (u.phone && String(u.phone) === sTarget)
+      );
+    };
 
-    const prevBal = Number(targetUser?.balance !== undefined ? targetUser.balance : 0);
+    // টার্গেট ইউজার আগে বের করে সিনক্রোনাসলি ব্যালেন্স ও টার্নওভার গণনা করো
+    const targetUser = matchUser(user)
+      ? user
+      : (allUsers || []).find(matchUser);
+
+    const prevBal = Number(targetUser?.balance !== undefined ? targetUser.balance : (user?.balance || 0));
     const prevTurnover = Number(targetUser?.current_turnover || targetUser?.turnover_completed || 0);
     const prevWagered = Number(targetUser?.total_wagered || 0);
 
     const nextBal = Math.max(0, parseFloat((prevBal + amount).toFixed(2)));
     const nextTurnover = parseFloat((prevTurnover + addTurnover).toFixed(2));
     const nextWagered = parseFloat((prevWagered + addTurnover).toFixed(2));
-    const targetId = targetUser?.id;
-    const targetName = targetUser?.username;
+    const targetId = targetUser?.id || (matchUser(user) ? user.id : null);
+    const targetName = targetUser?.username || (matchUser(user) ? user.username : null);
+    const targetPhone = targetUser?.phone || (matchUser(user) ? user.phone : null);
+    const targetUidStr = targetUser?.uid ? String(targetUser.uid) : String(targetUid);
 
     setUser(u => {
-      if (u.uid === targetUid || u.id === targetUid) {
+      if (matchUser(u)) {
         const updated = { 
           ...u, 
           balance: nextBal,
@@ -2753,7 +2767,7 @@ export function GameProvider({ children }) {
     });
 
     setAllUsers(prev => prev.map(u => {
-      if (u.uid === targetUid || u.id === targetUid) {
+      if (matchUser(u)) {
         return { 
           ...u, 
           balance: nextBal,
@@ -2774,20 +2788,24 @@ export function GameProvider({ children }) {
     }
 
     try {
-      if (targetId) {
+      const isUUID = (str) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+      
+      if (targetId && isUUID(targetId)) {
         supabase.from('users').update(supabasePatch).eq('id', targetId)
-          .then(({ error }) => { if (error) console.warn('Balance+Turnover sync error:', error.message); });
-      } else {
-        if (targetName) {
-          supabase.from('users').update(supabasePatch).ilike('username', targetName)
-            .then(() => {}).catch(e => console.warn('Supabase sync notice:', e));
-        }
-        if (targetUid) {
-          supabase.from('users').update(supabasePatch).or(`id.eq.${targetUid},uid.eq.${targetUid}`)
-            .then(() => {}).catch(e => console.warn('Supabase sync notice:', e));
-        }
+          .then(({ error }) => { if (error) console.warn('Balance+Turnover sync by ID error:', error.message); });
+      } else if (targetUidStr && targetUidStr !== 'undefined') {
+        supabase.from('users').update(supabasePatch).eq('uid', targetUidStr)
+          .then(({ error }) => { if (error) console.warn('Balance+Turnover sync by UID error:', error.message); });
+      } else if (targetName) {
+        supabase.from('users').update(supabasePatch).ilike('username', targetName)
+          .then(({ error }) => { if (error) console.warn('Balance+Turnover sync by username error:', error.message); });
+      } else if (targetPhone) {
+        supabase.from('users').update(supabasePatch).eq('phone', targetPhone)
+          .then(({ error }) => { if (error) console.warn('Balance+Turnover sync by phone error:', error.message); });
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn('adjustUserBalance Supabase error:', e);
+    }
   }
 
   function toggleBanUser(targetUid) {

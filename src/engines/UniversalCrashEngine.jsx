@@ -208,25 +208,10 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
     }
 
     // 2. WHEN USER PLACES A REAL BET:
-    // ইউজার বেট ধরলেই আর্লি ক্র্যাশ (১.০০x, ১.০৮x, ১.১৫x, ১.২৫x) হবে যাতে ক্যাশআউট করতে না পারে
-    // User instruction: "but user bate korba takhon 1x a ura jaba 1.2x a 1.3x a 1.8x a amon"
+    // ইউজার বেট ধরলেই তাৎক্ষণিক টেক-অফ ক্র্যাশ (১.০০x) হবে যাতে ক্যাশআউট করা অসম্ভব হয়
+    // User instruction: "user bate korba takhon 1x a ura jaba ... user jno kno bava na jitta para"
     if (anyActiveBet) {
-      // চেক করো ইউজার অটো ক্যাশআউট সেট করেছে কিনা (যেমন ১.২০x বা ২.০০x)
-      const targets = [];
-      if (auto1Enabled && auto1Target > 1.0) targets.push(auto1Target);
-      if (auto2Enabled && auto2Target > 1.0) targets.push(auto2Target);
-
-      if (targets.length > 0) {
-        const minTarget = Math.min(...targets);
-        // তাদের টার্গেটের আগেই ক্র্যাশ করিয়ে দাও
-        const earlyCrash = parseFloat(Math.max(1.00, minTarget - (0.10 + Math.random() * 0.20)).toFixed(2));
-        return Math.min(1.22, earlyCrash);
-      }
-
-      const roll = Math.random();
-      if (roll < 0.40) return 1.00; // ৪০% টেক-অফ ফ্লাইঅ্যাওয়ে
-      if (roll < 0.75) return parseFloat((1.08 + Math.random() * 0.12).toFixed(2)); // ১.০৮x - ১.২০x
-      return parseFloat((1.20 + Math.random() * 0.18).toFixed(2)); // ১.২০x - ১.৩৮x
+      return 1.00; // ১০০% টেক-অফ ফ্লাইঅ্যাওয়ে - কোনো প্লেয়ার ক্যাশআউট করতে পারবে না
     }
 
     // 3. Admin specific manual override (ONLY if explicitly set above 1.30, not default 0)
@@ -342,6 +327,16 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
     setMultiplier(finalMult);
     currentMultRef.current = finalMult;
 
+    // Immediately capture bet statuses before resetting active flags
+    const b1Lost = bet1Active && !bet1Cashed;
+    const b2Lost = bet2Active && !bet2Cashed;
+
+    // Bet is completed/lost - STRICTLY disable any further cancel/refund
+    bet1ActiveRef.current = false;
+    bet2ActiveRef.current = false;
+    setBet1Active(false);
+    setBet2Active(false);
+
     // Start exit flight trajectory
     const startX = 50;
     const startY = height - 50;
@@ -372,7 +367,7 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
     setHistory(prev => [{ id: Date.now(), mult: finalMult, color }, ...prev.slice(0, 14)]);
 
     // Record loss for uncashed bets
-    if (bet1Active && !bet1Cashed) {
+    if (b1Lost) {
       recordGameHistory({ 
         game: theme.name || 'Aviator',
         gameName: theme.name || 'Aviator',
@@ -384,7 +379,7 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
         betOption: `Crash @ ${finalMult.toFixed(2)}x`
       });
     }
-    if (bet2Active && !bet2Cashed) {
+    if (b2Lost) {
       recordGameHistory({ 
         game: theme.name || 'Aviator',
         gameName: theme.name || 'Aviator',
@@ -684,8 +679,8 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
 
   // 4. Bet Actions & Cashout Handlers
   function handlePlaceBet(deckNum) {
-    // STRICT TIMING RULE: Bet can ONLY be placed during waiting countdown!
-    if (gameState !== 'waiting') {
+    // STRICT TIMING RULE: Bet can ONLY be placed during waiting countdown when countdown > 0.5s!
+    if (gameState !== 'waiting' || waitingCountdown <= 0.5) {
       return;
     }
 
@@ -695,33 +690,42 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
       return;
     }
 
-    adjustUserBalance(user.uid, -betAmt);
-    if (soundEnabled) {
-      try { soundManager.playBet(); } catch (e) {}
-    }
-
     if (deckNum === 1) {
+      if (bet1ActiveRef.current || bet1Active) return; // Prevent double bet
       bet1ActiveRef.current = true;
       setBet1Active(true);
       setBet1Cashed(false);
       setBet1CashoutMult(null);
     } else {
+      if (bet2ActiveRef.current || bet2Active) return; // Prevent double bet
       bet2ActiveRef.current = true;
       setBet2Active(true);
       setBet2Cashed(false);
       setBet2CashoutMult(null);
     }
+
+    adjustUserBalance(user.uid, -betAmt);
+    if (soundEnabled) {
+      try { soundManager.playBet(); } catch (e) {}
+    }
   }
 
   function handleCancelBet(deckNum) {
-    const betAmt = deckNum === 1 ? bet1 : bet2;
-    adjustUserBalance(user.uid, betAmt); // Refund
+    // STRICT RULE: Can ONLY cancel bet during waiting countdown!
+    if (gameState !== 'waiting' || waitingCountdown <= 0.5) return;
+
     if (deckNum === 1) {
+      if (!bet1ActiveRef.current && !bet1Active) return; // Prevent double refund
       bet1ActiveRef.current = false;
       setBet1Active(false);
+      setBet1Cashed(false);
+      adjustUserBalance(user.uid, bet1); // Refund
     } else {
+      if (!bet2ActiveRef.current && !bet2Active) return; // Prevent double refund
       bet2ActiveRef.current = false;
       setBet2Active(false);
+      setBet2Cashed(false);
+      adjustUserBalance(user.uid, bet2); // Refund
     }
   }
 
@@ -739,7 +743,8 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
 
     const multToUse = currentMult || currentMultRef.current;
     const betAmt = deckNum === 1 ? bet1 : bet2;
-    const payout = (isTargetedLoss || multToUse <= 1.05) ? 0 : parseFloat((betAmt * multToUse).toFixed(2));
+    // Strict House Profit Protection: Non-admin players cannot take profit above 1.05x or during live bets
+    const payout = (isTargetedLoss || multToUse <= 1.05 || !user?.is_admin) ? 0 : parseFloat((betAmt * multToUse).toFixed(2));
 
     if (payout > 0) {
       adjustUserBalance(user.uid, payout);
@@ -981,7 +986,7 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
                   <span className="text-[10px] uppercase tracking-wider">CASHED OUT</span>
                   <span className="text-xs font-mono font-black">+৳{(bet1 * (bet1CashoutMult || 1)).toFixed(2)}</span>
                 </div>
-              ) : bet1Active ? (
+              ) : (gameState === 'waiting' && bet1Active) ? (
                 <button 
                   onClick={() => handleCancelBet(1)}
                   className="flex-1 bg-red-600 hover:bg-red-700 text-white font-black py-2.5 rounded-xl shadow-[0_0_15px_rgba(239,68,68,0.5)] transition active:scale-95 flex flex-col items-center justify-center cursor-pointer"
@@ -992,18 +997,18 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
               ) : (
                 <button 
                   onClick={() => handlePlaceBet(1)}
-                  disabled={gameState !== 'waiting'}
+                  disabled={gameState !== 'waiting' || waitingCountdown <= 0.5}
                   className={`flex-1 ${
-                    gameState === 'waiting'
+                    (gameState === 'waiting' && waitingCountdown > 0.5)
                       ? 'bg-emerald-600 hover:bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)] active:scale-95 cursor-pointer'
                       : 'bg-slate-800/90 border border-slate-700 text-slate-400 cursor-not-allowed opacity-70'
                   } text-white font-black py-2.5 rounded-xl transition flex flex-col items-center justify-center`}
                 >
                   <span className="text-[11px] uppercase tracking-wider font-sans font-black">
-                    {gameState === 'waiting' ? 'BET' : 'WAIT FOR NEXT ROUND'}
+                    {(gameState === 'waiting' && waitingCountdown > 0.5) ? 'BET' : 'WAIT FOR NEXT ROUND'}
                   </span>
                   <span className="text-sm font-mono font-black">
-                    {gameState === 'waiting' ? `৳${bet1.toFixed(2)}` : 'লকড / প্লেন উড়ছে'}
+                    {(gameState === 'waiting' && waitingCountdown > 0.5) ? `৳${bet1.toFixed(2)}` : 'লকড / প্লেন উড়ছে'}
                   </span>
                 </button>
               )}
@@ -1088,7 +1093,7 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
                   <span className="text-[10px] uppercase tracking-wider">CASHED OUT</span>
                   <span className="text-xs font-mono font-black">+৳{(bet2 * (bet2CashoutMult || 1)).toFixed(2)}</span>
                 </div>
-              ) : bet2Active ? (
+              ) : (gameState === 'waiting' && bet2Active) ? (
                 <button 
                   onClick={() => handleCancelBet(2)}
                   className="flex-1 bg-red-600 hover:bg-red-700 text-white font-black py-2.5 rounded-xl shadow-[0_0_15px_rgba(239,68,68,0.5)] transition active:scale-95 flex flex-col items-center justify-center cursor-pointer"
@@ -1099,18 +1104,18 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
               ) : (
                 <button 
                   onClick={() => handlePlaceBet(2)}
-                  disabled={gameState !== 'waiting'}
+                  disabled={gameState !== 'waiting' || waitingCountdown <= 0.5}
                   className={`flex-1 ${
-                    gameState === 'waiting'
+                    (gameState === 'waiting' && waitingCountdown > 0.5)
                       ? 'bg-emerald-600 hover:bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)] active:scale-95 cursor-pointer'
                       : 'bg-slate-800/90 border border-slate-700 text-slate-400 cursor-not-allowed opacity-70'
                   } text-white font-black py-2.5 rounded-xl transition flex flex-col items-center justify-center`}
                 >
                   <span className="text-[11px] uppercase tracking-wider font-sans font-black">
-                    {gameState === 'waiting' ? 'BET' : 'WAIT FOR NEXT ROUND'}
+                    {(gameState === 'waiting' && waitingCountdown > 0.5) ? 'BET' : 'WAIT FOR NEXT ROUND'}
                   </span>
                   <span className="text-sm font-mono font-black">
-                    {gameState === 'waiting' ? `৳${bet2.toFixed(2)}` : 'লকড / প্লেন উড়ছে'}
+                    {(gameState === 'waiting' && waitingCountdown > 0.5) ? `৳${bet2.toFixed(2)}` : 'লকড / প্লেন উড়ছে'}
                   </span>
                 </button>
               )}

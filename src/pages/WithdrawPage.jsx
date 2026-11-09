@@ -755,21 +755,21 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
               </span>
             </div>
 
-            {/* Criteria 1: Min Deposit ৳200 */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="text-[#7098C5]">১. মোট ডিপোজিট (ন্যূনতম ৳২০০ আবশ্যক)</span>
-                <span className={`font-mono font-bold ${Number(safeUser?.total_deposited || 0) >= 200 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                  ৳{Number(safeUser?.total_deposited || 0).toFixed(2)} / ৳200.00
-                </span>
-              </div>
-              <div className="w-full bg-[#14122E] h-1.5 rounded-full overflow-hidden">
-                <div 
-                  className={`h-full transition-all duration-300 ${Number(safeUser?.total_deposited || 0) >= 200 ? 'bg-emerald-500' : 'bg-rose-500'}`}
-                  style={{ width: `${Math.min(100, (Number(safeUser?.total_deposited || 0) / 200) * 100)}%` }}
-                />
-              </div>
-              {Number(safeUser?.total_deposited || 0) < 200 && (
+            {/* Criteria 1: Min Deposit ৳200 (Only shown BEFORE user completes ৳200 deposit) */}
+            {Number(safeUser?.total_deposited || 0) < 200 && (
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-[#7098C5]">১. মোট ডিপোজিট (ন্যূনতম ৳২০০ আবশ্যক)</span>
+                  <span className="font-mono font-bold text-rose-400">
+                    ৳{Number(safeUser?.total_deposited || 0).toFixed(2)} / ৳200.00
+                  </span>
+                </div>
+                <div className="w-full bg-[#14122E] h-1.5 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full transition-all duration-300 bg-rose-500"
+                    style={{ width: `${Math.min(100, (Number(safeUser?.total_deposited || 0) / 200) * 100)}%` }}
+                  />
+                </div>
                 <div className="flex items-center justify-between pt-0.5">
                   <p className="text-[10px] text-amber-300/90">
                     * বোনাস তোলার জন্য ন্যূনতম ৳২০০ ডিপোজিট প্রয়োজন
@@ -782,13 +782,15 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
                     ডিপোজিট করুন →
                   </button>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Criteria 2: Turnover Requirement */}
-            <div className="space-y-1 border-t border-[#30358B]/40 pt-2">
+            <div className={`space-y-1 ${Number(safeUser?.total_deposited || 0) < 200 ? 'border-t border-[#30358B]/40 pt-2' : ''}`}>
               <div className="flex items-center justify-between text-[11px]">
-                <span className="text-[#7098C5]">২. টার্নওভার অগ্রগতি (Turnover Progress)</span>
+                <span className="text-[#7098C5]">
+                  {Number(safeUser?.total_deposited || 0) < 200 ? '২. টার্নওভার অগ্রগতি (Turnover Progress)' : 'টার্নওভার অগ্রগতি (Turnover Progress)'}
+                </span>
                 <span className={`font-mono font-bold ${turnoverRemaining <= 0 ? 'text-emerald-400' : 'text-amber-400'}`}>
                   ৳{compTurnover.toFixed(2)} / ৳{reqTurnover.toFixed(2)}
                 </span>

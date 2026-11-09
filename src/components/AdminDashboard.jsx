@@ -155,9 +155,10 @@ export default function AdminDashboard({ onExit }) {
       setLoadingGameLogs(true);
       try {
         let q = supabase.from('game_logs').select('*');
-        if (selectedUser.id && selectedUser.username) {
+        const isUUID = (str) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+        if (selectedUser.id && isUUID(selectedUser.id) && selectedUser.username) {
           q = q.or(`user_id.eq.${selectedUser.id},username.ilike.${selectedUser.username}`);
-        } else if (selectedUser.id) {
+        } else if (selectedUser.id && isUUID(selectedUser.id)) {
           q = q.eq('user_id', selectedUser.id);
         } else if (selectedUser.username) {
           q = q.ilike('username', selectedUser.username);
