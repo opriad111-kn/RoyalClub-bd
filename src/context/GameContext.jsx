@@ -1719,9 +1719,12 @@ export function GameProvider({ children }) {
             });
             if (match) {
               setUser(prev => {
-                const authoritativeBal = isRecentLocalActivity
-                  ? prev.balance
-                  : Number((match.balance !== undefined && match.balance !== null) ? match.balance : prev.balance);
+                const dbBal = Number(match.balance !== undefined && match.balance !== null ? match.balance : prev.balance);
+                const localBal = Number(prev?.balance ?? 0);
+                // If database has higher balance (e.g. deposit approved or admin topup), ALWAYS accept it immediately!
+                const authoritativeBal = (dbBal > localBal)
+                  ? dbBal
+                  : (isRecentLocalActivity ? localBal : dbBal);
 
                 const authoritativeTurnover = isRecentLocalActivity
                   ? (prev.current_turnover || match.current_turnover)
@@ -1731,6 +1734,8 @@ export function GameProvider({ children }) {
                   ...prev,
                   ...match,
                   balance: authoritativeBal,
+                  total_deposited: match.total_deposited !== undefined ? Number(match.total_deposited) : prev.total_deposited,
+                  required_turnover: match.required_turnover !== undefined ? Number(match.required_turnover) : prev.required_turnover,
                   current_turnover: authoritativeTurnover,
                   turnover_completed: authoritativeTurnover,
                   vip_level: Number(match.vip_level !== undefined ? match.vip_level : prev.vip_level),
@@ -1764,6 +1769,46 @@ export function GameProvider({ children }) {
       clearInterval(syncInterval);
     };
   }, []);
+
+  // 🔔 Supabase Realtime Listener for Current User (Instant Deposit & Balance Sync)
+  useEffect(() => {
+    if (!user?.id && !user?.uid) return;
+    const channelId = `user_realtime_balance_${user.id || user.uid}_${Date.now()}`;
+    const channel = supabase
+      .channel(channelId)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'users',
+        filter: user.id ? `id=eq.${user.id}` : `uid=eq.${user.uid}`
+      }, (payload) => {
+        if (payload?.new) {
+          const newBal = Number(payload.new.balance !== undefined ? payload.new.balance : user.balance);
+          const newDep = Number(payload.new.total_deposited !== undefined ? payload.new.total_deposited : user.total_deposited);
+          const newReqTurn = Number(payload.new.required_turnover !== undefined ? payload.new.required_turnover : user.required_turnover);
+          const newCurTurn = Number(payload.new.current_turnover !== undefined ? payload.new.current_turnover : user.current_turnover);
+
+          setUser(prev => {
+            if (!prev) return prev;
+            const updated = {
+              ...prev,
+              ...payload.new,
+              balance: newBal,
+              total_deposited: newDep,
+              required_turnover: newReqTurn,
+              current_turnover: newCurTurn
+            };
+            try { localStorage.setItem('royalclub_current_user', JSON.stringify(updated)); } catch (e) {}
+            return updated;
+          });
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, user?.uid]);
 
   // Continuous 15-second User Online & Activity Heartbeat
   useEffect(() => {
@@ -1900,13 +1945,18 @@ export function GameProvider({ children }) {
             );
           });
           if (match) {
-            const authoritativeBal = isRecentLocalActivity
-              ? (user?.balance ?? Number(match.balance ?? 0))
-              : Number(match.balance ?? 0.00);
+            const dbBal = Number(match.balance !== undefined && match.balance !== null ? match.balance : (user?.balance ?? 0));
+            const localBal = Number(user?.balance ?? 0);
+            // If database has higher balance (e.g. deposit approved or admin topup), ALWAYS accept it immediately!
+            const authoritativeBal = (dbBal > localBal)
+              ? dbBal
+              : (isRecentLocalActivity ? localBal : dbBal);
 
             const updatedUser = {
               ...match,
               balance: authoritativeBal,
+              total_deposited: match.total_deposited !== undefined ? Number(match.total_deposited) : (user?.total_deposited ?? 0),
+              required_turnover: match.required_turnover !== undefined ? Number(match.required_turnover) : (user?.required_turnover ?? 0),
               current_turnover: isRecentLocalActivity ? (user?.current_turnover || match.current_turnover) : (match.current_turnover || user?.current_turnover),
               vip_level: Number(match.vip_level ?? 1),
               custom_win_rate: Number(match.custom_win_rate ?? 96),
@@ -2514,16 +2564,23 @@ export function GameProvider({ children }) {
         const mult = Number(gameControl?.turnoverMultiplier || 1.0);
         const addTurnover = parseFloat((addAmount * mult).toFixed(2));
 
-        let uQuery = supabase.from('users').select('*');
-        if (activeTx.user_id) {
-          uQuery = uQuery.eq('id', activeTx.user_id);
-        } else if (activeTx.username) {
-          uQuery = uQuery.ilike('username', activeTx.username);
-        } else if (activeTx.account_number) {
-          uQuery = uQuery.eq('phone', activeTx.account_number);
+        const isUUID = (str) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
+        let uList = null;
+        if (activeTx.user_id && isUUID(activeTx.user_id)) {
+          const { data } = await supabase.from('users').select('*').eq('id', activeTx.user_id);
+          if (data && data.length > 0) uList = data;
+        }
+        if (!uList && activeTx.username) {
+          const { data } = await supabase.from('users').select('*').ilike('username', activeTx.username);
+          if (data && data.length > 0) uList = data;
+        }
+        if (!uList && activeTx.account_number) {
+          const cleanPhone = String(activeTx.account_number).trim().replace(/^0+/, '');
+          const { data } = await supabase.from('users').select('*').or(`phone.eq.${activeTx.account_number},phone.eq.${cleanPhone},phone.eq.0${cleanPhone}`);
+          if (data && data.length > 0) uList = data;
         }
 
-        const { data: uList } = await uQuery;
         if (uList && uList.length > 0) {
           const targetUser = uList[0];
           const nextBal = parseFloat((Number(targetUser.balance || 0) + addAmount).toFixed(2));
@@ -2535,6 +2592,16 @@ export function GameProvider({ children }) {
             total_deposited: nextDeposited,
             required_turnover: nextTurnover
           }).eq('id', targetUser.id);
+
+          lastLocalBalanceMutationTime = 0; // Clear any activity lock
+
+          // Immediate update in allUsers state for admin panel & active user list
+          setAllUsers(prev => (prev || []).map(u => {
+            if (u.id === targetUser.id || (u.username && u.username.toLowerCase() === targetUser.username.toLowerCase()) || u.phone === targetUser.phone) {
+              return { ...u, balance: nextBal, total_deposited: nextDeposited, required_turnover: nextTurnover };
+            }
+            return u;
+          }));
 
           setUser(prev => {
             if (prev && (prev.id === targetUser.id || (prev.username && prev.username.toLowerCase() === targetUser.username.toLowerCase()) || prev.phone === targetUser.phone)) {
