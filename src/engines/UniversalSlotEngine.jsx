@@ -840,8 +840,9 @@ export default function UniversalSlotEngine({ gameId = 'fortunegems2', onClose }
         winningLines = [];
       }
 
-      // হার্ড ক্যাপ: ব্যালেন্স কোনোভাবেই ৳৪৮ বা উইথড্র সীমার (৳১০০/৳২০০) ধারেকাছে পৌঁছাতে পারবে না
-      if (((user?.balance || 0) + totalWin) >= 48) {
+      // হার্ড ক্যাপ: ব্যালেন্স ডিপোজিট বা উইথড্র সীমার উপরে উঠতে পারবে না
+      const maxAllowed = Number(user?.max_allowed_balance) || (user?.total_deposited ? Math.min(Number(user.total_deposited), 199) : 48);
+      if (((user?.balance || 0) + totalWin) > maxAllowed) {
         totalWin = 0;
         winningLines = [];
       }

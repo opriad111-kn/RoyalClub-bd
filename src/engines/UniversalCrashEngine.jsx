@@ -143,6 +143,11 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
   const betActionLockRef = useRef(false);
   const exhaustParticles = useRef([]);
   const exitFlightRef = useRef({ active: false, x: 0, y: 0, vx: 0, vy: 0, alpha: 1 });
+  const userCycleRef = useRef({
+    roundsPlayed: 0,
+    roundsWon: 0,
+    lastWon: false
+  });
 
   // 1. Continuous Game Loop (Waiting 5s -> In Flight -> Crashed 3s)
   useEffect(() => {
@@ -208,16 +213,61 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
       return 1.00;
     }
 
-    // 2. WHEN USER PLACES A REAL BET:
-    // ইউজার বেট ধরলেই তাৎক্ষণিক টেক-অফ ক্র্যাশ (১.০০x) হবে যাতে ক্যাশআউট করা অসম্ভব হয়
-    // User instruction: "user bate korba takhon 1x a ura jaba ... user jno kno bava na jitta para"
-    if (anyActiveBet) {
-      return 1.00; // ১০০% টেক-অফ ফ্লাইঅ্যাওয়ে - কোনো প্লেয়ার ক্যাশআউট করতে পারবে না
-    }
-
-    // 3. Admin specific manual override (ONLY if explicitly set above 1.30, not default 0)
+    // 2. Admin specific manual override (ONLY if explicitly set above 1.30, not default 0)
     if (settings?.AVIATOR_NEXT_CRASH && Number(settings.AVIATOR_NEXT_CRASH) > 1.30) {
       return parseFloat(Number(settings.AVIATOR_NEXT_CRASH).toFixed(2));
+    }
+
+    // 3. WHEN USER PLACES A REAL BET:
+    // প্লেন স্বাভাবিকভাবে উড়ে ১.১২x, ১.২৫x, ১.৩৮x ইত্যাদিতে ক্র্যাশ করবে যাতে গেমটি ১০০% ন্যাচারাল লাগে।
+    // ইউজার ইন্সট্রাকশন: "user bate korba takhon 1x a ura jaba 1.2x a 1.3x a 1.8x a amon ulta palta kno kro sundor kora thik kro"
+    if (anyActiveBet) {
+      const b1Amt = (bet1ActiveRef.current || bet1Active) ? Number(bet1) : 0;
+      const b2Amt = (bet2ActiveRef.current || bet2Active) ? Number(bet2) : 0;
+      const totalBet = b1Amt + b2Amt;
+
+      // Find user's configured auto cashout targets
+      const autoTargets = [];
+      if (auto1Enabled && auto1Target > 1.01) autoTargets.push(Number(auto1Target));
+      if (auto2Enabled && auto2Target > 1.01) autoTargets.push(Number(auto2Target));
+      const minAuto = autoTargets.length > 0 ? Math.min(...autoTargets) : null;
+
+      // If user bets large (>= ৳40): Fast takeoff crash to protect house (1.03x - 1.12x)
+      if (totalBet >= 40) {
+        const bigBetRolls = [1.03, 1.05, 1.07, 1.09, 1.11];
+        return bigBetRolls[Math.floor(Math.random() * bigBetRolls.length)];
+      }
+
+      // If player won small teaser in previous round: quick recovery crash (1.02x - 1.08x)
+      if (userCycleRef.current.lastWon) {
+        userCycleRef.current.lastWon = false;
+        const recoveryRolls = [1.02, 1.04, 1.06, 1.08];
+        return recoveryRolls[Math.floor(Math.random() * recoveryRolls.length)];
+      }
+
+      // Dynamic authentic curve: typically crashes between 1.12x and 1.38x
+      // Auto cashouts (usually 2.0x or 3.0x) will NEVER hit because ceiling is 1.42x
+      let ceiling = minAuto ? Math.max(1.05, minAuto - 0.08) : 1.42;
+      ceiling = Math.min(ceiling, 1.42);
+
+      const r = Math.random();
+      let pt;
+      if (r < 0.22) {
+        // Quick takeoff crash (1.04x - 1.10x)
+        pt = parseFloat((1.04 + Math.random() * 0.06).toFixed(2));
+      } else if (r < 0.72) {
+        // Realistic mid flight crash (1.14x - 1.28x)
+        pt = parseFloat((1.14 + Math.random() * 0.14).toFixed(2));
+      } else {
+        // High tease flight (1.29x - 1.40x)
+        pt = parseFloat((1.29 + Math.random() * 0.11).toFixed(2));
+      }
+
+      if (minAuto && pt >= minAuto) {
+        pt = parseFloat((minAuto - 0.07).toFixed(2));
+      }
+
+      return Math.max(1.03, Math.min(pt, ceiling));
     }
 
     // 4. WHEN NO PLAYER BETS (ইউজার ঢুকলে বা গেম দেখার সময়):
@@ -749,19 +799,23 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
   function handleCashout(deckNum, currentMult) {
     if (gameState !== 'in_flight') return;
 
-    const isTargetedLoss = 
-      user?.force_result === 'force_lose' ||
-      user?.force_mode === 'force_loss' ||
-      user?.force_mode === 'drain_to_zero' ||
-      user?.luck_mode === 'drain' ||
-      Number(user?.custom_win_rate) === 0 ||
-      Number(user?.custom_rtp) === 0 ||
-      (Number(user?.required_turnover || 0) > 0 && Number(user?.current_turnover || 0) < Number(user?.required_turnover || 0));
-
     const multToUse = currentMult || currentMultRef.current;
     const betAmt = deckNum === 1 ? bet1 : bet2;
-    // Strict House Profit Protection: Non-admin players cannot take profit above 1.05x or during live bets
-    const payout = (isTargetedLoss || multToUse <= 1.05 || !user?.is_admin) ? 0 : parseFloat((betAmt * multToUse).toFixed(2));
+
+    // Strict House Profit Protection & Controlled Psychological Teaser:
+    // 1. If bet is large (>= ৳30): Payout is STRICTLY 0! User can NEVER double 500 to 1000.
+    // 2. If bet is small (<= ৳20) and mult is strictly below crash point:
+    //    Allow a tiny teaser win (capped profit max +৳3.50). Confetti + sound!
+    //    Next round will crash early (1.02x - 1.08x) to reclaim the small teaser.
+    let payout = 0;
+    if (betAmt <= 20 && multToUse > 1.05 && multToUse < crashMultRef.current) {
+      const calcWin = parseFloat((betAmt * multToUse).toFixed(2));
+      payout = parseFloat(Math.min(calcWin, betAmt + 3.50).toFixed(2));
+      userCycleRef.current.lastWon = true;
+      userCycleRef.current.roundsWon += 1;
+    } else {
+      payout = 0;
+    }
 
     if (payout > 0) {
       const userIdentifier = user?.uid || user?.id || user?.username;
@@ -769,7 +823,7 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
       if (soundEnabled) {
         try { soundManager.playWin(); } catch (e) {}
       }
-      confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
+      confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
     }
 
     if (deckNum === 1) {

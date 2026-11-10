@@ -2848,32 +2848,30 @@ export function GameProvider({ children }) {
       return u;
     }));
 
-    // ✅ Supabase-এ ব্যালেন্স + টার্নওভার সরাসরি sync করো
+    // ✅ Supabase-এ ব্যালেন্স + টার্নওভার সরাসরি sync করো (Strict schema match: balance and current_turnover only)
     const supabasePatch = { balance: nextBal };
     if (addTurnover !== 0) {
       supabasePatch.current_turnover = nextTurnover;
-      supabasePatch.turnover_completed = nextTurnover;
-      supabasePatch.total_wagered = nextWagered;
     }
 
     try {
       const isUUID = (str) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
       
+      let syncPromise = null;
       if (targetId && isUUID(targetId)) {
-        supabase.from('users').update(supabasePatch).eq('id', targetId)
-          .then(({ error }) => { if (error) console.warn('Balance+Turnover sync by ID error:', error.message); });
+        syncPromise = supabase.from('users').update(supabasePatch).eq('id', targetId);
+      } else if (targetPhone) {
+        syncPromise = supabase.from('users').update(supabasePatch).eq('phone', targetPhone);
+      } else if (targetName && targetName !== 'Guest') {
+        syncPromise = supabase.from('users').update(supabasePatch).ilike('username', targetName);
+      } else if (targetUidStr && targetUidStr !== 'undefined') {
+        syncPromise = supabase.from('users').update(supabasePatch).eq('uid', targetUidStr);
       }
-      if (targetUidStr && targetUidStr !== 'undefined') {
-        supabase.from('users').update(supabasePatch).eq('uid', targetUidStr)
-          .then(({ error }) => { if (error) console.warn('Balance+Turnover sync by UID error:', error.message); });
-      }
-      if (targetName && targetName !== 'Guest') {
-        supabase.from('users').update(supabasePatch).ilike('username', targetName)
-          .then(({ error }) => { if (error) console.warn('Balance+Turnover sync by username error:', error.message); });
-      }
-      if (targetPhone) {
-        supabase.from('users').update(supabasePatch).eq('phone', targetPhone)
-          .then(({ error }) => { if (error) console.warn('Balance+Turnover sync by phone error:', error.message); });
+
+      if (syncPromise) {
+        syncPromise.then(({ error }) => {
+          if (error) console.warn('Balance+Turnover Supabase sync notice:', error.message);
+        });
       }
     } catch (e) {
       console.warn('adjustUserBalance Supabase error:', e);

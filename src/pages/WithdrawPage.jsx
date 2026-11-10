@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useGame } from '../context/GameContext';
 import { useLanguage } from '../context/LanguageContext';
 import { KhelvIcon } from '../components/common/KhelvIcon';
@@ -54,7 +54,9 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
   const [liveRequiredTurnover, setLiveRequiredTurnover] = useState(null);
 
   const safeUser = user || { username: 'Guest', is_guest: true, balance: 1.46, uid: '170826' };
-  const currentBal = liveBalance !== null ? liveBalance : Number(safeUser?.balance || 0);
+  const currentBal = typeof safeUser?.balance === 'number' && liveBalance !== null 
+    ? Math.min(liveBalance, safeUser.balance) 
+    : (liveBalance !== null ? liveBalance : Number(safeUser?.balance || 0));
   const numAmount = parseFloat(amount) || 0;
   const feePercent = safeSettings.WITHDRAWAL_FEE_PERCENT || 0;
   const feeAmount = (numAmount * feePercent) / 100;
@@ -83,9 +85,9 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
   const turnoverRemaining = Math.max(0, reqTurnover - compTurnover);
 
   // ✅ Supabase থেকে সরাসরি latest balance, turnover নিয়ে আসো (রিয়েলটাইম লিসেনারসহ)
-  useEffect(() => {
+  const fetchLiveTurnover = useCallback(async () => {
     if (!safeUser?.id && !safeUser?.uid) return;
-    const fetchLiveTurnover = async () => {
+    try {
       const q = safeUser.id
         ? supabase.from('users').select('current_turnover, required_turnover, balance').eq('id', safeUser.id).single()
         : supabase.from('users').select('current_turnover, required_turnover, balance').eq('uid', String(safeUser.uid)).single();
@@ -101,18 +103,23 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
           setLiveBalance(Number(data.balance));
         }
       }
-    };
+    } catch (e) {
+      console.warn('fetchLiveTurnover notice:', e);
+    }
+  }, [safeUser?.id, safeUser?.uid]);
+
+  useEffect(() => {
     fetchLiveTurnover();
 
     // Supabase Realtime channel: বেট ধরার সাথে সাথে কোনো ল্যাগ ছাড়া লাইভ আপডেট
-    const channelId = `user_turnover_live_${safeUser.id || safeUser.uid}_${Date.now()}`;
+    const channelId = `user_turnover_live_${safeUser?.id || safeUser?.uid}_${Date.now()}`;
     const channel = supabase
       .channel(channelId)
       .on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',
         table: 'users',
-        filter: safeUser.id ? `id=eq.${safeUser.id}` : `uid=eq.${safeUser.uid}`
+        filter: safeUser?.id ? `id=eq.${safeUser.id}` : `uid=eq.${safeUser?.uid}`
       }, (payload) => {
         if (payload?.new) {
           if (payload.new.current_turnover !== undefined) {
@@ -134,7 +141,7 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
       clearInterval(interval);
       supabase.removeChannel(channel);
     };
-  }, [safeUser?.id, safeUser?.uid]);
+  }, [fetchLiveTurnover, safeUser?.id, safeUser?.uid]);
 
   // Mask phone helper (e.g. 014*****319 matching Screenshot 1)
   const maskPhone = (num) => {
@@ -151,7 +158,8 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
     if (typeof refreshSupabaseData === 'function') {
       await refreshSupabaseData();
     }
-    setTimeout(() => setIsRefreshing(false), 600);
+    await fetchLiveTurnover();
+    setTimeout(() => setIsRefreshing(false), 500);
   }
 
   // Handle saving the SINGLE allowed wallet
