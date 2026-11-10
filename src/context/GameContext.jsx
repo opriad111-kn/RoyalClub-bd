@@ -68,6 +68,8 @@ export function GameProvider({ children }) {
       NAGAD_ENABLED: base.NAGAD_ENABLED !== false,
       ROCKET_ENABLED: base.ROCKET_ENABLED === true ? true : false, // Default Rocket to OFF as requested: "jmon roket off rakhabo"
       USDT_ENABLED: base.USDT_ENABLED !== false,
+      ALL_GAMES_ENABLED: base.ALL_GAMES_ENABLED !== undefined ? Boolean(base.ALL_GAMES_ENABLED) : false, // Default all games to OFF as requested
+      GAMES_MAINTENANCE_MESSAGE: base.GAMES_MAINTENANCE_MESSAGE || "সম্মানিত প্লেয়ার, সিস্টেম আপগ্রেড ও রক্ষণাবেক্ষণের জন্য সমস্ত গেম সাময়িকভাবে বন্ধ আছে। খুব শীঘ্রই গেম পুনরায় চালু করা হবে।",
       ANNOUNCEMENT_TEXT: base.ANNOUNCEMENT_TEXT || "🎉 RoyalClubBD-তে স্বাগতম! রেজিস্ট্রেশন করলেই মেইন ব্যালেন্সে অটোমেটিক ৳১০০ ওয়েলকাম বোনাস! bKash ও Nagad-এ সুপারফাস্ট ডিপোজিট ও ইনস্ট্যান্ট ক্যাশ-আউট সুবিধা চালু রয়েছে।"
     };
   });
@@ -329,6 +331,8 @@ export function GameProvider({ children }) {
         aviatorMode: activeG.aviatorMode || 'standard',
         serverRtp: activeG.serverRtp || {},
         gameOverrides: activeG.gameOverrides || {},
+        ALL_GAMES_ENABLED: activeS.ALL_GAMES_ENABLED !== undefined ? Boolean(activeS.ALL_GAMES_ENABLED) : false,
+        GAMES_MAINTENANCE_MESSAGE: activeS.GAMES_MAINTENANCE_MESSAGE || "সম্মানিত প্লেয়ার, সিস্টেম আপগ্রেড ও রক্ষণাবেক্ষণের জন্য সমস্ত গেম সাময়িকভাবে বন্ধ আছে। খুব শীঘ্রই গেম পুনরায় চালু করা হবে।",
         ANNOUNCEMENT_TEXT: activeS.ANNOUNCEMENT_TEXT || ''
       };
 
@@ -812,6 +816,17 @@ export function GameProvider({ children }) {
       localStorage.setItem('royalclub_games_config', JSON.stringify(updated));
       return updated;
     });
+  }
+
+  function setAllGamesStatus(enabled) {
+    const isEn = Boolean(enabled);
+    updateSetting('ALL_GAMES_ENABLED', isEn);
+    setGamesConfig(prev => {
+      const updated = prev.map(g => ({ ...g, isEnabled: isEn }));
+      try { localStorage.setItem('royalclub_games_config', JSON.stringify(updated)); } catch (e) {}
+      return updated;
+    });
+    syncGlobalSettingsToSupabase({ ...settings, ALL_GAMES_ENABLED: isEn });
   }
 
   function toggleGameFeatured(gameId) {
@@ -1630,6 +1645,8 @@ export function GameProvider({ children }) {
                 MIN_DEPOSIT_AMOUNT: Number(parsed.MIN_DEPOSIT_AMOUNT || prev.MIN_DEPOSIT_AMOUNT),
                 MIN_WITHDRAWAL_AMOUNT: Number(parsed.MIN_WITHDRAWAL_AMOUNT || prev.MIN_WITHDRAWAL_AMOUNT),
                 DAILY_WITHDRAWAL_LIMIT: Number(parsed.DAILY_WITHDRAWAL_LIMIT || prev.DAILY_WITHDRAWAL_LIMIT),
+                ALL_GAMES_ENABLED: parsed.ALL_GAMES_ENABLED !== undefined ? Boolean(parsed.ALL_GAMES_ENABLED) : prev.ALL_GAMES_ENABLED,
+                GAMES_MAINTENANCE_MESSAGE: parsed.GAMES_MAINTENANCE_MESSAGE || prev.GAMES_MAINTENANCE_MESSAGE,
                 ANNOUNCEMENT_TEXT: parsed.ANNOUNCEMENT_TEXT || prev.ANNOUNCEMENT_TEXT
               }));
 
@@ -1818,6 +1835,8 @@ export function GameProvider({ children }) {
               MIN_DEPOSIT_AMOUNT: Number(parsed.MIN_DEPOSIT_AMOUNT || prev.MIN_DEPOSIT_AMOUNT),
               MIN_WITHDRAWAL_AMOUNT: Number(parsed.MIN_WITHDRAWAL_AMOUNT || prev.MIN_WITHDRAWAL_AMOUNT),
               DAILY_WITHDRAWAL_LIMIT: Number(parsed.DAILY_WITHDRAWAL_LIMIT || prev.DAILY_WITHDRAWAL_LIMIT),
+              ALL_GAMES_ENABLED: parsed.ALL_GAMES_ENABLED !== undefined ? Boolean(parsed.ALL_GAMES_ENABLED) : prev.ALL_GAMES_ENABLED,
+              GAMES_MAINTENANCE_MESSAGE: parsed.GAMES_MAINTENANCE_MESSAGE || prev.GAMES_MAINTENANCE_MESSAGE,
               ANNOUNCEMENT_TEXT: parsed.ANNOUNCEMENT_TEXT || prev.ANNOUNCEMENT_TEXT
             }));
 
@@ -3185,6 +3204,7 @@ export function GameProvider({ children }) {
       refreshSupabaseData,
       gamesConfig,
       toggleGameStatus,
+      setAllGamesStatus,
       toggleGameFeatured,
       updateGameSettings,
       promoCodes,

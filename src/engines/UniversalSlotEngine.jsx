@@ -669,7 +669,7 @@ function SlotSymbol({ symbol, theme, isSpinning }) {
 
 export default function UniversalSlotEngine({ gameId = 'fortunegems2', onClose }) {
   const config = SLOT_CONFIGS[gameId] || SLOT_CONFIGS.fortunegems2;
-  const { user, adjustUserBalance, recordGameHistory, getGameEffectiveSettings } = useGame();
+  const { user, adjustUserBalance, recordGameHistory, getGameEffectiveSettings, settings } = useGame();
 
   const [betAmount, setBetAmount] = useState(20);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -698,6 +698,11 @@ export default function UniversalSlotEngine({ gameId = 'fortunegems2', onClose }
   const betPresets = [10, 20, 50, 100, 200, 500];
 
   function handleSpin() {
+    if (settings?.ALL_GAMES_ENABLED === false) {
+      alert("প্ল্যাটফর্মের সকল গেম বর্তমানে রক্ষণাবেক্ষণের জন্য সাময়িকভাবে বন্ধ আছে।");
+      setAutoSpinCount(0);
+      return;
+    }
     const userIdentifier = user?.uid || user?.id || user?.username;
     if ((user?.balance || 0) < betAmount) {
       alert("পর্যাপ্ত ব্যালেন্স নেই! দয়া করে ডিপোজিট করুন।");

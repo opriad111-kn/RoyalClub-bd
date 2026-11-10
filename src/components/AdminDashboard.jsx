@@ -49,7 +49,10 @@ import {
   Filter,
   MessageSquare,
   ArrowDownLeft,
-  ArrowUpRight
+  ArrowUpRight,
+  Power,
+  PowerOff,
+  Play
 } from 'lucide-react';
 
 export default function AdminDashboard({ onExit }) {
@@ -84,6 +87,7 @@ export default function AdminDashboard({ onExit }) {
     // Extended Module Handlers from GameContext
     gamesConfig,
     toggleGameStatus,
+    setAllGamesStatus,
     toggleGameFeatured,
     updateGameSettings,
     promoCodes,
@@ -1235,6 +1239,25 @@ export default function AdminDashboard({ onExit }) {
 
             {/* Quick Status Pills */}
             <div className="flex items-center space-x-2">
+              {/* Global Master Game Status Pill/Button */}
+              <button
+                onClick={() => {
+                  const nextState = !(settings?.ALL_GAMES_ENABLED !== false);
+                  setAllGamesStatus(nextState);
+                  setStatusNotice(nextState ? 'সকল গেম চালু (ON) করা হয়েছে!' : 'সমস্ত গেম বন্ধ (OFF) করা হয়েছে!');
+                  setTimeout(() => setStatusNotice(''), 3500);
+                }}
+                title="গেম চালু বা বন্ধ করার সুইচ"
+                className={`flex items-center space-x-1.5 px-3 py-1 rounded-full text-[11px] font-black transition active:scale-95 cursor-pointer border ${
+                  settings?.ALL_GAMES_ENABLED !== false 
+                    ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/20' 
+                    : 'bg-rose-500/20 border-rose-500/50 text-rose-400 hover:bg-rose-500/30 animate-pulse'
+                }`}
+              >
+                <Power className="w-3 h-3" />
+                <span>গেম: {settings?.ALL_GAMES_ENABLED !== false ? 'চালু (ON)' : 'বন্ধ (OFF)'}</span>
+              </button>
+
               <span className="hidden sm:inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-[#F5BE00] border border-emerald-500/20">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#F5BE00] animate-ping" />
                 <span>System Operational</span>
@@ -1791,6 +1814,59 @@ export default function AdminDashboard({ onExit }) {
                         {cat}
                       </button>
                     ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* GLOBAL MASTER GAME SWITCH CARD */}
+              <div className={`p-4 rounded-2xl border transition-all ${
+                settings?.ALL_GAMES_ENABLED !== false 
+                  ? 'bg-emerald-950/30 border-emerald-500/40 shadow-[0_0_20px_rgba(16,185,129,0.15)]' 
+                  : 'bg-rose-950/40 border-rose-500/50 shadow-[0_0_20px_rgba(244,63,94,0.15)]'
+              }`}>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex items-center space-x-3.5">
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-md ${
+                      settings?.ALL_GAMES_ENABLED !== false ? 'bg-emerald-500 text-slate-950 font-black' : 'bg-rose-600 text-white font-black'
+                    }`}>
+                      {settings?.ALL_GAMES_ENABLED !== false ? <Play className="w-6 h-6 fill-current" /> : <PowerOff className="w-6 h-6" />}
+                    </div>
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <h3 className="font-black text-sm sm:text-base text-white">গ্লোবাল গেম কন্ট্রোল (All Games Status)</h3>
+                        <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                          settings?.ALL_GAMES_ENABLED !== false 
+                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 animate-pulse' 
+                            : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
+                        }`}>
+                          {settings?.ALL_GAMES_ENABLED !== false ? '🟢 সকল গেম চালু (ON)' : '🔴 সমস্ত গেম বন্ধ (OFF)'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#8b949e] mt-0.5">
+                        {settings?.ALL_GAMES_ENABLED !== false 
+                          ? 'ইউজাররা বর্তমানে সাইটের সকল গেম স্বাভাবিকভাবে খেলতে পারছে।' 
+                          : '⚠️ সমস্ত গেম সাময়িকভাবে বন্ধ (Off) আছে। কোনো প্লেয়ার গেম খুলতে বা খেলতে পারবে না (Maintenance Active)।'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2 shrink-0">
+                    <button
+                      onClick={() => {
+                        const nextState = !(settings?.ALL_GAMES_ENABLED !== false);
+                        setAllGamesStatus(nextState);
+                        setStatusNotice(nextState ? 'সকল গেম সফলভাবে চালু করা হয়েছে!' : 'সমস্ত গেম সফলভাবে বন্ধ (Disable) করা হয়েছে!');
+                        setTimeout(() => setStatusNotice(''), 3500);
+                      }}
+                      className={`px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider transition cursor-pointer shadow-md active:scale-95 flex items-center space-x-2 ${
+                        settings?.ALL_GAMES_ENABLED !== false 
+                          ? 'bg-rose-600 hover:bg-rose-500 text-white' 
+                          : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black'
+                      }`}
+                    >
+                      <Power className="w-4 h-4" />
+                      <span>{settings?.ALL_GAMES_ENABLED !== false ? 'সমস্ত গেম বন্ধ করুন (Turn OFF All)' : 'সকল গেম চালু করুন (Turn ON All)'}</span>
+                    </button>
                   </div>
                 </div>
               </div>

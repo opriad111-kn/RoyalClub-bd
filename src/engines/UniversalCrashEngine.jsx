@@ -680,6 +680,11 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
 
   // 4. Bet Actions & Cashout Handlers
   function handlePlaceBet(deckNum) {
+    if (settings?.ALL_GAMES_ENABLED === false) {
+      alert("প্ল্যাটফর্মের সকল গেম বর্তমানে রক্ষণাবেক্ষণের জন্য সাময়িকভাবে বন্ধ আছে।");
+      return;
+    }
+
     if (betActionLockRef.current) return;
     betActionLockRef.current = true;
     setTimeout(() => { betActionLockRef.current = false; }, 350);

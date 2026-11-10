@@ -115,7 +115,7 @@ function generateTrxHash() {
 }
 
 export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initialMode = '30s' }) {
-  const { user, adjustUserBalance, recordGameHistory } = useGame();
+  const { user, adjustUserBalance, recordGameHistory, settings } = useGame();
   const [selectedMode, setSelectedMode] = useState(initialMode);
   const [soundEnabled, setSoundEnabled] = useState(() => soundManager.isSoundEnabled());
   const [showRules, setShowRules] = useState(false);
@@ -499,6 +499,10 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
 
   // Place Bet Handler
   const placeBet = (type, value, label, color, mult) => {
+    if (settings?.ALL_GAMES_ENABLED === false) {
+      alert("প্ল্যাটফর্মের সকল গেম বর্তমানে রক্ষণাবেক্ষণের জন্য সাময়িকভাবে বন্ধ আছে।");
+      return;
+    }
     if (activeTimeLeft <= 5) {
       alert("সময় শেষ! শেষ ৫ সেকেন্ড বাজি ধরা বন্ধ থাকে।");
       return;
@@ -545,6 +549,11 @@ export default function WinGoGame({ onOpenDeposit, onOpenWithdraw, onBack, initi
 
   const confirmContractBet = () => {
     if (!betModal) return;
+    if (settings?.ALL_GAMES_ENABLED === false) {
+      alert("প্ল্যাটফর্মের সকল গেম বর্তমানে রক্ষণাবেক্ষণের জন্য সাময়িকভাবে বন্ধ আছে।");
+      setBetModal(null);
+      return;
+    }
     if (activeTimeLeft <= 5) {
       alert("সময় শেষ! এই রাউন্ডে আর বাজি ধরা যাবে না।");
       setBetModal(null);

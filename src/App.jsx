@@ -62,7 +62,8 @@ import { KhelvSvgSprite } from './components/common/KhelvIcon';
 const VALID_TABS = ['home', 'activity', 'promotion', 'account', 'deposit', 'withdraw', 'wallet', 'admin', 'wingo'];
 
 function AppContent() {
-  const { user, setCurrentGame } = useGame();
+  const { user, setCurrentGame, settings, gamesConfig } = useGame();
+  const [maintenanceNotice, setMaintenanceNotice] = useState(null);
   const [activeTab, setActiveTab] = useState(() => {
     const pathname = window.location.pathname.toLowerCase();
     if (pathname.includes('admin')) {
@@ -84,6 +85,10 @@ function AppContent() {
   // Modals & Games State
   const params = new URLSearchParams(window.location.search);
   const [activeGame, setActiveGame] = useState(() => {
+    try {
+      const savedSettings = JSON.parse(localStorage.getItem('royalclub_settings') || '{}');
+      if (savedSettings.ALL_GAMES_ENABLED === false) return null;
+    } catch (_) {}
     if (params.get('game')) return params.get('game');
     const h = window.location.hash.replace('#/', '').replace('#', '');
     if (h.startsWith('game/')) return h.replace('game/', '');
@@ -241,11 +246,31 @@ function AppContent() {
       }
 
       if (VALID_TABS.includes(cleanTab)) {
+        if (cleanTab === 'wingo' && settings?.ALL_GAMES_ENABLED === false) {
+          setActiveTab('home');
+          setActiveGame(null);
+          window.location.hash = '#/home';
+          setMaintenanceNotice({
+            title: 'সাময়িক রক্ষণাবেক্ষণ / Game Maintenance',
+            message: settings?.GAMES_MAINTENANCE_MESSAGE || 'সম্মানিত প্লেয়ার, সিস্টেম আপগ্রেড ও রক্ষণাবেক্ষণের জন্য সমস্ত গেম সাময়িকভাবে বন্ধ আছে। খুব শীঘ্রই গেম পুনরায় চালু করা হবে।'
+          });
+          return;
+        }
         setActiveTab(cleanTab);
         setActiveGame(null);
       } else if (rawHash.startsWith('game/')) {
         const gId = rawHash.replace('game/', '');
-        setActiveGame(gId);
+        if (settings?.ALL_GAMES_ENABLED === false) {
+          setActiveGame(null);
+          setActiveTab('home');
+          window.location.hash = '#/home';
+          setMaintenanceNotice({
+            title: 'সাময়িক রক্ষণাবেক্ষণ / Game Maintenance',
+            message: settings?.GAMES_MAINTENANCE_MESSAGE || 'সম্মানিত প্লেয়ার, সিস্টেম আপগ্রেড ও রক্ষণাবেক্ষণের জন্য সমস্ত গেম সাময়িকভাবে বন্ধ আছে। খুব শীঘ্রই গেম পুনরায় চালু করা হবে।'
+          });
+        } else {
+          setActiveGame(gId);
+        }
       }
     };
     window.addEventListener('hashchange', handleUrl);
@@ -254,7 +279,20 @@ function AppContent() {
       window.removeEventListener('hashchange', handleUrl);
       window.removeEventListener('popstate', handleUrl);
     };
-  }, []);
+  }, [settings?.ALL_GAMES_ENABLED, settings?.GAMES_MAINTENANCE_MESSAGE]);
+
+  // Real-time eviction from games when admin turns off all games
+  useEffect(() => {
+    if ((activeGame || activeTab === 'wingo') && settings?.ALL_GAMES_ENABLED === false) {
+      setActiveGame(null);
+      if (activeTab === 'wingo') setActiveTab('home');
+      window.location.hash = '#/home';
+      setMaintenanceNotice({
+        title: 'সাময়িক রক্ষণাবেক্ষণ / Game Maintenance',
+        message: settings?.GAMES_MAINTENANCE_MESSAGE || 'সম্মানিত প্লেয়ার, সিস্টেম আপগ্রেড ও রক্ষণাবেক্ষণের জন্য সমস্ত গেম সাময়িকভাবে বন্ধ আছে। খুব শীঘ্রই গেম পুনরায় চালু করা হবে।'
+      });
+    }
+  }, [activeGame, activeTab, settings?.ALL_GAMES_ENABLED, settings?.GAMES_MAINTENANCE_MESSAGE]);
 
   function handleCloseAuth() {
     setIsAuthOpen(false);
@@ -334,6 +372,23 @@ function AppContent() {
   }
 
   function handleOpenGame(gameId) {
+    if (settings?.ALL_GAMES_ENABLED === false) {
+      setMaintenanceNotice({
+        title: 'সাময়িক রক্ষণাবেক্ষণ / Game Maintenance',
+        message: settings?.GAMES_MAINTENANCE_MESSAGE || 'সম্মানিত প্লেয়ার, সিস্টেম আপগ্রেড ও রক্ষণাবেক্ষণের জন্য সমস্ত গেম সাময়িকভাবে বন্ধ আছে। খুব শীঘ্রই গেম পুনরায় চালু করা হবে।'
+      });
+      return;
+    }
+
+    const gameConf = (gamesConfig || []).find(g => g.id === gameId);
+    if (gameConf && gameConf.isEnabled === false) {
+      setMaintenanceNotice({
+        title: `${gameConf.name || 'গেম'} রক্ষণাবেক্ষণে রয়েছে`,
+        message: 'এই গেমটি বর্তমানে আপডেট ও রক্ষণাবেক্ষণের জন্য সাময়িকভাবে বন্ধ আছে। অনুগ্রহ করে অন্য গেম খেলুন।'
+      });
+      return;
+    }
+
     if (user?.username === 'Guest' || user?.is_guest) {
       setIsGuestRewardOpen(true);
       return;
@@ -673,6 +728,33 @@ function AppContent() {
 
         {/* 1-Time Security & Anti-Fraud Spam Warning Modal */}
         <SecurityWarningModal />
+
+        {/* Game Maintenance Modal (Global/Individual Game Off Notice) */}
+        {maintenanceNotice && (
+          <div className="fixed inset-0 z-[120] bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="bg-[#14122E] border border-amber-500/50 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+              <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 mx-auto flex items-center justify-center shadow-lg">
+                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-black text-lg text-white">
+                  {maintenanceNotice.title}
+                </h3>
+                <p className="text-xs text-[#7098C5] leading-relaxed mt-2 font-medium">
+                  {maintenanceNotice.message}
+                </p>
+              </div>
+              <button
+                onClick={() => setMaintenanceNotice(null)}
+                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-yellow-400 hover:to-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg active:scale-95 transition cursor-pointer"
+              >
+                ঠিক আছে (Back to Home)
+              </button>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

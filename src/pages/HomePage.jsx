@@ -517,6 +517,15 @@ export default function HomePage({
             {game.title}
           </span>
         </div>
+
+        {/* Maintenance Mode Overlay when all games or this game is disabled */}
+        {settings?.ALL_GAMES_ENABLED === false && (
+          <div className="absolute inset-0 bg-black/65 backdrop-blur-[1px] z-20 flex flex-col items-center justify-center p-1.5 text-center pointer-events-none">
+            <span className="px-2 py-0.5 rounded-full bg-rose-600/90 text-white font-black text-[8px] uppercase tracking-wider border border-rose-400/50 shadow-md animate-pulse">
+              রক্ষণাবেক্ষণ
+            </span>
+          </div>
+        )}
       </div>
     );
   };
