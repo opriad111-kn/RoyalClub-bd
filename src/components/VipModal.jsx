@@ -254,7 +254,9 @@ export default function VipModal({ isOpen, onClose }) {
               <span className="text-[10.5px] text-[#7098C5]">My experience</span>
             </div>
             <div className="bg-[#1C2063] border border-[#30358B] rounded-xl p-3.5 text-center space-y-0.5 shadow-sm">
-              <h4 className="text-base font-bold text-white font-mono">27 Days</h4>
+              <h4 className="text-base font-bold text-white font-mono">
+                {Math.max(1, Math.ceil((new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))} Days
+              </h4>
               <span className="text-[10.5px] text-[#7098C5]">Payout time</span>
             </div>
           </div>
@@ -495,27 +497,70 @@ export default function VipModal({ isOpen, onClose }) {
             {activeTab === 'history' ? (
               <div className="p-6 text-center space-y-2">
                 {claimedLevels.length === 0 ? (
-                  <>
+                  <div className="py-4 space-y-2">
+                    <div className="w-16 h-16 mx-auto opacity-30 flex items-center justify-center">
+                      <svg className="w-12 h-12 text-[#7098C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
                     <p className="text-xs text-[#7098C5]">No VIP bonus claimed yet</p>
-                    <p className="text-[10.5px] text-[#7098C5]">Level up to VIP1+ and claim cash rewards!</p>
-                  </>
+                    <p className="text-[10.5px] text-[#7098C5]/70">Level up to VIP1+ and claim level rewards!</p>
+                  </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-2 text-left">
                     {claimedLevels.map(lvl => (
-                      <div key={lvl} className="flex items-center justify-between bg-[#14122E] p-2.5 rounded-xl text-xs border border-[#30358B]">
-                        <span className="font-bold text-white">VIP {lvl} Level Up Reward</span>
-                        <span className="font-bold text-emerald-400">+ ৳{VIP_TIERS.find(t => t.level === lvl)?.reward || 60}</span>
+                      <div key={lvl} className="flex items-center justify-between bg-[#14122E] p-3 rounded-xl text-xs border border-[#30358B]">
+                        <div>
+                          <span className="font-bold text-white block">VIP {lvl} Level Up Reward</span>
+                          <span className="text-[10px] text-[#7098C5]">One-time level upgrade reward</span>
+                        </div>
+                        <span className="font-bold text-emerald-400 font-mono text-sm">+ ৳{VIP_TIERS.find(t => t.level === lvl)?.reward || 60}</span>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
             ) : (
-              <div className="p-4 space-y-2 text-[11px] text-[#7098C5] leading-relaxed">
-                <p>1. Promotion standard: Each ৳1 bet accumulates 1 EXP point.</p>
-                <p>2. Promotion rewards: When reaching a new VIP level, you can claim the one-time level bonus immediately.</p>
-                <p>3. Each level reward can only be claimed once per account.</p>
-                <p>4. Monthly rewards are refreshed and distributed on the 1st of every month.</p>
+              <div className="p-4 space-y-3 text-left">
+                {/* Rule Card 1: Downgrade standard (frame_010.jpg 1:1) */}
+                <div className="bg-[#14122E] border border-[#30358B] rounded-xl p-3.5 space-y-1.5 shadow-xs">
+                  <div className="inline-block px-3 py-0.5 rounded-full bg-[#1C2063] border border-[#30358B] text-[11px] font-bold text-[#629EFF]">
+                    Downgrade standard
+                  </div>
+                  <p className="text-[11px] text-[#D4E8FF] leading-relaxed">
+                    If a VIP member fails to complete the corresponding level maintenance requirements within 30 days, the system will automatically deduct the experience points corresponding to the level. If the experience points are insufficient, the level will be downgraded, and the corresponding benefits will be adjusted to the downgraded level accordingly.
+                  </p>
+                </div>
+
+                {/* Rule Card 2: Upgrade Bonus (frame_010.jpg 1:1) */}
+                <div className="bg-[#14122E] border border-[#30358B] rounded-xl p-3.5 space-y-1.5 shadow-xs">
+                  <div className="inline-block px-3 py-0.5 rounded-full bg-[#1C2063] border border-[#30358B] text-[11px] font-bold text-[#629EFF]">
+                    Upgrade Bonus
+                  </div>
+                  <p className="text-[11px] text-[#D4E8FF] leading-relaxed">
+                    The upgrade benefits can be claimed on the VIP page after the member reaches the VIP membership level, and each VIP member can only get the upgrade reward of each level once.
+                  </p>
+                </div>
+
+                {/* Rule Card 3: Monthly reward (frame_010.jpg 1:1) */}
+                <div className="bg-[#14122E] border border-[#30358B] rounded-xl p-3.5 space-y-1.5 shadow-xs">
+                  <div className="inline-block px-3 py-0.5 rounded-full bg-[#1C2063] border border-[#30358B] text-[11px] font-bold text-[#629EFF]">
+                    Monthly reward
+                  </div>
+                  <p className="text-[11px] text-[#D4E8FF] leading-relaxed">
+                    VIP members can earn the highest level of VIP rewards once a month. Can only be received once a month. Prizes cannot be accumulated. And any unclaimed rewards will be refreshed on the next settlement day. When receiving the highest level of monthly rewards this month Monthly Rewards earned in this month will be deducted e.g. when VIP1 earns 500 and upgrades to VIP2 to receive monthly rewards 500 will be deducted.
+                  </p>
+                </div>
+
+                {/* Rule Card 4: Real-time Rebate */}
+                <div className="bg-[#14122E] border border-[#30358B] rounded-xl p-3.5 space-y-1.5 shadow-xs">
+                  <div className="inline-block px-3 py-0.5 rounded-full bg-[#1C2063] border border-[#30358B] text-[11px] font-bold text-[#629EFF]">
+                    Rebate rate
+                  </div>
+                  <p className="text-[11px] text-[#D4E8FF] leading-relaxed">
+                    Increase income of rebate. Real-time turnover rebate is calculated continuously based on all valid wagers across lottery, slots, and casino games.
+                  </p>
+                </div>
               </div>
             )}
           </div>

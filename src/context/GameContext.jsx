@@ -1274,7 +1274,7 @@ export function GameProvider({ children }) {
     return true;
   }
 
-  // Save 1 and ONLY 1 E-Wallet payment method per account (User Mandate)
+  // Save 1 and ONLY 1 E-Wallet payment method per account with STRICT Anti-Fraud cross-account validation (User Mandate)
   async function saveUserWalletAccount({ method, accountName, accountNumber }) {
     if (!user || user.username === 'Guest' || user.is_guest) {
       return { success: false, message: 'Please log in to bind wallet account.' };
@@ -1283,16 +1283,108 @@ export function GameProvider({ children }) {
       return { success: false, message: 'Please enter account number.' };
     }
 
-    const cleanNumber = accountNumber.trim();
+    const cleanRaw = accountNumber.trim().replace(/\D/g, '');
+    if (cleanRaw.length < 10) {
+      return { success: false, message: 'সঠিক ১১ ডিজিটের ফোন নাম্বার লিখুন।' };
+    }
+
+    const normalized = cleanRaw.startsWith('880') ? '0' + cleanRaw.slice(3) : (cleanRaw.startsWith('0') ? cleanRaw : '0' + cleanRaw);
+    const rawNoZero = normalized.replace(/^0+/, '');
     const cleanName = (accountName || user.full_name || user.username || 'Member').trim();
+
+    // 1. Anti-Fraud Check across allUsers in memory
+    const existingInMem = (allUsers || []).find(u => {
+      const isDifferentUser = (u.id && user.id && u.id !== user.id) || (u.username && user.username && u.username.toLowerCase() !== user.username.toLowerCase());
+      if (!isDifferentUser) return false;
+      const uWal = u.wallet_account?.accountNumber ? String(u.wallet_account.accountNumber).replace(/\D/g, '').replace(/^0+/, '') : '';
+      const uPhone = u.phone ? String(u.phone).replace(/\D/g, '').replace(/^0+/, '') : '';
+      return (uWal && (uWal === rawNoZero || uWal === cleanRaw)) || (uPhone && (uPhone === rawNoZero || uPhone === cleanRaw));
+    });
+
+    if (existingInMem) {
+      return {
+        success: false,
+        message: 'এই বিকাশ/নগদ নাম্বারটি ইতিমধ্যে অন্য একটি অ্যাকাউন্টে সংযুক্ত আছে! প্রতিটি অ্যাকাউন্টে আলাদা নাম্বার ব্যবহার করতে হবে।'
+      };
+    }
+
+    // 2. Anti-Fraud Check in Supabase transactions (withdrawals from other users)
+    try {
+      const { data: duplicateTxs } = await supabase
+        .from('transactions')
+        .select('user_id, username, account_number')
+        .or(`account_number.eq.${normalized},account_number.eq.${rawNoZero},account_number.eq.0${rawNoZero}`)
+        .limit(10);
+
+      if (duplicateTxs && duplicateTxs.length > 0) {
+        const boundToOther = duplicateTxs.find(tx => {
+          const isOther = (tx.user_id && user.id && tx.user_id !== user.id) || (tx.username && user.username && tx.username.toLowerCase() !== user.username.toLowerCase());
+          return isOther;
+        });
+        if (boundToOther) {
+          return {
+            success: false,
+            message: 'এই বিকাশ/নগদ নাম্বারটি ইতিমধ্যে অন্য একটি অ্যাকাউন্টে সংযুক্ত আছে! প্রতিটি অ্যাকাউন্টে আলাদা নাম্বার ব্যবহার করতে হবে।'
+          };
+        }
+      }
+    } catch (err) {
+      console.warn('Anti-fraud transaction check warning:', err);
+    }
+
+    // 3. Anti-Fraud Check & Save in global_platform_settings BOUND_WALLETS
+    try {
+      const { data: gSet } = await supabase.from('game_settings').select('*').eq('id', 599).single();
+      let parsed = {};
+      if (gSet && gSet.server_provider) {
+        parsed = typeof gSet.server_provider === 'string' ? JSON.parse(gSet.server_provider) : gSet.server_provider;
+      }
+      const boundWallets = parsed.BOUND_WALLETS || {};
+      const existingBinding = boundWallets[rawNoZero];
+      if (existingBinding && existingBinding.user_id) {
+        const isOther = (user.id && existingBinding.user_id !== user.id) || (user.username && existingBinding.username && existingBinding.username.toLowerCase() !== user.username.toLowerCase());
+        if (isOther) {
+          return {
+            success: false,
+            message: 'এই বিকাশ/নগদ নাম্বারটি ইতিমধ্যে অন্য একটি অ্যাকাউন্টে সংযুক্ত আছে! প্রতিটি অ্যাকাউন্টে আলাদা নাম্বার ব্যবহার করতে হবে।'
+          };
+        }
+      }
+
+      // Record this binding
+      boundWallets[rawNoZero] = {
+        user_id: user.id || user.uid,
+        username: user.username,
+        phone: user.phone || '',
+        method: method || 'BKASH',
+        accountName: cleanName,
+        accountNumber: normalized,
+        bound_at: new Date().toISOString()
+      };
+      parsed.BOUND_WALLETS = boundWallets;
+
+      await supabase.from('game_settings').update({
+        server_provider: JSON.stringify(parsed),
+        updated_at: new Date().toISOString()
+      }).eq('id', 599);
+    } catch (syncErr) {
+      console.warn('Anti-fraud global registry warning:', syncErr);
+    }
+
     const walletData = {
       method: method || 'BKASH',
       accountName: cleanName,
-      accountNumber: cleanNumber,
+      accountNumber: normalized,
       updated_at: new Date().toISOString()
     };
 
+    // Save to user profile & localStorage
     await updateUserProfile({ wallet_account: walletData });
+    try {
+      const storageKey = `royalclub_wallet_account_${user.uid || user.username || user.phone}`;
+      localStorage.setItem(storageKey, JSON.stringify(walletData));
+    } catch (e) {}
+
     return { success: true, message: 'Wallet account saved successfully!', data: walletData };
   }
 

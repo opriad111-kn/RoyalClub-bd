@@ -253,8 +253,19 @@ export default function DepositPage({ onBack, onOpenAuth }) {
     }, 2000);
   }
 
+  const isMyTx = (t) => {
+    if (!user || user.username === 'Guest' || user.is_guest) return false;
+    if (user.id && t.user_id && String(t.user_id) === String(user.id)) return true;
+    if (user.uid && t.uid && String(t.uid) === String(user.uid)) return true;
+    if (user.username && t.username && t.username.toLowerCase() === user.username.toLowerCase()) return true;
+    const cleanUserPhone = user.phone ? String(user.phone).replace(/\D/g, '').replace(/^0+/, '') : '';
+    const cleanTxPhone = t.account_number ? String(t.account_number).replace(/\D/g, '').replace(/^0+/, '') : '';
+    if (cleanUserPhone && cleanTxPhone && cleanUserPhone === cleanTxPhone) return true;
+    return false;
+  };
+
   const depositTransactions = (transactions || []).filter(
-    t => t.type === 'deposit' || t.type === 'recharge'
+    t => (t.type === 'deposit' || t.type === 'recharge') && isMyTx(t)
   );
 
   // Filtered transactions for History Page (Screenshot 3)
@@ -546,7 +557,7 @@ export default function DepositPage({ onBack, onOpenAuth }) {
               </div>
             ) : (
               filteredHistory.map((d, idx) => {
-                const orderId = d.order_id || d.id || `RC20261023${idx}1081985b`;
+                const orderId = d.order_id || d.trx_id || (d.id ? `RC${d.created_at ? new Date(d.created_at).toISOString().slice(0, 10).replace(/-/g, '') : '20261110'}${d.id}` : `RC20261110${idx}`);
                 const isApproved = d.status === 'approved' || d.status === 'completed';
                 const isRejected = d.status === 'rejected' || d.status === 'failed';
                 const statusText = isApproved ? 'Complete >' : isRejected ? 'Failed' : 'Pending';
@@ -1003,7 +1014,7 @@ export default function DepositPage({ onBack, onOpenAuth }) {
             </div>
           ) : (
             depositTransactions.slice(0, 3).map((d, idx) => {
-              const orderId = d.order_id || d.id || `RC20261023${idx}1081985b`;
+              const orderId = d.order_id || d.trx_id || (d.id ? `RC${d.created_at ? new Date(d.created_at).toISOString().slice(0, 10).replace(/-/g, '') : '20261110'}${d.id}` : `RC20261110${idx}`);
               const isApproved = d.status === 'approved' || d.status === 'completed';
               const isRejected = d.status === 'rejected' || d.status === 'failed';
               const statusText = isApproved ? 'Complete >' : isRejected ? 'Failed' : 'Pending';

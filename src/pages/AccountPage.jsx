@@ -1148,67 +1148,55 @@ export default function AccountPage({
 
           {/* Records List */}
           <div className="px-4 pb-6 space-y-3 flex-1">
-            {/* Download Bonus Card (Matching Screenshot 5) */}
-            <div className="bg-[#1C2063] border border-[#30358B] rounded-xl overflow-hidden shadow-md">
-              {/* Card Banner */}
-              <div 
-                className="px-3.5 py-2 text-xs font-bold text-white"
-                style={{
-                  background: 'linear-gradient(90deg, #E92A23 0%, #1374EC 100%)'
-                }}
-              >
-                Download Bonus
-              </div>
-              <div className="p-3.5 space-y-2 text-xs divide-y divide-[#30358B]/40">
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-[#7098C5]">Detail</span>
-                  <span className="text-white font-medium">Download Bonus</span>
-                </div>
-                <div className="flex items-center justify-between pt-2">
-                  <span className="text-[#7098C5]">Time</span>
-                  <span className="text-white font-mono text-[11px]">{formattedLastLogin}</span>
-                </div>
-                <div className="flex items-center justify-between pt-2">
-                  <span className="text-[#7098C5]">Balance</span>
-                  <span className="text-white font-bold text-sm">৳17.00</span>
-                </div>
-                <div className="pt-2">
-                  <div className="bg-[#14122E] rounded-lg p-2.5 text-[10.5px] text-[#7098C5]">
-                    Download APP recharge reward
-                  </div>
-                </div>
-              </div>
-            </div>
+            {(() => {
+              const userTransactions = (transactions || []).filter(t => {
+                if (!safeUser || safeUser.username === 'Guest' || safeUser.is_guest) return false;
+                if (safeUser.id && t.user_id && String(t.user_id) === String(safeUser.id)) return true;
+                if (safeUser.uid && t.uid && String(t.uid) === String(safeUser.uid)) return true;
+                if (safeUser.username && t.username && t.username.toLowerCase() === safeUser.username.toLowerCase()) return true;
+                const cleanUserPhone = safeUser.phone ? String(safeUser.phone).replace(/\D/g, '').replace(/^0+/, '') : '';
+                const cleanTxPhone = t.account_number ? String(t.account_number).replace(/\D/g, '').replace(/^0+/, '') : '';
+                if (cleanUserPhone && cleanTxPhone && cleanUserPhone === cleanTxPhone) return true;
+                return false;
+              });
 
-            {/* Any live user transactions from Supabase */}
-            {(transactions || []).map((t, idx) => (
-              <div key={idx} className="bg-[#1C2063] border border-[#30358B] rounded-xl overflow-hidden shadow-md">
-                <div 
-                  className="px-3.5 py-2 text-xs font-bold text-white"
-                  style={{
-                    background: t.type === 'deposit' ? 'linear-gradient(90deg, #10B981 0%, #059669 100%)' : 'linear-gradient(90deg, #E92A23 0%, #1374EC 100%)'
-                  }}
-                >
-                  {t.type === 'deposit' ? 'Recharge / Deposit' : t.type === 'withdrawal' ? 'Withdrawal' : 'Game Transaction'}
+              if (userTransactions.length === 0) {
+                return (
+                  <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-8 text-center space-y-2 text-[#7098C5] shadow-md">
+                    <p className="text-xs">No transaction records found</p>
+                  </div>
+                );
+              }
+
+              return userTransactions.map((t, idx) => (
+                <div key={idx} className="bg-[#1C2063] border border-[#30358B] rounded-xl overflow-hidden shadow-md">
+                  <div 
+                    className="px-3.5 py-2 text-xs font-bold text-white"
+                    style={{
+                      background: t.type === 'deposit' ? 'linear-gradient(90deg, #10B981 0%, #059669 100%)' : 'linear-gradient(90deg, #E92A23 0%, #1374EC 100%)'
+                    }}
+                  >
+                    {t.type === 'deposit' ? 'Recharge / Deposit' : t.type === 'withdrawal' ? 'Withdrawal' : (t.type === 'vip_bonus' ? 'VIP Level Reward' : 'Game Transaction')}
+                  </div>
+                  <div className="p-3.5 space-y-2 text-xs divide-y divide-[#30358B]/40">
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-[#7098C5]">Detail</span>
+                      <span className="text-white font-medium">{t.method || t.detail || t.title || t.type}</span>
+                    </div>
+                    <div className="flex items-center justify-between pt-2">
+                      <span className="text-[#7098C5]">Time</span>
+                      <span className="text-white font-mono text-[11px]">{t.created_at ? new Date(t.created_at).toLocaleString() : formattedLastLogin}</span>
+                    </div>
+                    <div className="flex items-center justify-between pt-2">
+                      <span className="text-[#7098C5]">Amount</span>
+                      <span className={`font-bold text-sm ${t.type === 'deposit' || t.type === 'vip_bonus' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                        {t.type === 'deposit' || t.type === 'vip_bonus' ? '+' : '-'}৳{Number(t.amount || 0).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="p-3.5 space-y-2 text-xs divide-y divide-[#30358B]/40">
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="text-[#7098C5]">Detail</span>
-                    <span className="text-white font-medium">{t.detail || t.title || t.type}</span>
-                  </div>
-                  <div className="flex items-center justify-between pt-2">
-                    <span className="text-[#7098C5]">Time</span>
-                    <span className="text-white font-mono text-[11px]">{t.created_at ? new Date(t.created_at).toLocaleString() : formattedLastLogin}</span>
-                  </div>
-                  <div className="flex items-center justify-between pt-2">
-                    <span className="text-[#7098C5]">Amount</span>
-                    <span className={`font-bold text-sm ${t.type === 'deposit' ? 'text-emerald-400' : 'text-amber-400'}`}>
-                      ৳{Number(t.amount || 0).toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
+              ));
+            })()}
 
             {/* Footer No More */}
             <div className="text-center py-6 text-xs text-[#7098C5]">

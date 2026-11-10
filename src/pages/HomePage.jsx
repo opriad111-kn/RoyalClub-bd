@@ -743,6 +743,79 @@ export default function HomePage({
             {renderGameSwiper(originalGamesList, originalSwiperRef)}
           </div>
 
+          {/* SECTION 5: WINNING INFORMATION (1:1 KhelV / Daman Live Winning Ticker) */}
+          <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-3.5 space-y-3 shadow-xl">
+            <div className="flex items-center justify-between border-b border-[#30358B]/60 pb-2">
+              <div className="flex items-center space-x-2">
+                <span className="text-[#F5BE00] text-sm">🏆</span>
+                <span className="font-bold text-xs text-white">Winning Information</span>
+              </div>
+              <span className="text-[10px] text-emerald-400 font-bold animate-pulse">● Live Stream</span>
+            </div>
+
+            <div className="space-y-2 max-h-56 overflow-hidden">
+              {[
+                { user: 'Mem***912', amount: 3840, game: 'WinGo 1Min', avatar: '1-Cz2mt-nl.png' },
+                { user: 'Mem***482', amount: 12500, game: 'Aviator', avatar: '1-27ESYDeX.png' },
+                { user: 'Mem***331', amount: 5600, game: 'Fortune Gems 2', avatar: '1-B6EOa474.png' },
+                { user: 'Mem***729', amount: 1890, game: 'Super Ace', avatar: '1-C0UdYUWZ.png' },
+                { user: 'Mem***108', amount: 9400, game: 'Mines', avatar: '1-CfpcF2u4.png' },
+                { user: 'Mem***563', amount: 24300, game: 'Aviator', avatar: '1-CkQOiklO.png' }
+              ].map((win, idx) => (
+                <div key={idx} className="flex items-center justify-between bg-[#14122E] border border-[#30358B]/50 rounded-xl px-3 py-2 text-xs">
+                  <div className="flex items-center space-x-2.5">
+                    <div className="w-7 h-7 rounded-full bg-[#1C2063] border border-amber-400/40 overflow-hidden shrink-0">
+                      <img src={`/assets/official_khelv/${win.avatar}`} alt="Avatar" className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                      <span className="text-white font-bold text-[11px] block leading-tight">{win.user}</span>
+                      <span className="text-[#7098C5] text-[9.5px] block leading-tight">{win.game}</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[#F5BE00] font-black font-mono text-xs block leading-tight">+৳{win.amount.toLocaleString()}</span>
+                    <span className="text-[9.5px] text-emerald-400 font-medium">Won</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* SECTION 6: TODAY'S EARNING CHART (Podium 1, 2, 3) */}
+          <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-3.5 space-y-3.5 shadow-xl">
+            <div className="flex items-center space-x-2 border-b border-[#30358B]/60 pb-2">
+              <span className="text-[#F5BE00] text-sm">👑</span>
+              <span className="font-bold text-xs text-white">Today's Earning Chart</span>
+            </div>
+
+            {/* Podium Top 3 */}
+            <div className="grid grid-cols-3 gap-2 text-center pt-2">
+              {/* Rank 2 (Silver) */}
+              <div className="bg-[#14122E] border border-slate-400/30 rounded-xl p-2.5 flex flex-col items-center justify-end space-y-1 relative pt-4">
+                <span className="absolute -top-2 px-2 py-0.2 bg-slate-300 text-slate-950 font-black text-[9px] rounded-full shadow">NO.2</span>
+                <span className="text-xl">🥈</span>
+                <span className="text-[11px] font-bold text-white truncate max-w-full">Mem***849</span>
+                <span className="text-[#F5BE00] font-black font-mono text-[10.5px]">৳112,400</span>
+              </div>
+
+              {/* Rank 1 (Gold) */}
+              <div className="bg-gradient-to-b from-[#2a2754] to-[#14122E] border-2 border-amber-400/60 rounded-xl p-2.5 flex flex-col items-center justify-end space-y-1 relative pt-5 shadow-lg shadow-amber-500/10 scale-105 z-10">
+                <span className="absolute -top-2.5 px-2.5 py-0.2 bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 font-black text-[10px] rounded-full shadow">NO.1</span>
+                <span className="text-2xl animate-bounce">👑</span>
+                <span className="text-xs font-black text-amber-200 truncate max-w-full">Mem***319</span>
+                <span className="text-[#F5BE00] font-black font-mono text-xs">৳184,520</span>
+              </div>
+
+              {/* Rank 3 (Bronze) */}
+              <div className="bg-[#14122E] border border-amber-700/30 rounded-xl p-2.5 flex flex-col items-center justify-end space-y-1 relative pt-4">
+                <span className="absolute -top-2 px-2 py-0.2 bg-amber-700 text-white font-black text-[9px] rounded-full shadow">NO.3</span>
+                <span className="text-xl">🥉</span>
+                <span className="text-[11px] font-bold text-white truncate max-w-full">Mem***128</span>
+                <span className="text-[#F5BE00] font-black font-mono text-[10.5px]">৳78,350</span>
+              </div>
+            </div>
+          </div>
+
         </div>
       )}
 
@@ -819,7 +892,7 @@ export default function HomePage({
 
       {/* 6. Floating "Get ৳17 / Add to Desktop" Pill (1:1 Replica of Screenshot 1) */}
       {showDesktopWidget && (
-        <aside aria-label="Desktop Download" className="fixed bottom-[74px] left-1/2 -translate-x-1/2 z-30 w-[92%] max-w-[340px] pointer-events-auto select-none animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <aside aria-label="Desktop Download" className="fixed bottom-[86px] sm:bottom-6 left-1/2 -translate-x-1/2 z-30 w-[86%] max-w-[310px] pointer-events-auto select-none animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div 
             onClick={() => {
               if (typeof window !== 'undefined') {
@@ -829,16 +902,16 @@ export default function HomePage({
                 window.dispatchEvent(event);
               }
             }}
-            className="w-full bg-[#1b255e]/90 hover:bg-[#222f74]/95 backdrop-blur-md border border-[#374b9e]/80 rounded-full py-1.5 px-3.5 shadow-[0_8px_30px_rgba(0,0,0,0.85)] flex items-center justify-between cursor-pointer active:scale-98 transition group"
+            className="w-full bg-[#1b255e]/90 hover:bg-[#222f74]/95 backdrop-blur-md border border-[#374b9e]/80 rounded-full py-1 px-3 shadow-[0_8px_30px_rgba(0,0,0,0.85)] flex items-center justify-between cursor-pointer active:scale-98 transition group"
           >
             {/* Left: Small Logo & Text */}
-            <div className="flex items-center space-x-2.5">
-              <div className="w-8 h-8 rounded-lg bg-[#0e1538] border border-[#2d3d82] flex items-center justify-center p-1 shrink-0 shadow-xs">
-                <span className="text-sm font-black text-amber-400">👑</span>
+            <div className="flex items-center space-x-2">
+              <div className="w-6 h-6 rounded-md bg-[#0e1538] border border-[#2d3d82] flex items-center justify-center p-0.5 shrink-0 shadow-xs">
+                <span className="text-xs font-black text-amber-400">👑</span>
               </div>
               <div className="flex flex-col text-left leading-tight">
-                <span className="text-[#facc15] font-black text-[13px] tracking-tight drop-shadow-xs">Get ৳17</span>
-                <span className="text-white font-bold text-[10.5px] tracking-wide">Add to Desktop</span>
+                <span className="text-[#facc15] font-black text-xs tracking-tight drop-shadow-xs">Get ৳17</span>
+                <span className="text-white font-bold text-[10px] tracking-wide">Add to Desktop</span>
               </div>
             </div>
 

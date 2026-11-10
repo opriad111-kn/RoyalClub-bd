@@ -323,54 +323,178 @@ export default function PromotionPage({ onOpenAuth }) {
         </div>
       </div>
 
-      {/* Share Modal (QR Code & Link) */}
+      {/* Share Modal (Exact 1:1 Replica of frame_030.jpg Invite Poster) */}
       {shareModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[#0f1730] border border-slate-800/80 rounded-3xl w-full max-w-sm p-5 text-white space-y-4 shadow-2xl relative">
-            <button 
-              onClick={() => setShareModalOpen(false)}
-              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="text-center">
-              <h3 className="font-black text-base text-white">Share Invitation Link</h3>
-              <p className="text-[11px] text-[#7098C5] mt-0.5">Invite friends and unlock lifetime multi-tier commissions</p>
-            </div>
-
-            {/* QR Code Container */}
-            <div className="bg-white p-3 rounded-2xl w-40 h-40 mx-auto flex items-center justify-center shadow-lg">
-              <img 
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(inviteLink)}`} 
-                alt="QR Code" 
-                className="w-full h-full object-contain"
-              />
-            </div>
-
-            {/* Invite Code & Link Copy */}
-            <div className="space-y-2 text-xs">
-              <div className="p-2.5 rounded-xl bg-[#070b19] border border-slate-800/80 flex justify-between items-center">
-                <span className="text-[#7098C5]">Invite code: <strong className="text-white font-mono">{inviteCode}</strong></span>
-                <button
-                  onClick={() => handleCopy(inviteCode)}
-                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-3 py-1 rounded-full font-black text-[10px] active:scale-95 transition"
+        <div className="fixed inset-0 z-50 bg-[#0b0a1a]/90 backdrop-blur-xs flex justify-center overflow-y-auto">
+          <div className="w-full sm:max-w-[420px] min-h-screen bg-[#14122E] flex flex-col justify-between shadow-2xl relative text-white">
+            <div>
+              {/* Header: < Invite */}
+              <div className="sticky top-0 z-30 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center justify-between shadow-md">
+                <button 
+                  onClick={() => setShareModalOpen(false)}
+                  className="p-1 -ml-1 text-white hover:text-amber-400 active:scale-95 transition cursor-pointer flex items-center space-x-1"
                 >
-                  {copied ? 'Copied!' : 'Copy Code'}
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                  </svg>
                 </button>
+                <h2 className="font-bold text-base text-white pr-4">Invite</h2>
+                <div className="w-5" />
               </div>
 
-              <div className="p-2.5 rounded-xl bg-[#070b19] border border-slate-800/80 flex justify-between items-center">
-                <span className="text-white font-mono text-[10px] truncate max-w-[200px]">{inviteLink}</span>
-                <button
-                  onClick={() => {
-                    handleCopy(inviteLink);
-                    confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+              <div className="p-4 space-y-4 text-center">
+                <p className="text-xs text-[#7098C5]">
+                  Please swipe left - right to choose your favorite poster
+                </p>
+
+                {/* Poster Card (frame_030.jpg 1:1) */}
+                <div 
+                  className="w-full max-w-[310px] mx-auto rounded-3xl p-5 shadow-2xl relative overflow-hidden text-center space-y-3.5 border border-sky-400/30"
+                  style={{
+                    background: 'linear-gradient(180deg, #1868A8 0%, #159CD5 50%, #20B5F5 100%)'
                   }}
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-3 py-1 rounded-full font-black text-[10px] active:scale-95 transition"
                 >
-                  Copy Link
-                </button>
+                  {/* Top Badges */}
+                  <div className="flex items-center justify-center space-x-2">
+                    <span className="bg-[#FFE57F] text-[#4A3800] font-black text-[10px] px-2.5 py-0.5 rounded-md shadow-xs">
+                      Fair and justice
+                    </span>
+                    <span className="bg-[#FFE57F] text-[#4A3800] font-black text-[10px] px-2.5 py-0.5 rounded-md shadow-xs">
+                      Open and transparent
+                    </span>
+                  </div>
+
+                  <div>
+                    <h4 className="text-white font-black text-sm tracking-wide drop-shadow-sm">
+                      Full Odds Bonus Rate
+                    </h4>
+                    <div className="flex items-center justify-center space-x-3 mt-2 text-[10.5px] text-white/95 font-semibold">
+                      <div className="bg-white/20 backdrop-blur-xs rounded-xl px-2.5 py-1 flex items-center space-x-1">
+                        <span>🏛️</span>
+                        <span>Financial security</span>
+                      </div>
+                      <div className="bg-white/20 backdrop-blur-xs rounded-xl px-2.5 py-1 flex items-center space-x-1">
+                        <span>⚡</span>
+                        <span>Quick withdrawal</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="text-white font-bold text-xs">Permanent commission up to</span>
+                    <div className="text-3xl font-black text-[#FFE57F] drop-shadow-md tracking-tight font-mono">
+                      85%
+                    </div>
+                  </div>
+
+                  {/* QR Code container */}
+                  <div className="relative w-36 h-36 mx-auto bg-white p-2.5 rounded-2xl shadow-xl flex items-center justify-center border-2 border-white/60">
+                    <img 
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(inviteLink)}`} 
+                      alt="QR Code" 
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+
+                  <div className="bg-[#104875]/80 backdrop-blur-xs rounded-xl py-1.5 px-3 text-[10px] text-sky-100 font-mono">
+                    Invitation Code: <b className="text-white text-xs">{inviteCode}</b>
+                  </div>
+                </div>
+
+                <div className="text-xs font-bold text-white pt-1">
+                  Invite friends &nbsp; <span className="text-rose-400">Income 10 billion</span> &nbsp; Commission
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Actions & Share Channels */}
+            <div className="p-4 space-y-3 bg-[#14122E] border-t border-[#30358B]/60">
+              {/* DOWNLOAD QR CODE button (Red to Blue gradient) */}
+              <button
+                onClick={() => {
+                  const link = document.createElement('a');
+                  link.href = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(inviteLink)}`;
+                  link.download = `RoyalClub_Invite_${inviteCode}.png`;
+                  link.target = '_blank';
+                  link.click();
+                }}
+                className="w-full py-3.5 rounded-full text-white font-bold text-xs uppercase tracking-wider shadow-xl active:scale-98 transition cursor-pointer hover:brightness-110"
+                style={{
+                  background: 'linear-gradient(90deg, #E92A23 0%, #1374EC 100%)'
+                }}
+              >
+                DOWNLOAD QR CODE
+              </button>
+
+              {/* Copy invitation link button */}
+              <button
+                onClick={() => {
+                  handleCopy(inviteLink);
+                  confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+                }}
+                className="w-full py-3.5 rounded-full border border-[#30358B] bg-[#1C2063] hover:bg-[#252b82] text-white font-bold text-xs active:scale-98 transition cursor-pointer shadow-md"
+              >
+                {copied ? 'Link Copied Successfully! ✓' : 'Copy invitation link'}
+              </button>
+
+              {/* Social Channels */}
+              <div className="space-y-2 pt-2 text-center">
+                <span className="text-[11px] text-[#7098C5]">
+                  Share to other apps to invite friend
+                </span>
+                <div className="flex items-center justify-center space-x-6 pt-1">
+                  {/* WhatsApp */}
+                  <a
+                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Join Royal Club BD with invite code ${inviteCode}: ${inviteLink}`)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex flex-col items-center space-y-1 text-slate-300 hover:text-white transition active:scale-90"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-lg font-bold text-base">
+                      💬
+                    </div>
+                    <span className="text-[10px]">WhatsApp</span>
+                  </a>
+
+                  {/* Telegram */}
+                  <a
+                    href={`https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(`Join Royal Club BD: `)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex flex-col items-center space-y-1 text-slate-300 hover:text-white transition active:scale-90"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-[#0088CC] text-white flex items-center justify-center shadow-lg font-bold text-base">
+                      ✈️
+                    </div>
+                    <span className="text-[10px]">Telegram</span>
+                  </a>
+
+                  {/* Facebook */}
+                  <a
+                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(inviteLink)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex flex-col items-center space-y-1 text-slate-300 hover:text-white transition active:scale-90"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-[#1877F2] text-white flex items-center justify-center shadow-lg font-bold text-base">
+                      f
+                    </div>
+                    <span className="text-[10px]">Facebook</span>
+                  </a>
+
+                  {/* X / Twitter */}
+                  <a
+                    href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(`Join Royal Club BD: `)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex flex-col items-center space-y-1 text-slate-300 hover:text-white transition active:scale-90"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-black text-white border border-white/20 flex items-center justify-center shadow-lg font-black text-sm">
+                      𝕏
+                    </div>
+                    <span className="text-[10px]">X</span>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
