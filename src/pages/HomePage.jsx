@@ -597,12 +597,17 @@ export default function HomePage({
     <div className="space-y-3 pb-24 text-white select-none font-sans bg-[#14122E] relative">
       
       {/* 1. Promotional High-Res Banner Swiper Carousel (Touch & Autoplay) */}
-      <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[702/330] bg-[#14122E] border border-slate-800/80">
+      <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[702/330] bg-[#14122E] border border-slate-800/80 touch-pan-y">
         <Swiper
           modules={[Autoplay, Pagination]}
-          className="w-full h-full"
+          className="w-full h-full cursor-grab active:cursor-grabbing"
           autoplay={{ delay: 3500, disableOnInteraction: false }}
           loop={true}
+          grabCursor={true}
+          touchRatio={1.5}
+          touchStartPreventDefault={false}
+          resistance={true}
+          resistanceRatio={0.85}
           onSwiper={(swiper) => { bannerSwiperRef.current = swiper; }}
           onSlideChange={(swiper) => setActiveBanner(swiper.realIndex)}
         >
@@ -610,12 +615,13 @@ export default function HomePage({
             <SwiperSlide 
               key={idx} 
               onClick={() => handleBannerClick(b)}
-              className="w-full h-full cursor-pointer relative overflow-hidden"
+              className="w-full h-full cursor-pointer relative overflow-hidden select-none"
             >
               <img 
                 src={b.img} 
                 alt={b.title}
-                className="w-full h-full object-cover transition-opacity duration-500 animate-in fade-in"
+                draggable={false}
+                className="w-full h-full object-cover transition-opacity duration-500 animate-in fade-in select-none pointer-events-none"
               />
             </SwiperSlide>
           ))}
@@ -653,13 +659,17 @@ export default function HomePage({
         </button>
       </div>
 
-      {/* 3. Official KhelV 4-Grid 3D Category Bar (Screenshot 1 Exact Match) */}
-      <div className="grid grid-cols-4 gap-2 px-1 py-1">
+      {/* 3. Official KhelV 8-Category Horizontal Scrollable Bar (Requested in video part 4) */}
+      <div className="flex items-center space-x-2.5 overflow-x-auto scrollbar-none px-1 py-1.5 snap-x">
         {[
           { id: 'Popular', label: 'Popular', icon: '/assets/official_khelv/cat_3d_popular.png' },
           { id: 'Slots', label: 'Slots', icon: '/assets/official_khelv/cat_3d_slot.png' },
           { id: 'Lottery', label: 'Lottery', icon: '/assets/official_khelv/cat_3d_lottery.png' },
           { id: 'Original', label: 'Original', icon: '/assets/official_khelv/cat_3d_flash.png' },
+          { id: 'Casino', label: 'Casino', icon: '/assets/official_khelv/cat_3d_video.png' },
+          { id: 'Fishing', label: 'Fishing', icon: '/assets/official_khelv/cat_3d_fish.png' },
+          { id: 'Sports', label: 'Sports', icon: '/assets/official_khelv/cat_3d_sport.png' },
+          { id: 'Rummy', label: 'Chess/Cards', icon: '/assets/official_khelv/cat_3d_chess.png' },
         ].map(cat => {
           const isActive = selectedCategory === cat.id;
           return (
@@ -668,19 +678,23 @@ export default function HomePage({
               onClick={() => {
                 setSelectedCategory(cat.id);
                 setSearchQuery('');
-                const el = document.getElementById(`section-${cat.id.toLowerCase()}`);
+                const targetId = cat.id === 'Casino' || cat.id === 'Fishing' || cat.id === 'Sports' || cat.id === 'Rummy'
+                  ? 'section-slots'
+                  : `section-${cat.id.toLowerCase()}`;
+                const el = document.getElementById(targetId);
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="flex flex-col items-center justify-center p-1 transition cursor-pointer group active:scale-95"
+              className="flex flex-col items-center justify-center p-1 transition cursor-pointer group active:scale-95 shrink-0 snap-start"
             >
               <div className="relative w-14 h-14 flex items-center justify-center">
                 <img 
                   src={cat.icon} 
                   alt={cat.label} 
-                  className="w-full h-full object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)] transform transition group-hover:scale-105" 
+                  draggable={false}
+                  className="w-full h-full object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)] transform transition group-hover:scale-105 pointer-events-none" 
                 />
               </div>
-              <span className={`text-[11px] font-black tracking-tight mt-1 ${isActive ? 'text-amber-300 drop-shadow' : 'text-slate-300'}`}>
+              <span className={`text-[11px] font-black tracking-tight mt-1 whitespace-nowrap ${isActive ? 'text-amber-300 drop-shadow' : 'text-slate-300'}`}>
                 {cat.label}
               </span>
             </button>

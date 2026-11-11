@@ -11,6 +11,7 @@ export default function PromotionPage({ onOpenAuth }) {
   const [copied, setCopied] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [subordinateModalOpen, setSubordinateModalOpen] = useState(false);
+  const [serviceModalOpen, setServiceModalOpen] = useState(false);
   const [activeRuleTab, setActiveRuleTab] = useState(false);
 
   const safeUser = user || { username: 'Guest', is_guest: true, balance: 0, uid: '722200' };
@@ -231,10 +232,7 @@ export default function PromotionPage({ onOpenAuth }) {
 
             {/* Agency Customer Service */}
             <div 
-              onClick={() => {
-                const event = new CustomEvent('royalclub_show_toast', { detail: { message: "এজেন্ট সাপোর্ট টেলিগ্রাম: @ROYALCLUB_Support" } });
-                window.dispatchEvent(event);
-              }}
+              onClick={() => setServiceModalOpen(true)}
               className="bg-[#0f1730] rounded-2xl p-3.5 border border-slate-800/80 shadow-sm flex items-center justify-between cursor-pointer hover:bg-[#141d3d] transition active:scale-95"
             >
               <div className="flex items-center space-x-3">
@@ -496,6 +494,78 @@ export default function PromotionPage({ onOpenAuth }) {
                   </a>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Customer Service Modal (Requested in audio part 3) */}
+      {serviceModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#1C2063] border border-[#30358B] rounded-3xl w-full max-w-sm p-5 text-white space-y-4 shadow-2xl relative">
+            <div className="flex justify-between items-center border-b border-[#30358B]/60 pb-3">
+              <div className="flex items-center space-x-2">
+                <span className="text-xl">🎧</span>
+                <h3 className="font-bold text-sm text-white">Agency Customer Service</h3>
+              </div>
+              <button 
+                onClick={() => setServiceModalOpen(false)} 
+                className="text-slate-400 hover:text-white p-1 cursor-pointer active:scale-95"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-[11px] text-[#7098C5] leading-relaxed">
+              If you have any questions regarding team referral bonuses, agent commissions, or partnership, our online support agents are available 24/7.
+            </p>
+
+            <div className="space-y-2.5 pt-1">
+              {/* Agent Line 1 - Telegram */}
+              <a
+                href="https://t.me/ROYALCLUB_Support"
+                target="_blank"
+                rel="noreferrer"
+                className="w-full bg-[#14122E] border border-[#30358B] hover:border-cyan-400 p-3.5 rounded-2xl flex items-center justify-between cursor-pointer transition active:scale-98 group shadow-md"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full bg-[#2AABEE]/20 flex items-center justify-center shrink-0">
+                    <img 
+                      src="/assets/official_khelv/telegram-i-2nefHz.png" 
+                      alt="Telegram" 
+                      className="w-6 h-6 object-contain"
+                    />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-xs text-white group-hover:text-cyan-300 transition">
+                      Agent Line 1 (Online 24/7)
+                    </h4>
+                    <span className="text-[10px] text-[#7098C5]">Telegram: @ROYALCLUB_Support</span>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-white transition" />
+              </a>
+
+              {/* Agent Line 2 - Official Channel */}
+              <a
+                href="https://t.me/ROYALCLUB_Support"
+                target="_blank"
+                rel="noreferrer"
+                className="w-full bg-[#14122E] border border-[#30358B] hover:border-amber-400 p-3.5 rounded-2xl flex items-center justify-between cursor-pointer transition active:scale-98 group shadow-md"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
+                    <span className="text-lg">📢</span>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-xs text-white group-hover:text-amber-300 transition">
+                      Official Promotion Channel
+                    </h4>
+                    <span className="text-[10px] text-[#7098C5]">Daily gift codes and promo updates</span>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-white transition" />
+              </a>
             </div>
           </div>
         </div>

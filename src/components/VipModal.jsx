@@ -126,8 +126,16 @@ export default function VipModal({ isOpen, onClose }) {
   const { lang, t } = useLanguage();
   const [activeTab, setActiveTab] = useState('history'); // 'history' | 'rules'
   const [selectedVipLevel, setSelectedVipLevel] = useState(1);
+  const [isCardLoading, setIsCardLoading] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
   const [claimToast, setClaimToast] = useState({ text: '', type: '' });
+
+  const handleSelectTier = (lvl) => {
+    if (lvl === selectedVipLevel) return;
+    setIsCardLoading(true);
+    setSelectedVipLevel(lvl);
+    setTimeout(() => setIsCardLoading(false), 260);
+  };
 
   const safeUser = user || {
     username: 'MemberNNGXAGEH',
@@ -277,7 +285,7 @@ export default function VipModal({ isOpen, onClose }) {
               return (
                 <button
                   key={tier.level}
-                  onClick={() => setSelectedVipLevel(tier.level)}
+                  onClick={() => handleSelectTier(tier.level)}
                   className={`px-4 py-2 rounded-xl font-bold text-xs shrink-0 transition cursor-pointer flex items-center space-x-1 border ${
                     isSelected
                       ? 'bg-[#F5BE00] text-[#14122E] border-[#F5BE00] shadow-[0_0_10px_rgba(245,190,0,0.35)]'
@@ -297,7 +305,14 @@ export default function VipModal({ isOpen, onClose }) {
           {(() => {
             const theme = VIP_CARD_THEMES[selectedTier.level] || VIP_CARD_THEMES[1];
             return (
-              <div className={`${theme.cardBg} rounded-2xl p-4.5 text-white shadow-2xl relative overflow-hidden space-y-3.5 border border-white/15 transition-all duration-300`}>
+              <div className={`${theme.cardBg} rounded-2xl p-4.5 text-white shadow-2xl relative overflow-hidden space-y-3.5 border border-white/15 transition-all duration-300 min-h-[220px]`}>
+                
+                {/* Smooth Card Switch Loading Spinner */}
+                {isCardLoading && (
+                  <div className="absolute inset-0 z-30 bg-black/50 backdrop-blur-xs flex items-center justify-center transition-all">
+                    <div className="w-10 h-10 border-3 border-amber-400 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
                 
                 {/* 1:1 Giant Watermark in Background (Photo 4) */}
                 <div className="absolute -right-2 -bottom-4 text-[92px] font-black font-mono tracking-tighter opacity-15 select-none pointer-events-none text-white italic leading-none">

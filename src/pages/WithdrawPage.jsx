@@ -297,14 +297,9 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
 
     // Match strictly by user identity
     const matchesUser = 
-      (t.user_id && user.id && t.user_id === user.id) ||
+      (t.user_id && user.id && String(t.user_id) === String(user.id)) ||
       (t.uid && user.uid && String(t.uid) === String(user.uid)) ||
-      (t.username && user.username && t.username.toLowerCase() === user.username.toLowerCase()) ||
-      (t.account_number && user.phone && (
-        t.account_number === user.phone || 
-        t.account_number === '0' + user.phone || 
-        '0' + t.account_number === user.phone
-      ));
+      (t.username && user.username && t.username.toLowerCase() === user.username.toLowerCase());
 
     return matchesUser;
   });
@@ -745,85 +740,6 @@ export default function WithdrawPage({ onBack, onOpenAuth }) {
 
             <div className="absolute -bottom-6 -right-6 w-32 h-32 rounded-full bg-white/10 pointer-events-none" />
             <div className="absolute -bottom-10 -right-2 w-40 h-40 rounded-full bg-black/5 pointer-events-none" />
-          </div>
-
-          {/* Withdrawal Eligibility: Minimum Deposit ৳200 & Turnover Status Card (Exact User Mandate) */}
-          <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-3.5 space-y-2.5 shadow-md">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-white flex items-center space-x-1.5">
-                <span>🛡️</span>
-                <span>উইথড্র যোগ্যতা / Withdrawal Criteria</span>
-              </span>
-              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
-                (Number(safeUser?.total_deposited || 0) >= 200 && turnoverRemaining <= 0)
-                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                  : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-              }`}>
-                {(Number(safeUser?.total_deposited || 0) >= 200 && turnoverRemaining <= 0) ? '✓ উইথড্রর জন্য প্রস্তুত' : 'শর্ত পূরণ বাকি'}
-              </span>
-            </div>
-
-            {/* Criteria 1: Min Deposit ৳200 (Only shown BEFORE user completes ৳200 deposit) */}
-            {Number(safeUser?.total_deposited || 0) < 200 && (
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-[#7098C5]">১. মোট ডিপোজিট (ন্যূনতম ৳২০০ আবশ্যক)</span>
-                  <span className="font-mono font-bold text-rose-400">
-                    ৳{Number(safeUser?.total_deposited || 0).toFixed(2)} / ৳200.00
-                  </span>
-                </div>
-                <div className="w-full bg-[#14122E] h-1.5 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full transition-all duration-300 bg-rose-500"
-                    style={{ width: `${Math.min(100, (Number(safeUser?.total_deposited || 0) / 200) * 100)}%` }}
-                  />
-                </div>
-                <div className="flex items-center justify-between pt-0.5">
-                  <p className="text-[10px] text-amber-300/90">
-                    * বোনাস তোলার জন্য ন্যূনতম ৳২০০ ডিপোজিট প্রয়োজন
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => { window.location.hash = '#/deposit'; }}
-                    className="px-2 py-0.5 rounded bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[10px] font-black cursor-pointer shadow active:scale-95 transition"
-                  >
-                    ডিপোজিট করুন →
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Criteria 2: Turnover Requirement */}
-            <div className={`space-y-1 ${Number(safeUser?.total_deposited || 0) < 200 ? 'border-t border-[#30358B]/40 pt-2' : ''}`}>
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="text-[#7098C5]">
-                  {Number(safeUser?.total_deposited || 0) < 200 ? '২. টার্নওভার অগ্রগতি (Turnover Progress)' : 'টার্নওভার অগ্রগতি (Turnover Progress)'}
-                </span>
-                <span className={`font-mono font-bold ${turnoverRemaining <= 0 ? 'text-emerald-400' : 'text-amber-400'}`}>
-                  ৳{compTurnover.toFixed(2)} / ৳{reqTurnover.toFixed(2)}
-                </span>
-              </div>
-              <div className="w-full bg-[#14122E] h-1.5 rounded-full overflow-hidden">
-                <div 
-                  className={`h-full transition-all duration-300 ${turnoverRemaining <= 0 ? 'bg-emerald-500' : 'bg-amber-400'}`}
-                  style={{ width: `${reqTurnover > 0 ? Math.min(100, (compTurnover / reqTurnover) * 100) : 100}%` }}
-                />
-              </div>
-              {turnoverRemaining > 0 && (
-                <div className="flex items-center justify-between pt-0.5">
-                  <p className="text-[10px] text-amber-300/90">
-                    * আরো ৳{turnoverRemaining.toFixed(2)} বেট খেলে টার্নওভার পূর্ণ হবে
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => { window.location.hash = '#/home'; }}
-                    className="px-2 py-0.5 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 text-[10px] font-black cursor-pointer shadow active:scale-95 transition"
-                  >
-                    গেম খেলুন →
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
 
           {/* 3. Method Selector: E-Wallet & USDT */}

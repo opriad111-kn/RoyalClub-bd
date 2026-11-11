@@ -258,9 +258,6 @@ export default function DepositPage({ onBack, onOpenAuth }) {
     if (user.id && t.user_id && String(t.user_id) === String(user.id)) return true;
     if (user.uid && t.uid && String(t.uid) === String(user.uid)) return true;
     if (user.username && t.username && t.username.toLowerCase() === user.username.toLowerCase()) return true;
-    const cleanUserPhone = user.phone ? String(user.phone).replace(/\D/g, '').replace(/^0+/, '') : '';
-    const cleanTxPhone = t.account_number ? String(t.account_number).replace(/\D/g, '').replace(/^0+/, '') : '';
-    if (cleanUserPhone && cleanTxPhone && cleanUserPhone === cleanTxPhone) return true;
     return false;
   };
 
