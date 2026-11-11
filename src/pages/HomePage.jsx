@@ -20,6 +20,60 @@ import {
   HelpCircle
 } from 'lucide-react';
 
+// Official KhelV Top 50 Leaderboard Dataset (Matching Frame 048 1:1)
+const TOP_50_LEADERBOARD = [
+  { rank: 1, user: 'Mem***K84', amount: '৳295,671,559', avatar: '/assets/official_khelv/1-Cz2mt-nl.png' },
+  { rank: 2, user: 'Mem***KPD', amount: '৳58,879,576', avatar: '/assets/official_khelv/1-Cz2mt-nl.png' },
+  { rank: 3, user: 'Mem***LHM', amount: '৳53,586,874', avatar: '/assets/official_khelv/1-Cz2mt-nl.png' },
+  { rank: 4, user: 'Mem***CN5', amount: '৳48,951,000.00', avatar: '/assets/official_khelv/1-Cz2mt-nl.png' },
+  { rank: 5, user: 'Mem***5H4', amount: '৳12,747,163.80', avatar: '/assets/official_khelv/1-Cz2mt-nl.png' },
+  { rank: 6, user: 'Mem***G0E', amount: '৳11,228,708.68', avatar: '/assets/official_khelv/1-Cz2mt-nl.png' },
+  { rank: 7, user: 'Mem***O50', amount: '৳7,507,780.00', avatar: '/assets/official_khelv/1-Cz2mt-nl.png' },
+  { rank: 8, user: 'Mem***REV', amount: '৳5,302,290.00', avatar: '/assets/official_khelv/1-Cz2mt-nl.png' },
+  { rank: 9, user: 'Mem***ER4', amount: '৳4,312,000.00', avatar: '/assets/official_khelv/1-Cz2mt-nl.png' },
+  { rank: 10, user: 'Mem***982', amount: '৳3,945,000.00', avatar: '/assets/official_khelv/2-DzTtSgI1.png' },
+  { rank: 11, user: 'Mem***614', amount: '৳3,620,400.00', avatar: '/assets/official_khelv/3-CieZaTkx.png' },
+  { rank: 12, user: 'Mem***A72', amount: '৳3,380,000.00', avatar: '/assets/official_khelv/4-FzE5GskB.png' },
+  { rank: 13, user: 'Mem***901', amount: '৳3,115,250.00', avatar: '/assets/official_khelv/5-BE1kalqa.png' },
+  { rank: 14, user: 'Mem***B34', amount: '৳2,980,000.00', avatar: '/assets/official_khelv/6-BptTdCuy.png' },
+  { rank: 15, user: 'Mem***552', amount: '৳2,750,800.00', avatar: '/assets/official_khelv/7-OCP1Ruci.png' },
+  { rank: 16, user: 'Mem***K91', amount: '৳2,590,000.00', avatar: '/assets/official_khelv/8-4L9YXhCn.png' },
+  { rank: 17, user: 'Mem***770', amount: '৳2,430,600.00', avatar: '/assets/official_khelv/9-iOf3oyEz.png' },
+  { rank: 18, user: 'Mem***C18', amount: '৳2,310,000.00', avatar: '/assets/official_khelv/10-BcpE5fen.png' },
+  { rank: 19, user: 'Mem***843', amount: '৳2,185,500.00', avatar: '/assets/official_khelv/11-DBjki8Hc.png' },
+  { rank: 20, user: 'Mem***X09', amount: '৳2,050,000.00', avatar: '/assets/official_khelv/12-DZNy4n9Y.png' },
+  { rank: 21, user: 'Mem***331', amount: '৳1,940,200.00', avatar: '/assets/official_khelv/13-DEwaMq4g.png' },
+  { rank: 22, user: 'Mem***D42', amount: '৳1,860,000.00', avatar: '/assets/official_khelv/14-DwyWmQfy.png' },
+  { rank: 23, user: 'Mem***619', amount: '৳1,780,400.00', avatar: '/assets/official_khelv/15-CLyM484-.png' },
+  { rank: 24, user: 'Mem***L88', amount: '৳1,695,000.00', avatar: '/assets/official_khelv/16-BSWOqo6F.png' },
+  { rank: 25, user: 'Mem***402', amount: '৳1,620,000.00', avatar: '/assets/official_khelv/17-q-XMVoEb.png' },
+  { rank: 26, user: 'Mem***E15', amount: '৳1,550,800.00', avatar: '/assets/official_khelv/18-nEcSw01G.png' },
+  { rank: 27, user: 'Mem***927', amount: '৳1,490,000.00', avatar: '/assets/official_khelv/19-B4g10rGY.png' },
+  { rank: 28, user: 'Mem***M63', amount: '৳1,430,000.00', avatar: '/assets/official_khelv/20-jsNPML4j.png' },
+  { rank: 29, user: 'Mem***711', amount: '৳1,375,500.00', avatar: '/assets/official_khelv/1-Cz2mt-nl.png' },
+  { rank: 30, user: 'Mem***F84', amount: '৳1,320,000.00', avatar: '/assets/official_khelv/2-DzTtSgI1.png' },
+  { rank: 31, user: 'Mem***258', amount: '৳1,270,000.00', avatar: '/assets/official_khelv/3-CieZaTkx.png' },
+  { rank: 32, user: 'Mem***N04', amount: '৳1,220,400.00', avatar: '/assets/official_khelv/4-FzE5GskB.png' },
+  { rank: 33, user: 'Mem***895', amount: '৳1,180,000.00', avatar: '/assets/official_khelv/5-BE1kalqa.png' },
+  { rank: 34, user: 'Mem***P26', amount: '৳1,140,000.00', avatar: '/assets/official_khelv/6-BptTdCuy.png' },
+  { rank: 35, user: 'Mem***367', amount: '৳1,095,500.00', avatar: '/assets/official_khelv/7-OCP1Ruci.png' },
+  { rank: 36, user: 'Mem***G51', amount: '৳1,060,000.00', avatar: '/assets/official_khelv/8-4L9YXhCn.png' },
+  { rank: 37, user: 'Mem***940', amount: '৳1,025,000.00', avatar: '/assets/official_khelv/9-iOf3oyEz.png' },
+  { rank: 38, user: 'Mem***Q13', amount: '৳990,000.00', avatar: '/assets/official_khelv/10-BcpE5fen.png' },
+  { rank: 39, user: 'Mem***482', amount: '৳960,500.00', avatar: '/assets/official_khelv/11-DBjki8Hc.png' },
+  { rank: 40, user: 'Mem***H77', amount: '৳930,000.00', avatar: '/assets/official_khelv/12-DZNy4n9Y.png' },
+  { rank: 41, user: 'Mem***190', amount: '৳905,000.00', avatar: '/assets/official_khelv/13-DEwaMq4g.png' },
+  { rank: 42, user: 'Mem***R39', amount: '৳880,000.00', avatar: '/assets/official_khelv/14-DwyWmQfy.png' },
+  { rank: 43, user: 'Mem***624', amount: '৳855,200.00', avatar: '/assets/official_khelv/15-CLyM484-.png' },
+  { rank: 44, user: 'Mem***T08', amount: '৳830,000.00', avatar: '/assets/official_khelv/16-BSWOqo6F.png' },
+  { rank: 45, user: 'Mem***851', amount: '৳810,000.00', avatar: '/assets/official_khelv/17-q-XMVoEb.png' },
+  { rank: 46, user: 'Mem***J92', amount: '৳790,500.00', avatar: '/assets/official_khelv/18-nEcSw01G.png' },
+  { rank: 47, user: 'Mem***374', amount: '৳770,000.00', avatar: '/assets/official_khelv/19-B4g10rGY.png' },
+  { rank: 48, user: 'Mem***V65', amount: '৳750,000.00', avatar: '/assets/official_khelv/20-jsNPML4j.png' },
+  { rank: 49, user: 'Mem***906', amount: '৳735,400.00', avatar: '/assets/official_khelv/1-Cz2mt-nl.png' },
+  { rank: 50, user: 'Mem***Z18', amount: '৳720,000.00', avatar: '/assets/official_khelv/2-DzTtSgI1.png' }
+];
+
 export default function HomePage({ 
   onOpenGame, 
   onOpenWheel, 
@@ -757,75 +811,265 @@ export default function HomePage({
             {renderGameSwiper(originalGamesList, originalSwiperRef)}
           </div>
 
-          {/* SECTION 5: WINNING INFORMATION (1:1 KhelV / Daman Live Winning Ticker) */}
-          <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-3.5 space-y-3 shadow-xl">
-            <div className="flex items-center justify-between border-b border-[#30358B]/60 pb-2">
-              <div className="flex items-center space-x-2">
-                <span className="text-[#F5BE00] text-sm">🏆</span>
-                <span className="font-bold text-xs text-white">Winning Information</span>
-              </div>
-              <span className="text-[10px] text-emerald-400 font-bold animate-pulse">● Live Stream</span>
+          {/* SECTION 5: JACKPOT RISING FAST (1:1 Authentic Match to frame_007.jpg) */}
+          <div 
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                const event = new CustomEvent('royalclub_show_toast', { 
+                  detail: { message: "🏆 সুপার জ্যাকপট পুল: ৳১২,৮৫০,৪২০! লটারি বা স্লট খেলে আজই জিতুন!" } 
+                });
+                window.dispatchEvent(event);
+              }
+            }}
+            className="w-full rounded-2xl overflow-hidden shadow-2xl cursor-pointer active:scale-[0.98] transition-transform my-3 border border-[#3b4594]/60 group"
+          >
+            <img 
+              src="/assets/official_khelv/jackpotBanner-Bg-EFZW7.png" 
+              alt="Jackpot Rising Fast" 
+              className="w-full h-auto object-cover group-hover:scale-102 transition-transform duration-300" 
+            />
+          </div>
+
+          {/* SECTION 6: WINNING INFORMATION (1:1 KhelV / Daman Live Winning Ticker - frame_007.jpg) */}
+          <div className="space-y-2 mt-4">
+            <div 
+              className="h-8 px-4 flex items-center bg-no-repeat bg-left bg-contain"
+              style={{ backgroundImage: `url('/assets/official_khelv/sectionTitleBg.png')` }}
+            >
+              <span className="font-black text-sm text-white tracking-wide uppercase drop-shadow-sm pr-3">
+                Winning information
+              </span>
             </div>
 
-            <div className="space-y-2 max-h-56 overflow-hidden">
-              {[
-                { user: 'Mem***912', amount: 3840, game: 'WinGo 1Min', avatar: '1-Cz2mt-nl.png' },
-                { user: 'Mem***482', amount: 12500, game: 'Aviator', avatar: '1-27ESYDeX.png' },
-                { user: 'Mem***331', amount: 5600, game: 'Fortune Gems 2', avatar: '1-B6EOa474.png' },
-                { user: 'Mem***729', amount: 1890, game: 'Super Ace', avatar: '1-C0UdYUWZ.png' },
-                { user: 'Mem***108', amount: 9400, game: 'Mines', avatar: '1-CfpcF2u4.png' },
-                { user: 'Mem***563', amount: 24300, game: 'Aviator', avatar: '1-CkQOiklO.png' }
-              ].map((win, idx) => (
-                <div key={idx} className="flex items-center justify-between bg-[#14122E] border border-[#30358B]/50 rounded-xl px-3 py-2 text-xs">
-                  <div className="flex items-center space-x-2.5">
-                    <div className="w-7 h-7 rounded-full bg-[#1C2063] border border-amber-400/40 overflow-hidden shrink-0">
-                      <img src={`/assets/official_khelv/${win.avatar}`} alt="Avatar" className="w-full h-full object-cover" />
+            <div className="bg-[#12163e]/90 border border-[#2c337a]/60 rounded-2xl p-2.5 space-y-2 shadow-2xl">
+              <div className="space-y-1.5 max-h-60 overflow-hidden">
+                {[
+                  { user: 'Mem***PKH', amount: '1,558.20', game: 'WinGo 30sec', isEven: true, avatar: '/assets/official_khelv/1-Cz2mt-nl.png' },
+                  { user: 'Mem***829', amount: '588.00', game: 'WinGo 1Min', isEven: false, avatar: '/assets/official_khelv/2-DzTtSgI1.png' },
+                  { user: 'Mem***QCN', amount: '392.00', game: 'WinGo 30sec', isEven: true, avatar: '/assets/official_khelv/1-Cz2mt-nl.png' },
+                  { user: 'Mem***912', amount: '3,840.00', game: 'Aviator', isEven: false, avatar: '/assets/official_khelv/3-CieZaTkx.png' },
+                  { user: 'Mem***482', amount: '12,500.00', game: 'Fortune Gems 2', isEven: true, avatar: '/assets/official_khelv/4-FzE5GskB.png' },
+                  { user: 'Mem***331', amount: '5,600.00', game: 'Super Ace', isEven: false, avatar: '/assets/official_khelv/5-BE1kalqa.png' }
+                ].map((win, idx) => (
+                  <div 
+                    key={idx} 
+                    className={`flex items-center justify-between px-3 py-2 rounded-xl border text-xs ${
+                      win.isEven 
+                        ? 'bg-gradient-to-r from-[#173a87] via-[#143276] to-[#10275e] border-[#254b9c]/60' 
+                        : 'bg-gradient-to-r from-[#5a1725] via-[#4d131f] to-[#3f1019] border-[#7d2033]/60'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-2.5">
+                      <div className="w-8 h-8 rounded-full border border-white/20 overflow-hidden shrink-0 shadow-sm">
+                        <img src={win.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                      </div>
+                      <div>
+                        <span className="text-white font-bold text-xs block leading-tight">{win.user}</span>
+                        <span className="text-[#64b5f6] text-[10px] font-semibold block leading-tight">{win.game}</span>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-white font-bold text-[11px] block leading-tight">{win.user}</span>
-                      <span className="text-[#7098C5] text-[9.5px] block leading-tight">{win.game}</span>
+                    <div className="text-right">
+                      <span className="text-[10px] text-slate-300 font-medium block">Winning amount</span>
+                      <span className="text-[#F5BE00] font-black font-mono text-xs block leading-tight">৳{win.amount}</span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-[#F5BE00] font-black font-mono text-xs block leading-tight">+৳{win.amount.toLocaleString()}</span>
-                    <span className="text-[9.5px] text-emerald-400 font-medium">Won</span>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* SECTION 6: TODAY'S EARNING CHART (Podium 1, 2, 3) */}
-          <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-3.5 space-y-3.5 shadow-xl">
-            <div className="flex items-center space-x-2 border-b border-[#30358B]/60 pb-2">
-              <span className="text-[#F5BE00] text-sm">👑</span>
-              <span className="font-bold text-xs text-white">Today's Earning Chart</span>
+          {/* SECTION 7: TODAY'S EARNING CHART (1:1 Replica of frame_048.jpg with 50 Players) */}
+          <div className="space-y-3 mt-4">
+            <div 
+              className="h-8 px-4 flex items-center bg-no-repeat bg-left bg-contain"
+              style={{ backgroundImage: `url('/assets/official_khelv/sectionTitleBg.png')` }}
+            >
+              <span className="font-black text-sm text-white tracking-wide uppercase drop-shadow-sm pr-3">
+                Today's Earning Chart
+              </span>
             </div>
 
-            {/* Podium Top 3 */}
-            <div className="grid grid-cols-3 gap-2 text-center pt-2">
-              {/* Rank 2 (Silver) */}
-              <div className="bg-[#14122E] border border-slate-400/30 rounded-xl p-2.5 flex flex-col items-center justify-end space-y-1 relative pt-4">
-                <span className="absolute -top-2 px-2 py-0.2 bg-slate-300 text-slate-950 font-black text-[9px] rounded-full shadow">NO.2</span>
-                <span className="text-xl">🥈</span>
-                <span className="text-[11px] font-bold text-white truncate max-w-full">Mem***849</span>
-                <span className="text-[#F5BE00] font-black font-mono text-[10.5px]">৳112,400</span>
+            <div className="bg-[#12163e]/90 border border-[#2c337a]/60 rounded-2xl p-2.5 sm:p-3 space-y-3 shadow-2xl">
+              {/* 3D Podium for Top 3 (rankPodium-BFW76g5A.png) */}
+              <div className="relative w-full max-w-[420px] mx-auto aspect-[750/802] select-none my-1">
+                <img 
+                  src="/assets/official_khelv/rankPodium-BFW76g5A.png" 
+                  alt="Leaderboard Podium" 
+                  className="w-full h-full object-contain pointer-events-none drop-shadow-2xl" 
+                />
+
+                {/* Rank 2 (Left - Silver Pillar) */}
+                <div 
+                  className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full overflow-hidden border-2 border-cyan-200/80 shadow-[0_0_12px_rgba(34,211,238,0.4)]"
+                  style={{ left: '23.8%', top: '41.8%', width: '16.5%', height: '15.5%' }}
+                >
+                  <img src="/assets/official_khelv/1-Cz2mt-nl.png" alt="Rank 2" className="w-full h-full object-cover" />
+                </div>
+                <div 
+                  className="absolute -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none w-[28%]"
+                  style={{ left: '23.8%', top: '53.5%' }}
+                >
+                  <span className="text-[10px] sm:text-[11px] font-bold text-slate-100 tracking-tight block truncate drop-shadow">
+                    Mem***KPD
+                  </span>
+                </div>
+                <div 
+                  className="absolute -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none"
+                  style={{ left: '23.8%', top: '63.5%' }}
+                >
+                  <span className="text-xl sm:text-2xl font-black text-white italic drop-shadow-md tracking-tighter">
+                    2<span className="text-[11px] sm:text-xs not-italic font-bold ml-0.5">nd</span>
+                  </span>
+                </div>
+                <div 
+                  className="absolute -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none w-[30%]"
+                  style={{ left: '23.8%', top: '70.5%' }}
+                >
+                  <span className="text-[10px] sm:text-[11px] font-extrabold text-white font-mono tracking-tight drop-shadow">
+                    ৳58,879,576
+                  </span>
+                </div>
+
+                {/* Rank 1 (Center - Gold Flame Pillar) */}
+                <div 
+                  className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full overflow-hidden border-2 border-yellow-300 shadow-[0_0_16px_rgba(245,190,0,0.6)]"
+                  style={{ left: '50%', top: '34.2%', width: '21%', height: '19.6%' }}
+                >
+                  <img src="/assets/official_khelv/1-Cz2mt-nl.png" alt="Rank 1" className="w-full h-full object-cover" />
+                </div>
+                <div 
+                  className="absolute -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none w-[32%]"
+                  style={{ left: '50%', top: '48.2%' }}
+                >
+                  <span className="text-[11px] sm:text-xs font-black text-slate-950 tracking-tight block truncate drop-shadow-xs">
+                    Mem***K84
+                  </span>
+                </div>
+                <div 
+                  className="absolute -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none"
+                  style={{ left: '50%', top: '59.5%' }}
+                >
+                  <span className="text-2xl sm:text-3xl font-black text-white italic drop-shadow-md tracking-tighter">
+                    1<span className="text-xs sm:text-sm not-italic font-bold ml-0.5">st</span>
+                  </span>
+                </div>
+                <div 
+                  className="absolute -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none w-[35%]"
+                  style={{ left: '50%', top: '67.5%' }}
+                >
+                  <span className="text-[11px] sm:text-xs font-black text-[#F5BE00] font-mono tracking-tight drop-shadow">
+                    ৳295,671,559
+                  </span>
+                </div>
+
+                {/* Rank 3 (Right - Bronze Pillar) */}
+                <div 
+                  className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full overflow-hidden border-2 border-amber-500/80 shadow-[0_0_12px_rgba(245,158,11,0.3)]"
+                  style={{ left: '76.2%', top: '41.8%', width: '16.5%', height: '15.5%' }}
+                >
+                  <img src="/assets/official_khelv/1-Cz2mt-nl.png" alt="Rank 3" className="w-full h-full object-cover" />
+                </div>
+                <div 
+                  className="absolute -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none w-[28%]"
+                  style={{ left: '76.2%', top: '53.5%' }}
+                >
+                  <span className="text-[10px] sm:text-[11px] font-bold text-amber-100 tracking-tight block truncate drop-shadow">
+                    Mem***LHM
+                  </span>
+                </div>
+                <div 
+                  className="absolute -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none"
+                  style={{ left: '76.2%', top: '63.5%' }}
+                >
+                  <span className="text-xl sm:text-2xl font-black text-white italic drop-shadow-md tracking-tighter">
+                    3<span className="text-[11px] sm:text-xs not-italic font-bold ml-0.5">rd</span>
+                  </span>
+                </div>
+                <div 
+                  className="absolute -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none w-[30%]"
+                  style={{ left: '76.2%', top: '70.5%' }}
+                >
+                  <span className="text-[10px] sm:text-[11px] font-extrabold text-amber-200 font-mono tracking-tight drop-shadow">
+                    ৳53,586,874
+                  </span>
+                </div>
               </div>
 
-              {/* Rank 1 (Gold) */}
-              <div className="bg-gradient-to-b from-[#2a2754] to-[#14122E] border-2 border-amber-400/60 rounded-xl p-2.5 flex flex-col items-center justify-end space-y-1 relative pt-5 shadow-lg shadow-amber-500/10 scale-105 z-10">
-                <span className="absolute -top-2.5 px-2.5 py-0.2 bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 font-black text-[10px] rounded-full shadow">NO.1</span>
-                <span className="text-2xl animate-bounce">👑</span>
-                <span className="text-xs font-black text-amber-200 truncate max-w-full">Mem***319</span>
-                <span className="text-[#F5BE00] font-black font-mono text-xs">৳184,520</span>
+              {/* Rank 4 to 50 List (Exact Match to frame_048.jpg with 47 rows) */}
+              <div className="space-y-1.5 max-h-[540px] overflow-y-auto pr-0.5 custom-scrollbar">
+                {TOP_50_LEADERBOARD.slice(3).map((item) => {
+                  const isEven = item.rank % 2 === 0;
+                  return (
+                    <div 
+                      key={item.rank}
+                      className={`flex items-center px-2 py-1.5 rounded-xl border transition-colors shadow-xs ${
+                        isEven 
+                          ? 'bg-gradient-to-r from-[#173a87] via-[#143276] to-[#10275e] border-[#254b9c]/60 hover:border-[#3869d1]/80' 
+                          : 'bg-gradient-to-r from-[#5a1725] via-[#4d131f] to-[#3f1019] border-[#7d2033]/60 hover:border-[#a82c44]/80'
+                      }`}
+                    >
+                      {/* Rank Ribbon Badge */}
+                      <div 
+                        className="relative w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center shrink-0 bg-contain bg-center bg-no-repeat font-black text-white text-xs sm:text-sm drop-shadow-sm select-none"
+                        style={{ 
+                          backgroundImage: `url('/assets/official_khelv/${isEven ? 'rankTagBlue-DtD88wuC.png' : 'rankTagRed-pKEe4vaO.png'}')` 
+                        }}
+                      >
+                        <span className="pr-1">{item.rank}</span>
+                      </div>
+
+                      {/* User Avatar */}
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full overflow-hidden border border-white/20 shrink-0 shadow-sm ml-1.5 mr-2.5">
+                        <img src={item.avatar} alt="User" className="w-full h-full object-cover" />
+                      </div>
+
+                      {/* Username */}
+                      <span className="text-xs sm:text-sm font-bold text-white tracking-wide truncate">
+                        {item.user}
+                      </span>
+
+                      {/* Amount */}
+                      <span className="text-xs sm:text-sm font-black text-[#F5BE00] font-mono tracking-tight ml-auto pr-2 drop-shadow-xs">
+                        {item.amount}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
 
-              {/* Rank 3 (Bronze) */}
-              <div className="bg-[#14122E] border border-amber-700/30 rounded-xl p-2.5 flex flex-col items-center justify-end space-y-1 relative pt-4">
-                <span className="absolute -top-2 px-2 py-0.2 bg-amber-700 text-white font-black text-[9px] rounded-full shadow">NO.3</span>
-                <span className="text-xl">🥉</span>
-                <span className="text-[11px] font-bold text-white truncate max-w-full">Mem***128</span>
-                <span className="text-[#F5BE00] font-black font-mono text-[10.5px]">৳78,350</span>
+              {/* Footer Compliance & Community Badges (1:1 Match to frame_048.jpg) */}
+              <div className="flex items-center justify-center space-x-6 pt-4 pb-2 border-t border-[#2c337a]/40 mt-3">
+                <img 
+                  src="/assets/official_khelv/u18-Qev7Ed0K.png" 
+                  alt="+18 Age Verification" 
+                  className="w-10 h-10 object-contain drop-shadow select-none cursor-default" 
+                />
+                <a 
+                  href="https://t.me/ROYALCLUB_Support" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  title="Official Telegram"
+                  className="w-10 h-10 rounded-full transition-transform active:scale-90 hover:scale-110 drop-shadow"
+                >
+                  <img 
+                    src="/assets/official_khelv/telegram-i-2nefHz.png" 
+                    alt="Telegram" 
+                    className="w-full h-full object-contain" 
+                  />
+                </a>
+                <a 
+                  href="https://wa.me/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  title="Official WhatsApp"
+                  className="w-10 h-10 rounded-full transition-transform active:scale-90 hover:scale-110 drop-shadow"
+                >
+                  <img 
+                    src="/assets/official_khelv/whatsapp-C2QbuFqd.png" 
+                    alt="WhatsApp" 
+                    className="w-full h-full object-contain" 
+                  />
+                </a>
               </div>
             </div>
           </div>
