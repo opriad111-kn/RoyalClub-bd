@@ -1,39 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import { useLanguage } from '../context/LanguageContext';
-import { RotateCw, ChevronRight, ArrowDownLeft, ArrowUpRight, Clock, FileText, CheckCircle2 } from 'lucide-react';
+import { RotateCw, ChevronRight } from 'lucide-react';
 import KhelvIcon from '../components/KhelvIcon';
 
 export default function WalletPage({ onOpenDeposit, onOpenWithdraw, onOpenAuth }) {
   const { user, refreshSupabaseData, transactions } = useGame();
   const { t } = useLanguage();
   const [initialLoading, setInitialLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isTransferring, setIsTransferring] = useState(false);
   const [transferCountdown, setTransferCountdown] = useState(5);
   const [transferSuccess, setTransferSuccess] = useState(false);
-  const [activeHistory, setActiveHistory] = useState(null); // 'deposit' | 'withdraw'
 
-  const safeUser = user || { username: 'Guest', is_guest: true, balance: 0, uid: '722200' };
-  const isGuest = !user || safeUser.username === 'Guest' || safeUser.is_guest;
+  const safeUser = user || { username: 'MemberNNGXAGEH', is_guest: true, balance: 17, uid: '170826' };
+  const currentBal = Number(safeUser.balance || 0);
+  const isGuest = !user || user.username === 'Guest' || user.is_guest;
 
   // Entry loading spinner (Requested in video part 2: "ঢুকলে ঘুরতেছে... এরকম যেন ঘুরলে ভালো দেখায়")
   useEffect(() => {
     const timer = setTimeout(() => {
       setInitialLoading(false);
-    }, 350);
+    }, 280);
     return () => clearTimeout(timer);
   }, []);
 
-  async function handleRefresh() {
-    setIsRefreshing(true);
-    if (refreshSupabaseData) {
-      await refreshSupabaseData();
-    }
-    setTimeout(() => setIsRefreshing(false), 600);
-  }
-
-  // Main Wallet Transfer (5-second countdown & balance recollection)
+  // Main Wallet Transfer (5-second animated countdown)
   async function handleMainWalletTransfer() {
     if (isGuest) {
       if (onOpenAuth) onOpenAuth('login');
@@ -59,242 +50,258 @@ export default function WalletPage({ onOpenDeposit, onOpenWithdraw, onOpenAuth }
     }, 1000);
   }
 
-  function handleAction(cb) {
+  function handleAction(action) {
     if (isGuest) {
       if (onOpenAuth) onOpenAuth('login');
       return;
     }
-    if (cb) cb();
+    if (action === 'deposit') {
+      window.location.hash = '#/deposit';
+    } else if (action === 'withdraw') {
+      window.location.hash = '#/withdraw';
+    } else if (action === 'depositHistory') {
+      window.location.hash = '#/deposit';
+    } else if (action === 'withdrawHistory') {
+      window.location.hash = '#/withdraw';
+    }
   }
-
-  // Filter transactions strictly for logged-in user
-  const isMyTx = (t) => {
-    if (!user || user.username === 'Guest' || user.is_guest) return false;
-    if (user.id && t.user_id && String(t.user_id) === String(user.id)) return true;
-    if (user.uid && t.uid && String(t.uid) === String(user.uid)) return true;
-    if (user.username && t.username && t.username.toLowerCase() === user.username.toLowerCase()) return true;
-    return false;
-  };
-
-  const depositRecords = (transactions || []).filter(t => (t.type === 'deposit' || t.type === 'recharge') && isMyTx(t));
-  const withdrawRecords = (transactions || []).filter(t => (t.type === 'withdrawal' || t.type === 'withdraw') && isMyTx(t));
 
   if (initialLoading) {
     return (
       <div className="w-full min-h-[70vh] flex flex-col items-center justify-center space-y-3 bg-[#14122E] text-white">
-        <div className="w-12 h-12 rounded-full border-3 border-[#F5BE00] border-t-transparent animate-spin" />
+        <div className="w-12 h-12 rounded-full border-3 border-[#629EFF] border-t-transparent animate-spin" />
         <span className="text-xs text-[#7098C5] font-semibold animate-pulse">
-          Loading Wallet Data...
+          Loading Wallet...
         </span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-3.5 pb-24 text-xs select-none -mx-3.5 -mt-3.5 font-sans bg-[#14122E] min-h-screen text-white">
-      
-      {/* 1. Header Bar */}
-      <div className="bg-[#1C2063] border-b border-[#30358B] px-4 py-3.5 flex items-center justify-between shadow-md sticky top-0 z-30">
-        <span className="font-bold text-sm tracking-wide text-white">
-          Wallet (ওয়ালেট)
-        </span>
-        <button
-          onClick={handleRefresh}
-          className={`text-[#7098C5] hover:text-white p-1 transition cursor-pointer active:scale-95 ${isRefreshing ? 'animate-spin text-amber-400' : ''}`}
-          title="Refresh Balance"
-        >
-          <RotateCw className="w-4 h-4" />
-        </button>
-      </div>
-
-      <div className="px-3.5 space-y-3.5 pt-1">
+    <div className="w-full min-h-screen bg-[#14122E] text-white font-sans select-none pb-28">
+      <div className="w-full sm:max-w-[420px] mx-auto min-h-screen flex flex-col bg-[#14122E] shadow-2xl relative">
         
-        {/* 2. Total Balance Gold Card */}
+        {/* 1. Header: < Wallet (Exact frame_026) */}
+        <div className="sticky top-0 z-30 bg-[#14122E] border-b border-[#30358B] px-4 py-3.5 flex items-center shadow-md">
+          <button 
+            onClick={() => { window.history.back(); }}
+            className="p-1 -ml-1 text-white hover:text-amber-400 active:scale-95 transition cursor-pointer"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <h1 className="flex-1 text-center font-bold text-base text-white pr-4">
+            Wallet
+          </h1>
+        </div>
+
+        {/* 2. Top Red-to-Blue Banner (Exact frame_026) */}
         <div 
-          className="rounded-2xl p-4.5 shadow-xl relative overflow-hidden text-[#1F1500]"
+          className="w-full px-4 pt-6 pb-6 text-center text-white relative shadow-lg"
           style={{
-            background: 'linear-gradient(135deg, #F5BE00 0%, #D49B00 100%)'
+            background: 'linear-gradient(90deg, #E92A23 0%, #1374EC 100%)'
           }}
         >
-          <div className="flex justify-between items-center mb-1">
-            <span className="text-xs font-bold text-[#3B2600]">
-              মোট ব্যালেন্স (Total Balance)
-            </span>
-            <div className="bg-[#1F1500]/15 border border-[#1F1500]/20 text-[#1F1500] text-[10px] font-black px-2.5 py-0.5 rounded-full">
-              Main Wallet
+          {/* Wallet Icon */}
+          <div className="w-10 h-10 mx-auto flex items-center justify-center text-white mb-1.5 opacity-90">
+            <svg className="w-9 h-9 fill-current" viewBox="0 0 24 24">
+              <path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
+            </svg>
+          </div>
+
+          {/* Balance */}
+          <div className="text-3xl font-bold font-mono tracking-tight">
+            ৳{currentBal.toFixed(2)}
+          </div>
+          <div className="text-[11px] text-white/80 font-medium mt-0.5">
+            Total balance
+          </div>
+
+          {/* Two stats columns: Total Withdrawal Amount & Total deposit amount */}
+          <div className="grid grid-cols-2 pt-4 mt-3 border-t border-white/20 text-center text-xs">
+            <div>
+              <span className="font-bold font-mono text-sm block">0</span>
+              <span className="text-[10px] text-white/80 block mt-0.5">Total Withdrawal Amount</span>
+            </div>
+            <div>
+              <span className="font-bold font-mono text-sm block">0</span>
+              <span className="text-[10px] text-white/80 block mt-0.5">Total deposit amount</span>
             </div>
           </div>
-          
-          <div className="flex items-baseline space-x-2 my-2">
-            <span className="text-3xl font-black font-mono tracking-tight text-[#1F1500]">
-              ৳{(safeUser.balance !== undefined ? safeUser.balance : 0.00).toFixed(2)}
-            </span>
-          </div>
-
-          {/* Progress / Ratio Bar */}
-          <div className="pt-2 border-t border-[#1F1500]/15 flex justify-between text-[10.5px] text-[#3B2600]/80 font-medium">
-            <span>Main Balance: 100%</span>
-            <span>Game Vendor Account: 0%</span>
-          </div>
-
-          <div className="absolute -bottom-6 -right-6 w-32 h-32 rounded-full bg-white/10 pointer-events-none" />
         </div>
 
-        {/* 3. Main Wallet Transfer Button (Exact User Requirement from Video part 2) */}
-        <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-3.5 shadow-md space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <span className="text-base">⚡</span>
-              <div>
-                <h4 className="font-bold text-xs text-white">Main Wallet Transfer</h4>
-                <p className="text-[10px] text-[#7098C5]">Collect all third-party game balances to main balance</p>
+        {/* 3. Main Dark Blue Card with Circular Progress Rings (Exact frame_026) */}
+        <div className="p-4 space-y-4">
+          <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4.5 space-y-4 shadow-xl">
+            
+            {/* Two Progress Rings Side-by-Side */}
+            <div className="grid grid-cols-2 gap-4 text-center">
+              {/* Ring 1: Main wallet */}
+              <div className="flex flex-col items-center space-y-2">
+                <div className="relative w-20 h-20 flex items-center justify-center">
+                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                    <path
+                      className="text-[#14122E]"
+                      strokeWidth="3.5"
+                      stroke="currentColor"
+                      fill="none"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                    <path
+                      className="text-[#4E88FF]"
+                      strokeDasharray="100, 100"
+                      strokeWidth="3.5"
+                      strokeLinecap="round"
+                      stroke="currentColor"
+                      fill="none"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                  </svg>
+                  <span className="absolute font-bold text-xs font-mono text-white">100%</span>
+                </div>
+                <div>
+                  <span className="font-bold text-xs font-mono text-white block">৳{currentBal.toFixed(2)}</span>
+                  <span className="text-[10px] text-[#7098C5] block mt-0.5">Main wallet</span>
+                </div>
+              </div>
+
+              {/* Ring 2: 3rd party wallet */}
+              <div className="flex flex-col items-center space-y-2">
+                <div className="relative w-20 h-20 flex items-center justify-center">
+                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                    <path
+                      className="text-[#14122E]"
+                      strokeWidth="3.5"
+                      stroke="currentColor"
+                      fill="none"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                    <path
+                      className="text-[#30358B]"
+                      strokeDasharray="0, 100"
+                      strokeWidth="3.5"
+                      strokeLinecap="round"
+                      stroke="currentColor"
+                      fill="none"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                  </svg>
+                  <span className="absolute font-bold text-xs font-mono text-[#7098C5]">0%</span>
+                </div>
+                <div>
+                  <span className="font-bold text-xs font-mono text-white block">৳0.00</span>
+                  <span className="text-[10px] text-[#7098C5] block mt-0.5">3rd party wallet</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          <button
-            onClick={handleMainWalletTransfer}
-            disabled={isTransferring}
-            className={`w-full py-2.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center justify-center space-x-2 shadow-md ${
-              isTransferring
-                ? 'bg-[#30358B] text-amber-300 cursor-wait'
-                : transferSuccess
-                ? 'bg-emerald-500 text-white'
-                : 'bg-gradient-to-r from-[#F5BE00] to-[#E0A000] text-[#14122E] active:scale-98 hover:brightness-105'
-            }`}
-          >
-            {isTransferring ? (
-              <>
-                <div className="w-3.5 h-3.5 border-2 border-amber-300 border-t-transparent rounded-full animate-spin" />
-                <span>Transferring balances... ({transferCountdown}s)</span>
-              </>
-            ) : transferSuccess ? (
-              <>
-                <CheckCircle2 className="w-4 h-4" />
+            {/* Red-to-Blue Main Wallet Transfer Button (Exact frame_026) */}
+            <button
+              onClick={handleMainWalletTransfer}
+              disabled={isTransferring}
+              className="w-full py-3 rounded-full font-bold text-xs text-white shadow-lg active:scale-98 transition cursor-pointer hover:brightness-105 flex items-center justify-center space-x-2"
+              style={{
+                background: 'linear-gradient(90deg, #E92A23 0%, #1374EC 100%)'
+              }}
+            >
+              {isTransferring ? (
+                <>
+                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Transferring... ({transferCountdown}s)</span>
+                </>
+              ) : transferSuccess ? (
                 <span>Transfer Completed Successfully!</span>
-              </>
-            ) : (
-              <span>Main Wallet Transfer (মেইন ওয়ালেটে আনুন)</span>
-            )}
-          </button>
+              ) : (
+                <span>Main wallet transfer</span>
+              )}
+            </button>
+
+            {/* 4 Action Buttons: Deposit, Withdraw, Deposit history, Withdrawal history */}
+            <div className="grid grid-cols-4 gap-2 pt-2 text-center text-[10.5px]">
+              {/* 1. Deposit */}
+              <div 
+                onClick={() => handleAction('deposit')}
+                className="flex flex-col items-center justify-center cursor-pointer active:scale-95 transition group"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-b from-[#FAD961] to-[#F76B1C] flex items-center justify-center mb-1.5 shadow-md">
+                  <span className="text-white text-lg">💰</span>
+                </div>
+                <span className="text-[#D4E8FF] font-medium group-hover:text-white">Deposit</span>
+              </div>
+
+              {/* 2. Withdraw */}
+              <div 
+                onClick={() => handleAction('withdraw')}
+                className="flex flex-col items-center justify-center cursor-pointer active:scale-95 transition group"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-b from-[#4A90E2] to-[#14539A] flex items-center justify-center mb-1.5 shadow-md">
+                  <span className="text-white text-lg">💳</span>
+                </div>
+                <span className="text-[#D4E8FF] font-medium group-hover:text-white">Withdraw</span>
+              </div>
+
+              {/* 3. Deposit history */}
+              <div 
+                onClick={() => handleAction('depositHistory')}
+                className="flex flex-col items-center justify-center cursor-pointer active:scale-95 transition group"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-b from-[#FF5E62] to-[#FF9966] flex items-center justify-center mb-1.5 shadow-md">
+                  <span className="text-white text-lg">📑</span>
+                </div>
+                <span className="text-[#D4E8FF] font-medium group-hover:text-white leading-tight">Deposit history</span>
+              </div>
+
+              {/* 4. Withdrawal history */}
+              <div 
+                onClick={() => handleAction('withdrawHistory')}
+                className="flex flex-col items-center justify-center cursor-pointer active:scale-95 transition group"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-b from-[#11998E] to-[#38EF7D] flex items-center justify-center mb-1.5 shadow-md">
+                  <span className="text-white text-lg">👛</span>
+                </div>
+                <span className="text-[#D4E8FF] font-medium group-hover:text-white leading-tight">Withdrawal history</span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* 4. Vendor Accounts Grid: ARGame & Lottery (Exact frame_026) */}
+          <div className="grid grid-cols-2 gap-3 text-center">
+            {/* ARGame */}
+            <div className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-4 shadow-sm">
+              <span className="text-sm font-bold font-mono text-white block">0.00</span>
+              <span className="text-xs text-[#7098C5] block mt-1">ARGame</span>
+            </div>
+
+            {/* Lottery (Red-to-Blue Highlight) */}
+            <div 
+              className="rounded-2xl p-4 shadow-md text-white font-bold"
+              style={{
+                background: 'linear-gradient(90deg, #E92A23 0%, #1374EC 100%)'
+              }}
+            >
+              <span className="text-sm font-mono block">৳{currentBal.toFixed(2)}</span>
+              <span className="text-xs block mt-1">Lottery</span>
+            </div>
+          </div>
+
         </div>
 
-        {/* 4. 4-Grid Action Cards (Matching KhelV official wallet) */}
-        <div className="grid grid-cols-2 gap-2.5">
-          {/* Deposit */}
-          <div 
-            onClick={() => handleAction(onOpenDeposit || (() => { window.location.hash = '#/deposit'; }))}
-            className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-3.5 shadow-sm hover:border-[#629EFF] cursor-pointer transition active:scale-95 flex items-center space-x-3"
-          >
-            <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
-              <ArrowDownLeft className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="font-bold text-white text-xs">Deposit</h4>
-              <span className="text-[10px] text-[#7098C5] block">টাকা জমা করুন</span>
-            </div>
-          </div>
-
-          {/* Withdraw */}
-          <div 
-            onClick={() => handleAction(onOpenWithdraw || (() => { window.location.hash = '#/withdraw'; }))}
-            className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-3.5 shadow-sm hover:border-[#629EFF] cursor-pointer transition active:scale-95 flex items-center space-x-3"
-          >
-            <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
-              <ArrowUpRight className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="font-bold text-white text-xs">Withdraw</h4>
-              <span className="text-[10px] text-[#7098C5] block">ক্যাশ উত্তোলন</span>
-            </div>
-          </div>
-
-          {/* Deposit Records */}
-          <div 
-            onClick={() => handleAction(() => {
-              if (onOpenDeposit) onOpenDeposit();
-              window.location.hash = '#/deposit';
-            })}
-            className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-3.5 shadow-sm hover:border-[#629EFF] cursor-pointer transition active:scale-95 flex items-center space-x-3"
-          >
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
-              <FileText className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="font-bold text-white text-xs">Deposit Records</h4>
-              <span className="text-[10px] text-[#7098C5] block">জমার ইতিহাস</span>
-            </div>
-          </div>
-
-          {/* Withdraw Records */}
-          <div 
-            onClick={() => handleAction(() => {
-              if (onOpenWithdraw) onOpenWithdraw();
-              window.location.hash = '#/withdraw';
-            })}
-            className="bg-[#1C2063] border border-[#30358B] rounded-2xl p-3.5 shadow-sm hover:border-[#629EFF] cursor-pointer transition active:scale-95 flex items-center space-x-3"
-          >
-            <div className="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center shrink-0">
-              <Clock className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="font-bold text-white text-xs">Withdraw Records</h4>
-              <span className="text-[10px] text-[#7098C5] block">উত্তোলনের রেকর্ড</span>
-            </div>
-          </div>
-        </div>
-
-        {/* 5. Third-Party Game Balances List */}
-        <div className="bg-[#1C2063] rounded-2xl border border-[#30358B] shadow-sm p-4 space-y-3">
-          <div className="flex items-center justify-between border-b border-[#30358B]/60 pb-2">
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider">
-              Game Vendor Accounts
-            </h4>
-            <span className="text-[10.5px] text-emerald-400 font-bold flex items-center space-x-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Auto Recycled</span>
-            </span>
-          </div>
-
-          <div className="divide-y divide-[#30358B]/50 text-xs">
-            <div className="py-2.5 flex justify-between items-center">
-              <div className="flex items-center space-x-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                <span className="font-medium text-slate-200">WinGo & TRX Lottery</span>
-              </div>
-              <span className="font-mono font-bold text-[#F5BE00]">
-                ৳{(safeUser.balance !== undefined ? safeUser.balance : 0.00).toFixed(2)}
-              </span>
-            </div>
-
-            <div className="py-2.5 flex justify-between items-center">
-              <div className="flex items-center space-x-2">
-                <span className="w-2 h-2 rounded-full bg-slate-500" />
-                <span className="font-medium text-slate-300">JILI Slots & Fishing</span>
-              </div>
-              <span className="font-mono font-bold text-slate-400">৳0.00</span>
-            </div>
-
-            <div className="py-2.5 flex justify-between items-center">
-              <div className="flex items-center space-x-2">
-                <span className="w-2 h-2 rounded-full bg-slate-500" />
-                <span className="font-medium text-slate-300">PG Soft Studio</span>
-              </div>
-              <span className="font-mono font-bold text-slate-400">৳0.00</span>
-            </div>
-
-            <div className="py-2.5 flex justify-between items-center">
-              <div className="flex items-center space-x-2">
-                <span className="w-2 h-2 rounded-full bg-slate-500" />
-                <span className="font-medium text-slate-300">Spribe Aviator</span>
-              </div>
-              <span className="font-mono font-bold text-slate-400">৳0.00</span>
-            </div>
-          </div>
-        </div>
+        {/* 1:1 Floating Customer Service Robot (Exact frame_026 bottom right) */}
+        <button
+          onClick={() => window.open('https://t.me/ROYALCLUB_Support', '_blank')}
+          title="Customer Service"
+          className="fixed bottom-6 right-4 z-40 w-12 h-12 flex items-center justify-center transition active:scale-90 cursor-pointer drop-shadow-2xl hover:scale-105 outline-none animate-bounce"
+        >
+          <img 
+            src="/assets/official_khelv/icon_sevice-CTlFP_dx.png" 
+            alt="Customer Support Robot" 
+            className="w-full h-full object-contain"
+          />
+        </button>
 
       </div>
-
     </div>
   );
 }

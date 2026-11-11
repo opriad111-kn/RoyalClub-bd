@@ -2460,6 +2460,19 @@ export default function AccountPage({
         </div>
       )}
 
+      {/* 1:1 Floating Customer Service Robot (Exact frame_025 bottom right) */}
+      <button
+        onClick={() => window.open('https://t.me/ROYALCLUB_Support', '_blank')}
+        title="Customer Service"
+        className="fixed bottom-20 right-4 z-40 w-12 h-12 flex items-center justify-center transition active:scale-90 cursor-pointer drop-shadow-2xl hover:scale-105 outline-none animate-bounce"
+      >
+        <img 
+          src="/assets/official_khelv/icon_sevice-CTlFP_dx.png" 
+          alt="Customer Support Robot" 
+          className="w-full h-full object-contain"
+        />
+      </button>
+
     </div>
   );
 }
