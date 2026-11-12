@@ -791,11 +791,7 @@ export function GameProvider({ children }) {
 
   // 3D. Comprehensive Game Management Config (Module C)
   const [gamesConfig, setGamesConfig] = useState(() => {
-    const saved = localStorage.getItem('royalclub_games_config');
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
-    }
-    return ALL_GAMES.map((g, idx) => ({
+    const defaultList = ALL_GAMES.map((g, idx) => ({
       id: g.id,
       name: g.name || g.display,
       category: g.category || 'slots',
@@ -808,6 +804,27 @@ export function GameProvider({ children }) {
       sortOrder: idx + 1,
       thumbnail: g.thumbnail || '/assets/amarclub/game_fortunegems.png'
     }));
+
+    const saved = localStorage.getItem('royalclub_games_config');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Merge to ensure core playable games are never blocked by stale local state
+          const coreGames = ['aviator', 'wingo', 'trxwingo', 'dice', 'mines', 'plinko', 'fortunegems2', 'superace', 'moneycoming', 'goldenempire'];
+          return defaultList.map(dg => {
+            const match = parsed.find(p => p.id === dg.id);
+            const isCore = coreGames.includes(dg.id);
+            return {
+              ...dg,
+              isEnabled: isCore ? true : (match?.isEnabled !== undefined ? match.isEnabled : true),
+              isFeatured: match?.isFeatured !== undefined ? match.isFeatured : dg.isFeatured
+            };
+          });
+        }
+      } catch (e) {}
+    }
+    return defaultList;
   });
 
   function toggleGameStatus(gameId) {

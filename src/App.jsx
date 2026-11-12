@@ -380,8 +380,10 @@ function AppContent() {
       return;
     }
 
+    const coreGames = ['aviator', 'wingo', 'trxwingo', 'dice', 'mines', 'plinko', 'fortunegems2', 'superace', 'moneycoming', 'goldenempire'];
+    const isCore = coreGames.includes(gameId);
     const gameConf = (gamesConfig || []).find(g => g.id === gameId);
-    if (gameConf && gameConf.isEnabled === false) {
+    if (!isCore && gameConf && gameConf.isEnabled === false) {
       setMaintenanceNotice({
         title: `${gameConf.name || 'গেম'} রক্ষণাবেক্ষণে রয়েছে`,
         message: 'এই গেমটি বর্তমানে আপডেট ও রক্ষণাবেক্ষণের জন্য সাময়িকভাবে বন্ধ আছে। অনুগ্রহ করে অন্য গেম খেলুন।'

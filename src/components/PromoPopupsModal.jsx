@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useGame } from '../context/GameContext';
 
 /**
  * PromoPopupsModal
@@ -11,6 +12,71 @@ import React, { useState } from 'react';
  */
 export default function PromoPopupsModal({ isOpen, type = 'first-deposit', onClose, onNavigate }) {
   const [noRemindToday, setNoRemindToday] = useState(false);
+  const { user, adjustUserBalance, transactions } = useGame();
+
+  // Calculate actual total approved deposited amount for the user
+  const userTotalDeposited = Math.max(
+    Number(user?.total_deposited || 0),
+    (transactions || [])
+      .filter(t => (t.type === 'deposit' || t.type === 'topup') && (t.status === 'approved' || t.status === 'completed'))
+      .reduce((sum, t) => sum + Number(t.amount || 0), 0)
+  );
+
+  const storageKey = `royalclub_claimed_extra_deposit_${user?.uid || user?.id || user?.phone || 'guest'}`;
+  const [claimedTiers, setClaimedTiers] = useState(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) setClaimedTiers(JSON.parse(saved));
+    } catch (e) {}
+  }, [user?.uid, user?.id, user?.phone, storageKey]);
+
+  const BONUS_TIERS = [
+    { deposit: '300', numDeposit: 300, reward: '18.00', rewardNum: 18 },
+    { deposit: '600', numDeposit: 600, reward: '68.00', rewardNum: 68 },
+    { deposit: '1500', numDeposit: 1500, reward: '158.00', rewardNum: 158 },
+    { deposit: '4000', numDeposit: 4000, reward: '388.00', rewardNum: 388 },
+    { deposit: '10000', numDeposit: 10000, reward: '888.00', rewardNum: 888 },
+    { deposit: '100000', numDeposit: 100000, reward: '10,000.00', rewardNum: 10000 }
+  ];
+
+  const handleClaimBonus = (tier) => {
+    if (userTotalDeposited < tier.numDeposit) {
+      handleGoDeposit(tier.deposit);
+      return;
+    }
+
+    if (claimedTiers.includes(tier.deposit)) {
+      return;
+    }
+
+    const uid = user?.uid || user?.id || user?.phone;
+    if (typeof adjustUserBalance === 'function') {
+      adjustUserBalance(uid, tier.rewardNum);
+    }
+
+    const updated = [...claimedTiers, tier.deposit];
+    setClaimedTiers(updated);
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(updated));
+    } catch (e) {}
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('royalclub_show_toast', {
+        detail: { 
+          message: `🎉 অভিনন্দন! ফার্স্ট ডিপোজিট বোনাস ৳${tier.rewardNum} সফলভাবে আপনার ব্যালেন্সে যোগ হয়েছে!` 
+        }
+      }));
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -195,51 +261,89 @@ export default function PromoPopupsModal({ isOpen, type = 'first-deposit', onClo
 
             {/* Scrollable Tasks List (Screenshot 4 1:1) */}
             <div className="p-3 space-y-2.5 max-h-[56vh] overflow-y-auto">
-              {[
-                { deposit: '300', reward: '18.00', progress: '0/300' },
-                { deposit: '600', reward: '68.00', progress: '0/600' },
-                { deposit: '1500', reward: '158.00', progress: '0/1500' },
-                { deposit: '4000', reward: '388.00', progress: '0/4000' },
-                { deposit: '10000', reward: '888.00', progress: '0/10000' },
-                { deposit: '100000', reward: '10,000.00', progress: '0/100000' }
-              ].map((tier, idx) => (
-                <div 
-                  key={idx}
-                  onClick={() => handleGoDeposit(tier.deposit)}
-                  className="bg-[#1b2260] border border-[#2d3885] hover:border-[#f59e0b]/60 rounded-xl p-3 shadow-md space-y-2 cursor-pointer transition active:scale-[0.99]"
-                >
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-white">
-                      First deposit <span className="text-[#f59e0b] font-mono font-bold text-sm">{tier.deposit}</span>
-                    </span>
-                    <span className="font-black text-[#f59e0b] font-mono text-[13px]">
-                      + ৳{tier.reward}
-                    </span>
-                  </div>
+              {BONUS_TIERS.map((tier, idx) => {
+                const isClaimed = claimedTiers.includes(tier.deposit);
+                const canClaim = userTotalDeposited >= tier.numDeposit && !isClaimed;
+                const progressText = isClaimed || canClaim 
+                  ? `${tier.deposit}/${tier.deposit}` 
+                  : `${Math.min(userTotalDeposited, tier.numDeposit)}/${tier.deposit}`;
 
-                  <p className="text-[10.5px] text-[#9bb0db] leading-snug">
-                    Deposit {tier.deposit} for the first time and you will receive {tier.reward.split('.')[0]} bonus
-                  </p>
-
-                  <div className="flex items-center justify-between pt-1">
-                    {/* Progress Bar Container */}
-                    <div className="px-3.5 py-0.5 rounded-full bg-[#13194a] text-[10px] font-mono text-[#9bb0db] border border-[#273273]">
-                      {tier.progress}
+                return (
+                  <div 
+                    key={idx}
+                    onClick={() => {
+                      if (canClaim) {
+                        handleClaimBonus(tier);
+                      } else if (!isClaimed) {
+                        handleGoDeposit(tier.deposit);
+                      }
+                    }}
+                    className={`bg-[#1b2260] border rounded-xl p-3 shadow-md space-y-2 cursor-pointer transition active:scale-[0.99] ${
+                      canClaim 
+                        ? 'border-amber-400 bg-gradient-to-r from-[#222a76] to-[#1d2466] shadow-[0_0_15px_rgba(245,158,11,0.25)]' 
+                        : isClaimed 
+                          ? 'border-emerald-500/40 opacity-80' 
+                          : 'border-[#2d3885] hover:border-[#f59e0b]/60'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-white">
+                        First deposit <span className="text-[#f59e0b] font-mono font-bold text-sm">{tier.deposit}</span>
+                      </span>
+                      <span className="font-black text-[#f59e0b] font-mono text-[13px]">
+                        + ৳{tier.reward}
+                      </span>
                     </div>
 
-                    {/* Deposit Button with Gold Border (Navigates to Deposit with tier amount auto-selected) */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleGoDeposit(tier.deposit);
-                      }}
-                      className="px-5 py-1 rounded-full border border-[#f59e0b] text-[#f59e0b] hover:bg-[#f59e0b]/20 active:scale-95 text-xs font-bold transition-all duration-150 cursor-pointer shadow-sm"
-                    >
-                      Deposit
-                    </button>
+                    <p className="text-[10.5px] text-[#9bb0db] leading-snug">
+                      Deposit {tier.deposit} for the first time and you will receive {tier.reward.split('.')[0]} bonus
+                    </p>
+
+                    <div className="flex items-center justify-between pt-1">
+                      {/* Progress Bar Container */}
+                      <div className={`px-3.5 py-0.5 rounded-full text-[10px] font-mono border ${
+                        isClaimed 
+                          ? 'bg-emerald-950/60 text-emerald-400 border-emerald-500/40' 
+                          : canClaim 
+                            ? 'bg-amber-950/60 text-amber-300 font-bold border-amber-400/60' 
+                            : 'bg-[#13194a] text-[#9bb0db] border-[#273273]'
+                      }`}>
+                        {progressText}
+                      </div>
+
+                      {/* Action Button: Claim / Claimed / Deposit */}
+                      {isClaimed ? (
+                        <button
+                          disabled
+                          className="px-4 py-1 rounded-full bg-[#13194a] border border-emerald-500/50 text-emerald-400 text-xs font-bold flex items-center space-x-1 cursor-default shadow-xs"
+                        >
+                          <span>✓ Claimed</span>
+                        </button>
+                      ) : canClaim ? (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleClaimBonus(tier);
+                          }}
+                          className="px-5 py-1 rounded-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 text-slate-950 font-black text-xs shadow-[0_0_15px_rgba(245,158,11,0.6)] animate-pulse active:scale-95 transition-all duration-150 cursor-pointer"
+                        >
+                          Claim
+                        </button>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleGoDeposit(tier.deposit);
+                          }}
+                          className="px-5 py-1 rounded-full border border-[#f59e0b] text-[#f59e0b] hover:bg-[#f59e0b]/20 active:scale-95 text-xs font-bold transition-all duration-150 cursor-pointer shadow-sm"
+                        >
+                          Deposit
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Bottom Footer: No Reminders + Activity Button */}
