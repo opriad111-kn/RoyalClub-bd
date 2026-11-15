@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 export default function UniversalArcadeEngine({ gameId = 'mines', onClose }) {
-  const { user, adjustUserBalance, recordGameHistory, getGameEffectiveSettings } = useGame();
+  const { user, adjustUserBalance, recordGameHistory, getGameEffectiveSettings, hasApprovedDeposit } = useGame();
   const [betAmount, setBetAmount] = useState(50);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
@@ -37,6 +37,10 @@ export default function UniversalArcadeEngine({ gameId = 'mines', onClose }) {
 
   // --- MINES LOGIC ---
   function startMinesGame() {
+    if (!hasApprovedDeposit) {
+      alert("গেম খেলার জন্য অনুগ্রহ করে প্রথমে ডিপোজিট করুন। ডিপোজিট অনুমোদিত হলে সমস্ত গেম খেলতে পারবেন।");
+      return;
+    }
     if (user.balance < betAmount) {
       alert("পর্যাপ্ত ব্যালেন্স নেই! দয়া করে ডিপোজিট করুন।");
       return;
@@ -136,6 +140,10 @@ export default function UniversalArcadeEngine({ gameId = 'mines', onClose }) {
 
   // --- DICE LOGIC ---
   function handleDiceRoll(isOver) {
+    if (!hasApprovedDeposit) {
+      alert("গেম খেলার জন্য অনুগ্রহ করে প্রথমে ডিপোজিট করুন। ডিপোজিট অনুমোদিত হলে সমস্ত গেম খেলতে পারবেন।");
+      return;
+    }
     if (user.balance < betAmount) {
       alert("পর্যাপ্ত ব্যালেন্স নেই! দয়া করে ডিপোজিট করুন।");
       return;

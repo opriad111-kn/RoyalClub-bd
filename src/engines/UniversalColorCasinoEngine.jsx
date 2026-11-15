@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 export default function UniversalColorCasinoEngine({ gameId = 'wingo', onClose }) {
-  const { user, adjustUserBalance, recordGameHistory, getGameEffectiveSettings } = useGame();
+  const { user, adjustUserBalance, recordGameHistory, getGameEffectiveSettings, hasApprovedDeposit } = useGame();
   const [mode, setMode] = useState('30s'); // '30s' | '1m' | '3m'
   const [countdown, setCountdown] = useState(30);
   const [period, setPeriod] = useState(() => `${new Date().getFullYear()}${String(Date.now()).slice(-8)}`);
@@ -193,6 +193,10 @@ export default function UniversalColorCasinoEngine({ gameId = 'wingo', onClose }
   }
 
   function handlePlaceBet(type, val) {
+    if (!hasApprovedDeposit) {
+      alert("গেম খেলার জন্য অনুগ্রহ করে প্রথমে ডিপোজিট করুন। ডিপোজিট অনুমোদিত হলে সমস্ত গেম খেলতে পারবেন।");
+      return;
+    }
     if (isLocked) {
       alert("শেষ ৫ সেকেন্ড বেটিং বন্ধ থাকে! পরবর্তী রাউন্ডের জন্য অপেক্ষা করুন।");
       return;

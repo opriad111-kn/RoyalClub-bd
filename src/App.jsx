@@ -54,6 +54,7 @@ import PartnerRewardsModal from './components/PartnerRewardsModal';
 import UsdtBonusModal from './components/UsdtBonusModal';
 import GuestRewardModal from './components/GuestRewardModal';
 import PromoPopupsModal from './components/PromoPopupsModal';
+import DepositRequiredModal from './components/DepositRequiredModal';
 import SplashScreen from './components/SplashScreen';
 import VipModal from './components/VipModal';
 import SecurityWarningModal from './components/SecurityWarningModal';
@@ -62,8 +63,9 @@ import { KhelvSvgSprite } from './components/common/KhelvIcon';
 const VALID_TABS = ['home', 'activity', 'promotion', 'account', 'deposit', 'withdraw', 'wallet', 'admin', 'wingo'];
 
 function AppContent() {
-  const { user, setCurrentGame, settings, gamesConfig } = useGame();
+  const { user, setCurrentGame, settings, gamesConfig, hasApprovedDeposit } = useGame();
   const [maintenanceNotice, setMaintenanceNotice] = useState(null);
+  const [isDepositRequiredOpen, setIsDepositRequiredOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(() => {
     const pathname = window.location.pathname.toLowerCase();
     if (pathname.includes('admin')) {
@@ -246,15 +248,31 @@ function AppContent() {
       }
 
       if (VALID_TABS.includes(cleanTab)) {
-        if (cleanTab === 'wingo' && settings?.ALL_GAMES_ENABLED === false) {
-          setActiveTab('home');
-          setActiveGame(null);
-          window.location.hash = '#/home';
-          setMaintenanceNotice({
-            title: 'সাময়িক রক্ষণাবেক্ষণ / Game Maintenance',
-            message: settings?.GAMES_MAINTENANCE_MESSAGE || 'সম্মানিত প্লেয়ার, সিস্টেম আপগ্রেড ও রক্ষণাবেক্ষণের জন্য সমস্ত গেম সাময়িকভাবে বন্ধ আছে। খুব শীঘ্রই গেম পুনরায় চালু করা হবে।'
-          });
-          return;
+        if (cleanTab === 'wingo') {
+          if (settings?.ALL_GAMES_ENABLED === false) {
+            setActiveTab('home');
+            setActiveGame(null);
+            window.location.hash = '#/home';
+            setMaintenanceNotice({
+              title: 'সাময়িক রক্ষণাবেক্ষণ / Game Maintenance',
+              message: settings?.GAMES_MAINTENANCE_MESSAGE || 'সম্মানিত প্লেয়ার, সিস্টেম আপগ্রেড ও রক্ষণাবেক্ষণের জন্য সমস্ত গেম সাময়িকভাবে বন্ধ আছে। খুব শীঘ্রই গেম পুনরায় চালু করা হবে।'
+            });
+            return;
+          }
+          if (user?.username === 'Guest' || user?.is_guest) {
+            setActiveTab('home');
+            setActiveGame(null);
+            window.location.hash = '#/home';
+            setIsGuestRewardOpen(true);
+            return;
+          }
+          if (!hasApprovedDeposit) {
+            setActiveTab('home');
+            setActiveGame(null);
+            window.location.hash = '#/home';
+            setIsDepositRequiredOpen(true);
+            return;
+          }
         }
         setActiveTab(cleanTab);
         setActiveGame(null);
@@ -268,6 +286,16 @@ function AppContent() {
             title: 'সাময়িক রক্ষণাবেক্ষণ / Game Maintenance',
             message: settings?.GAMES_MAINTENANCE_MESSAGE || 'সম্মানিত প্লেয়ার, সিস্টেম আপগ্রেড ও রক্ষণাবেক্ষণের জন্য সমস্ত গেম সাময়িকভাবে বন্ধ আছে। খুব শীঘ্রই গেম পুনরায় চালু করা হবে।'
           });
+        } else if (user?.username === 'Guest' || user?.is_guest) {
+          setActiveGame(null);
+          setActiveTab('home');
+          window.location.hash = '#/home';
+          setIsGuestRewardOpen(true);
+        } else if (!hasApprovedDeposit) {
+          setActiveGame(null);
+          setActiveTab('home');
+          window.location.hash = '#/home';
+          setIsDepositRequiredOpen(true);
         } else {
           setActiveGame(gId);
         }
@@ -279,9 +307,9 @@ function AppContent() {
       window.removeEventListener('hashchange', handleUrl);
       window.removeEventListener('popstate', handleUrl);
     };
-  }, [settings?.ALL_GAMES_ENABLED, settings?.GAMES_MAINTENANCE_MESSAGE]);
+  }, [settings?.ALL_GAMES_ENABLED, settings?.GAMES_MAINTENANCE_MESSAGE, hasApprovedDeposit, user]);
 
-  // Real-time eviction from games when admin turns off all games
+  // Real-time eviction from games when admin turns off all games or user has no approved deposit
   useEffect(() => {
     if ((activeGame || activeTab === 'wingo') && settings?.ALL_GAMES_ENABLED === false) {
       setActiveGame(null);
@@ -291,8 +319,13 @@ function AppContent() {
         title: 'সাময়িক রক্ষণাবেক্ষণ / Game Maintenance',
         message: settings?.GAMES_MAINTENANCE_MESSAGE || 'সম্মানিত প্লেয়ার, সিস্টেম আপগ্রেড ও রক্ষণাবেক্ষণের জন্য সমস্ত গেম সাময়িকভাবে বন্ধ আছে। খুব শীঘ্রই গেম পুনরায় চালু করা হবে।'
       });
+    } else if ((activeGame || activeTab === 'wingo') && !hasApprovedDeposit && user && user.username !== 'Guest' && !user.is_guest) {
+      setActiveGame(null);
+      if (activeTab === 'wingo') setActiveTab('home');
+      window.location.hash = '#/home';
+      setIsDepositRequiredOpen(true);
     }
-  }, [activeGame, activeTab, settings?.ALL_GAMES_ENABLED, settings?.GAMES_MAINTENANCE_MESSAGE]);
+  }, [activeGame, activeTab, settings?.ALL_GAMES_ENABLED, settings?.GAMES_MAINTENANCE_MESSAGE, hasApprovedDeposit, user]);
 
   function handleCloseAuth() {
     setIsAuthOpen(false);
@@ -395,6 +428,13 @@ function AppContent() {
       setIsGuestRewardOpen(true);
       return;
     }
+
+    // New User Deposit Gate: Cannot play games with only registration bonus
+    if (!hasApprovedDeposit) {
+      setIsDepositRequiredOpen(true);
+      return;
+    }
+
     const info = getGameInfo(gameId);
     setTransferModal({
       isOpen: true,
@@ -720,6 +760,17 @@ function AppContent() {
           type={promoModal.type}
           onClose={() => setPromoModal(prev => ({ ...prev, isOpen: false }))}
           onNavigate={(tab) => setActiveTab(tab)}
+        />
+
+        {/* Deposit Required Modal: Gate for registered users with no approved deposit */}
+        <DepositRequiredModal
+          isOpen={isDepositRequiredOpen}
+          onClose={() => setIsDepositRequiredOpen(false)}
+          onOpenDeposit={() => {
+            setIsDepositRequiredOpen(false);
+            handleSelectTab('deposit');
+          }}
+          userBalance={user?.balance || 0}
         />
 
         {/* 1:1 KhelV VIP Club Level Modal */}

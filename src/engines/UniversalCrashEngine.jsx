@@ -87,7 +87,7 @@ const LIVE_PLAYERS = [
 
 export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
   const theme = CRASH_THEMES[gameId] || CRASH_THEMES.aviator;
-  const { user, adjustUserBalance, recordGameHistory, getGameEffectiveSettings, settings, calculateOutcome } = useGame();
+  const { user, adjustUserBalance, recordGameHistory, getGameEffectiveSettings, settings, calculateOutcome, hasApprovedDeposit } = useGame();
 
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -748,6 +748,10 @@ export default function UniversalCrashEngine({ gameId = 'aviator', onClose }) {
 
   // 4. Bet Actions & Cashout Handlers
   function handlePlaceBet(deckNum) {
+    if (!hasApprovedDeposit) {
+      alert("গেম খেলার জন্য অনুগ্রহ করে প্রথমে ডিপোজিট করুন। ডিপোজিট অনুমোদিত হলে সমস্ত গেম খেলতে পারবেন।");
+      return;
+    }
     if (settings?.ALL_GAMES_ENABLED === false) {
       alert("প্ল্যাটফর্মের সকল গেম বর্তমানে রক্ষণাবেক্ষণের জন্য সাময়িকভাবে বন্ধ আছে।");
       return;

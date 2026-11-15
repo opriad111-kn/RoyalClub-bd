@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { soundManager } from '../lib/audio';
 import { sha256, calculateRoundResult, evaluateBet } from '../lib/provablyFair';
@@ -826,6 +826,23 @@ export function GameProvider({ children }) {
     }
     return defaultList;
   });
+
+  // Deposit gate check: whether user has at least one approved deposit to unlock gameplay
+  const hasApprovedDeposit = useMemo(() => {
+    if (!user || user.username === 'Guest' || user.is_guest) return false;
+    if (user.is_admin || user.role === 'admin' || user.username === 'Admin') return true;
+    if (Number(user.total_deposited || 0) > 0) return true;
+    return (transactions || []).some(t => {
+      if (!t) return false;
+      const isThisUser = 
+        (t.uid && user?.uid && String(t.uid) === String(user.uid)) ||
+        (t.user_id && user?.id && String(t.user_id) === String(user.id)) ||
+        (t.username && user?.username && String(t.username).toLowerCase() === String(user.username).toLowerCase()) ||
+        (t.account_number && user?.phone && String(t.account_number).trim().replace(/^0+/, '') === String(user.phone).trim().replace(/^0+/, ''));
+      const isApproved = (t.type === 'deposit' || t.type === 'topup') && (t.status === 'approved' || t.status === 'completed');
+      return isThisUser && isApproved;
+    });
+  }, [user, transactions]);
 
   function toggleGameStatus(gameId) {
     setGamesConfig(prev => {
@@ -2274,6 +2291,10 @@ export function GameProvider({ children }) {
   }
 
   function placeBet(betType, selection, amount) {
+    if (!hasApprovedDeposit) {
+      alert("গেম খেলার জন্য অনুগ্রহ করে প্রথমে ডিপোজিট করুন। ডিপোজিট অনুমোদিত হলে সমস্ত গেম খেলতে পারবেন।");
+      return false;
+    }
     if (isLocked) {
       alert("শেষ ৫ সেকেন্ড বেটিং বন্ধ থাকে। পরবর্তী রাউন্ডের জন্য অপেক্ষা করুন!");
       return false;
@@ -3353,6 +3374,7 @@ export function GameProvider({ children }) {
       activeReveal,
       bets,
       placeBet,
+      hasApprovedDeposit,
       transactions,
       claimFaucet,
       requestDeposit,
