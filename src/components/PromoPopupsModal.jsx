@@ -14,11 +14,27 @@ export default function PromoPopupsModal({ isOpen, type = 'first-deposit', onClo
   const [noRemindToday, setNoRemindToday] = useState(false);
   const { user, adjustUserBalance, transactions } = useGame();
 
-  // Calculate actual total approved deposited amount for the user
+  // Calculate actual total approved deposited amount strictly for THIS user
+  const isThisUser = (t) => {
+    if (!t || !user) return false;
+    return (
+      (t.uid && user.uid && String(t.uid) === String(user.uid)) ||
+      (t.user_id && user.id && String(t.user_id) === String(user.id)) ||
+      (t.username && user.username && String(t.username).toLowerCase() === String(user.username).toLowerCase()) ||
+      (t.account_number && user.phone && String(t.account_number).trim().replace(/^0+/, '') === String(user.phone).trim().replace(/^0+/, ''))
+    );
+  };
+
   const userTotalDeposited = Math.max(
     Number(user?.total_deposited || 0),
     (transactions || [])
-      .filter(t => (t.type === 'deposit' || t.type === 'topup') && (t.status === 'approved' || t.status === 'completed'))
+      .filter(t => 
+        isThisUser(t) && 
+        (t.type === 'deposit' || t.type === 'topup') && 
+        (t.status === 'approved' || t.status === 'completed') &&
+        !String(t.method || '').toLowerCase().includes('bonus') &&
+        !String(t.method || '').includes('বোনাস')
+      )
       .reduce((sum, t) => sum + Number(t.amount || 0), 0)
   );
 

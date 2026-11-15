@@ -106,3 +106,4 @@ export default function DepositRequiredModal({ isOpen, onClose, onOpenDeposit, u
     </div>
   );
 }
+

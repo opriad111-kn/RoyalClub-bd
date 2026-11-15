@@ -1039,10 +1039,25 @@ export default function AccountPage({
             {/* Scrollable Tier List */}
             <div className="p-3.5 overflow-y-auto space-y-2.5 flex-1">
               {(() => {
+                const isThisUser = (t) => {
+                  if (!t || !user) return false;
+                  return (
+                    (t.uid && user.uid && String(t.uid) === String(user.uid)) ||
+                    (t.user_id && user.id && String(t.user_id) === String(user.id)) ||
+                    (t.username && user.username && String(t.username).toLowerCase() === String(user.username).toLowerCase()) ||
+                    (t.account_number && user.phone && String(t.account_number).trim().replace(/^0+/, '') === String(user.phone).trim().replace(/^0+/, ''))
+                  );
+                };
                 const totalDep = Math.max(
                   Number(user?.total_deposited || 0),
                   (transactions || [])
-                    .filter(t => (t.type === 'deposit' || t.type === 'topup') && (t.status === 'approved' || t.status === 'completed'))
+                    .filter(t => 
+                      isThisUser(t) && 
+                      (t.type === 'deposit' || t.type === 'topup') && 
+                      (t.status === 'approved' || t.status === 'completed') &&
+                      !String(t.method || '').toLowerCase().includes('bonus') &&
+                      !String(t.method || '').includes('বোনাস')
+                    )
                     .reduce((sum, t) => sum + Number(t.amount || 0), 0)
                 );
                 const sKey = `royalclub_claimed_extra_deposit_${user?.uid || user?.id || user?.phone || 'guest'}`;

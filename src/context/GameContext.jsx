@@ -839,8 +839,14 @@ export function GameProvider({ children }) {
         (t.user_id && user?.id && String(t.user_id) === String(user.id)) ||
         (t.username && user?.username && String(t.username).toLowerCase() === String(user.username).toLowerCase()) ||
         (t.account_number && user?.phone && String(t.account_number).trim().replace(/^0+/, '') === String(user.phone).trim().replace(/^0+/, ''));
-      const isApproved = (t.type === 'deposit' || t.type === 'topup') && (t.status === 'approved' || t.status === 'completed');
-      return isThisUser && isApproved;
+      const isBonus = t.type === 'bonus' || 
+        String(t.method || '').toLowerCase().includes('bonus') || 
+        String(t.method || '').includes('বোনাস');
+      const isApprovedRealDeposit = (t.type === 'deposit' || t.type === 'topup') && 
+        (t.status === 'approved' || t.status === 'completed') && 
+        !isBonus && 
+        Number(t.amount || 0) > 0;
+      return isThisUser && isApprovedRealDeposit;
     });
   }, [user, transactions]);
 
@@ -3301,16 +3307,16 @@ export function GameProvider({ children }) {
     localStorage.setItem('royalclub_current_user', JSON.stringify(newUser));
     localStorage.setItem('royalclub_remember_user', cleanUser);
 
-    // 3. Register transaction in local and Supabase
+    // 3. Register transaction in local and Supabase (Stored as 'bonus', NOT deposit, so deposit check is strict)
     const bonusTx = {
       id: Date.now(),
       uid: newUser.uid,
       username: newUser.username,
-      type: "deposit",
+      type: "bonus",
       amount: welcomeCoins,
       fee: 0,
       method: "অটোমেটিক সাইন-আপ ওয়েলকাম বোনাস",
-      status: "approved",
+      status: "completed",
       created_at: new Date().toISOString()
     };
     setTransactions(prev => [bonusTx, ...prev]);
@@ -3319,10 +3325,10 @@ export function GameProvider({ children }) {
       supabase.from('transactions').insert({
         user_id: newUser.uid,
         username: newUser.username,
-        type: 'deposit',
+        type: 'bonus',
         amount: welcomeCoins,
         method: 'Sign-up Bonus',
-        status: 'approved'
+        status: 'completed'
       }).then(() => {}).catch(() => {});
     } catch (e) {}
 
